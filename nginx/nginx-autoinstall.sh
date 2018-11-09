@@ -63,51 +63,29 @@ function DelPort(){
 #编译安装Nginx
 function CompileInstall(){
 	#创建用户和用户组
-	groupadd www
-	useradd -M -g www www -s /sbin/nologin
+	groupadd nginx
+	useradd -M -g nginx nginx -s /sbin/nologin
 	
-	#rm -rf /usr/local/pcre-8.39.tar.gz
-	#rm -rf /usr/local/zlib-1.2.11.tar.gz
-	#rm -rf /usr/local/openssl-1.1.0h.tar.gz
-
-	#下载stub_status_module模块
-	cd /usr/local
-	wget http://soft.xiaoz.org/nginx/ngx_http_substitutions_filter_module.zip
-	unzip ngx_http_substitutions_filter_module.zip
-
-	#下载purecache模块
-	cd /usr/local && wget http://soft.xiaoz.org/nginx/ngx_cache_purge-2.3.tar.gz
-	tar -zxvf ngx_cache_purge-2.3.tar.gz
-	mv ngx_cache_purge-2.3 ngx_cache_purge
-
 	#安装Nginx
 	cd /usr/local
-	wget http://nginx.org/download/nginx-1.14.0.tar.gz
-	tar -zxvf nginx-1.14.0.tar.gz
-	cd nginx-1.14.0
-	./configure --prefix=/usr/local/nginx --user=www --group=www \
+	wget http://nginx.org/download/nginx-1.15.6.tar.gz  
+	tar -zxvf nginx-1.15.6.tar.gz  
+	cd nginx-1.15.6
+	./configure --prefix=/usr/local/nginx --user=nginx --group=nginx \
 	--with-stream \
 	--with-http_stub_status_module \
 	--with-http_v2_module \
 	--with-http_ssl_module \
 	--with-http_gzip_static_module \
 	--with-http_realip_module \
-	--with-pcre=/usr/local/pcre-8.39 \
-	--with-pcre-jit \
-	--with-zlib=/usr/local/zlib-1.2.11 \
-	--with-openssl=/usr/local/openssl-1.1.1 \
-	--add-module=/usr/local/ngx_http_substitutions_filter_module \
-	--add-module=/usr/local/ngx_cache_purge
 	make -j4 && make -j4 install
 
 	#一点点清理工作
-	rm -rf ${dir}nginx-1.14.0*
-	rm -rf ${dir}ngx_http_substitutions_filter_module*
-	rm -rf ${dir}ngx_cache_purge*
+	rm -rf ${dir}nginx-1.15.6*
+
 
 	#复制配置文件
-	mv /usr/local/nginx/conf/nginx.conf /usr/local/nginx/conf/nginx.conf.bak
-	wget https://raw.githubusercontent.com/helloxz/nginx-cdn/master/nginx.conf -P /usr/local/nginx/conf/
+
 	mkdir -p /usr/local/nginx/conf/vhost
 	/usr/local/nginx/sbin/nginx
 

@@ -1,16 +1,10 @@
 ## Nginx安装指南
 
-
-
-
-
 在 web 服务中，经常需要用到 nginx ，整理一下几种常用的 nginx 安装方案。
-
-
 
 ### 脚本一键安装
 
-脚本安装，方便快捷，暂时仅支持 debian 和 redhat系列。脚本安装，
+脚本安装，方便快捷，暂时仅支持 debian 和 redhat系列。同时支持二进制和源代码编译方式安装，执行本目录中的[nginx_autoinstall.sh](./nginx-autoinstall.sh)
 
 
 ### Linux 下手动编译安装
