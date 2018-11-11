@@ -25,6 +25,7 @@ $ cp ~/.oh-my-zsh/templates/zshrc.zsh-template ~/.zshrc
 $ echo $SHELL  # 查看当前使用的 shell
 $ cat /etc/shells # 查看当前系统支持的 shell
 $ bash   # 切换至 bash ，输入 zsh 切换至 zsh。
+$ chsh -s /bin/zsh  # 修改当前用户的 shell
 ```
 #### Shell 配置文件：
 
