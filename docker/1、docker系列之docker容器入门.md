@@ -36,7 +36,7 @@ docker daemon 创建和管理Docker对象，例如镜像，容器，网络和数
 
 Docker 使用的是 c/s 架构，Docker 客户端与 Docker 守护进程通讯，后者负责构建，运行，分发 Docker 容器。Docker 客户端和守护进程可以在同一台机器，也可以用 Docker 客户端连接远端 docker 守护进程。Docker自带的客户端程序是通过 Unix socket 套接字文件来与服务端通讯，Docker 官方也提供了 REST 风格的 API，你也可以开发自己的客户端来使用 HTTP 协议来与服务端通讯。
 
-![docker-architecture](.\resources\docker-architecture.png)
+![docker-architecture](./resources/docker-architecture.png)
 
 <center>docker架构图</center>
 
