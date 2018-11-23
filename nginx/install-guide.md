@@ -4,7 +4,7 @@
 
 ### 脚本一键安装
 
-脚本安装，方便快捷，暂时仅支持 debian 和 redhat系列。同时支持二进制和源代码编译方式安装，执行本目录中的 [nginx_autoinstall.sh] (./nginx-autoinstall.sh) 脚本即可完成安装。
+脚本安装，方便快捷，暂时仅支持 debian 和 redhat系列。同时支持二进制和源代码编译方式安装，执行本目录中的 [nginx_autoinstall.sh](./nginx-autoinstall.sh) 脚本即可完成安装。
 
 
 ### Linux 下手动编译安装

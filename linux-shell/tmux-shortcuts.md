@@ -1,12 +1,14 @@
+https://www.kancloud.cn/kancloud/tmux/62459
+
 注意：本文内容适用于 Tmux 2.3 及以上的版本，但是绝大部分的特性低版本也都适用，鼠标支持、VI 模式、插件管理在低版本可能会与本文不兼容。
 
 # Tmux 快捷键 & 速查表
 
-启动新会话：
+启动新会话（session）：
 
     tmux [new -s 会话名 -n 窗口名]
 
-恢复会话：
+恢复（assume）会话：
 
     tmux at [-t 会话名]
 
@@ -14,11 +16,11 @@
 
     tmux ls
 
-<a name="killSessions"></a>关闭会话：
+关闭会话：
 
     tmux kill-session -t 会话名
 
-<a name="killAllSessions"></a>关闭所有会话：
+关闭所有会话：
 
     tmux ls | grep : | cut -d. -f1 | awk '{print substr($1, 0, length($1)-1)}' | xargs kill
 
