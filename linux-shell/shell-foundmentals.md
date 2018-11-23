@@ -4,6 +4,55 @@ Shell 是 Linux 下的命令交互程序，它用来接收用户输入的指令�
 
 可以说，shell使用的熟练程度反映了用户对Unix/Linux使用的熟练程度。
 
+
+## Linux 命令类型
+
+Linux 命令分为两种类型，一类是 shell 内建命令。一类是应用程序命令。应用程序命令，一般都会有相应的二进制可执行文件，通常存在 /bin , /usr/sbin/ , /usr/bin 等目录中。shell 通过读取 $PATH 这个环境变量来查找应用程序执行路径。
+
+通过 type 来查看命令是 shell 内建命令，还是二进制程序（如果是二进制可执行文件，还能打印出所在路径）。
+
+``` shell 
+[root@fengzhao ~]# type ls   
+ls is aliased to `ls --color=auto'
+[root@fengzhao ~]# type pwd
+pwd is a shell builtin
+[root@fengzhao ~]# type w
+w is /usr/bin/w
+[root@fengzhao ~]# type find
+find is /usr/bin/fi
+```
+
+通过 whereis 来查看二进制文件的存放路径。
+
+``` shell
+[root@fengzhao ~]# whereis find
+find: /usr/bin/find
+[root@fengzhao ~]# 
+```
+
+
+## 环境变量
+
+环境变量是操作系统中的软件运行时的一些参数，环境变量一般是由变量名和变量值组成的键值对来表示。应用程序通过读取变量名来获取变量值。通过和设置环境变量，可以调整软件运行时的一些参数。最著名的操作系统变量就是 PATH 了。在 windows 和 linux 都存在这个环境变量。它表示在命令行中执行命令的查找路径。在 Linux 命令行中，可以通过 echo $VARIABLENAME 来查看变量值。
+
+常用环境变量
+
+- PATH 决定了shell将到哪些目录中寻找命令或程序(分先后顺序)
+- HOME 当前用户主目录
+- HISTSIZE　命令历史记录条数
+- HISTTIMEFORMAT 命令历史时间格式  一般设置为" %F %T 'whoami'"
+- LOGNAME 当前用户的登录名
+- HOSTNAME　指主机的名称
+- SHELL 当前用户Shell类型
+- LANGUGE 　语言相关的环境变量，多语言可以修改此环境变量
+- MAIL　当前用户的邮件存放目录
+- PS1　基本提示符，对于root用户是#，对于普通用户是$
+
+
+
+
+
+
 #### Shell有两种执行命令的方式：
 
 - 交互式（Interactive）：解释执行用户的命令，用户输入一条命令，Shell就解释执行一条。
@@ -37,5 +86,5 @@ $ chsh -s /bin/zsh  # 修改当前用户的 shell
  
 
 
-
+搜索
 
