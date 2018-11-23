@@ -61,3 +61,18 @@ quit;
 
 
 
+## 2、Linux 安装过程
+
+### 2.1 编译安装
+
+
+下载
+
+``` shell
+
+mkdir /tmp/
+
+wget https://dev.mysql.com/get/Downloads/MySQL-5.7/mysql-5.7.24-linux-glibc2.12-x86_64.tar.gz
+
+```
+
