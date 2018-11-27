@@ -356,15 +356,6 @@ CMD ["/usr/lib/postgresql/9.3/bin/postgres", "-D", "/var/lib/postgresql/9.3/main
 
 
 
-在 Dockerfile 所在目录下，执行 docker build  -t 
-
-
-
-
-
-
-
-### 网络
 
 
 

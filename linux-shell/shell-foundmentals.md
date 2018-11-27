@@ -31,17 +31,13 @@ find: /usr/bin/find
 ```
 
 
-## 变量和环境变量
+## 环境变量
 
-变量是任何编程语言中都必不可少的一部分，用于存放各类数据。在 GNUX/Linux 的 shell 中，每一个变量的值都是字符串类型。无论声明时是否用引号。变量使用 NAME=VALUE 形式声明并赋值，注意等号中间不能有空格。
+环境变量是操作系统中的软件运行时的一些参数，环境变量一般是由变量名和变量值组成的键值对来表示。应用程序通过读取变量名来获取变量值。通过和设置环境变量，可以调整软件运行时的一些参数。最著名的操作系统变量就是 PATH 了。在 windows 和 linux 都存在这个环境变量。它表示在命令行中执行命令的查找路径。在 Linux 命令行中，可以通过 echo $VARIABLENAME 来查看变量值。
 
-环境变量是操作系统中的软件运行时的一些参数，环境变量一般是由变量名和变量值组成的键值对来表示，环境变量是未在当前进程中定义，而从父进程中继承来的变量。应用程序通过读取变量名来获取变量值。通过和设置环境变量，可以调整软件运行时的一些参数。最著名的操作系统变量就是 PATH 了，在 windows 和 linux 都存在这个环境变量。它表示在命令行中执行命令的查找路径。在 Linux 命令行中，可以通过 echo $VARIABLENAME 来查看变量值。
+常用环境变量
 
-在 BASH 中，每一个
-
-### 常用环境变量
-
-- PATH 决定了shell将到哪些目录中寻找命令或程序(分先后顺序)。通常定义在 /etc/environments 或 /etc/profile 或 ~/.bashrc 中
+- PATH 决定了shell将到哪些目录中寻找命令或程序(分先后顺序)
 - HOME 当前用户主目录
 - HISTSIZE　命令历史记录条数
 - HISTTIMEFORMAT 命令历史时间格式  一般设置为" %F %T 'whoami'"
@@ -53,60 +49,11 @@ find: /usr/bin/find
 - PS1　基本提示符，对于root用户是#，对于普通用户是$
 
 
-当一个应用程序运行时，它接收一组环境变量。可以用 env 命令在终端中查看与所有与此终端进程相关的环境变量。对于每个进程，在其运行时的环境变量可以用下面的命令查看：
-
-```shell
-$ cat /proc/$PID/environ
-```
-其中，将 $PID 设置成相关进程的进程 ID （PID总是一个整数）。
-
-例如，我的服务器上运行了一个 docker 守护进程，它的PID是 26293 。我使用下面的命令来查看 docker 守护进程的环境变量。
-
-```shell
- ⚡ root@fengzhao-linux-server  ~  ps -ef | grep docker
-root      7745  7213  0 14:45 pts/0    00:00:00 grep --color=auto --exclude-dir=.bzr --exclude-dir=CVS --exclude-dir=.git --exclude-dir=.hg --exclude-dir=.svn docker
-root     26293     1  0 Oct14 ?        01:06:39 /usr/bin/dockerd -H fd://
-root     26300 26293  0 Oct14 ?        01:07:42 docker-containerd --config /var/run/docker/containerd/containerd.toml
- ⚡ root@fengzhao-linux-server  ~  cat /proc/26293/environ | tr '\0' '\n'
-LANG=en_US.UTF-8
-PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-NOTIFY_SOCKET=/run/systemd/notify
-LISTEN_PID=26293
-LISTEN_FDS=1
-LISTEN_FDNAMES=docker.socket
-INVOCATION_ID=3a683a14919847298c3184c12fb673d5
-JOURNAL_STREAM=8:95561
- ⚡ root@fengzhao-linux-server  ~ 
-```
-
-
-### 设置环境变量
-
-环境变量的设置，一般使用 export 命令。
-```shell
-$ HTTP_PROXY=http://192.168.0.2:8989
-$ export HTTP_PROXY
-```
-这样，这个 HTTP_PROXY 环境变量就在当前 shell 中生效。从当前 shell 脚本中执行的任何程序都会继承这个环境变量。注意，这个变量仅仅在当前终端中生效，一旦注销，就失效了。
-
-例如，安装 jdk 之后设置 java 环境变量，可以把 java 路径添加到 PATH 环境变量中：
-
-- 方法一
-```shelll
-$ export PATH="$PATH:/usr/local/java"  #这种方式仅在当前会话有效
-```
-- 方法二
-  
-  一般把上述命令保存到 /etc/profile 文件中。永久有效。
-
-### 
 
 
 
 
-
-
-## Shell有两种执行命令的方式：
+#### Shell有两种执行命令的方式：
 
 - 交互式（Interactive）：解释执行用户的命令，用户输入一条命令，Shell就解释执行一条。
 - 批处理（Batch）：用户事先写一个Shell脚本(Script)，其中有很多条命令，让Shell一次把这些命令执行完。
@@ -124,7 +71,7 @@ $ cp ~/.oh-my-zsh/templates/zshrc.zsh-template ~/.zshrc
 
 #### 查看操作系统的 Shell：
 ``` shell
-$ echo $SHELL  # 打印 $SHELL 环境变量来查看当前使用的 shell
+$ echo $SHELL  # 查看当前使用的 shell
 $ cat /etc/shells # 查看当前系统支持的 shell
 $ bash   # 切换至 bash ，输入 zsh 切换至 zsh。
 $ chsh -s /bin/zsh  # 修改当前用户的 shell
@@ -139,5 +86,5 @@ $ chsh -s /bin/zsh  # 修改当前用户的 shell
  
 
 
-搜索
+
 
