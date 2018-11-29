@@ -137,6 +137,7 @@ $ chkconfig mysql on
 ```
 #### 设置root密码，并开启任意IP登陆
 ``` sql
+/usr/local//mysql/bin/mysql -u root -p 
 UPDATE mysql.user SET authentication_string=PASSWORD("123456") WHERE user='root' ;
 grant all privileges on *.* to 'root' @'%' identified by '123456';
 ```
