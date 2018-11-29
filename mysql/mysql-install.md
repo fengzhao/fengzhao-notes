@@ -63,16 +63,91 @@ quit;
 
 ## 2、Linux 安装过程
 
-### 2.1 编译安装
+### 2.1 二进制安装
+
+#### 环境：
+- GNU/Linux-x86_64
+- gcc 运行时环境
 
 
-下载
+
+#### 用户和数据目录创建
+``` shell
+$ groupadd mysql
+$ useradd -r -g mysql -s /bin/false mysql
+$ mkdir -p /data/mysql
+```
+
+
+#### 创建 /etc/my.cnf文件
+
+这是最基本的配置文件，更详细的配置，可以参考相关mysql优化文档
+
+``` shell 
+[client]
+port	= 3306
+socket	= /data/mysql/mysql.sock
+
+[mysql]
+prompt="\u@db \R:\m:\s [\d]> "
+no-auto-rehash
+
+[mysqld]
+#skip-grant-tables
+user	= mysql
+port	= 3306
+basedir	= /usr/local/mysql
+datadir	= /data/mysql/
+socket	= /data/mysql/mysql.sock
+pid-file = db.pid
+character-set-server = utf8mb4
+skip_name_resolve = 1
+open_files_limit    = 65535
+back_log = 1024
+
+```
+
+
+#### 下载
 
 ``` shell
 
-mkdir /tmp/
+$ cd /tmp/
 
-wget https://dev.mysql.com/get/Downloads/MySQL-5.7/mysql-5.7.24-linux-glibc2.12-x86_64.tar.gz
+$ wget https://dev.mysql.com/get/Downloads/MySQL-5.7/mysql-5.7.24-linux-glibc2.12-x86_64.tar.gz
 
 ```
+
+#### 解压并安装
+``` shell
+$ tar  -zxvf  /tmp/mysql-5.7.24-linux-glibc2.12-x86_64.tar.gz -C /usr/local
+$ mv  /usr/local/mysql-5.7.24-linux-glibc2.12-x86_64  /usr/local/mysql
+$ cd  /usr/local/mysql
+$ /bin/mysqld   --initialize-insecure  --basedir=/usr/local/mysql --datadir=/data/mysql  --user=mysql 
+$ /support-files/mysql.server start
+$ /support-files/mysql.server status
+```
+
+#### 添加到系统服务和开机自启
+``` shell
+$ cp /usr/local/mysql/support-files/mysql.server  /etc/init.d/mysql
+$ chkconfig --add mysql
+$ chkconfig mysql on
+
+```
+#### 设置root密码，并开启任意IP登陆
+``` sql
+UPDATE mysql.user SET authentication_string=PASSWORD("123456") WHERE user='root' ;
+grant all privileges on *.* to 'root' @'%' identified by '123456';
+```
+
+#### mysql服务管理
+
+``` shell
+$ systemctl status mysql
+$ 
+```
+
+
+
 
