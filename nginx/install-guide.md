@@ -11,16 +11,25 @@
 
 安装环境
 
-- CentOS Linux release 7.5.1804  64位
+- GNU/Linux 64位
 - 安装路径 /usr/local/nginx/
 
 
 
-1. 安装依赖环境
+1. 安装依赖环境 
 
+redhat 和 centos 系
    ```shell
    $ yum -y install pcre openssl opssl-devel  # pcre支持url重写，openssl是https协议用到的库
    ```
+debian 和 Ubuntu 系
+
+    ```shell
+    $ sudo apt-get install libpcre3 libpcre3-dev
+    $ sudo apt-get install openssl libssl-dev libperl-dev
+    $ sudo apt-get install -y zlib1g zlib1g-dev
+
+    ```
 
 2. 下载源码到/tmp目录下， 并创建相关用户。
 
@@ -39,7 +48,11 @@
    $ make && make install 
    ```
 
-4. 注册成服务，添加本目录下的 [nginx_service.sh](./nginx-service.sh)到 /etc/init.d/nginx 文件中。
+4. 设置开机自启，添加本目录下的 [nginx_service.sh](./nginx-service.sh)到 /etc/init.d/nginx 文件中。
+
+```shell
+$ wget -O /etc/init.d/nginx https://raw.githubusercontent.com/fengzhao/fengzhao-notes/master/nginx/nginx-service.sh
+```
 
 5. 给可执行命令创建一个软连接到可执行目录下。
 
@@ -47,10 +60,10 @@
    $ ln -s /usr/local/nginx/sbin/nginx /usr/bin/nginx
    ```
 
-6. 添加执行权限，配置开机自启。
+6. 添加执行权限，配置成系统服务。
 
    ```shell
-   $ chomd a+x /etc/init.d/nginx
+   $ chmod a+x /etc/init.d/nginx
    $ chkconfig --add /etc/init.d/nginx
    $ chkconfig nginx on
    ```
