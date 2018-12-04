@@ -142,6 +142,15 @@ UPDATE mysql.user SET authentication_string=PASSWORD("123456") WHERE user='root'
 grant all privileges on *.* to 'root' @'%' identified by '123456';
 ```
 
+
+#### 设置 mysql 环境变量
+
+```shell
+$ vim /etc/profile
+```
+在最底下加上 export PATH=$PATH:/usr/local/mysql/bin 。
+
+
 #### mysql服务管理
 
 ``` shell
