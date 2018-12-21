@@ -74,6 +74,7 @@ $ chsh -s /bin/zsh  # 修改当前用户的 shell
 - set 输出所有变量，包括全局变量和局部变量
 - env 仅显示全局变量
 - echo $VIRABLES 打印VIRABLES变量值
+- cat /proc/$PID/environ  查看某个进程运行时的环境变量
 
 ### 自定义环境变量
 
