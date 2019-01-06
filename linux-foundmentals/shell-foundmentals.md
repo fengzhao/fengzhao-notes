@@ -1,12 +1,12 @@
 # SHELL脚本学习笔记
 
-Shell 是 Linux 下的命令交互程序，其实就是一个命令解释器。它用来接收用户输入的指令，传递给内核进行执行。所以它可以被理解为内核外面的一层壳，用户通过它来与内核交互。它虽然不是Unix/Linux系统内核的一部分，但它调用了系统核心的大部分功能来执行程序、建立文件并以并行的方式协调各个程序的运行。因此，对于用户来说，shell 是最重要的实用程序，深入了解和熟练掌握shell的特性极其使用方法，是用好Unix/Linux系统的关键。
+Shell 是 Linux 下的命令交互程序，其实就是一个命令解释器。它用来接收用户输入的指令，传递给内核进行执行。所以它可以被理解为内核外面的一层壳，用户通过它来与内核交互。它虽然不是 Unix/Linux 系统内核的一部分，但它调用了系统核心的大部分功能来执行程序、建立文件并以并行的方式协调各个程序的运行。因此，对于用户来说，shell 是最重要的实用程序，深入了解和熟练掌握 shell 的基本特性及其使用方法，是用好 Unix/Linux 系统的关键。
 
-可以说，shell使用的熟练程度反映了用户对Unix/Linux使用的熟练程度。
+可以说，shell使用的熟练程度反映了用户对 Unix/Linux 使用的熟练程度。
 
-## Linux 命令类型
+## 1、Linux 命令和 SHELL 基础
 
-Linux 命令分为两种类型，一类是 shell 内建命令。一类是应用程序命令。应用程序命令，一般都会有相应的二进制可执行文件，通常存在 /bin , /usr/sbin/ , /usr/bin 等目录中。shell 通过读取 $PATH 这个环境变量来查找应用程序执行路径。
+Linux 命令分为两种类型：一类是 shell 内建命令；一类是应用程序命令。应用程序命令，一般都会有相应的二进制可执行文件，通常存在 /bin , /usr/sbin/ , /usr/bin 等目录中。shell 通过读取 $PATH 这个环境变量来查找应用程序执行路径。
 
 通过 type 来查看命令是 shell 内建命令，还是二进制程序（如果是二进制可执行文件，还能打印出所在路径）。
 
@@ -28,22 +28,22 @@ find is /usr/bin/fi
 find: /usr/bin/find
 [root@fengzhao ~]# 
 ```
-### Shell有两种执行命令的方式：
+### 1.1、shell有两种执行命令的方式
 
 - 交互式（Interactive）：解释执行用户的命令，用户输入一条命令，Shell就解释执行一条。
 - 批处理（Batch）：用户事先写一个Shell脚本(Script)，其中有很多条命令，让Shell一次把这些命令执行完。
 
-### 几种常见的 Shell：
+### 1.2、几种常见的 Shell
 
  Linux 发行版自带的标准 Shell 都是 Bash shell，Linux 的默认命令行就是 Bash，我们的最多的也是这个。是 BourneAgain Shell 的缩写，内部命令一共有40个。一般日常使用 bash 基本上都够了，进阶可以试试 zsh。
 
- 另一个强大的 Shell 就是 zsh，它比 bash 更强大，但是也更难用，配置起来非常麻烦。所以有个 [on-my-zsh](https://github.com/robbyrussell/oh-my-zsh/)，它大大简化了 zsh 的配置，一般通过包管理器安装zsh，然后通过 git 安装 on-my-zsh：
+ 另一个强大的 Shell 就是 zsh，它比 bash 更强大，但是也更复杂，配置起来比较麻烦。所以有个 [on-my-zsh](https://github.com/robbyrussell/oh-my-zsh/)，它大大简化了 zsh 的配置，一般通过包管理器安装 zsh，然后通过 git 安装 on-my-zsh：
 ```shell
 $ git clone git://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh
 $ cp ~/.oh-my-zsh/templates/zshrc.zsh-template ~/.zshrc
 ```
 
-#### 查看操作系统的 Shell：
+### 1.3、查看操作系统的 Shell 
 
 ``` shell
 $ echo $SHELL  # 查看当前使用的 shell
@@ -52,36 +52,38 @@ $ bash   # 切换至 bash ，输入 zsh 切换至 zsh。
 $ chsh -s /bin/zsh  # 修改当前用户的 shell
 ```
 
-#### Shell 配置文件：
+### 1.4、Shell 配置文件
 
-- ~/.zshrc 和 ~/.bashrc：分别是当前用户的 bash 和 zsh 的配置文件，这个文件是用户级别的，当用户打开终端时，每一个shell进程生成时，执行的一组命令，包括设置别名，提示文本，颜色等设置。
+- ~/.zshrc 和 ~/.bashrc：分别是当前用户的 bash 和 zsh 的配置文件，这个文件是用户级别的，当用户登陆打开终端后每一个shell进程生成时，执行的一组命令，包括设置别名，提示文本，颜色等设置。
 
 - ~/.bash_history 和 ~/.zshhistory  记录用户运行的历史命令。
 
-## 变量
+## 2、变量
 
-变量是暂时存储数据的地方及标记，所存储的数据位于内存空间中，通过正确的调用内存中变量的名字可以取出其变量值。使用 $VIRABLES 来引用变量（输出变量），可以用 $c 和 $(c) 两种用法。
+变量是暂时存储数据的地方及标记，所存储的数据位于内存空间中，通过正确的调用内存中变量的名字可以取出其变量值，使用 $VARIABLES 或 ${VARIABLES} 来引用变量。
 
-变量的类型可以分为两类：环境变量（全局变量）和普通变量（局部变量）
+> 注意，$(COMMAND) 或 `COMMAND` 这种属于命令替换。不属于变量。
 
-环境变量，可以在创建它们的 shell 及其派生出来的任意子进程 shell 中使用，环境变量又分为用户自定义环境变量和 bash 内置环境变量。
+变量的类型可以分为两类：环境变量（全局变量）和普通变量（局部变量）。
 
-普通变量，只能在创建他们的 shell 函数内和 shell 脚本中使用。普通变量一般由开发者在开发脚本时创建。
+环境变量：可以在创建它们的 shell 及其派生出来的任意子进程 shell 中使用，环境变量又分为用户自定义环境变量和 bash 内置环境变量。
+
+普通变量：只能在创建他们的 shell 函数内和 shell 脚本中使用。普通变量一般由开发者在开发脚本时创建。
 
 
 查看变量的命令：
 
 - set 输出所有变量，包括全局变量和局部变量
 - env 仅显示全局变量
-- echo $VIRABLES 打印VIRABLES变量值
+- echo $VARIABLES 打印VARIABLES变量值
 - cat /proc/$PID/environ  查看某个进程运行时的环境变量
 
-### 自定义环境变量
+### 2.1、自定义环境变量
 
 自定义环境变量有如下三种方法：
 
 ```shell
-# 给变量赋值，并导出变量
+# 给变量赋值，并导出变量，注意等号之间不能有空格
 fengzhao@fengzhao-pc:~$ VIRABLES=value; export VIRABLES
 fengzhao@fengzhao-pc:~$ echo $VIRABLES
 value
@@ -91,38 +93,64 @@ fengzhao@fengzhao-pc:~$
 fengzhao@fengzhao-pc:~$ export VIRABLES2=value2
 fengzhao@fengzhao-pc:~$ echo $VIRABLES2
 value2
+fengzhao@fengzhao-pc:~$
 
 # 使用 declare 命令定义变量
 fengzhao@fengzhao-pc:~$ declare -x VIRABLES3=value3
 fengzhao@fengzhao-pc:~$ echo $VIRABLES3
 value3
+fengzhao@fengzhao-pc:~$
+
+# 把命令的结果赋值给某个变量，使用 VIRABLES=$(pwd) 和 VIRABLES=`pwd` 两种方式
+fengzhao@fengzhao-pc:~$ DIRPATH=$(pwd)
+fengzhao@fengzhao-pc:~$ echo $CURRENTPATH
+/home/fengzhao
+fengzhao@fengzhao-pc:~$
+fengzhao@fengzhao-pc:~$ BASEPATH=`basename /home/fengzhao`
+fengzhao@fengzhao-pc:~$ echo $BASEPATH
+fengzhao
+fengzhao@fengzhao-pc:~$
+
 ```
 
 根据规范，所有环境变量的名字都定义成大写。在命令行中定义的变量仅在当前 shell 会话有效，一旦退出会话，这些变量就会失效，这样的就是普通变量。如果需要永久保存，可以在 ~/.bash_profile 或 ~/.bashrc 中定义。每次用户登陆时，这些变量都将被初始化。或放到 /etc/pfofile 文件中定义，这是全局配置文件。
 
-### 变量定义技巧
+### 2.2、变量定义技巧
 
 前面的是介绍变量定义的命令，并不严谨。有几条基本准测：变量定义中，key=value 中的等号两边不能有任何空格。常见的错误之一就是等号两边有空格。
 
 定义变量时，有三种定义方式，即 key=value,key='value',key="value" 这三种形式。
 
 - 不加引号，value中有变量的会被解析后再输出。
-- 单引号，单引号里面是什么，输出变量就是什么，即使 value 内容中有命令（命令需要 ` 号反引起来）和变量时，也会原样输出。
-- 双引号，输出变量时引号中的变量和命令和经过解析后再输出。
-
-
-eg:不加引号定义变量，先解析 value 中的变量再输出。
-
-``` shell
-fengzhao@fengzhao-pc:~$ A=12345$PWD
-fengzhao@fengzhao-pc:~$ echo $A
-12345/home/fengzhao
+```shell
+fengzhao@fengzhao-pc:~$ DEMO1=1234$PWD
+fengzhao@fengzhao-pc:~$ echo $DEMO1
+1234/home/fengzhao
 fengzhao@fengzhao-pc:~$
 ```
 
-eg:单引号定义变量
+- 单引号，单引号里面是什么，输出变量就是什么，即使 value 内容中有命令和变量时，也会原样输出。
+``` shell
+fengzhao@fengzhao-pc:~$ DEMO2='1234$PWD'
+fengzhao@fengzhao-pc:~$ echo $DEMO2
+1234$PWD
+fengzhao@fengzhao-pc:~$
+```
+- 双引号，输出变量时引号中的变量和命令和经过解析后再输出。
+``` shell
+fengzhao@fengzhao-pc:~$ DEMO4="1234$(pwd)"
+fengzhao@fengzhao-pc:~$ echo $DEMO4
+1234/home/fengzhao
+fengzhao@fengzhao-pc:~$
 
-### 常用环境变量
+fengzhao@fengzhao-pc:~$ DEMO5="1234$DEMO4"
+fengzhao@fengzhao-pc:~$ echo $DEMO5
+12341234/home/fengzhao
+fengzhao@fengzhao-pc:~$
+
+```
+
+### 2.3、常用环境变量
 
 环境变量是操作系统中的软件运行时的一些参数，环境变量一般是由变量名和变量值组成的键值对来表示。应用程序通过读取变量名来获取变量值。通过和设置环境变量，可以调整软件运行时的一些参数。最著名的操作系统变量就是 PATH 了。在 windows 和 linux 都存在这个环境变量。它表示在命令行中执行命令时的查找路径。在 Linux 命令行中，可以通过 echo $VARIABLENAME 来查看变量值。
 
@@ -141,14 +169,20 @@ eg:单引号定义变量
 - $PS1　基本提示符，对于root用户是#，对于普通用户是$
 
 
-### shell 中特殊且重要的变量
+### 2.4、shell 中特殊且重要的变量
 
 在 shell 中存在一些特殊的变量。例如：$0，$1，$2，$3... $n，$#，$*，$@ 等。这些是特殊位置参数变量。要从命令行，函数或脚本传递参数时，就需要使用位置变量参数。例如，经常会有一些脚本，在执行该脚本的时候，会传一些参数来控制服务的运行方式，或者启动关闭等命令的参数。在脚本里面，就使用这些变量来取执行的时候传递的参数。
 
-- $0 获取当前执行的 shell 脚本文件名。如果执行时包含路径，那么就包含脚本路径。
-- $n 获取当前执行的 shell 脚本所有传递的第 n 个参数（参数以空格分开），如果 n>9 ，要用大括号引起来：${10}
-- $# 获取当前执行的 shell 脚本传递的参数总个数。
-- $* 获取当前执行的 shell 脚本传递的所有参数。
+| 变量值 | 含义                                                         |
+| ------ | ------------------------------------------------------------ |
+| $0     | 获取当前执行的 shell 脚本文件名。如果执行时包含路径，那么就包含脚本路径。 |
+| $n     | 获取当前执行的 shell 脚本所有传递的第 n 个参数（参数以空格分开），如果 n>9 ，要用大括号引起来：${10} |
+| $#     | 获取当前执行的 shell 脚本传递的参数总个数。                  |
+| $*     | 获取当前执行的 shell 脚本传递的所有参数。"$*" 表示将所有参数一起组成字符串。 |
+| $@     | y也是获取所有参数，"$*" 表示将所有参数视为一个一个的字符串。 |
+
+
+
 ``` shell
 # 第一行打印执行该脚本时传递的前 15 个参数
 # 第二行打印执行该脚本时传递的总参数个数
@@ -187,3 +221,154 @@ fengzhao@fengzhao-pc:~$ bash demo2.sh  arg1  arg2
 arg1 arg2
 fengzhao@fengzhao-pc:~$
 ```
+
+**生产常用代码段**
+
+生产中，在调一些脚本的时候，经常会对传参进行判断，并执行脚本中相应的函数。下面看一段 openresty 中的代码片段。这个脚本，在执行的时候，可以接各种参数，如果匹配到下面这些参数，直接执行相应的函数，
+
+``` shell
+ case "$1" in
+      start)
+          rh_status_q && exit 0
+          $1
+          ;;
+      stop)
+          rh_status_q || exit 0
+          $1
+          ;;
+      restart|configtest)
+          $1
+          ;;
+      reload)
+          rh_status_q || exit 7
+          $1
+          ;;
+      force-reload)
+         force_reload
+         ;;
+     status)
+         rh_status
+         ;;
+     condrestart|try-restart)
+         rh_status_q || exit 0
+         ;;
+     *)
+         echo $"Usage: $0 {start|stop|status|restart|condrestart|try-restart|reload|force-reload|configtest}"
+         exit 2
+ esac
+
+```
+
+
+
+### 2.5、SHELL 进程特殊状态变量
+
+Linux shell 中存在一类特殊的进程状态变量。可以在命令中使用，也可以在脚本中使用。
+
+| 变量 | 含义                                                         |
+| ---- | ------------------------------------------------------------ |
+| $?   | 获取上一个命令的执行状态返回值（0为成功，非0为失败），可以在脚本中自定义 |
+| $$   | 获取当前执行的 shell 脚本的进程号（PID）                     |
+| $!   | 获取上一个在后台工作的进程的进程号                           |
+| $_   | 获取在此之前执行的命令或脚本的最后一个参数                   |
+
+<font color=#FF0000 >**$? 变量实战**</font>
+
+在 Linux 命令行中，执行一个复杂的命令或者没有输出的命令时，可以通过 echo $? 来打印这个命令是否执行成功。这个返回值的常规用法如下：
+
+- 判断命令，脚本或函数等程序是否执行成功。
+- 若在脚本中调用 "exit 数字"，则会把这个数字返回给 $? 。
+- 若是在函数中，调用"return 数字"把这个数字返回给 $? 。
+
+```shell
+demo3.sh
+#! /bin/bash
+[ $# -ne 2 ] && {
+	echo "must two arguments"
+    exit 15
+}
+[root@fengzhao ~]# ./demo3.sh
+must two arguments
+[root@fengzhao ~]# echo $?
+15
+[root@fengzhao ~]#
+
+
+```
+
+
+
+
+### 2.6、SHELL 变量子串
+
+Linux shell 中还存在很多变量字串，提供很多控制和提取变量中的相关内容。
+
+
+
+| 变量                       | 含义                                         |
+| -------------------------- | -------------------------------------------- |
+| ${variable}                | 返回变量值                                   |
+| ${#variable}               | 返回变量值字符长度                           |
+| ${#variable:offset}        | 在变量中，从offset之后提取子串到结尾         |
+| ${#variable:offset:length} | 在变量中，从offset之后提取长度为length的子串 |
+| ${#variable#word}          |                                              |
+|                            |                                              |
+|                            |                                              |
+
+**示例一**：返回变量长度，使用变量子串或管道两种方式。
+
+```shell
+fengzhao@fengzhao-pc:~$ DEMO="this is a demo" 
+fengzhao@fengzhao-pc:~$ echo ${#DEMO}  
+14
+fengzhao@fengzhao-pc:~$ echo $DEMO | wc -L  # wc -L 打印最长行的长度
+14
+fengzhao@fengzhao-pc:~$
+
+```
+
+关于计算字符串的长度，看到一个简单的需求：
+
+> 请编写 shell 脚本输出下面语句中字符数小于6的单词。
+>
+> "Microsoft love Linux and OpenSource，welcome to GitHub"
+
+实现思路：将字符串存到数组，迭代取出每个单词，判断长度并输出。
+
+```shell
+count_words.sh
+#! /bin/bash
+array=($1)
+for ((i=0;i<${#array[*]};i++))
+do
+    if [ ${#array[$i]} -lt 6 ]
+        then
+            echo "${array[$i]}"
+    fi
+done
+
+fengzhao@fengzhao-pc:~$ ./count_words.sh  "Microsoft love Linux and OpenSource，welcome to GitHub"
+love
+Linux
+and
+to
+fengzhao@fengzhao-pc:~$
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
