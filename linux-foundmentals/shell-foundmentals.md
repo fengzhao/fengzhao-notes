@@ -272,7 +272,7 @@ Linux shell 中存在一类特殊的进程状态变量。可以在命令中使�
 | $!   | 获取上一个在后台工作的进程的进程号                           |
 | $_   | 获取在此之前执行的命令或脚本的最后一个参数                   |
 
-<font color=#FF0000 >**$? 变量实战**</font>
+**<font color=#FF0000 >$? 变量常用场景</font>**
 
 在 Linux 命令行中，执行一个复杂的命令或者没有输出的命令时，可以通过 echo $? 来打印这个命令是否执行成功。这个返回值的常规用法如下：
 
@@ -296,7 +296,63 @@ must two arguments
 
 ```
 
+<font color=#FF0000 >$$变量常用场景</font>
 
+$$ 变量表示当前 shell 进程号。有时在执行定时任务时频率较快，不知道上一个脚本是否执行完毕。但是业务要求同一时刻必须只有一个脚本在执行。
+
+考虑如下实现思路：
+
+> 把进程号重定向到文件中，在脚本头部，先检查该文件是否存在。如果存在，则杀掉进程，删除文件。
+
+```shell
+demo4.sh
+#! /bin/bash
+PIDPATH=/tmp/a.pid
+if [ -f "$PIDPATH" ]
+    then
+        kill `cat $PIDPATH` >/dev/null  2&>1
+        rm -rf /tmp/a.pid
+fi
+# something you want to do
+echo $$ >$PIDPATH
+sleep 300
+
+# 睡眠300秒为了演示效果，
+# 后台运行脚本，运行多次，每次检查，都只有一个进程。
+
+fengzhao@fengzhao-pc:~$ ./demo4.sh  &
+[2] 313
+fengzhao@fengzhao-pc:~$ ps -ef | grep demo4.sh | grep -v grep
+fengzhao   313   290  0 22:16 pts/0    00:00:00 /bin/bash ./demo4.sh
+[1]-  Terminated              ./demo4.sh
+fengzhao@fengzhao-pc:~$ ./demo4.sh  &
+[3] 320
+fengzhao@fengzhao-pc:~$ ps -ef | grep demo4.sh | grep -v grep
+fengzhao   320   290  0 22:17 pts/0    00:00:00 /bin/bash ./demo4.sh
+[2]-  Terminated              ./demo4.sh
+fengzhao@fengzhao-pc:~$ ./demo4.sh  &
+[4] 327
+fengzhao@fengzhao-pc:~$ ps -ef | grep demo4.sh | grep -v grep
+fengzhao   327   290  1 22:17 pts/0    00:00:00 /bin/bash ./demo4.sh
+[3]-  Terminated              ./demo4.sh
+fengzhao@fengzhao-pc:~$
+```
+
+**<font color=#FF0000 > $_ 变量 </font>** 
+
+$_ 变量表示上一个命令的最后一个参数。这个用的不多，了解即可。
+
+```shell
+# 重启ss，输出重启命令的最后一个参数。
+[root@fengzhao ~]# ssserver -c /etc/shadowsocks.json -d restart
+INFO: loading config from /etc/shadowsocks.json
+2019-01-07 22:25:38 INFO     loading libcrypto from libcrypto.so.10
+stopped
+started
+[root@fengzhao ~]# echo $_
+restart
+[root@fengzhao ~]#
+```
 
 
 ### 2.6、SHELL 变量子串
@@ -315,7 +371,10 @@ Linux shell 中还存在很多变量字串，提供很多控制和提取变量�
 |                            |                                              |
 |                            |                                              |
 
-**示例一**：返回变量长度，使用变量子串或管道两种方式。
+ **<font color=#FF0000 > ${#variable} 字符长度 </font>** 
+
+
+：返回变量长度，使用变量子串或管道两种方式。
 
 ```shell
 fengzhao@fengzhao-pc:~$ DEMO="this is a demo" 
@@ -353,8 +412,9 @@ Linux
 and
 to
 fengzhao@fengzhao-pc:~$
-
 ```
+
+
 
 
 

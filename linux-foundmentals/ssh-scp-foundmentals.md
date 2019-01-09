@@ -4,7 +4,8 @@
 
 SSH 是 Secure SHELL的缩写，顾名思义，这是一种建立在应用层基础上的安全协议。专为 Linux 远程登陆和其他服务提供的安全协议。
 
-OpenSSH 是一种 SSH 的开源实现。它是利用 OpenSSl 协议具体实现的开源软件，包括 ssh,ssh-copyid,ssh-keygen 等一系列组件，在 Linux 各大发行版基本上都已经预先安装好了。可以使用 ssh -V 命令来查看 OpenSSH 版本。
+OpenSSH 是一种 SSH 的开源实现。它是利用 OpenSSl 协议具体实现的开源软件，包括 ssh,ssh-copyid,ssh-keygen 等一系列命令，在 Linux 各大发行版基本上都已经预先安装好了。可以使用 ssh -V 命令来查看 OpenSSH 版本。
+
 
 ## OpenSSH 详解
 
@@ -68,8 +69,7 @@ AuthorizedKeysFile .ssh/authorized_keys #保存公钥的认证文件
 
 > 前提条件，已经可以用密码方式登陆远程主机。
 
-1. 在本地用 ssh-keygen 命令生成密钥对，它会提示你输入密钥保存路径，确认短语（相当于私钥的密码），-t rsa 指明加密算法，一般有 rsa 和 dsa 两种。关于加密算法
-
+1. 在本地用 ssh-keygen 命令生成密钥对，它会提示你输入密钥保存路径，确认短语（相当于私钥的密码，只要保证私钥不泄露，一般没太大必要再为私钥设密码），-t 指明加密算法（dsa,ecdsa,ed25519,rsa），-b 指明密钥长度(2048,4096)，-f 指明存储路径和文件名。
 ``` shell
 fengzhao@fengzhao-work:/$ ssh-keygen -t rsa 
 Generating public/private rsa key pair.
