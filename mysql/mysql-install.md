@@ -50,9 +50,10 @@ thread_cache_size=8 # 缓存的最大线程数。当客户端连接断开时，�
 
 输入 net start mysql 启动服务.
 
-登陆 mysql -u root -p
+登陆并设置密码
 
 ``` sql 
+mysql -u root -p
 use mysql;
 update user set authentication_string=PASSWORD("123456AWS!@#") where user="root";
 flush privileges;
@@ -65,9 +66,22 @@ quit;
 
 ### 2.1 二进制安装
 
-#### 环境：
+#### 环境
 - GNU/Linux-x86_64
 - gcc 运行时环境
+
+#### 安装规范
+
+
+
+| 配置项               | 路径 |      |
+| -------------------- | ---- | ---- |
+| 二进制文件           |      |      |
+| socket套接字文件     |      |      |
+| 错误日志（启动日志） |      |      |
+| 数据目录             |      |      |
+|                      |      |      |
+
 
 
 
@@ -89,22 +103,21 @@ port	= 3306
 socket	= /data/mysql/mysql.sock
 
 [mysql]
-prompt="\u@db \R:\m:\s [\d]> "
 no-auto-rehash
 
 [mysqld]
 #skip-grant-tables
-user	= mysql
-port	= 3306
-basedir	= /usr/local/mysql
-datadir	= /data/mysql/
-socket	= /data/mysql/mysql.sock
-pid-file = db.pid
+user = mysql
+port = 3306
+basedir = /usr/local/mysql
+log_error = 
+datadir = /data/mysql/
+socket = /data/mysql/mysql.sock
+pid-file = /data/mysql/db.pid
 character-set-server = utf8mb4
 skip_name_resolve = 1
 open_files_limit    = 65535
 back_log = 1024
-
 ```
 
 
@@ -123,9 +136,9 @@ $ wget https://dev.mysql.com/get/Downloads/MySQL-5.7/mysql-5.7.24-linux-glibc2.1
 $ tar  -zxvf  /tmp/mysql-5.7.24-linux-glibc2.12-x86_64.tar.gz -C /usr/local
 $ mv  /usr/local/mysql-5.7.24-linux-glibc2.12-x86_64  /usr/local/mysql
 $ cd  /usr/local/mysql
-$ /bin/mysqld   --initialize-insecure  --basedir=/usr/local/mysql --datadir=/data/mysql  --user=mysql 
-$ /support-files/mysql.server start
-$ /support-files/mysql.server status
+$ ./bin/mysqld   --initialize-insecure  --basedir=/usr/local/mysql --datadir=/data/mysql  --user=mysql  --pid-file=/data/mysql/mysql.pid
+$ ./support-files/mysql.server start
+$ ./support-files/mysql.server status
 ```
 
 #### 添加到系统服务和开机自启
@@ -140,6 +153,7 @@ $ chkconfig mysql on
 /usr/local//mysql/bin/mysql -u root -p 
 UPDATE mysql.user SET authentication_string=PASSWORD("123456") WHERE user='root' ;
 grant all privileges on *.* to 'root' @'%' identified by '123456';
+flush privileges;
 ```
 
 
@@ -148,14 +162,18 @@ grant all privileges on *.* to 'root' @'%' identified by '123456';
 ```shell
 $ vim /etc/profile
 ```
-在最底下加上 export PATH=$PATH:/usr/local/mysql/bin 。
-
+在最底下加上 export PATH=$PATH:/usr/local/mysql/bin 
+```shell
+source /etc/profile
+```
 
 #### mysql服务管理
 
 ``` shell
 $ systemctl status mysql
-$ 
+$ systemctl start mysql
+$ systemctl stop mysql
+$ systemctl restart mysql
 ```
 
 

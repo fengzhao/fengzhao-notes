@@ -28,17 +28,19 @@ Github 上的简介是 ”A delightful community-driven framework for managing y
 - 已安装 curl 或 wget 
 - 已安装 git
 
-- 通过 curl
+#### 通过 curl
 
 ``` shell 
 $ sh -c "$(curl -fsSL https://raw.githubusercontent.com/fengzhao/oh-my-zsh/master/tools/install.sh)"
 ```
 
-- 通过 wget
+#### 通过 wget
 
 ``` shell 
 $ sh -c "$(wget https://raw.githubusercontent.com/fengzhao/oh-my-zsh/master/tools/install.sh)"
 ```
+
+
 
 ## 配置 oh-my-zsh
 
@@ -48,5 +50,7 @@ $ sh -c "$(wget https://raw.githubusercontent.com/fengzhao/oh-my-zsh/master/tool
 
 一般我常用的主题包括 avit 和 agnoster 。这两个
 
-oh-my-zsh 中定义了很多插件，这些插件在 ~/.oh-my-zsh 的 plugins 目录中定义。可以在 zsh 配置文件中启用这些插件。，有些插件是一些命令别名，有些是一些脚本，有些是一些自动补全或语法高亮之类。熟练掌握并熟悉能有效提高自己的工作效率。友情提示：开启过多插件会明显影响 zsh 的打开效率。zsh 默认启用了 git 插件，这个插件定义了很多 git 命令的别名
+oh-my-zsh 中定义了很多插件，这些插件在 ~/.oh-my-zsh 的 plugins 目录中定义。可以在 zsh 配置文件中启用这些插件。，有些插件是一些命令别名，有些是一些脚本，有些是一些自动补全或语法高亮之类。熟练掌握并熟悉能有效提高自己的工作效率。友情提示：开启过多插件会明显影响 zsh 的打开效率。zsh 默认启用了 git 插件，这个插件定义了很多 git 命令的别名。
+
+
 
