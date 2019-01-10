@@ -52,5 +52,7 @@ $ sh -c "$(wget https://raw.githubusercontent.com/fengzhao/oh-my-zsh/master/tool
 
 oh-my-zsh 中定义了很多插件，这些插件在 ~/.oh-my-zsh 的 plugins 目录中定义。可以在 zsh 配置文件中启用这些插件。，有些插件是一些命令别名，有些是一些脚本，有些是一些自动补全或语法高亮之类。熟练掌握并熟悉能有效提高自己的工作效率。友情提示：开启过多插件会明显影响 zsh 的打开效率。zsh 默认启用了 git 插件，这个插件定义了很多 git 命令的别名。
 
+## tmux
 
+tmux是一款优秀的终端复用软件，它允许
 
