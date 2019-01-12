@@ -4,7 +4,50 @@
 
 SSH 是 Secure SHELL的缩写，顾名思义，这是一种建立在应用层基础上的安全协议。专为 Linux 远程登陆和其他服务提供的安全协议。
 
-OpenSSH 是一种 SSH 的开源实现。它是利用 OpenSSl 协议具体实现的开源软件，包括 ssh,ssh-copyid,ssh-keygen 等一系列命令，在 Linux 各大发行版基本上都已经预先安装好了。可以使用 ssh -V 命令来查看 OpenSSH 版本。
+OpenSSH 是一种 SSH 的开源实现。它是利用 OpenSSl 协议具体实现的开源软件，包括 ssh,ssh-copyid,ssh-keygen 等一系列套件，在 Linux 各大发行版基本上都已经预先安装好了。可以使用 ssh -V 命令来查看 OpenSSH 版本。
+
+## ssh命令组件
+
+| 命令                                           | 作用               |
+| ---------------------------------------------- | ------------------ |
+| [ssh](https://www.ssh.com/ssh/)                | 登陆远程主机       |
+| [ssh-keygen](https://www.ssh.com/ssh/keygen/)  | 生成密钥对         |
+| [ssh-copy-id](https://www.ssh.com/ssh/copy-id) | 传输公钥到远程主机 |
+| [scp](https://www.ssh.com/ssh/scp/)            | 远程传输文件       |
+
+### ssh 用法
+
+```shell
+# -p 端口 -i 密钥 
+# 这个命令会利用密钥认证，直接免密登陆
+$ ssh user@host -p port -i /path/private_key
+```
+
+### ssh-keygen 用法
+
+```shell
+# -t 算法 -b 密钥长度 -C 标识（一般设为邮箱） -f 密钥对名称  
+# 这个命令会生成 /path/keyname.pub（传到远程主机的公钥）和 /path/keyname（登陆远程主机的密钥） 
+$ ssh-keygen -t rsa -b 2048  -C "comment" -f /path/keyname  
+```
+
+### ssh-copy-id 用法
+
+```shell
+# 这个命令会交互式提示输入密码，把公钥传入user用户的家目录下。~/.ssh/authorized_keys
+$ ssh-copy-id -i /path/publice_key  user@host -p port
+```
+
+### scp 用法
+
+```shell
+
+# 把本地文件上传到远程主机
+$ scp /path/filename user@host:/path／
+# 从远程主机下载文件到本地
+$ scp user@host:/path/filename /var/www/local_dir
+```
+
 
 
 ## OpenSSH 详解
@@ -25,7 +68,7 @@ $ ssh root@192.168.1.102  -p 22
 
 ssh 的配置文件一般在 ~/.ssh 目录中，由于安全原因，该目录的权限一般要设置为 700 。
 
-- /etc/ssh/ssh_config  ssh全局配置文件，所有用户公用的配置文件。
+- /etc/ssh/ssh_config  ssh客户端全局配置文件，所有用户公用的配置文件。
 - ~/.ssh/config ssh客户端用户配置文件，针对某个用户的配置文件，如果没有，可以创建.
 - /etc/ssh/sshd_config  ssh服务端配置文件，用来配置认证方式，是否启用root登陆等。
 - ~/.ssh/id_rsa  ssh 客户端用户私钥，从客户端登陆服务端需要提供这个私钥证明合法登陆。为了安全，这个文件的权限必须是600。
@@ -112,7 +155,7 @@ $ scp /path/filename username@servername:/path/
 ### 从远程主机下载文件到本地
 ``` shell
 $ scp username@servername:/path/filename /var/www/local_dir（本地目录）
-``` 
+```
 
 scp -r 可以递归上传或者下载，用于对于目录的传输。
 

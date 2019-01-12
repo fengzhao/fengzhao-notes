@@ -74,13 +74,14 @@ quit;
 
 
 
-| 配置项               | 路径 |      |
-| -------------------- | ---- | ---- |
-| 二进制文件           |      |      |
-| socket套接字文件     |      |      |
-| 错误日志（启动日志） |      |      |
-| 数据目录             |      |      |
-|                      |      |      |
+| 配置项               | 值或路径                    |      |
+| -------------------- | --------------------------- | ---- |
+| 二进制文件           | /usr/local/mysql            |      |
+| socket套接字文件     | /data/mysql/mysql.sock      |      |
+| 错误日志（启动日志） | /data/mysql/error.log       |      |
+| 进程文件             | /data/mysql/mysql.pid       |      |
+| 数据目录             | /data/mysql/                |      |
+| 字符集和排序规则     | utf8mb4和utf8mb4_unicode_ci |      |
 
 
 
@@ -101,20 +102,23 @@ $ mkdir -p /data/mysql
 [client]
 port	= 3306
 socket	= /data/mysql/mysql.sock
+default-character-set　=　utf8mb4
 
 [mysql]
 no-auto-rehash
+default-character-set = utf8mb4
 
 [mysqld]
 #skip-grant-tables
 user = mysql
 port = 3306
 basedir = /usr/local/mysql
-log_error = 
+log_error = /data/mysql/
 datadir = /data/mysql/
 socket = /data/mysql/mysql.sock
 pid-file = /data/mysql/db.pid
 character-set-server = utf8mb4
+collation-server = utf8mb4_unicode_ci
 skip_name_resolve = 1
 open_files_limit    = 65535
 back_log = 1024
