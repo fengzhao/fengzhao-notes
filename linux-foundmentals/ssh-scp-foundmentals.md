@@ -6,6 +6,8 @@ SSH 是 Secure SHELL的缩写，顾名思义，这是一种建立在应用层基
 
 OpenSSH 是一种 SSH 的开源实现。它是利用 OpenSSl 协议具体实现的开源软件，包括 ssh,ssh-copyid,ssh-keygen 等一系列套件，在 Linux 各大发行版基本上都已经预先安装好了。可以使用 ssh -V 命令来查看 OpenSSH 版本。
 
+本文只记录 ssh 基本组件的用法，关于 ssh-agent 和 ssh-add 等命令，这里没有记录。
+
 ## ssh命令组件
 
 | 命令                                           | 作用               |
