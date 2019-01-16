@@ -175,7 +175,7 @@ scp -i 指定私钥文件。（如果公钥已经传到远程主机，并且开�
 
 第一个问题，可以在本地 ssh 客户端配置文件（~/.ssh/config）中配置 StrictHostKeyChecking=no 或在 ssh 命令中使用 -o StrictHostKeyChecking=no 来关闭公钥提示。
 
-第二个问题，考虑用第三方工具 sshpass 来解决，这个工具支持在 ssh 命令行直接使用密码，而不需要弹出 prompt 再手动输入密码。
+第二个问题，考虑用第三方工具 sshpass 来解决，这个工具支持在 ssh 命令行直接使用密码，而不需要弹出 prompt 再手动输入密码。直接用 yum 或者 apt 包管理器安装 sshpass 。
 
 > 这个配置修改和安装软件，都是在本地进行，而不需要在远程进行。
 
@@ -184,7 +184,7 @@ scp -i 指定私钥文件。（如果公钥已经传到远程主机，并且开�
 $ sshpass -p 'YOUR_PASSWORD' ssh-copy-id -o StrictHostKeyChecking=no root@192.168.1.102
 ```
 实现自动传公钥之后，考虑多台主机的一次性上传，如果多台主机的端口密码均相同，可以把主机 ip 或域名 存放到文件中。循环遍历主机并上传公钥。
-```
+```shell
 for host in $(cat remote-hosts)
     do
     sshpass -p 'YOUR_PASSWORD' ssh-copy-id -i /path/id_rsa.pub -o StrictHostKeyChecking=no root@${host} 
@@ -202,7 +202,7 @@ done
 
 因为ssh-copy-id使用非默认端口时，需要加双引号，没有找到地的办法，先将整个命令放至一个临时文件。再执行该临时文件，执行之后，再删除。
 
-```
+```shell
 for host in $(cat remote-hosts)
 do
    ip=$(echo ${host} | cut -f1 -d ":")
@@ -217,23 +217,35 @@ rm -f tmp.sh
 
 
 
+## ssh 和 scp 使用代理
 
 
 
+连接国外 VPS 时，因为某些原因，ssh 连上了很卡，而且经常失去连接，因此需要让 ssh 走代理加速。
 
+ssh 使用 socks5、http_connect 代理：
 
+```shell
+# 通过 socks5 代理
+$ ssh -oProxyCommand="nc -X5 -x127.0.0.1:1080 %h %p" USER@SSH_SERVER
+# 通过 http_connect 代理
+$ ssh -oProxyCommand="nc -Xconnect -x127.0.0.1:1080 %h %p" USER@SSH_SERVER
+```
 
+scp/sftp 使用 socks5、http_connect 代理：
 
+```shell
+$ scp -Cpr -oProxyCommand="nc -X5 -x127.0.0.1:1080 %h %p" files USER@SSH_SERVER:/
+$ scp -Cpr -oProxyCommand="nc -Xconnect -x127.0.0.1:1080 %h %p" files USER@SSH_SERVER:/
+$ sftp -oProxyCommand="nc -X5 -x127.0.0.1:1080 %h %p" USER@SSH_SERVER
+$ sftp -oProxyCommand="nc -Xconnect -x127.0.0.1:1080 %h %p" USER@SSH_SERVER
+```
 
+如果你使用的是 XShell，也可以设置代理：
 
-
-
-
-
-
-
-
-
+```shell
+属性` -> `连接` -> `代理` -> `添加、选择代理服务器` -> `重新连接ssh
+```
 
 
 
