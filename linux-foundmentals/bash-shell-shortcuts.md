@@ -8,7 +8,7 @@
 * `ctrl+xx`: 行首到当前光标替换
 
 ## 编辑命令
-* `alt+.`: 粘帖最后一次命令最后的参数（通常用于`mkdir long-long-dir`后, `cd`配合着`alt+.`）
+* `alt+.`: 粘帖上一次命令最后的参数（通常用于`mkdir long-long-dir`后, `cd`配合着`alt+.`）
 * `alt+d`: 删除当前光标到临近右边单词开始(delete)
 * `ctrl+w`: 删除当前光标到临近左边单词结束(word)
 * `ctrl+h`: 删除光标前一个字符（相当于backspace）

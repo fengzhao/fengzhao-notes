@@ -62,11 +62,12 @@ C:\Windows\system32>DISM /online /Get-CurrentEdition
 
 操作成功完成。
 
-C:\Windows\system32>
+C:\Windows\system32>DISM /online /Set-Edition:<edition ID> /ProductKey:XXXXX-XXXXX-XXXXX-XXXXX-XXXXX /AcceptEula
 
 ```
 
-DISM /online /Set-Edition:<edition ID> /ProductKey:XXXXX-XXXXX-XXXXX-XXXXX-XXXXX /AcceptEula
+`DISM /online /Get-CurrentEdition` 获取当前版本
+`>DISM /online /Set-Edition` 设置版本 
 
 <Edition ID>为当前可以转换的版本，ProductKey为产品KEY。
 
