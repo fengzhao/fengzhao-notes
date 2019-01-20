@@ -15,6 +15,8 @@
 # 显示系统信息
 # 设置dns
 
+set -e
+
 Green_font="\033[32m"
 Red_font="\033[31m" 
 Font_suffix="\033[0m"
