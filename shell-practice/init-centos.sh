@@ -14,11 +14,12 @@
 # ssh 端口 只允许特定ip
 # 显示系统信息
 # 设置dns
+#set -e 
 
-set -e 
 
 Green_font="\033[32m"
-Red_font="\033[31m" 
+Red_font="\033[31m"
+Yellow_font="\033[33m" 
 Font_suffix="\033[0m"
 
 
@@ -26,7 +27,7 @@ add_user()
 {
     echo -e  "${Green_font} Starting add user ${Font_suffix}"
     read -p "Username:" username
-    i=`cat /etc/passwd | cut -f1 -d':' | grep -w -c "$username" `
+    i=`cat /etc/passwd | cut -f1 -d':' | grep -w -c "$username"`
     if [ $i -le 0 ]; then
         read -p "Password:" password
         useradd $username
@@ -43,9 +44,9 @@ add_user()
 install_software()
 {
     echo -e  "${Green_font} starting install software ... ${Font_suffix}"
-    yum install epel-release -y
+    yum -y install epel-release -y
     yum update -y
-    yum -y install git wget tmux  nmap vim htop iftop iotop gcc gcc-c++ net-tools unzip nfs-utils psmisc zip rsync  
+    yum -y install git wget  nmap vim htop iftop iotop glances gcc gcc-c++ net-tools unzip nfs-utils psmisc zip rsync  
     echo -e  "${Green_font} software installed !!! ${Font_suffix}"
 }
 
@@ -153,30 +154,31 @@ install_ohmyzsh()
 
 print_systeminfo()
 {
-    echo "**********************************"
-    echo "Powered by fengzhao"
-    echo "Email: fengzhao1124@gmail.com"
-    echo "Hostname:" `hostname`
+    echo "****************************************************************************************"
+    echo  -e "${Yellow_font} Powered by fengzhao${Font_suffix}"
+    echo  -e "${Yellow_font} Email: fengzhao1124@gmail.com${Font_suffix}"
+    echo  -e "${Yellow_font} Hostname: `hostname`${Font_suffix}"
     # virtualization
     cat /proc/cpuinfo |grep vmx >> /dev/null
     if [ $? == 0 ]
     then
-        echo "Supporting virtualization"
+        echo -e "${Green_font}Supporting virtualization${Font_suffix}"
     else
-        echo "Virtualization is not supported"
+        echo -e "${Red_font}Virtualization is not supported${Font_suffix}"
     fi
-    echo "Cpu model:" `cat /proc/cpuinfo |grep "model name" | awk '{ print $4" "$5""$6" "$7 ; exit }'`
-    echo "Memory:" `free -m |grep Mem | awk '{ print $2 }'` "M"
-    echo "Swap: " `free -m |grep Swap | awk '{ print $2 }'` "M"
-    echo "Kernel version: " `cat /etc/redhat-release`
-    echo "**********************************"
+    echo "Cpu model:" `cat /proc/cpuinfo |grep "model name" | awk '{$1="";$2="";$3="";print $0}'`
+    echo "Memory:" `free -m | grep Mem | awk '{ print $2 }'` "M"
+    echo "Swap: " `free -m | grep Swap | awk '{ print $2 }'` "M"
+    echo "System version: " `cat /etc/redhat-release`
+    echo "Kernel version: " `uname -r`
+    echo "*****************************************************************************************"
 }
 
 help()
 {
     echo "1) install_software    5) set_hostname	     9) install_ohmyzsh"
-    echo "2) install_python      6) close_selinux	    10) add_user"
-    echo "3) set_static_ip       7) install_docker    11) exit:"
+    echo "2) install_python3.6   6) close_selinux	    10) add_user"
+    echo "3) set_static_ip       7) install_docker      11) exit:"
     echo "4) close_firewalld     8) change_swap"
 }
 
