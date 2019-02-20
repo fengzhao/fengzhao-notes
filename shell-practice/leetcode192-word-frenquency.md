@@ -33,7 +33,18 @@ day 1
 方案一、
 
 ```shell
-awk -F' ' '{for(i=1;i<=NF;i=i+1){print $i}}' words.txt |sort|uniq -c|sort -nr|awk -F' ' '{printf("%s %s\n",$2,$1)}'
+fengzhao@fengzhao-pc:~$
+fengzhao@fengzhao-pc:~$ cat file.txt
+the day is sunny the the
+the sunny is is
+fengzhao@fengzhao-pc:~$
+fengzhao@fengzhao-pc:~$ awk -F' ' '{for(i=1;i<=NF;i=i+1){print $i}}' file.txt |sort|uniq -c|sort -nr|awk -F' ' '{printf("%s %s\n",$2,$1)}'
+the 4
+is 3
+sunny 2
+day 1
+fengzhao@fengzhao-pc:~$
+
 ```
 
 思路：
@@ -51,7 +62,7 @@ awk -F' ' '{for(i=1;i<=NF;i=i+1){print $i}}' words.txt |sort|uniq -c|sort -nr|aw
 方案二、
 
 ```shell
-grep -e '[a-z]*' -o words.txt  | sort | uniq -c | sort -nrk 1 | awk '{print $2" "$1;}'
+grep -e '[a-z]*' -o file.txt  | sort | uniq -c | sort -nrk 1 | awk '{print $2" "$1;}'
 ```
 
 思路：
