@@ -56,3 +56,4 @@
 
 
 https://linuxtoy.org/archives/bash-shortcuts.html
+https://harttle.land/2015/11/09/bash-shortcuts.html
