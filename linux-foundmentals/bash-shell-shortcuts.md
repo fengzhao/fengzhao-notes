@@ -1,10 +1,12 @@
 ## 移动光标
-* `ctrl+b`: 前移一个字符(backward)
-* `ctrl+f`: 后移一个字符(forward)
-* `alt+b`: 前移一个单词
-* `alt+f`: 后移一个单词
+
 * `ctrl+a`: 移到行首（a是首字母） 
 * `ctrl+e`: 移到行尾（end）
+* `ctrl+b`: 前移一个字符(backward)(左移)
+* `ctrl+f`: 后移一个字符(forward)(右移)
+* `alt+b`:  前移一个单词
+* `alt+f`:  后移一个单词
+
 * `ctrl+xx`: 行首到当前光标替换
 
 ## 编辑命令
@@ -19,14 +21,21 @@
 * `ctrl+shift+c`: 复制（相当于鼠标左键拖拽）
 * `ctrl+shift+v`: 粘贴（相当于鼠标中键）
 
-## 其它
-* `ctrl+n`: 下一条命令
-* `ctrl+p`: 上一条命令
+## 重新执行命令
+
+* `ctrl+r`: 向上搜索历史命令
+* `ctrl+g`: 从历史搜索模式退出
+* `ctrl+n或下箭头`: 下一条命令
+* `ctrl+p或上箭头`: 上一条命令
 * `alt+n`: 下一条命令（例如输入`ls`, 然后按'alt+n', 就会找到历史记录下的`ls`命令）
 * `alt+p`: 上一条命令（跟`alt+n`相似）
 * `shift+PageUp`: 向上翻页
 * `shift+PageDown`: 向下翻页
 * `ctrl+r`: 进入历史查找命令记录， 输入关键字。 多次按返回下一个匹配项
+
+
+
+
 
 ## zsh
 
@@ -44,3 +53,6 @@
 
 * `dw`: 从当前光标开始删除到下一个单词头
 * `de`: 从当前光标开始删除到单词尾
+
+
+https://linuxtoy.org/archives/bash-shortcuts.html
