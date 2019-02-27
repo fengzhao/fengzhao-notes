@@ -1,10 +1,7 @@
 # Windows安装指南
 
 
-
-## 1、windows操作系统镜像下载
-
-微软官网下载，官网始终是最新版的操作系统，官网下载地址：
+> 系统镜像
 
 win10 
 
@@ -15,28 +12,7 @@ win-server
 https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2016
 
 
-刻录工具下载
-
-https://rufus.ie/en_IE.html
-
-https://unetbootin.github.io/
-
-
-
-
- 1、用谷歌浏览器打开上述地址，打开 F12 调试工具，在最右边的三个点处选择 more tools ，选择 network conditions ，修改 UA 为 chrome——mac。F5 刷新浏览器，下载最新镜像。
-
-2、用 rufus 刻录工具把 windows 镜像刻录到 U 盘 （16GB以上，需要格式化）
-
-3、开机进 bios 选择 U 盘启动开始安装。
-
-4、激活，一般找个 kms server 就可以用 kms 方式激活了(使用管理员身份运行 cmd )。
-
-        slmgr.vbs -ipk W269N-WFGWX-YVC9B-4J6C9-T83GX
-        slmgr.vbs -skms kms.serveryoufind
-        slmgr.vbs -ato
-
-5、密钥相关
+> 密钥和激活相关
 
 https://docs.microsoft.com/zh-cn/windows-server/get-started/kmsclientkeys
 
@@ -44,6 +20,48 @@ https://docs.microsoft.com/zh-cn/DeployOffice/vlactivation/gvlks
 
 https://docs.microsoft.com/zh-cn/previous-versions/office/
 
+https://hub.docker.com/r/luodaoyi/kms-server
+
+
+> 刻录工具
+
+rufus
+
+https://rufus.ie/en_IE.html
+
+UNetbootin
+
+https://unetbootin.github.io/
+
+> 系统优化精简工具
+
+ntlite
+
+https://www.bilibili.com/video/av43379038
+
+Dism++
+
+https://www.chuyu.me/zh-Hans/index.html
+
+
+
+### 安装过程
+
+1、用谷歌浏览器打开上述地址，打开 F12 调试工具，在最右边的三个点处选择 more tools ，选择 network conditions ，修改 UA 为 chrome——mac。F5 刷新浏览器，下载最新镜像。
+
+2、系统镜像优化（可选）
+
+win10 原版镜像自带了很多冗余的一大堆应用，包括一些UWP应用，windows defender，人脉，skype等等，可以对系统镜像进行一些自定义的优化。
+
+3、用 rufus 刻录工具把 windows 镜像刻录到 U 盘 （16GB以上，需要格式化）
+
+4、开机进 bios 选择 U 盘启动开始安装。
+
+5、激活，一般找个 kms server 就可以用 kms 方式激活了(使用管理员身份运行 cmd )。
+
+        slmgr.vbs -ipk W269N-WFGWX-YVC9B-4J6C9-T83GX
+        slmgr.vbs -skms kms.serveryoufind
+        slmgr.vbs -ato
 
 
 6、win server 评估版转正式版。（使用管理员身份运行 cmd )
