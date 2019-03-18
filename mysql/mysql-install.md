@@ -84,7 +84,7 @@ $ mkdir -p /data/mysql
 [client]
 port = 3306
 socket = /data/mysql/mysql.sock
-default-character-set　=　utf8mb4
+#default-character-set　=　utf8mb4
 
 [mysql]
 no-auto-rehash
@@ -135,7 +135,7 @@ $ chkconfig mysql on
 #### 设置root密码，并开启任意IP登陆
 
 ``` sql
-/usr/local//mysql/bin/mysql -u root -p  
+/usr/local/mysql/bin/mysql -u root -p  
 UPDATE mysql.user SET authentication_string=PASSWORD("123456") WHERE user='root' ;
 grant all privileges on *.* to 'root' @'%' identified by '123456';
 flush privileges;
