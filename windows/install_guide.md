@@ -126,7 +126,13 @@ sh -c "$(curl -fsSL https://raw.githubusercontent.com/fengzhao/fengzhao-notes/ma
 
 
 
+## 3、Windows 10 家庭版升级到专业版
 
+```
+VK7JG-NPHTM-C97JM-9MPGT-3V66T
+4N7JM-CV98F-WY9XX-9D8CF-369TT 
+FMPND-XFTD4-67FJC-HDR8C-3YH26
+```
 
 
 
