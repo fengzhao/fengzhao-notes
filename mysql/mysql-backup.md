@@ -23,13 +23,13 @@
 
 ### 2、备份内容和备份工具
 
-需要备份的内容：文件、二进制日志、事务日志、配置文件、操作系统上和MySQL相关的配置（如sudo，定时任务）。
+需要备份的内容：文件、二进制日志、事务日志、配置文件、操作系统上和 MySQL 相关的配置（如 sudo，定时任务）。
 
 
-备份工具：
+常用备份工具：
 
-mysqldump：mysql自带备份工具。要求mysql服务在线。MyISAM(温备)，InnoDB（热备）
-XtraBackup:Percona开源组件。MyISAM（温备），InnoDB（热备），速度较快。
+- mysqldump：mysql自带备份工具。要求 MySQL 服务在线。MyISAM(温备)，InnoDB（热备）。
+- XtraBackup:Percona开源组件。MyISAM（温备），InnoDB（热备），速度较快。
 
 mysqldump 可以从表中逐行的取出数据，也可以在导出之前从表中取出全部数据缓存到内存中，对于大表缓存到内存可能会有问题，对于逐行备份，使用 --quick 选项，这是默认的。使用 --
 skip-quick 允许内存缓存。
