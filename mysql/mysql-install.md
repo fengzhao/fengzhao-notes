@@ -59,21 +59,22 @@ quit;
 
 #### 安装规范
 
-| 配置项               | 值或路径                    |      |
-| -------------------- | --------------------------- | ---- |
-| 二进制文件           | /usr/local/mysql            |      |
-| socket套接字文件     | /data/mysql/mysql.sock      |      |
-| 错误日志（启动日志） | /data/mysql/error.log       |      |
-| 进程文件             | /data/mysql/mysql.pid       |      |
-| 数据目录             | /data/mysql/                |      |
-| 字符集和排序规则     | utf8mb4和utf8mb4_unicode_ci |      |
+| 配置项               | 值或路径                    |      
+| -------------------- | --------------------------- | 
+| base目录           | /usr/local/mysql            |    
+| socket套接字文件     | /data/mysql/mysql.sock      |     
+| 错误日志（启动日志） | /data/mysql/error.log       |     
+| 进程文件             | /data/mysql/mysql.pid       |      
+| 数据目录             | /data/mysql/                |     
+| 字符集和排序规则     | utf8mb4和utf8mb4_unicode_ci |     
 
 #### 用户和数据目录创建
 
 ```shell 
 $ groupadd mysql
 $ useradd -r -g mysql -s /bin/false mysql
-$ mkdir -p /data/mysql
+$ mkdir -p /data/mysql 
+$ chown -R mysql:mysql /data/mysql
 ```
 
 #### 创建 /etc/my.cnf文件
@@ -123,6 +124,12 @@ $ ./bin/mysqld   --initialize-insecure  --basedir=/usr/local/mysql --datadir=/da
 $ ./support-files/mysql.server start
 $ ./support-files/mysql.server status
 ```
+
+> 5.6与5.7在初始化的时候有一些区别，在 5.7.6 以前都用 mysql_install_db 来初始化数据库，在这之后的版本，由于 mysqld 程序已经集成了初始化数据库功能， mysql_install_db  这个功能在未来的版本中可能会被去掉。
+>
+> 
+
+
 
 #### 添加到系统服务和开机自启
 
