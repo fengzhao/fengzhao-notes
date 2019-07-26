@@ -1,8 +1,12 @@
+---
+typora-root-url: ..
+---
+
 # ssh 和 scp 基础
 
 ## OpenSSH 概览
 
-SSH 是 Secure SHELL的缩写，顾名思义，这是一种建立在应用层基础上的安全协议。专为 Linux 远程登陆和其他服务提供的安全协议。
+SSH 是 Secure SHELL 的缩写，顾名思义，这是一种建立在应用层基础上的安全协议，是一种加密的[网络传输协议](https://zh.wikipedia.org/wiki/%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%8D%8F%E8%AE%AE)，可在不安全的网络中为网络服务提供安全的传输环境，专为 Linux 远程登陆和其他服务提供的安全协议。人们通常利用SSH来远程执行命令。
 
 OpenSSH 是一种 SSH 的开源实现。它是利用 OpenSSl 协议具体实现的开源软件，包括 ssh,ssh-copyid,ssh-keygen 等一系列套件，在 Linux 各大发行版基本上都已经预先安装好了。可以使用 ssh -V 命令来查看 OpenSSH 版本。
 
@@ -21,9 +25,39 @@ OpenSSH 是一种 SSH 的开源实现。它是利用 OpenSSl 协议具体实现�
 
 ```shell
 # -p 端口 -i 密钥 
-# 这个命令会利用密钥认证，直接免密登陆
+# 这个命令会利用密钥认证，直接免密登陆，如果没有用密钥，那么会交互式弹出密码输入
 $ ssh user@host -p port -i /path/private_key
 ```
+
+#### 在远程终端执行命令
+
+远程执行命令，ssh 可以直接在远程的目标主机上执行命令，而不用登陆上去执行，就好像在本地执行一样。
+
+例如下面这条命令，命令就直接在远程终端执行了，也直接返回到本地了。
+
+```shell
+root@fengzhao-work:~# ssh db-master-139 "df -h"
+Filesystem               Size  Used Avail Use% Mounted on
+/dev/mapper/centos-root  793G   13G  780G   2% /
+devtmpfs                  47G     0   47G   0% /dev
+tmpfs                     47G     0   47G   0% /dev/shm
+tmpfs                     47G  3.5G   44G   8% /run
+tmpfs                     47G     0   47G   0% /sys/fs/cgroup
+/dev/sda2                494M  157M  338M  32% /boot
+/dev/sda1                200M   12M  189M   6% /boot/efi
+/dev/sdb1                 11T  1.4G   11T   1% /data
+/dev/mapper/centos-home   50G   38M   50G   1% /home
+/dev/sdc1                7.3T  4.5T  2.9T  62% /backup
+tmpfs                    9.4G   12K  9.4G   1% /run/user/42
+tmpfs                    9.4G     0  9.4G   0% /run/user/0
+/dev/sde1                7.3T   33M  7.3T   1% /DBbackup
+root@fengzhao-work:~#
+
+```
+
+
+
+
 
 ### ssh-keygen 用法
 
@@ -75,7 +109,7 @@ ssh 的配置文件一般在 ~/.ssh 目录中，由于安全原因，该目录�
 - /etc/ssh/sshd_config  ssh服务端配置文件，用来配置认证方式，是否启用root登陆等。
 - ~/.ssh/id_rsa  ssh 客户端用户私钥，从客户端登陆服务端需要提供这个私钥证明合法登陆。为了安全，这个文件的权限必须是600。
 - ~/.ssh/authorized_keys  ssh服务端公钥，公钥与私钥是一对密钥对。
-- ~/.ssh/known_hosts  每个你访问过计算机的公钥(public key)都记录在~/.ssh/known_hosts。当下次访问相同计算机时，OpenSSH会核对公钥。如果公钥不同，OpenSSH会发出警告。
+- ~/.ssh/known_hosts  每个你访问过计算机的公钥(public key)都记录在~/.ssh/known_hosts。当下次访问相同计算机时，OpenSSH 会核对公钥。如果公钥不同，OpenSSH 会发出警告。
 
 关于 ssh 的公钥认证详细原理，可以参考阮一峰的博客。
 
@@ -141,7 +175,147 @@ fengzhao@fengzhao-work:~$
 
 ```
 
-3. 在远程主机ssh配置文件中开启允许密钥认证，确认可以用密钥登陆后再关闭密码登陆。
+3. 在远程主机 ssh 配置文件中开启允许密钥认证，确认可以用密钥登陆后再关闭密码登陆。
+
+
+
+### SSH端口转发
+
+SS H端口转发也被称作 SSH 隧道([SSH Tunnel](http://blog.trackets.com/2014/05/17/ssh-tunnel-local-and-remote-port-forwarding-explained-with-examples.html))，因为它们都是通过 SSH 登陆之后，在 **SSH客户端**与 **SSH服务端 **之间建立了一个隧道，从而进行通信。SSH隧道是非常安全的，因为SSH是通过加密传输数据的。
+
+SSH有三种端口转发模式
+
+- **本地端口转发(Local Port Forwarding)**
+
+  应用场景：
+
+- **远程端口转发(Remote Port Forwarding)**
+
+- **动态端口转发(Dynamic Port Forwarding)**
+
+#### 本地端口转发
+
+
+
+> 应用场景：远程云主机B1运行了一个服务，端口为3000，但是远程主机的3000端口没办法对外开放，只有SSH的 22 端口可以对外开放，这个时候可以在本地的一台服务器 A2 中开启**本地端口转发**功能，使得访问本地 A2 服务器的请求被转发到远程云主机B1上，就好像直接访问B1一样。
+
+所谓本地端口转发：是针对进行 SSH 操作的主机来说的，如下面的例子：端口转发命令是在 192.168.0.2 上执行的，所以 192.168.0.1 就叫本地，**本地端口转发**就是将发送到**本地主机端口**(192.168.0.2:8000)的请求，转到到**远程主机端口**(192.168.0.1:3000)。仿佛是通过 ssh 建立一个中间隧道一样。
+
+![SSH本地端口转发](/resources/SSH本地端口转发.jpg)
+
+- 192.168.0.1——类比为远程的公网服务器，运行了 node 占用3000端口，仅对外开放 SSH 的 22 端口。
+- 192.168.0.2——类比为本地的端口转发服务器，将访问 192.168.0.2:8000 的请求转发到 192.168.168.1
+- 192.168.0.3——类比为本地一个客户端，需要访问 192.168.0.1 上的 node 服务
+
+
+
+在 192.168.0.1 上部署 node 项目并启动：
+
+```shell
+root@fengzhao-linux-server:/tmp# cat demo.js
+var http = require('http');
+
+var server = http.createServer(function(request, response)
+{
+    response.writeHead(200,
+    {
+        "Content-Type": "text/plain"
+    });
+    response.end("Hello fengzhao\n");
+});
+
+server.listen(3000);
+root@fengzhao-linux-server:/tmp# forever start demo.js
+warn:    --minUptime not set. Defaulting to: 1000ms
+warn:    --spinSleepTime not set. Your script will exit if it does not stay up for at least 1000ms
+info:    Forever processing file: demo.js
+root@fengzhao-linux-server:/tmp# curl -i http://localhost:3000
+HTTP/1.1 200 OK
+Content-Type: text/plain
+Date: Fri, 26 Jul 2019 06:41:54 GMT
+Connection: keep-alive
+Transfer-Encoding: chunked
+
+Hello fengzhao
+root@fengzhao-linux-server:/tmp#
+
+```
+
+在 192.168.0.2 上访问这个项目：
+
+```shell
+root@fengzhao-work:~# curl -i http://192.168.0.1:8000
+HTTP/1.1 200 OK
+Content-Type: text/plain
+Date: Fri, 26 Jul 2019 06:42:23 GMT
+Connection: keep-alive
+Transfer-Encoding: chunked
+
+Hello fengzhao
+root@fengzhao-work:~#
+```
+
+在 192.168.0.2 上执行如下命令进行端口转发：
+
+```shell
+ ssh -NTfL  192.168.0.2:8000:192.168.0.1:3000 root@192.168.0.1
+```
+
+在 192.168.0.3 上访问 192.168.0.2： 
+
+```shell
+root@fengzhao-work:~# curl -i http://192.168.0.2:8000
+HTTP/1.1 200 OK
+Content-Type: text/plain
+Date: Fri, 26 Jul 2019 06:48:27 GMT
+Connection: keep-alive
+Transfer-Encoding: chunked
+
+Hello fengzhao
+root@fengzhao-work:~#
+
+```
+
+- N: 表示连接远程主机，不打开 shell
+- T: 表示不为这个连接分配 TTY
+- f: 表示连接成功后，转入后台运行
+- L：表示本地端口转发
+
+SSH 本地端口转发的命令如下：
+
+ ```shell
+ ssh -L  本地地址:本地端口:远程地址:远程端口  远程服务器
+ ```
+
+#### 远程端口转发
+
+> 应用场景：本地主机A1运行了一个服务，端口为3000，远程云主机B1需要访问这个服务。正常情况外网的云主机是无法访问本地服务的。
+>
+> 
+
+所谓远程端口转发：是针对进行 SSH 操作的主机来说的，如下面的例子：端口转发命令是在 192.168.0.1 上执行的，所以 192.168.0.1 就叫本地，**远程端口转发**就是将发送到**远程主机端口**（192.168.0.2:4000）的的请求，转发到**本地主机端口**（192.168.0.1:3000）。
+
+
+
+![SSH远程端口转发](/resources/SSH远程端口转发.png)
+
+在 192.168.0.1 上运行 node 服务，占用 3000 端口。
+
+在 192.168.0.1 上执行如下命令：
+
+```shell
+ssh -NTfR 192.168.0.2:4000:localhost:3000 root@192.168.0.2
+```
+
+然后在 192.168.0.2 上访问 localhost:4000 ，其实就是在访问 192.168.0.1:3000 
+
+上面说了，这种情况下，在远程主机上只能监听本地环回地址，只能本机访问，假设第三台机器也想通过远程主机(192.168.0.2)来访问这个服务呢，这就需要在远程主机(192.168.0.2)上开启 sshd 服务的 GatewayPorts 参数，这个参数默认是 no，所以需要在远程主机(192.168.0.2)上修改为 yes 后，再在本地主机(192.168.0.1)上重新执行**远程端口转发**命令，这样就可以在远程主机上监听所有网卡的端口了。
+
+
+
+
+
+
 
 
 
@@ -244,7 +418,7 @@ $ sftp -oProxyCommand="nc -Xconnect -x127.0.0.1:1080 %h %p" USER@SSH_SERVER
 如果你使用的是 XShell，也可以设置代理：
 
 ```shell
-属性` -> `连接` -> `代理` -> `添加、选择代理服务器` -> `重新连接ssh
+
 ```
 
 
