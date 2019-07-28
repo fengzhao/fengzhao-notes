@@ -35,7 +35,7 @@ find: /usr/bin/find
 
 ### 1.2、几种常见的 Shell
 
- Linux 发行版自带的标准 Shell 都是 Bash shell，Linux 的默认命令行就是 Bash，我们的最多的也是这个。是 BourneAgain Shell 的缩写，内部命令一共有40个。一般日常使用 bash 基本上都够了，进阶可以试试 zsh。
+ Linux 发行版自带的标准 Shell 都是 Bash shell，Linux 的默认命令行就是 Bash，我们的最多的也是这个。是 BourneAgain Shell 的缩写，内部命令一共有 40 个。一般日常使用 bash 基本上都够了，进阶可以试试 zsh。
 
  另一个强大的 Shell 就是 zsh，它比 bash 更强大，但是也更复杂，配置起来比较麻烦。所以有个 [on-my-zsh](https://github.com/robbyrussell/oh-my-zsh/)，它大大简化了 zsh 的配置，一般通过包管理器安装 zsh，然后通过 git 安装 on-my-zsh：
 ```shell
@@ -66,9 +66,11 @@ $ chsh -s /bin/zsh  # 修改当前用户的 shell
 
 变量的类型可以分为两类：环境变量（全局变量）和普通变量（局部变量）。
 
-环境变量：可以在创建它们的 shell 及其派生出来的任意子进程 shell 中使用，环境变量又分为用户自定义环境变量和 bash 内置环境变量。
+- 环境变量：可以在创建它们的 shell 及其派生出来的任意子进程 shell 中使用，环境变量又分为用户自定义环境变量和 bash 内置环境变量。
 
-普通变量：只能在创建他们的 shell 函数内和 shell 脚本中使用。普通变量一般由开发者在开发脚本时创建。
+
+- 普通变量：只能在创建他们的 shell 函数内和 shell 脚本中使用。普通变量一般由开发者在开发脚本时创建。
+
 
 
 查看变量的命令：

@@ -1,7 +1,3 @@
----
-typora-root-url: ..
----
-
 # ssh 和 scp 基础
 
 ## OpenSSH 概览
@@ -9,6 +5,11 @@ typora-root-url: ..
 SSH 是 Secure SHELL 的缩写，顾名思义，这是一种建立在应用层基础上的安全协议，是一种加密的[网络传输协议](https://zh.wikipedia.org/wiki/%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%8D%8F%E8%AE%AE)，可在不安全的网络中为网络服务提供安全的传输环境，专为 Linux 远程登陆和其他服务提供的安全协议。人们通常利用SSH来远程执行命令。
 
 OpenSSH 是一种 SSH 的开源实现。它是利用 OpenSSl 协议具体实现的开源软件，包括 ssh,ssh-copyid,ssh-keygen 等一系列套件，在 Linux 各大发行版基本上都已经预先安装好了。可以使用 ssh -V 命令来查看 OpenSSH 版本。
+
+在 Linux 中，sshd 是 OpenSSH SSH 得守护进程。用于在不可信网络上提供安全的连接通道。
+
+ sshd 守护进程通常由root用户启动，它监听来自客户端的连接，然后为每个连接派生一个子进程。
+ 子进程负责处理密钥交换、加密、认证、执行命令、数据交换等具体事务。
 
 本文只记录 ssh 基本组件的用法，关于 ssh-agent 和 ssh-add 等命令，这里没有记录。
 
@@ -21,12 +22,16 @@ OpenSSH 是一种 SSH 的开源实现。它是利用 OpenSSl 协议具体实现�
 | [ssh-copy-id](https://www.ssh.com/ssh/copy-id) | 传输公钥到远程主机 |
 | [scp](https://www.ssh.com/ssh/scp/)            | 远程传输文件       |
 
+
+
 ### ssh 用法
 
 ```shell
 # -p 端口 -i 密钥 
 # 这个命令会利用密钥认证，直接免密登陆，如果没有用密钥，那么会交互式弹出密码输入
 $ ssh user@host -p port -i /path/private_key
+# 查看帮助
+$ ssh --help
 ```
 
 #### 在远程终端执行命令
@@ -54,8 +59,6 @@ tmpfs                    9.4G     0  9.4G   0% /run/user/0
 root@fengzhao-work:~#
 
 ```
-
-
 
 
 
@@ -88,7 +91,7 @@ $ scp user@host:/path/filename /var/www/local_dir
 
 ## OpenSSH 详解
 
-OpenSSH 也是一种 C/S 架构的模式，客户端和服务端分别是 ssh/sshd 。一般 Linux 启动后默认都会启动服务端的 sshd 服务，sshd服务端默认端口一般是22，可以服务端配置文件修改。所以我们可以在某台 Linux 上以 ssh 客户端登陆到远程的 Linux 服务器上。命令大致如下：
+OpenSSH 也是一种 C/S 架构的模式，客户端和服务端分别是 ssh/sshd 。一般 Linux 启动后默认都会启动服务端的 sshd 服务，sshd 服务端默认端口一般是22，可以服务端配置文件修改。所以我们可以在某台 Linux 上以 ssh 客户端登陆到远程的 Linux 服务器上。命令大致如下：
 
 ```shell
 # 使用 root 用户，私钥验证 登陆远程的 192.1668.1.102（ssh默认是用22端口，可以省略）
@@ -104,12 +107,28 @@ $ ssh root@192.168.1.102  -p 22
 
 ssh 的配置文件一般在 ~/.ssh 目录中，由于安全原因，该目录的权限一般要设置为 700 。
 
-- /etc/ssh/ssh_config  ssh客户端全局配置文件，所有用户公用的配置文件。
-- ~/.ssh/config ssh客户端用户配置文件，针对某个用户的配置文件，如果没有，可以创建.
-- /etc/ssh/sshd_config  ssh服务端配置文件，用来配置认证方式，是否启用root登陆等。
-- ~/.ssh/id_rsa  ssh 客户端用户私钥，从客户端登陆服务端需要提供这个私钥证明合法登陆。为了安全，这个文件的权限必须是600。
-- ~/.ssh/authorized_keys  ssh服务端公钥，公钥与私钥是一对密钥对。
-- ~/.ssh/known_hosts  每个你访问过计算机的公钥(public key)都记录在~/.ssh/known_hosts。当下次访问相同计算机时，OpenSSH 会核对公钥。如果公钥不同，OpenSSH 会发出警告。
+```shell
+/etc/ssh/ssh_config
+# ssh客户端全局配置文件，所有用户公用的配置文件。
+~/.ssh/config
+# ssh客户端用户配置文件，针对某个用户的具体配置文件，可以覆盖全局配置文件
+/etc/ssh/sshd_config
+# ssh服务端配置文件，用来配置认证方式，是否启用root登陆等。
+~/.ssh/id_rsa
+# 客户端用户私钥，从客户端登陆服务端需要提供这个私钥证明合法登陆。为了安全，这个文件的权限必须是600。
+~/.ssh/authorized_keys
+# ssh服务端公钥，公钥与私钥是一对密钥对。
+~/.ssh/known_hosts
+# 个你访问过计算机的公钥(public key)都记录在~/.ssh/known_hosts。当下次访问相同计算机时，OpenSSH 会核对公钥。如果公钥不同，OpenSSH 会发出警告。
+
+
+# SSH中文手册和配置文件
+http://www.jinbuguo.com/openssh/sshd.html
+http://www.jinbuguo.com/openssh/sshd_config.html
+http://www.jinbuguo.com/openssh/ssh-keygen.html
+```
+
+
 
 关于 ssh 的公钥认证详细原理，可以参考阮一峰的博客。
 
@@ -186,8 +205,6 @@ SS H端口转发也被称作 SSH 隧道([SSH Tunnel](http://blog.trackets.com/20
 SSH有三种端口转发模式
 
 - **本地端口转发(Local Port Forwarding)**
-
-  应用场景：
 
 - **远程端口转发(Remote Port Forwarding)**
 

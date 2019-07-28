@@ -14,7 +14,7 @@ Github 上的简介是 ”A delightful community-driven framework for managing y
 - CentOS 安装 zsh：sudo yum install -y zsh
 - Ubuntu 安装 zsh：sudo apt-get install -y zsh
 
-设置默认 zsh 为默认 shell：
+为当前用户设置默认 zsh 为默认 shell：
 
 ``` shell
 # chsh -s $(which zsh)
