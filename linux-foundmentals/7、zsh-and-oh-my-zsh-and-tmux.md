@@ -52,6 +52,10 @@ $ sh -c "$(wget https://raw.githubusercontent.com/fengzhao/oh-my-zsh/master/tool
 
 oh-my-zsh 中定义了很多插件，这些插件在 ~/.oh-my-zsh 的 plugins 目录中定义。可以在 zsh 配置文件中启用这些插件。，有些插件是一些命令别名，有些是一些脚本，有些是一些自动补全或语法高亮之类。熟练掌握并熟悉能有效提高自己的工作效率。友情提示：开启过多插件会明显影响 zsh 的打开效率。zsh 默认启用了 git 插件，这个插件定义了很多 git 命令的别名。
 
+
+
+
+
 ### ~/.oh-my-zsh 目录
 ```shell
 lib         # 提供核心功能的脚本库
@@ -74,6 +78,11 @@ custom      # 个性化配置目录，自安装的插件和主题可放这里
 # extract                   'x'命令，支持自动识别压缩格式并将其解压
 # colored-man-pages         'man'帮助文档页面开启高亮显示
 # zsh-syntax-highlighting   oh-my-zsh 命令行语法高亮插件
+
+# 安装 zsh-syntax-highlighting 和 zsh-autosuggestions
+
+git clone https://github.com/zsh-users/zsh-autosuggestions ~/.oh-my-zsh/custom/plugins/zsh-autosuggestions
+git clone https://github.com/zsh-users/zsh-syntax-highlighting.git ~/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting
 ```
 
 ## tmux
