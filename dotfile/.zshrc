@@ -13,13 +13,20 @@ export TERM=xterm-256color
 export CLICOLOR=1
 export LSCOLORS=Gxfxcxdxbxegedabagacad
 
-# 设置默认编辑器
-alias vi='vim'
-alias edit=$EDITOR
-export EDITOR= "vim"
 
-# 重新载入zsh配置
-alias sz='source ~/.zshrc'
+# Uncomment the following line to disable bi-weekly auto-update checks.
+# 是否禁用自动更新
+# DISABLE_AUTO_UPDATE="true"
+
+# Uncomment the following line to change how often to auto-update (in days).
+# 自动更新检查日期
+# export UPDATE_ZSH_DAYS=13
+
+# Uncomment the following line to disable colors in ls.
+# ls命令彩色
+ DISABLE_LS_COLORS="False"
+
+
 
 # Set name of the theme to load --- if set to "random", it will
 # load a random theme each time oh-my-zsh is loaded, in which case,
@@ -37,12 +44,22 @@ ZSH_THEME="avit"
 HIST_STAMPS="yyyy-mm-dd"
 
 
+# git                         最常用插件，git 相关
+# extract                     'x'命令，支持自动识别压缩格式并将其解压，任何压缩文件都可以直接用x解压
+# zsh-syntax-highlighting     oh-my-zsh 命令行语法高亮插件
+# zsh-autosuggestions         根据历史记录智能自动补全命令 
+# z                           按照使用频率排序曾经进过的目录，进行模糊匹配
+# wd                          通过设置 tag，快速切换目录
+# colored-man-pages           'man'帮助文档页面开启高亮显示
+
+
 plugins=(
   git
   extract
   zsh-syntax-highlighting
- zsh-autosuggestions
-
+  zsh-autosuggestions
+  x
+  colored-man-pages
 )
 
 
@@ -50,4 +67,10 @@ source $ZSH/oh-my-zsh.sh
 
 # 快速配置zshconfig
 alias zshconfig="vim ~/.zshrc"
+# 重新载入zshconfig
+alias sz='source ~/.zshrc'
 
+# 设置默认编辑器
+alias vi='vim'
+alias edit=$EDITOR
+export EDITOR= "vim"

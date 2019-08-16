@@ -11,8 +11,16 @@ Github 上的简介是 ”A delightful community-driven framework for managing y
 
 ## 安装 zsh
 
-- CentOS 安装 zsh：sudo yum install -y zsh
-- Ubuntu 安装 zsh：sudo apt-get install -y zsh
+```shell
+# CentOS 安装 
+sudo yum install -y zsh
+# Ubuntu 安装 
+sudo apt-get install -y zsh
+# MacOS 安装
+brew install zsh 
+```
+
+
 
 为当前用户设置默认 zsh 为默认 shell：
 
@@ -50,7 +58,7 @@ $ sh -c "$(wget https://raw.githubusercontent.com/fengzhao/oh-my-zsh/master/tool
 
 一般我常用的主题包括 avit 和 agnoster 这两个。
 
-oh-my-zsh 中定义了很多插件，这些插件在 ~/.oh-my-zsh 的 plugins 目录中定义。可以在 zsh 配置文件中启用这些插件。，有些插件是一些命令别名，有些是一些脚本，有些是一些自动补全或语法高亮之类。熟练掌握并熟悉能有效提高自己的工作效率。友情提示：开启过多插件会明显影响 zsh 的打开效率。zsh 默认启用了 git 插件，这个插件定义了很多 git 命令的别名。
+oh-my-zsh 中定义了很多插件，这些插件在 ~/.oh-my-zsh 的 plugins 目录中定义。可以在 zsh 配置文件中启用这些插件。有些插件是一些命令别名，有些是一些脚本，有些是一些自动补全或语法高亮之类。熟练掌握并熟悉能有效提高自己的工作效率。友情提示：开启过多插件会明显影响 zsh 的打开效率。zsh 默认启用了 git 插件，这个插件定义了很多 git 命令的别名。
 
 
 
@@ -75,7 +83,7 @@ custom      # 个性化配置目录，自安装的插件和主题可放这里
 # git                       最常用插件，git 相关
 # z                         按照使用频率排序曾经进过的目录，进行模糊匹配
 # wd                        通过设置 tag，快速切换目录
-# extract                   'x'命令，支持自动识别压缩格式并将其解压
+# extract                   'x'命令，支持自动识别压缩格式并将其解压，任何压缩文件都可以直接用x解压
 # colored-man-pages         'man'帮助文档页面开启高亮显示
 # zsh-syntax-highlighting   oh-my-zsh 命令行语法高亮插件
 
