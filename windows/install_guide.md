@@ -95,10 +95,28 @@ C:\Windows\system32>DISM /online /Set-Edition:<edition ID> /ProductKey:XXXXX-XXX
 
 
 
+## 2、OFFICE激活
+
+```shell
+# office转换工具
+git clone https://github.com/kkkgo/office-C2R-to-VOL.git
+# 以管理员身份运行 Convert-C2R.cmd
+
+# 32位
+cd "C:\Program Files (x86)\Microsoft Office\Office16"
+# 64位
+cd "C:\Program Files\Microsoft Office\Office16"
+# 注册kms服务器地址
+cscript ospp.vbs /sethst:kms.03k.org
+# 执行激活
+cscript ospp.vbs /act
+```
 
 
 
-## 2、搭建内部的 KMS Server 服务器
+
+
+## 3、搭建内部的 KMS Server 服务器
 
 KMS 激活原理：KMS 是微软提供的批量激活功能，一般在一个局域网内，可以把其中某台机器搭建成 kms 服务器。这样局域网内的其他机器安装操作系统后，激活时，直接使用官网提供的批量激活密钥，设置 kms 服务器地址。然后就可以完成激活。这样每台客户端每 180 天都会与 kms 服务器通讯一次。这样一直保持激活状态，网上有大神写了搭建搭建 kms 的教程并开源，也有人在网上搭建好 kms 服务器，并免费提供 kms 服务，我们激活的时候，也可以直接使用别人的 kms 服务器激活，如果将来哪一天发现电脑变成未激活了，那就是连不上 kms 服务器了，再去网上找一个 kms 服务器即可。在一个组织内部，我们可以根据大神的脚本，搭建属于组织内部的 kms 服务器。提供给组织内部的人使用。
 
@@ -126,7 +144,7 @@ sh -c "$(curl -fsSL https://raw.githubusercontent.com/fengzhao/fengzhao-notes/ma
 
 
 
-## 3、Windows 10 家庭版升级到专业版
+## 4、Windows 10 家庭版升级到专业版
 
 ```
 VK7JG-NPHTM-C97JM-9MPGT-3V66T
