@@ -52,18 +52,17 @@ supervised systemd
 
 ## 数据类型 
 
-redis 并不是简单的键值对存储服务器，它实际上是一个  *数据结构服务器* ，它支持多种类型的 value  , 在传统的键值存储中通常都是在 string 类型的 key 中存放 string 类型的 value 。
+redis 并不是简单的键值对存储服务器，它实际上是一个  ***数据结构服务器*** ，它支持多种类型的 value  , 在传统的键值存储中通常都是在 string 类型的 key 中存放 string 类型的 value 。
 
-在 redis 中，value 并不限为 string 等简单数据类型，可以是 List , Set ，Hashs 等多种数据结构：
+在 redis 中，value 并不限为 string 这样的简单数据类型，value 可以是 List , Set ，Hashes 这样更加复杂的数据结构：
 
 - Binary-safe strings  
   - 
-- Lists：按照插入顺序进行排序的多个 string 元素集合，最基本的 ***linked lists***。
-- Sets：无序且不重复的 string 元素集合
-- Sorted sets：有序的 sets ，每个元素都有一个权重(score)，元素按照 score 排序。
-- Hashes：
-
-
+- **Lists（列表）**：根据插入顺序排序的多个 string 元素集合，最基本的 ***linked lists（链表）***。
+- **Sets（集合**）：无序且不重复的 string 元素集合
+- **Sorted sets（有序集合）**：有序的 sets ，每个元素都有一个权重(score)，元素按照 score 排序。
+- **Hashes（哈希）：**是一个由键值对关联起来的`map`，键和值都是字符串。对于`Ruby`和`Python`非常的友好。
+- **Bit arrays (比特数组) ：**是
 
 ### Redis Keys
 
@@ -106,6 +105,7 @@ OK
 127.0.0.1:6379>
 127.0.0.1:6379>
 # set 命令后加上 NX 参数，则先判断 key 是否存在，如果不存在则创建，如果已存在，则返回 nil 
+# set key value NX 等价于 SETNX key value （其实就是 set if not exits，如果不存在则set的意思）
 127.0.0.1:6379> set mykey value NX
 (nil)
 127.0.0.1:6379>
@@ -114,9 +114,249 @@ OK
 127.0.0.1:6379>
 127.0.0.1:6379>
 
+
+
 ```
 
 
+
+#### 介绍
+
+- 可以保存哪些值
+  - 字符串
+  - 数字
+  - 二进制
+  - json、xml等字符串
+- 使用场景
+  - 缓存
+  - 计数器
+  - 分布式锁
+  - ...
+- 命令
+
+- get
+
+  语法：get KEY
+
+  功能：获取字符串类型的 key 对应的 value
+
+- incr
+
+  语法：incr KEY
+
+  功能：key 自增 1 ，如果 key 不存在，自增后 key=1
+
+  ```shell
+  # 原子自增
+  incr 命令将 key 从 string 转换为 value 类型，每执行一次则递增加1后用 set 赋值回去，还有 incrby,decr,decrby 等这些命令都是一样的。
+  原子自增意味着递增操作都是串行化的，无法同时有两个客户端对一个 key 进行原子操作。在进行递增加1返回新值后，下一个原子递增才能开始。
+  # 所以原子自增是可以用来做准确计数的。即使在海量并发情况下也不用担心。
+  ```
+
+- decr
+
+  语法：decr KEY
+
+  功能：key 自减 1，如果 key 不存在，自减后 key=1
+
+- incrby
+
+  语法：incrby KEY N
+
+  功能：key 自增 n，如果 key 不存在，自增后 key=n
+
+- decrby
+
+  语法：decrby KEY N
+
+  功能：key 自减 n，如果 key 不存在，自减后 key=-n
+
+- set
+
+  语法：set KEY VALUE
+
+  功能：不管  key 是否存在，都进行设置
+
+- setnx
+
+  语法：setnx KEY VALUE，等价于  set KEY VALUE NX
+
+  功能：key 不存在时，才进行设置
+
+- set xx
+
+  语法：set KEY VALUE xx
+
+  功能：key存在时，才进行设置
+
+- setex
+
+  语法：setex KEY SECONDS VALUE
+
+  功能：相当于如下两条命令
+
+  ```
+  SET key value
+  EXPIRE key seconds
+  ```
+
+  设置1个key同时设置过期时间
+
+- mset
+
+  语法：mset KEY VALUE [KEY VALUE ...]
+
+  功能：创建多个键值对
+
+  ```shell
+  # 使用 mset 和 mget 来设置或取出多个 key 的 value 是一个降低延迟的好办法
+  127.0.0.1:6379> mset key1 value1 key2 value2
+  OK
+  # 使用 keys * 命令来获取所有的 key 
+  127.0.0.1:6379> keys *
+  1) "key2"
+  2) "key1"
+  ```
+
+- mget
+
+  语法：mget KEY [KEY ...]
+
+  功能：获取多个key
+
+  ```shell
+  # 使用 mget 来一次获取多个 key 的 value,(value组成的数组) 当 key3 不存在时则返回 nil
+  127.0.0.1:6379> mget key1 key2 key3
+  1) "value1"
+  2) "value2"
+  3) (nil)
+  127.0.0.1:6379>
+  
+  ```
+
+- getset
+
+  语法：getset KEY VALUE
+
+  将新值设置到key，并返回旧值
+
+  ```shell
+  # 例如：使用一个自增加1的key来记录网站的访客人数，希望每小时收集一次访客人数，那就可以使用 getset 命令收集旧值，并进行清零操作。
+  ```
+
+  
+
+- append
+
+  语法：append KEY VALUE
+
+  功能：将值追加到原有字符串之后
+
+  ```
+  127.0.0.1:6380> get key1
+  "haha"
+  127.0.0.1:6380> append key1 haah
+  (integer) 8
+  127.0.0.1:6380> get key1
+  "hahahaah"
+  ```
+
+- strlen
+
+  语法：strlen KEY
+
+  功能：返回字符串长度
+
+  注意：中文占用2个字节
+
+- incrbyfloat
+
+  语法：incrbyfloat KEY N
+
+  功能：浮点数key自增n
+
+  ```
+  127.0.0.1:6380> incrbyfloat key5 3.5
+  "3.5"
+  127.0.0.1:6380> get key5
+  "3.5"
+  ```
+
+- getrange
+
+  语法：getrange KEY START END
+
+  功能：获取指定下标的值
+
+  第1个字母的下标为0
+
+  ```
+  127.0.0.1:6380> get key2
+  "value2"
+  127.0.0.1:6380> getrange key2 2 3
+  "lu"
+  ```
+
+- setrange
+
+  语法：setrange KEY INDEX VALUE
+
+  功能：将key对应的值的某个下标的值替换为新值
+
+  ```
+  127.0.0.1:6380> get key2
+  "value2"
+  127.0.0.1:6380> setrange key2 2 L
+  (integer) 6
+  127.0.0.1:6380> get key2
+  "vaLue2"
+  ```
+
+
+
+### 操作和查询 key 空间
+
+有些命令不是针对某个特定的数据类型的，但是和`key`空间交互的时候是非常有用的，所以，可以使用在任意类型的`key`之上。
+
+比如，
+
+`EXISTS`命令返回`1`或者`0`去标记一个`key`是否存在。
+
+`DEL`命令用来删除一个 key 和他所关联的 value 值。
+
+`TYPE`命令返回一个这个 value 的数据类型。
+
+```shell
+127.0.0.1:6379> set mykey hello
+OK
+127.0.0.1:6379> type mykey
+string
+127.0.0.1:6379>
+127.0.0.1:6379> exists mykey
+(integer) 1
+# 可以通过 del 命令的返回值是0还是1来判断删除是否成功
+127.0.0.1:6379> del mykey
+(integer) 1
+# 使用 del 删除不存在的 key 时，返回0表示删除失败
+127.0.0.1:6379> del key6
+(integer) 0
+127.0.0.1:6379>
+127.0.0.1:6379>
+127.0.0.1:6379> exists mykey
+(integer) 0
+```
+
+
+
+### Redis 过期：key 的生命周期
+
+在接受更复杂的数据结构之前，需要先讨论另外一个数据类型无关的特性，那就是 **Redis expires**。通常可以给 key 设置一个  timeout 时间，这就限定了这个 key 的生存时间。
+
+当时间到了，key 直接被销毁，就好像用户主动调 del 命令删除它一样。
+
+- 可以使用毫秒（millisecond）和秒（seconds）做为生命周期
+- 最短的生命周期是1毫秒（millisecond）
+- **期限信息的设置是保存在磁盘中持久存在的**，这意味着（当数据库存在的时候）
 
 
 
