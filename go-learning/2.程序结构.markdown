@@ -1,0 +1,370 @@
+## 程序结构
+
+golang 以包来组织程序，一个包由一个或多个 .go 为文件名后缀的源代码文件组成。放在一个文件夹中，文件夹描述了包名作用。
+
+每一个源文件中第一行使用 package 来声明这个文件所属的包。后面跟上 import 关键字来导入其他包。
+
+
+
+```shell
+bin
+pkg
+src
+　　pk1
+　　　　pk2
+　　　　　　function1.go
+　　　　　　function2.go
+　　index.go
+```
+
+
+
+```go
+// function1.go
+package  pk3
+
+func  Function_test3()  {
+    	println("function_test3")
+}
+```
+
+```go
+// function2.go
+package  pk3
+
+func  Function_test4()  {
+     	println("function_test4"``)
+}
+```
+
+```go
+// index.go
+package main
+import "pk1/pk2"
+func main() {
+    pk3.Function_test4()
+}
+```
+
+
+
+**包的嵌套**
+
+
+
+
+
+**1、import 导入的参数是路径，而非包名。**
+
+**2、尽管习惯将包名和目录名保证一致，但这不是强制规定；**
+
+**3、在代码中引用包成员时，使用包名而非目录名；**
+
+**4、同一目录下，所有源文件必须使用相同的包名称（因为导入时使用绝对路径，所以在搜索路径下，包必须有唯一路径，但无须是唯一名字）；**
+
+**5、至于文件名，更没啥限制（扩展名为.go）;**
+
+
+
+
+
+
+
+
+
+## 注释
+
+注释有两种形式：
+
+1. **行注释**以 `//` 开始，至行尾结束。一条行注释视为一个换行符。
+2. **块注释** 以 `/*` 开始，至 `*/` 结束。 块注释在包含多行时视为一个换行符，否则视为一个空格。
+
+注释不可嵌套。
+
+
+
+## 名称
+
+golang 中 **函数、变量、常量、类型、语句、包名** 都遵循如下规则：
+
+- 字母或下划线开头，并区分大小写。
+- 单词组合名称时，使用驼峰命名法，例如：标准库中的函数使用 OuoteRuneToASCII 这种命名方法。
+- go 风格命名简洁，名称的作用域越大，就使用越长越有意义的名称。
+
+**实体作用域**
+
+- 函数内的实体函数内可见
+- 函数外的实体，包内所有源文件都可见
+- 实体的第一个字母的大小写决定是否跨包可见：大写表示导出的，包外可见，小写包内可见。
+
+
+
+## 变量
+
+golang是一个强类型语言，变量在声明的时候，必须要确定类型。
+
+使用 var 关键字来声明变量，变量声明的通用格式如下：
+
+```
+var name type = expression 
+```
+
+类型和表达可以省略一部分，但是不能都省略：
+
+- 如果省略类型，则在声明的时候即显式赋值，变量类型由赋值表达式决定；
+
+- 如果省略表达式，变量类型由type类型决定，其初始值是该类型的**零值**。
+
+  - 数字类型的零值是0。
+  - 接口和引用类型（slice，指针，map，通道，函数）的零值是 nil 
+  - 对于结构体或数组这样的复合类型，零值是其所有元素或成员的零值。
+
+**所以 golang 中不存在未初始化的变量**。零值机制保证了所有的变量都是良好定义的。
+
+声明变量列表：
+
+```go
+// 声明三个int类型的变量 i,j,k
+var i,j,k int   
+// 声明三个不同类型的变量
+var b,f,s = true , 2.3 , 'four' 
+```
+
+**包级别的变量在 main 开始之前就进行了声明和赋值。**
+
+### 短变量
+
+在函数中，可以使用短变量的形式来声明和初始化局部变量。使用如下格式：
+
+```go
+name := expression
+```
+
+短变量主要用于局部变量声明。
+
+多变量声明也可以用短声明的方式进行声明：
+
+```go
+i,j := 0,1
+f , err = os.Open(name)
+
+// 多变量声明中也可以混带赋值,对于s来说，这是声明并赋值，对于i来讲，因为已声明过了，这就是赋值操作。
+s , i = 1,0
+
+// 短变量最少声明一个变量，因为f和err都已声明过，所以这样的代码无法编译通过，编译错误：没有新的变量
+f , err = os.Open(newname)
+```
+
+`:=` 是一个声明动作，`=` 是一个赋值动作。多变量声明不能与**多重赋值**搞混：
+
+```go
+// 多重赋值，交换i和j的值
+i , j = j , i
+```
+
+
+
+### 指针
+
+指针的值，是一个变量的地址，使用指针，可以在不知道变量名的情况下，直接读取或操作变量值。
+
+声明一个整形变量 `var x int`，表达式 &(x) 获取一个指向整型变量的指针。这个表达式的类型就是整型指针（*int）。
+
+如果这个整形指针叫做 p , 那么说 p 指向 x , 或 p 包含 x 的地址，p 指向的变量写作 *p  。
+
+```go
+//  /go-demo/pointer.go
+
+package main
+
+import (
+    "fmt"
+    "reflect"
+)
+
+func main() {
+    var a int32 = 1
+    var b int = 2
+    fmt.Println(a,b)
+    var c = &b
+    var d = &c
+    *c = 3
+    fmt.Println(a,b,c,d)
+    fmt.Println("the type of a is :", reflect.TypeOf(a))
+    fmt.Println("the type of b is :", reflect.TypeOf(b))
+    fmt.Println("the type of c is :", reflect.TypeOf(c))
+    fmt.Println("the type of d is :", reflect.TypeOf(d))
+
+}
+
+
+// 在 Linux 上编译并执行
+root@vpsServer:~# go run /go-demo/pointer.go
+1 2
+1 3 0xc00001a088 0xc00000e038
+the type of a is : int32
+the type of b is : int
+the type of c is : *int
+the type of d is : **int
+root@vpsServer:~#
+
+
+
+// 打印变量 a , b ，是打印变量 a b 的值.
+// 创建一个指针c，存放变量b的地址
+// 通过 *c 来取这个指针所指向变量，就相当于取b，相当于给b重新赋值。
+// 重新打印 a,b,c 打到b的新值，打印指针c，是变量b在内存中的地址。
+// 打印 a,b,c 的类型
+// d是指针嵌套，指针的指针
+
+```
+
+指针类型的零值是 nil , 判断指针是否为 nil ，可以判断指针是否指向一个变量。
+
+**当前仅当两个指针指向同一个变量或者两个指针都是 nil 的情况下才相等。**
+
+```go
+var x , y int
+fmt.Println(&x == &x , &x == &y, &x == nil ) // "true false false"
+```
+
+  ```go
+
+// 声明一个指针变量，将函数调用结果赋给这个指针。
+var p = f()
+
+// 函数的返回类型是指针，每次调用时，函数内短声明一个变量，每次调用返回这个变量的地址。
+func f() *int {
+    v := 1 
+    return &n
+}
+// 每次调用f都返回不同的值。
+fmt.Println(f() == f())  // "false"
+  ```
+
+
+
+```go
+// 因为指针包含的是变量的值，所以把指针传参给函数，能够让函数间接更新指针指向的变量的值。
+// 函数返回值为int类型，函数传参为指向int类型的指针
+
+func incr (p *int) int {
+	// 递增p所指向的值，p不变，在这里*p等价于v。
+    *p++
+    rerurn *p
+}
+
+v := 1 
+incr(&v)  // 副作用:v现在等于2
+fmt.Println(incr(&v))  //"3" v现在是3 
+
+
+// 每次使用变量的地址，或者是复制一个指针，我们就相当于给变量创建了一个"别名"。例如 p* 是 v 的别名。
+// 这种别名方式是很有用的。但同时也是双刃剑：
+// 为了找到所有访问变量的语句，需要知道找到所有别名。找到指针比找到变量名要更复杂。
+```
+
+
+
+
+
+```go
+// gopl.io/ch2/echo4
+package main 
+
+import (
+	"flag"
+    "fmt"
+    "strings"
+)
+
+// flag.Bool 函数创建一个新的 bool 标识变量。它有三个参数:"标识名","变量默认值","当用户提供非法参数的提示消息"
+// n表示这个变量的指针，n* 表示这个变量的值
+var n = flag.Bool("n", false, " omit tailing newline")
+var sep = flag.String("s" ,"" , "seprator")
+
+func main (){
+    // 更新标识变量的默认值
+    // 非标识参数，使用 flag.Args 返回的字符串slice来访问
+    flag.Parse()
+    fmt.Pirntln(strings.Join(flag.Args(),*sep))
+    if !*n {
+        fmt.Println()
+    }  
+}
+
+
+```
+
+### new() 函数创建变量
+
+另一种创建变量的方式是使用内置的 new 函数，表达式` new(T)` 创建一个未命名的 `T 类型变量` 。初始化为 T 类型的零值。并返回其地址。
+
+```go
+// 声明一个int变量,
+p := new(int)
+// *p 取变量值，打印0
+fmt.Println(*p)
+*p = 2
+// 打印2
+fmt.Println(*p)
+
+// 使用 new() 函数创建的变量和取其地址的普通变量没什么区别。只是不需要引入变量名，通过 new(t) 就可以直接在表达式中使用。
+// 下面这两个函数等价
+
+func newInt() *int {
+    return new(int)
+}
+
+func newInt() *int {
+    var dummy int 
+    return &dummy
+}
+
+// 每次调用 new 都返回一个具有唯一地址的不同变量。
+p := new(int)
+q := new(int)
+fmt.Println(p == q)  // false
+
+
+// new 是一个预声明的函数名，而不是一个关键字。所以可以在自己的函数内重定义为其他的类型，在这个函数内就不能使用预声明的内置new函数
+func delta (old, new int ) int {
+    return new - old 
+}
+
+```
+
+### 变量的生命周期
+
+生命周期是指程序执行过程中变量存在的时间段。包级别的变量的生命周期是程序的执行时间。局部变量的有一个动态的生命周期。
+
+
+
+### 获取变量数据类型
+
+在 golang 中获取变量的数据类型，使用反射：
+
+```go
+package main
+
+import (
+    "fmt"
+    "reflect"
+)
+
+func main() {
+    var x int32 = 20
+    fmt.Println("the type of x is :", reflect.TypeOf(x))
+}
+```
+
+
+
+
+
+## 函数
+
+函数结构
+
+
+
