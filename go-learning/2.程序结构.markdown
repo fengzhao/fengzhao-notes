@@ -327,7 +327,7 @@ q := new(int)
 fmt.Println(p == q)  // false
 
 
-// new 是一个预声明的函数名，而不是一个关键字。所以可以在自己的函数内重定义为其他的类型，在这个函数内就不能使用预声明的内置new函数
+// new 是一个预声明的函数，而不是一个关键字。所以可以在自己的函数内重定义为其他的类型，在这个函数内就不能使用预声明的内置new函数
 func delta (old, new int ) int {
     return new - old 
 }
@@ -337,6 +337,34 @@ func delta (old, new int ) int {
 ### 变量的生命周期
 
 生命周期是指程序执行过程中变量存在的时间段。包级别的变量的生命周期是程序的执行时间。局部变量的有一个动态的生命周期。
+
+
+
+```go
+// 这里 x 使用堆空间，因为它在f函数返回后，还可以从 global 变量访问，这种情况被称为 x 从 f 中逃逸。
+var global *int 
+func f(){
+    var x int 
+    x = 1 
+    global = &x 
+}
+```
+
+### 变量赋值
+
+```go
+// 用欧几里得算法计算两个整数的最大公约数
+func gcd(x , y int) int {
+    for y!= 0 {
+        x , y = y , x % y
+    }
+    return y
+}
+
+// 计算
+```
+
+
 
 
 
@@ -360,11 +388,42 @@ func main() {
 
 
 
+## 类型声明
 
+`type` 声明为定义一个新的`命名类型`，它和某个已知的类型使用同样的`底层类型`，它的格式如下：
 
-## 函数
+```
+type name underlying-type
+```
 
-函数结构
+类型的声明通常出现在包级别，这里命名的类型在整个包内都可以可见，如果名字是导出的（开头大写），其他的包也可以访问到。
+
+```go
+// 进行华氏温度和摄氏温度的转换计算
+
+// 这个包定义两个类型
+
+package tempconv
+
+import "fmt"
+
+type Celsius float64
+type Fahrenheit float64
+
+const (
+	AbsoluteZero Celsisus = -273.15
+    FreezingC    Celsisus = 0
+    BoilingC     Celsisus = 100
+)
+
+func CToF(c Celsius) Fahrenheit {
+    return Fahrenheit(c*9/5 + 32)
+}
+
+func FToC(f Fahrenheit) Celsius {
+    return Celsius((f - 32) * 5 / 9)
+}
+```
 
 
 
