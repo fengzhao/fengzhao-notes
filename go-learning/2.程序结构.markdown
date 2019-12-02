@@ -396,12 +396,16 @@ func main() {
 type name underlying-type
 ```
 
-类型的声明通常出现在包级别，这里命名的类型在整个包内都可以可见，如果名字是导出的（开头大写），其他的包也可以访问到。
+类型的声明通常出现在包级别，一般在整个包内都可以可见，如果名字是导出的（开头大写），其他的包也可以访问到。
+
+译注：对于中文汉字，Unicode标志都作为小写字母处理，因此中文的命名默认不能导出；
 
 ```go
 // 进行华氏温度和摄氏温度的转换计算
 
-// 这个包定义两个类型
+// 这个包定义两个类型：摄氏温度类型和华氏温度类型，它们的底层类型都是float64
+// 新建三个摄氏温度类型的常量：绝对零度，结冰点温度，沸水温度
+// CToF和FToC两个函数，分别接收不同类型的参数，并经过计算后，再进行转型操作。
 
 package tempconv
 
@@ -423,7 +427,35 @@ func CToF(c Celsius) Fahrenheit {
 func FToC(f Fahrenheit) Celsius {
     return Celsius((f - 32) * 5 / 9)
 }
+
+
+
 ```
+
+**对于每个类型 T，都有一个类型转转操作T(x)，用于将 x 转换为 T 类型，如果 T 是指针，可能需要 (*int) (0) 这种格式。**
+
+**只有当两个类型的底层基础类型相同时，才允许这种转型操作，或者是两者都是指向相同底层结构的指针类型**
+
+**底层数据类型决定了内部结构和表达方式，也决定是否可以像底层类型一样对内置运算符的支持。这意味着，Celsius和Fahrenheit类型的算术运算行为和底层的 float64 类型是一样的**。
+
+```go
+// 两个Celsisus类型的常量相减，得到"100" 
+fmt.Printf("%g\n", BoilingC-FreezingC) // "100" °C
+// 调CToF函数，返回Fahrenheit类型的值赋给boilingF变量
+boilingF := CToF(BoilingC)
+// 两个Fahrenheit类型的变量进行操作
+fmt.Printf("%g\n", boilingF-CToF(FreezingC)) // "180" °F
+// 编译报错，Fahrenheit类型的变量不能与Celsisus类型的常量直接计算，compile error: type mismatch
+fmt.Printf("%g\n", boilingF-FreezingC) 
+```
+
+
+
+
+
+
+
+
 
 
 
