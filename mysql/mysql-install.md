@@ -5,38 +5,83 @@ mysql下载地址，官网
 
 https://dev.mysql.com/downloads/mysql/
 
-选择相应的操作系统和位数，windows选择免安装版本（mysql-5.7.24-winx64.zip），linux选择源代码版本（mysql-5.7.24-linux-glibc2.12-x86_64.tar.gz）。
+Windows 系统下载的安装文件：
+
+- 免安装方式（推荐）
+  - 5.7：[mysql-5.7.28-winx64.zip]( https://dev.mysql.com/get/Downloads/MySQL-5.7/mysql-5.7.28-winx64.zip  )
+  - 8.0：[mysql-8.0.18-winx64.zip](https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-8.0.18-winx64.zip)
+
+- msi安装方式
+
+  - 下载MSI Installer文件，下一步下一步式安装。
+
+Linux 系统下载的文件：一般推荐用 **Linux - Generic**  这种源格式的安装文件。
+
+- 5.7：[mysql-5.7.28-linux-glibc2.12-x86_64.tar.gz](https://dev.mysql.com/get/Downloads/MySQL-5.7/mysql-5.7.28-linux-glibc2.12-x86_64.tar.gz) 
+- 8.0：[mysql-8.0.18-linux-glibc2.12-x86_64.tar.xz](https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-8.0.18-linux-glibc2.12-x86_64.tar.xz) 
+
+
+​    
 
 
 ## 1、windows 安装过程
 
 
-下载mysql文件并解压到D:/mysql目录中，添加d:/mysql/bin 到PATH环境变量。在根目录创建 my.ini 配置文件，内容如下：
+下载mysql文件并解压到 D:/mysql 目录中，添加 D:/mysql/bin 到 PATH 系统环境变量中。在根目录创建 my.ini 配置文件，内容如下：
 
 ``` shell
 [client]
-    port = 3306 # 设置mysql客户端连接服务端时默认使用的端口
+# 设置mysql客户端连接服务端时默认使用的端口
+port = 3306 
 [mysql]
-    default-character-set=utf8 # 设置mysql客户端默认字符集   
+# 设置mysql客户端默认字符集   
+default-character-set=utf8 
 [mysqld]
-port=3306 #mysql服务端默认监听(listen on)的TCP/IP端口
- 
-basedir="D:\mysql" #解压根目录，基准路径，其他路径都相对于这个路径
-datadir="D:\mysql\data" # mysql数据库文件所在目录
-character-set-server=utfmb4 # 服务端使用的字符集 
-default-storage-engine=INNODB # 创建新表时将使用的默认存储引擎
-sql-mode=STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION # SQL模式为strict模式
-max_connections=1024 # mysql服务器支持的最大并发连接数（用户数）。但总会预留其中的一个连接给管理员使用超级权限登录，即使连接数目达到最大限制。如果设置得过小而用户比较多，会经常出现“Too many connections”错误。
-query_cache_size=0 # 查询缓存大小，用于缓存SELECT查询结果。如果有许多返回相同查询结果的SELECT查询，并且很少改变表，可以设置query_cache_size大于0，可以极大改善查询效率。而如果表数据频繁变化，就不要使用这个，会适得其反
-tmp_table_size=34M # 内存中的每个临时表允许的最大大小。如果临时表大小超过该值，临时表将自动转为基于磁盘的表（Disk Based Table）。
-thread_cache_size=8 # 缓存的最大线程数。当客户端连接断开时，如果客户端总连接数小于该值，则处理客户端任务的线程放回缓存。在高并发情况下，如果该值设置得太小，就会有很多线程频繁创建，线程创建的开销会变大，查询效率也会下降。一般来说如果在应用端有良好的多线程处理，这个参数对性能不会有太大的提高。
+# mysql服务端默认监听(listen on)的TCP/IP端口号
+port=3306 
+# 基准路径，其他路径都相对于这个路径 
+basedir="D:\mysql" 
+# mysql数据库文件所在目录
+datadir="D:\mysql\data" 
+# 默认字符集 
+character-set-server=utf8mb4
+# 默认存储引擎
+default-storage-engine=INNODB
+# SQL模式为strict模式
+# sql-mode=STRICT_TRANS_TABLES,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION 
+# mysql服务器支持的最大并发连接数（用户数）。如果设置得过小而用户比较多，会经常出现“Too many connections”错误。
+max_connections=1024
+# 禁用查询缓存，这个参数在5.7.20后已经Deprecated
+# query_cache_size=0 
+# 内存中的每个临时表允许的最大大小。如果临时表大小超过该值，临时表将自动转为基于磁盘的表（Disk Based Table）。
+tmp_table_size=34M 
+# 缓存的最大线程数。当客户端连接断开时，如果客户端总连接数小于该值，则处理客户端任务的线程放回缓存。在高并发情况下，如果该值设置得太小，就会有很多线程频繁创建，线程创建的开销会变大，查询效率也会下降。一般来说如果在应用端有良好的多线程处理，这个参数对性能不会有太大的提高。
+thread_cache_size=8 
 ```
 
-以管理员身份启动 cmd ,并输入 mysqld --initialize-insecure --user=mysql  来初始化.
+以管理员身份启动 cmd , 进行数据初始化：
 
-输入 mysqld -install MySQL --defaults-file="D:\mysql\my.ini" 安装
+> mysql_install_db 这个程序在 MySQL 5.7.6 中已经弃用，因为它的功能已经集成在 mysqld 中了，所以在安装 5.7 及以后版本时，直接使用  mysqld --initialize  或者  mysqld  --initialize-insecure 就可以直接初始化。在 5.7.5 之前，mysql_install_db 这个程序是用 perl 脚本写的，所以需要安装 perl ，5.7.5 之后，改为用 C++ 写的，并且可以直接做为二进制文件执行。
 
-输入 net start mysql 启动服务.
+```shell
+# 不安全的初始化，默认root密码为空，需要登陆后自己设置一个密码
+mysqld --initialize-insecure --console
+# 直接初始化，为root生成一个随机密码，密码打印在控制台中
+mysqld --initialize --console
+
+```
+
+安装系统服务
+
+```shell
+mysqld -install MySQL --defaults-file="D:\mysql\my.ini" 
+```
+
+启动系统服务
+
+```shell
+net start mysql 
+```
 
 登陆并设置密码
 
@@ -47,6 +92,39 @@ update user set authentication_string=PASSWORD("123456AWS!@#") where user="root"
 flush privileges;
 quit;
 ```
+
+
+
+默认地，MySQL 会创建如下用户：
+
+```sql
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> select user,host from mysql.user;
++------------------+-----------+
+| user             | host      |
++------------------+-----------+
+| mysql.infoschema | localhost |
+| mysql.session    | localhost |
+| mysql.sys        | localhost |
+| root             | localhost |
++------------------+-----------+
+4 rows in set (0.05 sec)
+
+mysql>
+
+
+```
+
+### 用户管理
+
+我们在创建数据库用户的时候都会指定host，即一个完整的用户可描述为 'username'@'host' 。
+
+创建用户时不显式指定host则默认为%，%代表所有 ip 段都可以使用这个用户，我们也可以指定host为某个ip或ip段，这样会仅允许在指定的ip主机使用该数据库用户。
+
+不过你也应该明白 'username'@'%' 和 'username'@'192.168.6.%' 是两个毫无关联的用户，这两个用户可以有不同的密码和权限，这里不建议创建多个同名不同host的用户，还有不要轻易更改用户的host
+
+
 
 ## 2、Linux 安装过程
 
@@ -59,14 +137,14 @@ quit;
 
 #### 安装规范
 
-| 配置项               | 值或路径                    |      
-| -------------------- | --------------------------- | 
-| base目录           | /usr/local/mysql            |    
-| socket套接字文件     | /data/mysql/mysql.sock      |     
-| 错误日志（启动日志） | /data/mysql/error.log       |     
-| 进程文件             | /data/mysql/mysql.pid       |      
-| 数据目录             | /data/mysql/                |     
-| 字符集和排序规则     | utf8mb4和utf8mb4_unicode_ci |     
+| 配置项               | 值或路径                    |
+| -------------------- | --------------------------- |
+| base目录           | /usr/local/mysql            |
+| socket套接字文件     | /data/mysql/mysql.sock      |
+| 错误日志（启动日志） | /data/mysql/error.log       |
+| 进程文件             | /data/mysql/mysql.pid       |
+| 数据目录             | /data/mysql/                |
+| 字符集和排序规则     | utf8mb4和utf8mb4_unicode_ci |
 
 #### 用户和数据目录创建
 
@@ -125,7 +203,7 @@ $ ./support-files/mysql.server start
 $ ./support-files/mysql.server status
 ```
 
-> 5.6与5.7在初始化的时候有一些区别，在 5.7.6 以前都用 mysql_install_db 来初始化数据库，在这之后的版本，由于 mysqld 程序已经集成了初始化数据库功能， mysql_install_db  这个功能在未来的版本中可能会被去掉。
+> 5.6与5.7在初始化的时候有一些区别，在 5.7.6 以前都用 mysql_install_db 来初始化数据库，在这之后的版本，由于 mysqld 程序已经集成了初始化数据库功能， mysql_install_db  这个功能在未来的版本中可能会被去掉。所以建议直接使用  mysqld   --initialize-insecure 这样的方法来进行数据初始化。
 >
 > 
 

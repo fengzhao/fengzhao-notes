@@ -16,9 +16,15 @@ golang 以包来组织程序，包类似于其他语言中的库，一个包由�
 
 ### 导包
 
-在 go 源文件中，使用 import 来导入外部包。一个导入路径
+每个语言都有导包机制，golang 也不例外，在 go 源文件中，使用 import 来导入外部包。
 
 
+
+如果你的包引入了三种类型的包, 标准库包, 程序内部包, 第三方包, 建议采用如下方式进行组织你的包:
+
+- 标准库包（有超过一百多个包，使用 go list std 命令查看）
+- 程序内部包
+- 第三方包
 
 ```go
 //导包方法
@@ -31,7 +37,69 @@ import (
 )
 // 导当前工程下的自定义包
 import "pk1/pk2"
+
+// 有顺序的引入包, 不同的类型采用空格分离, 第一种是标准库, 第二种是项目包, 第三种是第三方包.
+import (
+    "encoding/json"
+    "strings"
+
+    "myproject/models"
+    "myproject/controller"
+    "myproject/utils"
+
+    "github.com/astaxie/beego"
+    "github.com/go-sql-driver/mysql"
+)
 ```
+
+#### 导包别名
+
+在导很长的包名时，使用简单的别名方式来缩短引用。
+
+```go
+// 导外部包取一个别名，调用这个外部包的导出函数时，使用 别名.函数名 的格式调用
+import dg "github.com/bwmarrin/discordgo"
+
+func main() {
+    err := dg.New()
+}
+
+// 导包避免冲突，当两个包有一样的名字时，可以取一个别名来处理冲突问题
+
+import (
+    "math/rand"
+    crand "crypto/rand"
+)
+```
+
+#### 空导入
+
+在 golang 种，导入包却不使用，和函数内声明变量但是并不使用一样，都会在编译错误。
+
+```go
+// 如果导入一个包，却不引用其中的变量和函数，编译报错
+//  imported and not used: "math/rand" 
+import (
+    "fmt"
+    "math/rand"
+    crand "crypto/rand"
+)
+func main() {
+    fmt.println("Go is great!")
+}
+
+// 使用 _ 的方式来导入空包，编译通过
+import (
+    "fmt"
+    _ "math/rand"
+    _ "crypto/rand"
+)
+func main() {
+    fmt.println("Go is great!")
+}
+```
+
+
 
 ### 标准库
 
@@ -66,16 +134,23 @@ func  Function_test3()  {
 ```go
 // function2.go
 package  pk3
+import (
+	"fmt"
+)
 
 func  Function_test4()  {
-     	println("function_test4"``)
+     	fmt.println("function_test4")
 }
 ```
 
 ```go
 // index.go
 package main
-import "pk1/pk2"
+import (
+    "fmt"
+    "pk1/pk2"
+    
+)
 func main() {
     pk3.Function_test4()
 }
@@ -201,9 +276,9 @@ i , j = j , i
 
 ### 指针
 
-指针的值，是一个变量的地址，使用指针，可以在不知道变量名的情况下，直接读取或操作变量值。
+指针，是一个变量的地址，使用指针，可以在不知道变量名的情况下，直接读取或操作变量值。
 
-声明一个整形变量 `var x int`，表达式 &(x) 获取一个指向整型变量的指针。这个表达式的类型就是整型指针（*int）。
+声明一个整形变量 `var x int`，表达式 &(x) 获取指向x这个整型变量的指针。这个表达式的类型就是整型指针（*int）。
 
 如果这个整形指针叫做 p , 那么说 p 指向 x , 或 p 包含 x 的地址，p 指向的变量写作 *p  。
 
@@ -280,17 +355,24 @@ fmt.Println(f() == f())  // "false"
 
 
 ```go
+// golang中没有指针运算， *p++ ，它表示 (*p)++ ：首先获取指针指向的值，然后对这个值加1，这与C中有区别。
 // 因为指针包含的是变量的值，所以把指针传参给函数，能够让函数间接更新指针指向的变量的值。
 // 函数返回值为int类型，函数传参为指向int类型的指针
 
+// 对于Go语言，严格意义上来讲，只有一种传递，也就是按值传递(by value)。
+// 当一个变量当作参数传递的时候，会创建一个变量的副本，然后传递给函数或者方法，你可以看到这个副本的地址和变量的地址是不一样的。
+// 当一个指针当作参数传递的时候，一个新的指针被创建，它指向变量指向的同样的内存地址。你可以将这个指针看成原始变量指针的副本。
+// 我们就可以理解成Go总是创建一个副本按值转递，只不过这个副本有时候是变量的副本，有时候是变量指针的副本。
+
+// 这个函数传参指针，返回值是int类型的变量
 func incr (p *int) int {
-	// 递增p所指向的值，p不变，在这里*p等价于v。
+	
     *p++
     rerurn *p
 }
 
-v := 1 
-incr(&v)  // 副作用:v现在等于2
+v := 1    // 短声明一个变量v，并赋值
+incr(&v)  // &v取这个变量的指针，也就是这个变量在内存中的地址，将这个变量的地址做为指针传参进上面那个函数，
 fmt.Println(incr(&v))  //"3" v现在是3 
 
 
@@ -336,9 +418,11 @@ func main (){
 另一种创建变量的方式是使用内置的 new 函数，表达式` new(T)` 创建一个未命名的 `T 类型变量` 。初始化为 T 类型的零值。并返回其地址。
 
 ```go
-// 声明一个int变量,
+// 当你动态申请内存的时候，指针的存在意义之一就被体现出来了，此时并没有变量能直接指向这块内存，所以只能通过内存地址来访问
+
+// 声明一个int变量，这个变量没有变量名，所以只能赋值给一个指针p,这个时候p是一个指针。
 p := new(int)
-// *p 取变量值，打印0
+// 通过 *p 取变量值，打印0
 fmt.Println(*p)
 *p = 2
 // 打印2
