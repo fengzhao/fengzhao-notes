@@ -1,4 +1,4 @@
-## 包和文件
+##  包和文件
 
 golang 以包来组织程序，包类似于其他语言中的库，一个包由一个或多个 .go 为文件名后缀的源代码文件组成。放在一个文件夹中，文件夹描述了包名的作用。
 
@@ -38,7 +38,7 @@ import (
 // 导当前工程下的自定义包
 import "pk1/pk2"
 
-// 有顺序的引入包, 不同的类型采用空格分离, 第一种是标准库, 第二种是项目包, 第三种是第三方包.
+// 导包规范：有顺序的引入包, 不同的类型采用空格分离, 第一种是标准库, 第二种是项目包, 第三种是第三方包.
 import (
     "encoding/json"
     "strings"
@@ -88,7 +88,7 @@ func main() {
     fmt.println("Go is great!")
 }
 
-// 使用 _ 的方式来导入空包，编译通过
+// 使用 _ 的方式来导入未被引用到的包，也可以编译通过，表示暂时不会用到这个包，后续可能会用到
 import (
     "fmt"
     _ "math/rand"
@@ -99,7 +99,35 @@ func main() {
 }
 ```
 
+#### 包的初始化
 
+包的初始化首先是解决包级变量的依赖顺序，然后按照包级变量声明出现的顺序依次初始化：
+
+```go
+var a = b + c  // a 第三个初始化, 为 3
+var b = f()    // b 第二个初始化, 为 2, 通过调用 f (依赖c)
+var c = 1      // c 第一个初始化, 为 1
+
+func f() int { return c + 1 }
+```
+
+
+
+如果包中含有多个.go源文件，它们将按照发给编译器的顺序进行初始化，Go语言的构建工具首先会将.go文件根据文件名排序，然后依次调用编译器编译
+
+对于在包级别声明的变量，如果有初始化表达式则用表达式初始化，还有一些没有初始化表达式的，例如某些表格数据初始化并不是一个简单的赋值过程。
+
+在这种情况下，我们可以用一个特殊的init初始化函数来简化初始化工作。每个文件都可以包含多个 init 初始化函数:
+
+```go
+func init() { /* ... */ }
+```
+
+这样的init初始化函数除了不能被调用或引用外，其他行为和普通函数类似。在每个文件中的 init 初始化函数，在程序开始执行时按照它们声明的顺序被自动调用。
+
+每个包在解决依赖的前提下，以导入声明的顺序初始化，每个包只会被初始化一次。因此，如果一个p包导入了q包，那么在p包初始化的时候可以认为q包必然已经初始化过了。
+
+初始化工作是自下而上进行的，main包最后被初始化。以这种方式，可以确保在main函数执行之前，所有依赖的包都已经完成初始化工作了。
 
 ### 标准库
 
@@ -184,6 +212,8 @@ func main() {
 
 ## 注释
 
+Go语言支持C风格的块注释 `/* */` 和C++风格的行注释 `//`。 行注释更为常用，而块注释则主要用作包的注释，当然也可在禁用一大段代码时使用。
+
 注释有两种形式：
 
 1. **行注释**以 `//` 开始，至行尾结束。一条行注释视为一个换行符。
@@ -197,9 +227,12 @@ func main() {
 
 golang 中 **函数、变量、常量、类型、语句、包名** 都遵循如下规则：
 
+- 包名小写
+
 - 字母或下划线开头，并区分大小写。
 - 单词组合名称时，使用驼峰命名法，例如：标准库中的函数使用 OuoteRuneToASCII 这种命名方法。
-- go 风格命名简洁，名称的作用域越大，就使用越长越有意义的名称。
+- go 风格命名简洁，名称的作用域越大，就使用越长越有意义的名称
+- 
 
 **实体作用域**
 
@@ -492,6 +525,7 @@ func gcd(x , y int) int {
 在 golang 中获取变量的数据类型，使用反射：
 
 ```go
+// 获取变量数据类型方法1：
 package main
 
 import (
@@ -503,7 +537,56 @@ func main() {
     var x int32 = 20
     fmt.Println("the type of x is :", reflect.TypeOf(x))
 }
+
+// 获取变量数据类型方法2：
+
+package main
+
+import "fmt"
+
+func typeof(v interface{}) string {
+    return fmt.Sprintf("%T", v)
+}
+
+func main() {
+	var a = 234
+	fmt.Print(typeof(a))
+}
+
 ```
+
+
+
+## 常量
+
+在程序运行期间，不能修改的量
+
+```go
+// 声明一个常量
+const pi = 3.1415926
+// 批量声明多个常量
+const （
+	statusOK = 200
+	notFound = 404
+）
+// 如果批量声明多个常量，后面的常量没有赋值，则取前面的常量值
+const (
+	n1 = 100
+    n2
+    n3
+)
+
+
+
+```
+
+
+
+### 常量计数器
+
+`iota` 是一个常量计数器，
+
+ 
 
 
 
@@ -570,11 +653,123 @@ fmt.Printf("%g\n", boilingF-FreezingC)
 
 
 
+## 数据类型
 
 
 
+### 整型
+
+```go
+// 无符号整型
+uint8       // 8位二进制，the set of all unsigned  8-bit integers (0 to 255)
+uint16      // 16位二进制，the set of all unsigned 16-bit integers (0 to 65535)
+uint32      // the set of all unsigned 32-bit integers (0 to 4294967295)
+uint64      // the set of all unsigned 64-bit integers (0 to 18446744073709551615)
+// byte类型一般用于强调数值是一个原始的数据而不是一个小的整数。
+byte        alias for uint8
+// rune类型通常用于表示一个Unicode码点
+rune        alias for int32
 
 
+// 有符号整型
+int8        the set of all signed  8-bit integers (-128 to 127)
+int16       the set of all signed 16-bit integers (-32768 to 32767)
+int32       the set of all signed 32-bit integers (-2147483648 to 2147483647)
+int64       the set of all signed 64-bit integers (-9223372036854775808 to 9223372036854775807)
+
+// 与平台有关的整型（32位架构或64位架构）
+uint     	// either 32 or 64 bits  
+int      	// same size as uint   即使在某一个架构中，int 和 int32 类型的变量有一样二进制位数，但是它们还是不是一样的类型
+
+
+// 通常声明一个整型变量，大多数都是 int 类型
+var i = 123 // i的类型是int类型
+
+
+```
+
+
+
+### 整型字面量
+
+二进制（binary）
+
+使用前缀 `0b` 或 `0B` 来表示二进制数，如 0b0010 
+
+
+
+八进制（octal）
+
+使用前缀 `0o` 或 `0O` 来表示八进制数，如 0o70
+
+
+
+十六进制
+
+使用前缀 `0x` or `0X` 来表示十六进制数，如
+
+
+
+为了可读性，在进制前缀和后面的数字之间，可以加上 `_` 这样的下划线来区分。
+
+
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	// 十六进制以0x_前缀开头表示
+	var i1 = 0x_ff
+	// 十进制正常表示
+	var i2 = 100
+	// 八进制以0o_前缀开头
+	var i3 = 0o_177
+	// 二进制以0b_前缀开头
+	var i4 = 0b_00001011
+	// 格式化输出时，%d 占位符表示十进制(decimal)
+	fmt.Println("十进制打印")
+	fmt.Printf("i1= %d %T\n", i1, i1)
+	fmt.Printf("i2= %d %T\n", i2, i2)
+	fmt.Printf("i3= %d %T\n", i3, i3)
+	fmt.Printf("i4= %d %T\n", i4, i4)
+	fmt.Println()
+	// 格式化输出时，%o 占位符表示八进制(octal)
+	fmt.Println("八进制打印")
+	fmt.Printf("i1= %o %T\n", i1, i1)
+	fmt.Printf("i2= %o %T\n", i2, i2)
+	fmt.Printf("i3= %o %T\n", i4, i4)
+	fmt.Println()
+	// 格式化输出时，%x 占位符表示十六进制(hexadecimal)
+	fmt.Println("十六进制打印")
+	fmt.Printf("i1= %x %T\n", i1, i1)
+	fmt.Printf("i2= %x %T\n", i2, i2)
+	fmt.Printf("i3= %x %T\n", i3, i3)
+	fmt.Printf("i4= %x %T\n", i4, i4)
+	fmt.Println()
+}
+
+// 程序输出：
+
+// 十进制打印
+// i1= 255 int
+// i2= 100 int
+// i3= 127 int
+// i4= 11 int
+
+// 八进制打印
+// i1= 377 int
+// i2= 144 int
+// i3= 13 int
+
+// 十六进制打印
+// i1= ff int
+// i2= 64 int
+// i3= 7f int
+// i4= b int
+
+```
 
 
 
