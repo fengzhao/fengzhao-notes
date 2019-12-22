@@ -171,6 +171,7 @@ default-character-set = utf8mb4
 
 [mysqld]
 #skip-grant-tables
+log_timestamps=SYSTEM
 user = mysql
 port = 3306
 basedir = /usr/local/mysql
