@@ -200,7 +200,6 @@
             }
         ],
         // 亮色或暗色主题，可选值 "light", "dark", "system"
-
         "requestedTheme" : "dark",
         "showTabsInTitlebar" : true,
         "showTerminalTitleInTitlebar" : true
@@ -227,9 +226,9 @@
             "useAcrylic" : false
         },
         {
-            "acrylicOpacity" : 0.75,
+            "acrylicOpacity" : 0.8,
             "closeOnExit" : true,
-            "colorScheme" : "Campbell",
+            "colorScheme" : "Atom",
             "commandline" : "cmd.exe",
             "cursorColor" : "#FFFFFF",
             "cursorShape" : "bar",
@@ -262,13 +261,14 @@
             //"fontFace": "Consolas",
             //"fontSize": 11,
 
+            // 亚克力效果
             "useAcrylic": true,
             "acrylicOpacity" : 0.8,
 
-            // "useAcrylic" : "true",
-            // "acrylicOpacity" : "0.5" ,
-            "source": "Windows.Terminal.Wsl"
-           // "colorScheme" : "Solarized Dark"
+
+            "source": "Windows.Terminal.Wsl",
+            // 配色主题
+            "colorScheme" : "Atom"
 
         }
     ],
@@ -378,6 +378,28 @@
             "red" : "#DC322F",
             "white" : "#EEE8D5",
             "yellow" : "#B58900"
+        },
+        {
+            "name": "Atom",
+            "black": "#000000",
+            "red": "#fd5ff1",
+            "green": "#87c38a",
+            "yellow": "#ffd7b1",
+            "blue": "#85befd",
+            "purple": "#b9b6fc",
+            "cyan": "#85befd",
+            "white": "#e0e0e0",
+            "brightBlack": "#000000",
+            "brightRed": "#fd5ff1",
+            "brightGreen": "#94fa36",
+            "brightYellow": "#f5ffa8",
+            "brightBlue": "#96cbfe",
+            "brightPurple": "#b9b6fc",
+            "brightCyan": "#85befd",
+            "brightWhite": "#e0e0e0",
+            "background": "#161719",
+            "foreground": "#c5c8c6"
         }
+        
     ]
 }
