@@ -1,0 +1,70 @@
+## go安装
+
+- 国外官网: https://golang.org/ 
+- 国内官网: https://golang.google.cn/ 
+- Go 语言中文网: https://studygolang.com/
+
+官网下载 [go1.13.5.windows-amd64.msi](https://dl.google.com/go/go1.13.5.windows-amd64.msi) 安装包，双击执行安装，安装路径选择 D:\Go （如果不存在，则在d盘新建这个目录），下一步下一步直接安装。
+
+默认情况下,安装 Go 语言后新增了 GOPATH 和 PATH 用户变量,同时修改了系统环境变量PATH。
+
+一般我喜欢保持 D盘 环境，所以安装之前在D盘新建 go  gopath 两个目录：
+
+- D:\go             go安装目录，自带的系统库，二进制文件等。
+- D:\gopath    工作区目录，工作区目录一般约定有三个子目录：
+  -  src 存放源代码（比如：.go .c .h .s等）   
+  -  kg 编译后生成的文件（比如：.a）   
+  -  bin 编译后生成的可执行文件，（为了方便，可以把此目录加入到 $PATH 变量中)
+
+修改 用户环境变量 ：GOPATH=D:\gopath
+
+GOPATH允许多个目录，当有多个目录时，请注意分隔符，多个目录的时候Windows是分号，Linux系统是冒号。
+
+当有多个GOPATH时，默认会将 go get 的内容放在第一个目录下。
+
+GOPATH下的 src 目录就是平时开发程序的主要目录，所有的源码都是放在这个目录下面，那么一般我们的做法就是一个目录一个项目。
+
+例如: $GOPATH/src/mymath 表示 mymath 这个应用包或者可执行应用，这个根据 package 是 main 还是其他来决定，main 的话就是可执行应用，其他的话就是应用包。
+
+这个会在后续详细介绍package。
+
+所以当新建应用或者一个代码包时都是在src目录下新建一个文件夹，文件夹名称一般是代码包名称，当然也允许多级目录，例如在src下面新建了目录$GOPATH/src/github.com/astaxie/beedb 那么这个包路径就是"github.com/astaxie/beedb"，包名称是最后一个目录beedb
+
+
+
+## Go环境变量
+
+
+
+- **$GOROOT:  Go 在你的电脑上的安装位置，它的值一般都是 $HOME/go，当然，你也可以安装在别的地方。**
+
+- $GOARCH：目标机器的处理器架构，它的值可以是 386、amd64 或 arm。（ 386理解为**x86架构**，amd64理解为**x86-64架构**）
+
+  - x86架构的特点是cpu的寄存器是32位的，因此也叫32位cpu。一般我们在32位cpu上安装32位操作系统。
+
+  - x86_64,x64,AMD64，在表示cpu架构的时候都是一个意思，表示cpu的寄存器是64位的，因此也叫64位cpu。一般我们在64位cpu上安装64位操作系统
+
+- $GOOS：目标机器的操作系统，它的值可以是 darwin、freebsd、linux 或 windows、android等等。
+- $GOBIN：go install 安装可执行文件所在的目录，默认是 $GOROOT/bin，如果你使用的是 Go 1.0.3 及以后的版本，一般情况下可以将它置空，Go 将会使用前面提到的默认值。
+- **GOPATH**： **工作区所在的绝对目录**
+
+
+
+任意目录下打开命令行窗口都能调用 Go 相关命令,比如 go version 和 go env ,这是因为安装 Go 时已自动追加了系统环境变量 PATH=%PATH%;:\Go\bin,如果上述验证失败,记得修改环境变量 PATH 试试看！
+
+
+
+## vscode 安装
+
+官网下载 [vscode](https://code.visualstudio.com/) ,下一步下一步安装。
+
+必备插件：
+
+- chinese 语言包
+- vscode-icons 
+- 
+
+
+
+
+
