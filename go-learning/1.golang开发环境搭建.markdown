@@ -54,7 +54,7 @@ GOPATH下的 src 目录就是平时开发程序的主要目录，所有的源码
 
 
 
-## vscode 安装
+## vscode 开发环境配置
 
 官网下载 [vscode](https://code.visualstudio.com/) ,下一步下一步安装。
 
@@ -62,9 +62,17 @@ GOPATH下的 src 目录就是平时开发程序的主要目录，所有的源码
 
 - chinese 语言包
 - vscode-icons 
-- 
+- go 
 
+**自定义 vscode 配置环境** https://blog.csdn.net/huayunhualuo/article/details/93060238
 
+**配置 vscode 代理**：
 
+下载 shadowsocks 配置 ss 代理
 
+在 vscode 中设置 proxy http://127.0.0.1:1081
+
+ctr+shift+p 打开命令面板，输入 go:install ，选择 Go:Install/Update tools，选择所有的 tools ，安装。
+
+## goland 开发环境配置
 
