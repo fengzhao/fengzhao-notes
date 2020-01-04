@@ -43,3 +43,39 @@ ubuntu1804.exe config --default-user root
 
 
 
+### WSL2访问Windows网络应用
+
+- 通过运行命令 `cat /etc/resolv.conf` 并在 `nameserver`术语后面复制 IP 地址，来获取主机的 IP 地址。
+- 使用复制的 IP 地址连接到任何 Windows server。
+
+
+
+```shell
+# 在 .bashrc 或 .zshrc 中添加下面的语句，使WSL共享WIN上的代理。
+# WSL2使用的是虚拟机技术和WSL第一版本不一样，和宿主windows不在同一个网络内
+# 获取宿主windows的ip
+export windows_host=`ipconfig.exe | grep -n4 WSL  | tail -n 1 | awk -F":" '{ print $2 }'  | sed 's/^[ \r\n\t]*//;s/[ \r\n\t]*$//'`
+
+# 假设宿主机windwos跑v2rayN，代理端口是1080
+# 假设你的宿主windows代理端口是1080, 在终端输入命令 proxy 开启代理，通过 unproxy 关闭代理，
+# curl 支持 http、https、socks4、socks5 . wget 支持 http、https
+
+ALL_PROXY:强制终端中的 wget、curl 等都走 SOCKS5 代理
+alias proxy='export http_proxy=socks5://$windows_host:1080; export https_proxy=socks5://$windows_host:1080; ALL_PROXY=socks5://$windows_host:1080'
+alias unproxy='unset http_proxy; unset https_proxy'
+# 强制终端中的 wget、curl 等都走 SOCKS5 代理
+export ALL_PROXY=socks5://127.0.0.1:1080
+# 设置git的代理
+if [ "`git config --global --get proxy.https`" != "socks5://$windows_host:1080" ]; then
+    git config --global proxy.https socks5://$windows_host:1080
+fi
+
+```
+
+
+
+https://segmentfault.com/a/1190000019682322
+
+
+
+https://www.goozp.com/article/105.html

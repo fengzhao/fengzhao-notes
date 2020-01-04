@@ -1,7 +1,13 @@
-"""""""""""""""""
+"==============================================================================
+" vim 内置配置 
+"==============================================================================
 
+" 设置 vimrc 修改保存后立刻生效，不用在重新打开
+" 建议配置完成后将这个关闭
+autocmd BufWritePost $MYVIMRC source $MYVIMRC
 
-""""""""""""""""""""""""""""""""""""""""""""vim 原生配置"""""""""""""""""""""""""""""""""""""""""""""""""""""""""
+" 关闭兼容模式
+set nocompatible
 " 默认字符编码
 set fenc=utf-8
 " 语法高亮
@@ -9,7 +15,6 @@ syntax on
 " 设置不折行
 set nowrap
 set showcmd
-syntax on
 " 设置高亮光标所在的行列
 set cursorcolumn
 set cursorline
@@ -35,13 +40,48 @@ set laststatus=2
 
 """"""""""""""""""""""""""""""""""""""""使用 vim-plug 来管理插件"""""""""""""""""""""""""""""""""""""""""""""""""
 call plug#begin('~/.vim/plugged')
+
 " 底部状态栏插件：显示VIM模式，文件编码类型，光标所在行数，列数
 Plug 'vim-airline/vim-airline'
+
+" 自动对齐
 Plug 'junegunn/vim-easy-align'
-" 颜色主题插件
-Plug 'flazz/vim-colorschemes'
-" 导航插件
+
+" 配色方案
+" colorscheme neodark
+Plug 'KeitaNakamura/neodark.vim'
+" colorscheme monokai
+Plug 'crusoexia/vim-monokai'
+" colorscheme github 
+Plug 'acarapetis/vim-colors-github'
+" colorscheme one 
+Plug 'rakr/vim-one'
+
+" go 主要插件
+Plug 'fatih/vim-go', { 'tag': '*' }
+
+" go 中的代码追踪，输入 gd 就可以自动跳转
+Plug 'dgryski/vim-godef'
+
+" 目录导航侧边栏插件
 Plug 'scrooloose/nerdtree'
+
+" 可以使 nerdtree 的 tab 更加友好些
+Plug 'jistr/vim-nerdtree-tabs'
+
+" 可以在导航目录中看到 git 版本信息
+Plug 'Xuyuanp/nerdtree-git-plugin'
+
+" 下面两个插件要配合使用，可以自动生成代码块
+Plug 'SirVer/ultisnips'
+Plug 'honza/vim-snippets'
+
+" 可以在 vim 中使用 tab 补全
+"Plug 'vim-scripts/SuperTab'
+
+" 可以在 vim 中自动完成
+"Plug 'Shougo/neocomplete.vim'
+
 call plug#end()
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 

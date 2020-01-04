@@ -76,3 +76,26 @@ ctr+shift+p 打开命令面板，输入 go:install ，选择 Go:Install/Update t
 
 ## goland 开发环境配置
 
+
+
+
+
+## Linux配置golang开发环境
+
+```shell
+cd /tmp
+# 使用curl或wget下载
+wget https://dl.google.com/go/go1.13.4.linux-amd64.tar.gz
+curl https://dl.google.com/go/go1.13.4.linux-amd64.tar.gz --output  go1.13.4.linux-amd64.tar.gz
+tar -C /usr/local -xzf go1.13.4.linux-amd64.tar.gz
+```
+
+
+
+
+
+# 环境变量
+export PATH=$PATH:/usr/local/go/bin
+
+
+

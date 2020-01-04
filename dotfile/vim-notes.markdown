@@ -65,5 +65,9 @@ curl https://raw.githubusercontent.com/fengzhao/fengzhao-notes/master/dotfile/.v
 
 
 
+## vim配置go开发环境
 
+
+
+> 本配置是在 Ubuntu 18.04 下完成的， vim 版本是 `VIM - Vi IMproved 8.0` ，开启 lantern （不考虑网络不通畅的情况）
 
