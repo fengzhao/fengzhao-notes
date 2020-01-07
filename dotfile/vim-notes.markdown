@@ -2,8 +2,6 @@
 
 Vim 是 Linux 下的编辑器，它的官网是 https://www.vim.org/ 。一般在 Linux 发行版中都已经安装好  Vim，安装目录一般是 /usr/share/vim/ 
 
-
-
 ### 帮助手册
 
 vimtutor 是 vim 自带的一个小教程，直接在终端中使用 vimtutor 命令就可以查看，使用 vimtutor zh 命令查看中文版。
@@ -145,5 +143,7 @@ yum -y --enablerepo=gf-plus install vim-enhanced sudo
 
 
 
+## 深入理解VIM
 
+https://blog.csdn.net/qq_27825451/article/details/100557133
 
