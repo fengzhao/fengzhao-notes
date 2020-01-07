@@ -67,11 +67,11 @@ Plug 'acarapetis/vim-colors-github'
 " colorscheme one 
 Plug 'rakr/vim-one'
 
-" go 主要插件
-Plug 'fatih/vim-go', { 'tag': '*' }
+" go 主要插件,require vim8+ version
+" Plug 'fatih/vim-go', { 'tag': '*' }
 
 " go 中的代码追踪，输入 gd 就可以自动跳转
-Plug 'dgryski/vim-godef'
+" Plug 'dgryski/vim-godef'
 
 " 目录导航侧边栏插件
 Plug 'scrooloose/nerdtree'
