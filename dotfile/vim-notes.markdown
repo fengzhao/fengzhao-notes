@@ -37,7 +37,7 @@ vimrc 是 Vim 的配置文件，这个文件分为全局配置文件和用户配
 # vim-plug官网：https://github.com/junegunn/vim-plug
 
 
-# 安装：把 plug.vim 文件下载到 ~/.vim/autoload/ 这个目录中
+# 安装的本质就是：把 plug.vim 文件下载到 ~/.vim/autoload/ 这个目录中
 
 # Linux/Unix VIM
 curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
@@ -88,10 +88,10 @@ sudo scl enable devtoolset-3 bash
 yum install ncurses-devel
 
 # 升级vim
-wget https://github.com/vim/vim/archive/v8.1.1053.tar.gz
-tar -zxvf v8.1.1053.tar.gz
+wget https://github.com/vim/vim/archive/v8.2.0096.tar.gz
+tar -zxvf v8.2.0096.tar.gz
 
-cd vim-8.1.1053/
+cd v8.2.0096/
 # 注意一下我们需要用configure配置一下安装的路径，将Vim8安装到自己账户的目录下，避免干扰到系统上的其他用户
 # ./configure --prefix=$HOME/.vim  –-enable-multibyte
 
@@ -136,7 +136,6 @@ rpm -Uvh http://mirror.ghettoforge.org/distributions/gf/gf-release-latest.gf.el7
 rpm --import http://mirror.ghettoforge.org/distributions/gf/RPM-GPG-KEY-gf.el7
 yum -y remove vim-minimal vim-common vim-enhanced sudo
 yum -y --enablerepo=gf-plus install vim-enhanced sudo
-
 ```
 
 
