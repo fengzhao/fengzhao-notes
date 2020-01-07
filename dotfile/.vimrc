@@ -83,14 +83,14 @@ Plug 'jistr/vim-nerdtree-tabs'
 Plug 'Xuyuanp/nerdtree-git-plugin'
 
 " 下面两个插件要配合使用，可以自动生成代码块
-Plug 'SirVer/ultisnips'
-Plug 'honza/vim-snippets'
+" Plug 'SirVer/ultisnips'
+" Plug 'honza/vim-snippets'
 
 " 可以在 vim 中使用 tab 补全
-"Plug 'vim-scripts/SuperTab'
+" Plug 'vim-scripts/SuperTab'
 
 " 可以在 vim 中自动完成
-"Plug 'Shougo/neocomplete.vim'
+" Plug 'Shougo/neocomplete.vim'
 
 call plug#end()
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
