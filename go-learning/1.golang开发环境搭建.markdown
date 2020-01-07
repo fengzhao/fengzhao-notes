@@ -37,16 +37,15 @@ GOPATH下的 src 目录就是平时开发程序的主要目录，所有的源码
 
 
 - **$GOROOT:  Go 在你的电脑上的安装位置，它的值一般都是 $HOME/go，当然，你也可以安装在别的地方。**
-
 - $GOARCH：目标机器的处理器架构，它的值可以是 386、amd64 或 arm。（ 386理解为**x86架构**，amd64理解为**x86-64架构**）
 
   - x86架构的特点是cpu的寄存器是32位的，因此也叫32位cpu。一般我们在32位cpu上安装32位操作系统。
 
   - x86_64,x64,AMD64，在表示cpu架构的时候都是一个意思，表示cpu的寄存器是64位的，因此也叫64位cpu。一般我们在64位cpu上安装64位操作系统
-
 - $GOOS：目标机器的操作系统，它的值可以是 darwin、freebsd、linux 或 windows、android等等。
 - $GOBIN：go install 安装可执行文件所在的目录，默认是 $GOROOT/bin，如果你使用的是 Go 1.0.3 及以后的版本，一般情况下可以将它置空，Go 将会使用前面提到的默认值。
 - **GOPATH**： **工作区所在的绝对目录**
+- 
 
 
 
@@ -62,7 +61,9 @@ GOPATH下的 src 目录就是平时开发程序的主要目录，所有的源码
 
 - chinese 语言包
 - vscode-icons 
-- go 
+- go
+- material theme
+-  
 
 **自定义 vscode 配置环境** https://blog.csdn.net/huayunhualuo/article/details/93060238
 
@@ -88,14 +89,22 @@ cd /tmp
 wget https://dl.google.com/go/go1.13.4.linux-amd64.tar.gz
 curl https://dl.google.com/go/go1.13.4.linux-amd64.tar.gz --output  go1.13.4.linux-amd64.tar.gz
 tar -C /usr/local -xzf go1.13.4.linux-amd64.tar.gz
+
+
+# ~/.zshrc 或 ~/.bashrc 中添加如下环境变量
+
+export GOROOT=/usr/local/go
+export GOPATH=/root/gopath
+export GOBIN=$GOPATH/bin
+export PATH=$PATH:$GOPATH/bin
+export PATH=$PATH:$GOROOT/bin
 ```
 
 
 
 
 
-# 环境变量
-export PATH=$PATH:/usr/local/go/bin
+
 
 
 

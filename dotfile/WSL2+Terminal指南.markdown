@@ -43,6 +43,92 @@ ubuntu1804.exe config --default-user root
 
 
 
+### Windows Terminal 配置文件
+
+Windows Terminal 配置文件主要分为：
+
+- globals
+- profiles
+- schemes
+
+
+
+#### 全局配置文件
+
+| 名称                          | 类型    | 说明                                                         |
+| ----------------------------- | ------- | ------------------------------------------------------------ |
+| `defaultProfile`              | string  | 默认使用的命令行配置的 GUID。                                |
+| `initialRows`                 | number  | 命令行窗口的宽度，以字符为单位。                             |
+| `initialCols`                 | number  | 命令行窗口的高度，以字符为单位。                             |
+| `alwaysShowTabs`              | boolean | 在只有一个命令行窗口时，是否显示选项卡。                     |
+| `showTerminalTitleInTitlebar` | boolean | 是否在窗口标题栏显示命令行程序的路径，设为`false`则固定显示 “Windows Terminal”。 |
+| `showTabsInTitlebar`          | boolean | 是否将选项卡显示在窗口标题栏的位置，设为`true`会无视`alwaysShowTabs`的设定，在标题栏显示选项卡。 |
+| `requestedTheme`              | string  | Windows Terminal 窗口的颜色主题，`light`和`dark`分别对应浅色和深色主题，`system`是与系统设置相同。 |
+
+#### 命令行配置
+
+| 名称                         | 类型    | 说明                                                         |
+| ---------------------------- | ------- | ------------------------------------------------------------ |
+| `startingDirectory`          | string  | 初始时的当前目录。                                           |
+| `guid`                       | string  | 命令行配置的 GUID，格式形如`{c1491760-c502-57a1-b9bf-696a5f735a34}`。 |
+| `name`                       | string  | 命令行配置的名称，显示在“添加窗口”按钮中。                   |
+| `icon`                       | string  | 命令行配置的图标路径，显示在选项卡和“添加窗口”按钮中。**路径中的斜杠`\`要转义写成`\\`。** |
+| `background`                 | string  | 窗口背景的颜色，格式为`#RRGGBB`。**会覆盖主题配色的背景色。** |
+| `colorscheme`                | string  | 使用的主题配色的名称。                                       |
+| `historySize`                | number  | 保存命令记录的数量。输入命令时按↑或↓就可以使用历史记录中的命令。 |
+| `snapOnInput`                | boolean | ？？？                                                       |
+| `cursorColor`                | string  | 光标的颜色。                                                 |
+| `cursorShape`                | string  | 光标的形状，可以设定的值为`emptyBox`、`filledBox`、`bar`、`vintage`、`underscore`。显示效果参见下图。 |
+| `commandline`                | string  | 新建命令行选项卡时运行的命令。                               |
+| `fontFace`                   | string  | 窗口使用的字体，支持 TTF 和 OTF 格式。                       |
+| `fontSize`                   | number  | 窗口使用的字体大小。                                         |
+| `useAcrylic`                 | boolean | 是否使用亚克力背景。                                         |
+| `acrylicOpacity`             | number  | 一个`0`到`1`的小数，设定亚克力背景的透明度。                 |
+| `backgroundImage`            | string  | 设定使用的背景图片的路径，**背景图片不能和亚克力同时使用**。 |
+| `backgroundImageOpacity`     | number  | 一个`0`到`1`的小数，设定背景图片的透明度。（不过图片下面的背景色固定为白色……也就是说这个参数只能用来将背景图片变量而不是变暗） |
+| `backgroundImageStretchMode` | string  | 背景图片的拉伸方式，可以设定的值为`fill`、`uniform`、`uniformToFill`、`none`。 |
+| `closeOnExit`                | boolean | 使用`exit`等命令退出命令行程序后，是否关闭命令行选项卡。     |
+| `padding`                    | string  | 按照`10, 20, 30, 40`的格式输入四个数值，设定命令行窗口的左上右下四个方向的边距，单位为像素。 |
+
+
+
+
+
+### Windows Terminal 快捷键
+
+|             |       |
+| ----------- | ----- |
+| 新开一个tab | ctr+t |
+| 关闭 tab    | ctr+w |
+| 下一个tab   |       |
+| 上一个tab   |       |
+|             |       |
+
+
+
+```json
+
+
+{ "command": "splitHorizontal", "keys": [ "alt+shift+-" ] },
+{ "command": "splitVertical", "keys": [ "alt+shift+plus" ] },
+{ "command": { "action": "moveFocus", "direction":"down" }, "keys": [ "alt+down" ] },
+{ "command": { "action": "moveFocus", "direction":"left" }, "keys": [ "alt+left" ] },
+{ "command": { "action": "moveFocus", "direction":"right" }, "keys": [ "alt+right" ] },
+{ "command": { "action": "moveFocus", "direction":"up" }, "keys": [ "alt+up" ] },
+{ "command": { "action": "resizePane", "direction":"down" }, "keys": [ "alt+shift+down" ] },
+{ "command": { "action": "resizePane", "direction":"left" }, "keys": [ "alt+shift+left" ] },
+{ "command": { "action": "resizePane", "direction":"right" }, "keys": [ "alt+shift+right" ] },
+{ "command": { "action": "resizePane", "direction":"up" }, "keys": [ "alt+shift+up" ] },
+```
+
+​      
+
+
+
+
+
+
+
 ### WSL2访问Windows网络应用
 
 - 通过运行命令 `cat /etc/resolv.conf` 并在 `nameserver`术语后面复制 IP 地址，来获取主机的 IP 地址。

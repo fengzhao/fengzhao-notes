@@ -261,7 +261,7 @@
             //"startingDirectory": "%USERPROFILE%",
 
             // 字体
-            //"fontFace": "Consolas",
+            "fontFace": "Fira Code",
             "fontSize": 13,
 
             "useAcrylic": true,

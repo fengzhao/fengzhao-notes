@@ -8,8 +8,18 @@ autocmd BufWritePost $MYVIMRC source $MYVIMRC
 
 " 关闭兼容模式
 set nocompatible
+
+
 " 默认字符编码
-set fenc=utf-8
+set fenc=utf-8 
+
+
+" 防止中文乱码
+set fileencodings=utf-8,gb2312,gb18030,gbk,ucs-bom,cp936,latin1
+set enc=utf8
+set fencs=utf8,gbk,gb2312,gb18030
+
+
 " 语法高亮
 syntax on
 " 设置不折行
