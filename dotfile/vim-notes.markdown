@@ -56,6 +56,9 @@ curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
 ```shell
 # 从github上下载vimrc配置文件到本地
 curl https://raw.githubusercontent.com/fengzhao/fengzhao-notes/master/dotfile/.vimrc  > ~/.vimrc
+
+
+curl --create-dirs    https://raw.githubusercontent.com/tomasr/molokai/master/colors/molokai.vim  -o ~/.vim/colors/molokai.vim    
 # 运行vim，进入命令模式，执行 PlugInstall 命令来安装插件
 ```
 
