@@ -25,7 +25,7 @@ wsl --set-default-version 2
 在应用商店搜索ubuntu，安装ubuntu18.04 
 
 ```shell
-# 验证发行版使用的WSL版本
+## 验证发行版使用的WSL版本
 wsl --list --verbose
 
 # 为root用户设置密码

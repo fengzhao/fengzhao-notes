@@ -34,7 +34,7 @@ vimrc 是 Vim 的配置文件，这个文件分为全局配置文件和用户配
 
 
 ```shell
-# vim-plug官网：https://github.com/junegunn/vim-plug
+## vim-plug官网：https://github.com/junegunn/vim-plug
 
 
 # 安装的本质就是：把 plug.vim 文件下载到 ~/.vim/autoload/ 这个目录中
@@ -78,7 +78,23 @@ curl --create-dirs    https://raw.githubusercontent.com/tomasr/molokai/master/co
 
 ## CentOS7 升级到 vim8  
 
-### 方法一：编译升级
+### 方法一：编译安装升级vim8 
+
+使用 `:version` 命令将向你展示当前正在运行的 Vim 的所有相关信息，包括它是如何编译的。
+
+第一行告诉你这个二进制文件的编译时间和版本号，比如：7.4。接下来的一行呈现 `Included patches: 1-1051`，这是补丁版本包。因此你 Vim 确切的版本号是 7.4.1051。
+
+Vim 的特性集区分被叫做 `tiny`，`small`，`normal`，`big` and `huge`，所有的都实现不同的功能子集。
+
+其实可以认为特性集就是编译参数的集合，当执行 :version 后，可以看到类似  `Tiny version without GUI` 或者 `Huge version with GUI` 的信息。
+
+`:version` 主要的输出内容是特性列表。`+clipboard` 意味这剪贴板功能被编译支持了，`-clipboard` 意味着剪贴板特性没有被编译支持。
+
+一些功能特性需要编译支持才能正常工作。例如：为了让 `:prof` 工作，你需要使用 `huge` 模式编译的 Vim，因为那种模式启用了 `+profile` 特性。
+
+如果你的输出情况并不是那样，并且你是从包管理器安装 Vim 的，确保你安装了 `vim-x`，`vim-x11`，`vim-gtk`，`vim-gnome` 这些包或者相似的，因为这些包通常都是 `huge` 模式编译的。
+
+
 
 
 
