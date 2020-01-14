@@ -74,3 +74,14 @@ alias sz='source ~/.zshrc'
 alias vi='vim'
 alias edit=$EDITOR
 export EDITOR= "vim"
+
+
+
+
+
+
+
+
+
+
+export LC_ALL=en_US.UTF-8

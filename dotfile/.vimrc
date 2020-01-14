@@ -8,8 +8,18 @@ autocmd BufWritePost $MYVIMRC source $MYVIMRC
 
 " 关闭兼容模式
 set nocompatible
+
+
 " 默认字符编码
-set fenc=utf-8
+set fenc=utf-8 
+
+
+" 防止中文乱码
+set fileencodings=utf-8,gb2312,gb18030,gbk,ucs-bom,cp936,latin1
+set enc=utf8
+set fencs=utf8,gbk,gb2312,gb18030
+
+
 " 语法高亮
 syntax on
 " 设置不折行
@@ -57,11 +67,11 @@ Plug 'acarapetis/vim-colors-github'
 " colorscheme one 
 Plug 'rakr/vim-one'
 
-" go 主要插件
-Plug 'fatih/vim-go', { 'tag': '*' }
+" go 主要插件,require vim8+ version
+" Plug 'fatih/vim-go', { 'tag': '*' }
 
 " go 中的代码追踪，输入 gd 就可以自动跳转
-Plug 'dgryski/vim-godef'
+" Plug 'dgryski/vim-godef'
 
 " 目录导航侧边栏插件
 Plug 'scrooloose/nerdtree'
@@ -73,14 +83,14 @@ Plug 'jistr/vim-nerdtree-tabs'
 Plug 'Xuyuanp/nerdtree-git-plugin'
 
 " 下面两个插件要配合使用，可以自动生成代码块
-Plug 'SirVer/ultisnips'
-Plug 'honza/vim-snippets'
+" Plug 'SirVer/ultisnips'
+" Plug 'honza/vim-snippets'
 
 " 可以在 vim 中使用 tab 补全
-"Plug 'vim-scripts/SuperTab'
+" Plug 'vim-scripts/SuperTab'
 
 " 可以在 vim 中自动完成
-"Plug 'Shougo/neocomplete.vim'
+" Plug 'Shougo/neocomplete.vim'
 
 call plug#end()
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
