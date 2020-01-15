@@ -10,17 +10,77 @@ InnoDB 存储引擎是基于磁盘存储的，并将其中的记录按照页的�
 
 
 
+
+
+
+
+### LRU List
+
+通常，数据库中的缓冲池是通过 LRU (Latest Recent Used) 算法来管理的，即最频繁使用的页在 LRU 最前端。
+
+在 buffer pool 中的的数据页可以认为是一个 LIST 列表，分为两个子列表 （New Sublist） （ Old Sublist）
+
+```shell
+# 这个参数控制着 New Sublist 和 Old Sublist 的比例
+innodb_old_blocks_pct=37
+```
+
+
+
+可以简单理解为 New Sublist 中的页都是最活跃的热点数据页。
+
+
+
+![](../resources/InnoDB-buffer-pool.png)
+
+MySQL默认在InnoDB缓冲池（而不是整个缓冲池）中仅保留最频繁访问页的25%  。
+
+在多数使用场景下，合理的选择是：保留最有用的数据页，比加载所有的页(很多页可能在后续的工作中并没有访问到)在缓冲池中要更快。
+
+
+
+### **缓冲池相关参数**
+
+```shell
+# 缓冲池实例数量，默认为1，不可以动态调整
+innodb_buffer_pool_instances=1
+# 缓冲池总大小，默认是128MB，一般设置为物理内存的70%左右。MySQL5.7.5之后可以动态调整，繁忙时不要动态调整。
+innodb_buffer_pool_size=134217728
+# 缓冲池配置时的基本单位，以块的形式配置，指明块大小，innodb_buffer_pool_size=innodb_buffer_pool_chunk_size * innodb_buffer_pool_instances * n 
+innodb_buffer_pool_chunk_size=128M # 默认内存块是128M，可以以1MB为单位(1048576 字节)增加或减少
+
+
+```
+
+### 缓冲池预热
+
+
+
 **缓冲池中的数据**
 
 具体来看，缓冲池中的页类型有：数据页，索引页，undo页，插入缓冲，自适应哈希索引，InnoDB存储的锁信息，数据字典信息等。不能简单的认为，缓冲池只是缓冲索引和数据页。
 
 
 
-### 刷脏
+## 刷脏
 
-**脏页**，
+**脏页**
+
+当事务提交后，数据刷到磁盘之前，此时内存中的数据页和磁盘中的数据是不一致的，我们把此时内存中的这些数据页成为脏页。
+
+**刷脏**
 
 
+
+
+
+### 多线程刷脏
+
+- 5.6版本以前，脏页的清理工作交由 master thread的；
+
+- Page cleaner thread是 5.6.2 引入的一个新线程（单线程），从master线程中卸下buffer pool刷脏页的工作独立出来的线程(默认是启一个线程)；
+
+- 5.7开始支持多线程刷脏页；
 
 
 
@@ -40,9 +100,22 @@ redo-log 和 binlog 是 两阶段提交的重点，
   - binlog 提交，通过 write() 将 binlog 内存日志数据写入文件系统缓存；
   - sync() 将 binlog 文件系统缓存日志数据永久写入磁盘；（这一步就可以给客户端返回事务提交成功）
   - InnoDB 内部提交，commit 阶段在存储引擎内提交，通过 innodb_flush_log_at_trx_commit 参数控制，使 undo 和 redo 永久写入磁盘。
-  - 
+  
+  
 
 
+
+**Prepare阶段：写 redo-log , 此时redo log处于prepare状态。注意这里可能只是写  innodb_log_buffer （这是内存中的重做日志缓冲区）**
+
+**Commit阶段：innodb释放锁，释放回滚段，设置提交状态，binlog持久化到磁盘，然后存储引擎层提交**
+
+![](../resources/prepare.png)
+
+
+
+
+
+![](../resources/commit.png)
 
 
 
