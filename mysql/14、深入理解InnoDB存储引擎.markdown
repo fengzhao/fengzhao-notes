@@ -29,6 +29,10 @@ innodb_old_blocks_pct=37
 
 可以简单理解为 New Sublist 中的页都是最活跃的热点数据页。
 
+当
+
+
+
 
 
 ![](../resources/InnoDB-buffer-pool.png)
