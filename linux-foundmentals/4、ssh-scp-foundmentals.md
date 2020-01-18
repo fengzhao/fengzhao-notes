@@ -442,6 +442,10 @@ $ sftp -oProxyCommand="nc -Xconnect -x127.0.0.1:1080 %h %p" USER@SSH_SERVER
 
 
 
+https://blog.csdn.net/DiamondXiao/article/details/52488628
+
+
+
 
 
 
