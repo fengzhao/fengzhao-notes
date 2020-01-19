@@ -423,6 +423,28 @@ $ ssh -oProxyCommand="nc -X5 -x127.0.0.1:1080 %h %p" USER@SSH_SERVER
 $ ssh -oProxyCommand="nc -Xconnect -x127.0.0.1:1080 %h %p" USER@SSH_SERVER
 ```
 
+有的时候你可能没法直接登录到某台服务器，而需要使用一台中间服务器进行中转，如公司内网服务器。首先确保你已经为服务器配置了公钥访问，并开启了agent forwarding，那么你需要添加如下配置到 `~/.ssh/config`
+
+```shell
+# github代理
+host github.com
+        user git
+        hostname github.com
+        identityfile /root/.ssh/vultr
+#       PreferredAuthentications publickey
+        ProxyCommand nc -x 172.31.32.1:1080 %h %p
+    
+    
+```
+
+
+
+
+
+
+
+
+
 scp/sftp 使用 socks5、http_connect 代理：
 
 ```shell
