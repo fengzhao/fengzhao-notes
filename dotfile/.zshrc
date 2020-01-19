@@ -51,6 +51,7 @@ HIST_STAMPS="yyyy-mm-dd"
 # z                           按照使用频率排序曾经进过的目录，进行模糊匹配
 # wd                          通过设置 tag，快速切换目录
 # colored-man-pages           'man'帮助文档页面开启高亮显示
+# ssh-agent                   自动开启ssh-agent程序
 
 
 plugins=(
@@ -58,8 +59,8 @@ plugins=(
   extract
   zsh-syntax-highlighting
   zsh-autosuggestions
-  x
   colored-man-pages
+  ssh-agent
 )
 
 
