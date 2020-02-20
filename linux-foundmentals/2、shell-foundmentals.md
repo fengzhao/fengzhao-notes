@@ -185,6 +185,40 @@ fengzhao@fengzhao-pc:~$
 
 
 
+
+
+```shell
+#!/bin/bash
+
+###############################################################################
+#
+#  Copyleft (C) 2020 FengZhao. All rights reserved.
+#   FileName：demo.sh
+#   Author：FengZhao
+#   Date：2020-02-18
+#   Description：可以传参多个文件名做为参数，检查每个文件是否包含 "foobar" 字符串，如果没有，则在行尾加上 "# foobar"
+#
+###############################################################################
+
+# Echo start time
+echo "Starting program at $(date)"
+
+echo "Running program $0 with $# arguments with pid $$"
+
+for file in "$@"; do
+        grep foobar "$file" > /dev/null 2>&1
+
+        if [[ "$?" -ne 0]]; then
+                echo "File $file does not have any foobar , add one"
+                echo "# foobar" >> "#file"
+        fi
+done
+
+
+```
+
+
+
 ``` shell
 # 第一行打印执行该脚本时传递的前 15 个参数
 # 第二行打印执行该脚本时传递的总参数个数
@@ -222,6 +256,8 @@ USAGE demo2.sh must two args
 fengzhao@fengzhao-pc:~$ bash demo2.sh  arg1  arg2
 arg1 arg2
 fengzhao@fengzhao-pc:~$
+
+
 ```
 
 **生产常用代码段**

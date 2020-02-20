@@ -330,7 +330,7 @@ var b,f,s = true , 2.3 , 'four'
 name := expression
 ```
 
-短变量主要用于局部变量声明。
+**短变量主要用于局部变量声明。**
 
 多变量声明也可以用短声明的方式进行声明：
 
@@ -351,6 +351,12 @@ f , err = os.Open(newname)
 // 多重赋值，交换i和j的值
 i , j = j , i
 ```
+
+
+
+### 变量的内存大小
+
+
 
 
 
@@ -556,7 +562,7 @@ func f(){
 ### 变量赋值
 
 ```go
-// 用欧几里得算法计算两个整数的最大公约数
+// 用欧几里得算法计算两个整数的最大公约数，多重赋值
 func gcd(x , y int) int {
     for y!= 0 {
         x , y = y , x % y
@@ -568,6 +574,21 @@ func gcd(x , y int) int {
 ```
 
 
+
+### 匿名变量
+
+我们在使用传统的强类型语言编程时，经常会出现这种情况，在调用函数时为了获取一个值，却因为该函数返回多个值而不得不定义一堆没用的变量。
+
+在Go中这种情况可以通过结合使用多重返回和匿名变量来避免这种丑陋的写法，让代码看起来更加优雅
+
+```go
+// 假设 GetName 函数返回三个值， 分别为 firstName，lastName 和 nickName
+func GetName() (firstName, lastName, nickName string) {
+	return "May", "Chan", "Chibi Maruko"
+}
+// 如果只想获得 nickName ，则函数调用语句可以用如下方式编写
+_, _, nickName := GetName()
+```
 
 
 
@@ -610,7 +631,32 @@ func main() {
 
 ## 常量
 
-在程序运行期间，不能修改的量
+在程序运行期间，不能修改的量。
+
+### 字面常量
+
+所谓字面常量（literal），是指程序中硬编码的常量。
+
+在其他语言中，常量通常有特定的类型，比如 `-12` 在C语言中会认为是一个 int 类型的常量。如果要指定一个值为`-12`的 long 类型常量，需要写成 `-12l`。
+
+Go语言的字面常量更接近我们自然语言中的常量概念，它是无类型的。只要这个常量在相应类型的值域范围内，就可以作为该类型的常量。
+
+Go的常量定义可以限定常量类型，但不是必需的。如果定义常量时没有指定类型，那么它与字面常量一样，是无类型常量。
+
+常量定义的右值也可以是一个在编译期计算的常量表达式，如：
+
+```go
+const mask = 1 << 3
+```
+
+由于常量的赋值是一个编译期行为，所以右值不能出现任何需要运行期才能得出结果的表达式，比如试图以如下方式定义常量就会导致编译错误。
+
+```go
+// 编译错误
+const Home = os.GetEnv("HOME")
+```
+
+
 
 ```go
 // 声明一个常量
@@ -639,9 +685,13 @@ const (
 
  
 
+### 枚举
+
+枚举指一系列相关的常量，比如下面关于一个下星期中每天的定义。const
 
 
-## 类型声明
+
+## 类型声明（type关键字）
 
 `type` 声明为定义一个新的`命名类型`，它和某个已知的类型使用同样的`底层类型`，它的格式如下：
 
@@ -816,6 +866,264 @@ func main() {
 // i3= 7f int
 // i4= b int
 
+
+```
+
+
+
+### 浮点数
+
+Go语言支持两种浮点数 float32 和 float64 
+
+32位浮点数最大值是 `math.MaxFloat32`
+
+64位浮点数最大值是 `math.MaxFloat64` ,  // 默认Go语言中的小数都是 float64 类型
+
+
+
+### nil
+
+golang中的`nil`，很多人都误以为与Java、PHP等编程语言中的null一样，但是实际上复杂很多，
+
+`nil` 为预声明的标示符，定义在`builtin/builtin.go` 中。
+
+```go
+// nil is a predeclared identifier representing the zero value for a
+// pointer, channel, func, interface, map, or slice type.
+// Type must be a pointer, channel, func, interface, map, or slice type
+var nil Type 
+
+// Type is here for the purposes of documentation only. It is a stand-in
+// for any Go type, but represents the same type for any given function
+// invocation.
+type Type int
+```
+
+#### nil的零值
+
+按照Go语言规范，任何类型在未初始化时都对应一个零值：布尔类型是false，整型是0，字符串是""，而**指针、函数、interface、slice、channel和map的零值都是nil。**
+
+Go 中的 nil 并不是一个关键字，
+
+
+
+业务中一般将`nil`值表示为异常。nil值的大小始终与其类型与`nil`值相同的`non-nil`值大小相同。因此, 表示不同零值的nil标识符可能具有不同的大小。
+
+
+
+```go
+f, err := os.Open(filename)
+if err != nil {
+	log.Println("Open file failed:", err)
+	return
+}
+defer f.Close()
+
+
+func Add(a ,b int) (ret int, err error)  {
+   if a < 0 || b < 0 {
+      err= errors.New("Should be non-negative numbers!")
+      return
+   }
+   return a+b ,nil
+
+}
+```
+
+
+
+### 复数
+
+`complex64` 和 `complex128` 分别表示复数的实部和虚部
+
+
+
+### 布尔类型
+
+Go 语言中以 `bool` 声明布尔型数据，布尔型只有 true 和 false 两个值。
+
+注意：
+
+- 布尔类型变量的默认值是 false 
+- Go 语言中不允许将整型强制转换为布尔型
+- 布尔型无法参与数值运算，也无法与其他类型转换
+
+if 和 for 语句的条件部分都是布尔类型的值，并且 `==` 和`<` 等比较操作也会产生布尔型的值。
+
+**Go语言对于值之间的比较有非常严格的限制，只有两个相同类型的值才可以进行比较**
+
+### 字符串
+
+Go语言中的字符串是原生数据类型，在内部实现使用 UTF-8 编码，相比之下， C/C++语言中并不存在原生的字符串类型，通常使用字符数组来表示，并以字符指针来传递。
+
+**字符串的值必须以双引号包裹**
+
+**Go语言中单引号包裹的是字符**
+
+```go
+// 字符串
+s := "Hello World"
+
+// 单独的字母，汉字，符号表示一个字符
+c1 = 'h'
+c2 = '1'
+
+// 字符串的内容可以用类似于数组下标的方式获取
+
+var s2 = s[0]  // s2="H"
+```
+
+
+
+多行字符串
+
+
+
+
+
+#### 字符串转义符
+
+
+
+|      |        |      |
+| ---- | ------ | ---- |
+| \n   | 换行符 |      |
+|      |        |      |
+|      |        |      |
+
+#### 字符串常用操作
+
+| 操作     | 方法                                    | 返回值                               |
+| -------- | --------------------------------------- | ------------------------------------ |
+| 长度     | len(s1)                                 | 返回字符串s1的长度                   |
+| 拼接     | s1+s2 或者 fmt.Sprint( "%s%s", s1 , s2) | 返回新字符串                         |
+| 分割     | strings.Split(s1 , "\\")                | 将s1字符串按 \ 分割                  |
+| 包含     | strings.Contains(s1, "Hello")           | 判断字符串中是否包含子串，返回布尔值 |
+| 前缀判断 | fmt.HasPrefix(s1, "prefix")             | 判断字符串前缀中是否包含，返回布尔值 |
+| 后缀判断 | strings.HasSuffix(s1,"suffix")          | 判断字符串后缀中是否包含，返回布尔值 |
+
+
+
+
+
+### 数组
+
+数组是Go语言编程中最常用的数据结构之一，指一系列同一类型数据的集合。
+
+数组是一种非常有用的数据结构，因为其占用的内存是连续分配的。由于内存连续，CPU能把正在使用的数据缓存更久的时间。
+
+
+
+```go
+// 声明一个数组，每个元素为对应类型的零值
+var array [5]int
+
+// 声明并初始化
+array1 := [5]int{10, 20, 30, 40, 50}
+
+// 数组的容量由初始化的值计算出来
+array2 := [...]int{10, 20, 30, 40, 50}
+
+// 特定元素初始化，其余元素零值
+array3 := [5]int{1: 10, 2: 20}
+
+// 数组中的元素是指针类型
+array4 := [5]*int{0: new(int), 1: new(int)}
+*array[0] = 10
+*array[1] = 20
+```
+
+
+
+**数组的操作**
+
+在 Go 语言里，数组是一个值。这意味着数组可以用在赋值操作中。变量名代表整个数组。因此，同样类型的数组可以赋值给另一个数组
+
+```go
+// 声明第一个包含 4 个元素的字符串数组
+var array1 [4]string
+
+// 声明并初始化第二个字符串数组
+array2 := [5]string{"Red", "Blue", "Green", "Yellow", "Pink"}
+
+// 只有当数组长度相同，数组元素的类型相同时，才能赋值
+// 将 array2 复制给 array1
+array1 = array2
+
+
+// 复制数值指针，只会复制指针值，
+// array1和array2这两组指针，都指向这些字符值的内存地址
+
+var array1 [3]*string
+
+array2 := [3]*string{new(string), new(string), new(string)}
+
+*array2[0] = "Red"
+*array2[1] = "Blue"
+*array2[2] = "Green"
+
+array1 = array2
+```
+
+
+
+**在函数间传递数组**
+
+根据内存和性能来看，在函数间传递数组是一个开销很大的操作。
+
+数组是值类型，所有的值类型变量在赋值和作为参数传递时都将产生一次复制动作。
+
+
+
+```go
+// 声明一个10W个整型的数组，需要8MB空间
+var array [1e6]int
+
+// 将数组传递给函数 foo
+foo(array)
+
+// 函数 foo 接受一个 100 万个整型值的数组
+func foo(array [1e6]int) {
+	...
+}
+
+// 每次函数 foo 被调用时，必须在栈上分配 8 MB 的内存，将数组中的值复制到内存中。
+
+
+// 这次函数接收的是指针，是一个指向 	100 万个整型值的数组的指针
+var array [1e6]int
+foo(&array)
+func foo(array *[1e6]int) {
+	...
+}
+```
+
+
+
+
+
+```go
+
+package main
+
+import "fmt"
+
+func modify(array [5]int)  {
+	array[0] = 10
+	fmt.Println("In modify function , array value is ",array)
+	
+}
+
+func main()  {
+	// 声明并初始化一个包含5个元素的整型数组
+	array := [5]int {1,2,3,4,5}
+	// 调用函数，实际并未修改原数组中的内容
+	modify(array)
+	// main函数打印数组，仍然是原数组的值
+	fmt.Println("In main(), array values is", array)
+
+}
+
 ```
 
 
@@ -824,7 +1132,224 @@ func main() {
 
 
 
+### 切片
 
+
+
+```go
+// 基于数组创建切片
+// 所有元素 mySlice = myArray[:] 
+// 前n个元素 mySlice = myArray[:5]
+// 从第n个元素开始，mySlice = myArray[5:]
+
+// mySlice = myArray[x:y:z]
+// 从第x个元素开始，第z个元素止，z-x是容量
+
+
+// 直接创建切片
+// make(元素类型,切片长度,切片容量)
+mySlice1 := make([]int, 5)
+// make(元素类型,切片长度) 长度和容量相同
+mySlice2 := make([]int, 5, 10)
+
+
+// 切片字面量
+// 创建字符串切片，其长度和容量都是 5 个元素
+slice := []string{"Red", "Blue", "Green", "Yellow", "Pink"}
+
+
+//  cap(slice) 返回切片的容量, len(slice) 返回切片的长度
+
+
+
+
+// nil切片
+// 程序可能需要声明一个值为 nil 的切片，只要声明时不做任何初始化就会创建 nil 切片
+
+// 创建 nil 整型切片
+var slice []int
+// 使用 make 创建空的整型切片变量
+slice := make([]int, 0)
+// 使用切片字面量创建空的整型切片变量
+slice := []int{}
+
+
+
+// 切片的 append 
+// 切片是引用类型，切片的修改也会对底层数组进行修改
+// 切片添加元素 , append() 第二个参数是一个不定长参数。所以 mySlice 是把第二个切片打散后传入
+// append(oldSlice , value1,value2 ... valueN)
+newSlice = append(newSlice, 60)
+mySlice = append(mySlice, mySlice2...)
+// 如果切片的底层数组没有足够的可用容量，append 函数会创建一个新的底层数组，将被引用的现有的值复制到新数组里
+// 当这个 append 操作完成后，newSlice 拥有一个全新的底层数组，这个数组的容量是原来的两倍
+// 函数 append 会智能地处理底层数组的容量增长。在切片的容量小于 1000 个元素时，总是会成倍地增加容量
+// 一旦元素个数超过 1000，容量的增长因子会设为 1.25，也就是会每次增加 25% 的容量
+
+
+
+
+// 切片的迭代
+
+slice := []string {"apple", "green" , "yellow" , "pink"}
+
+// 在迭代中只获取元素值
+for _ , value := range slice{
+	fmt.Printf("Value is %s\n",value)
+}
+
+// 从第 n 个元素开始迭代
+for index := 2; index < len(slice) ; index++ {
+	fmt.Printf("The Index %d of the Value is %s\n",index ,slice[index])
+}
+
+
+
+```
+
+
+
+### map
+
+在C++/Java中， map 一般都以库的方式提供，比如在C++中是STL的 std::map<> ，在C#中是Dictionary<> ，在Java中是 Hashmap<> ，在这些语言中，如果要使用 map ，事先要引用相应的库。
+
+在Go中，使用 map 不需要引入任何库，并且用起来也更加方便。
+
+**map 是一堆键值对的未排序集合。**可以用类似数组和切片的方式来迭代map中的元素。
+
+
+
+```go
+// 使用make声明一个map，键的类型是 string，值的类型是 int
+dict := make(map[string]int)
+// 声明一个存储能力为100的map
+myMap = make(map[string] PersonInfo, 100)
+// 声明并初始化map
+dict := map[string]string{"Red": "#da1337", "Orange": "#e95a22"}
+
+// 创建一个空map
+colors := map[string]string{}
+// 为map添加元素
+colors["Red"] = "#da1337"
+
+// map中的键不能是切片，函数，以及包含切片的结构类型。map中的值可以是任意类型
+// 创建一个map，key是int,value是字符串切片
+dict := map[int][]string{}
+
+
+// 声明一个nil的map
+var myMap map[string] PersonInfo
+
+
+// 判断map中是否存在某个key
+// 在其他语言中，判断值通常是三步：1.声明一个变量，2.从map中试图取值并赋给变量，3.判断该变量是否为空，如果为空则表示 map 中没有包含该变量
+// 在go中，map["key"]返回两个值：value表示这个key对应的value，exits表示key是否存在
+// 判断map中是否成功取到特定的键，不需要检查取到的值是否为 nil ，只需看第二个返回值 ok
+value, exists := colors["Blue"]
+// 这个键存在吗？
+if exists {
+	fmt.Println(value)
+}
+```
+
+
+
+
+
+## 函数
+
+函数构成代码执行的逻辑结构，在Go语言中，函数的基本组成为：关键字 func 、函数名、参数列表、返回值、函数体和返回语句。
+
+### 函数结构
+
+```go
+// func 函数名，参数列表，返回值列表，函数体，返回语句
+
+func Add(a int, b int) (ret int, err error) {
+	if a < 0 || b < 0 { 
+		err= errors.New("Should be non-negative numbers!")
+	return
+}
+	return a + b, nil   // 支持多重返回
+}
+
+
+
+
+```
+
+
+
+
+
+## 结构体
+
+Go 语言是一种静态类型的编程语言。这意味着，编译器需要在编译时知晓程序里每个值的类型。
+
+值的类型给编译器提供两部分信息：第一部分，需要分配多少内存给这个值（即值的规模）；第二部分，这段内存表示什么。
+
+
+
+Go 语言允许用户定义类型，当用户声明一个新类型时，这个声明就给编译器提供了一个框架，告知必要的内存大小和表示信息。
+
+
+
+
+
+### 方法
+
+关键字 func 和函数名之间的参数被称作接收者，将函数与接收者的类型绑在一起。如果一个函数有接收者，这个函数就被称为方法。
+
+```go
+type user struct {
+	name       string
+	email      string
+}
+
+
+// 声明值接收者声明的方法
+func (u user) notify() {
+	fmt.Printf("Sending User Email To %s<%s>\n", u.name, u.email)
+}
+
+// user类型的值可以调用方法
+// 这个语法与调用一个包里的函数看起来很类似,但在这个例子里，bill 不是包名，而是变量名，
+// 这段程序在调用 notify 方法时，使用 bill 的值作为接收者进行调用,方法 notify 会接收到 bill 的值的一个副本
+bill := user{"Bill", "bill@email.com"}
+bill.notify()
+
+// 也可以用指向 user 类型值的指针来调用这个值接收者方法
+// 可以认为 go 指向了 (*lisa).notify() 这种方式的调用，notify 操作的是一个副本，只不过这次操作的是从 lisa 指针指向的值的副本。
+lisa := &user{"Lisa", "lisa@email.com"}
+lisa.notify()
+
+
+
+
+
+
+// 声明指针接收者方法
+func (u *user) changeEmail(email string) {
+	u.email = email
+}
+
+
+// 这个接收者的类型是指向 user 类型值的指针，而不是 user 类型的值,调用这个方法时，这个方法会共享调用方法时接收者所指向的值
+
+
+```
+
+
+
+
+
+
+
+#### 值接收者
+
+
+
+#### 指针接收者
 
 
 
