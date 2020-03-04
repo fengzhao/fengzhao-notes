@@ -70,7 +70,9 @@ innodb_buffer_pool_chunk_size=128M # 默认内存块是128M，可以以1MB为单
 
 **缓冲池中的数据**
 
-具体来看，缓冲池中的页类型有：数据页，索引页，undo页，插入缓冲，自适应哈希索引，InnoDB存储的锁信息，数据字典信息等。不能简单的认为，缓冲池只是缓冲索引和数据页。
+具体来看，缓冲池中的页类型有：数据页，索引页，undo页，插入缓冲，自适应哈希索引，InnoDB存储的锁信息，数据字典信息等。
+
+不能简单的认为，缓冲池只是缓冲索引和数据页。
 
 
 
@@ -81,6 +83,8 @@ innodb_buffer_pool_chunk_size=128M # 默认内存块是128M，可以以1MB为单
 当事务提交后，数据刷到磁盘之前，此时内存中的数据页和磁盘中的数据是不一致的，我们把此时内存中的这些数据页成为脏页。
 
 **刷脏**
+
+
 
 
 
@@ -128,6 +132,50 @@ redo-log 和 binlog 是 两阶段提交的重点，
 
 
 ![](../resources/commit.png)
+
+
+
+
+
+### redo-log关键参数
+
+redo-log 默认是在 datadir 目录下，名为 `ib_logfile1` 和 `ib_logfile2` 这样的两个文件。
+
+```shell
+# 指定redo-log的存放目录，默认是"./"，即在datadir目录下，一般不建议放在datadir下，防止IO争用
+# 注意这个目录要提前创建好，并设置好正确的权限
+innodb_log_group_home_dir=/data/mysql_redo_log/
+# 单个redo-log文件的大小，默认是48MB
+# redo-log应该尽量设置的足够大，
+innodb_log_file_size=48MB
+# rego-log是以一组文件的形式出现。这个参数了指定了一组里面有多少个redo-log文件
+innodb_log_files_in_group
+# regolog文件的总大小就是等于 innodb_log_file_size*innodb_log_files_in_group
+
+# 这个参数是innodb的数据页大小单位，一般设置为
+innodb_page_size=16KB
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

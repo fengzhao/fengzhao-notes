@@ -82,6 +82,9 @@ C:\Windows\system32>DISM /online /Get-CurrentEdition
 
 C:\Windows\system32>DISM /online /Set-Edition:<edition ID> /ProductKey:XXXXX-XXXXX-XXXXX-XXXXX-XXXXX /AcceptEula
 
+// win-server-2012 转为正式版
+DISM /online  /Set-Edition:ServerDatacenter /ProductKey:W3GGN-FT8W3-Y4M27-J84CP-Q3VJ9 /AcceptEula
+
 ```
 
 `DISM /online /Get-CurrentEdition` 获取当前版本
