@@ -760,23 +760,29 @@ fmt.Printf("%g\n", boilingF-FreezingC)
 
 ### 整型
 
+#### 无符号整型
+
+| Type  | Size               | Range              |
+| :---- | :----------------- | :----------------- |
+| int8  | 8 bits             | -128 to 127        |
+| int16 | 16 bits            | -2^15^ to 2^15^ -1 |
+| int32 | 32 bits            | -2^31^ to 2^31^ -1 |
+| int64 | 64 bits            | -2^63^ to 2^63^ -1 |
+| int   | Platform dependent | Platform dependent |
+
+
+
+#### 有符号整型
+
+| Type   | Size               | Range              |
+| :----- | :----------------- | :----------------- |
+| uint8  | 8 bits             | 0 to 255           |
+| uint16 | 16 bits            | 0 to 2^16^ -1       |
+| uint32 | 32 bits            | 0 to 2^32^ -1      |
+| uint64 | 64 bits            | 0 to 2^64^ -1      |
+| uint   | Platform dependent | Platform dependent |
+
 ```go
-// 无符号整型
-uint8       // 8位二进制，the set of all unsigned  8-bit integers (0 to 255)
-uint16      // 16位二进制，the set of all unsigned 16-bit integers (0 to 65535)
-uint32      // the set of all unsigned 32-bit integers (0 to 4294967295)
-uint64      // the set of all unsigned 64-bit integers (0 to 18446744073709551615)
-// byte类型一般用于强调数值是一个原始的数据而不是一个小的整数。
-byte        alias for uint8
-// rune类型通常用于表示一个Unicode码点
-rune        alias for int32
-
-
-// 有符号整型
-int8        the set of all signed  8-bit integers (-128 to 127)
-int16       the set of all signed 16-bit integers (-32768 to 32767)
-int32       the set of all signed 32-bit integers (-2147483648 to 2147483647)
-int64       the set of all signed 64-bit integers (-9223372036854775808 to 9223372036854775807)
 
 // 与平台有关的整型（32位架构或64位架构）
 uint     	// either 32 or 64 bits  
@@ -789,7 +795,11 @@ var i = 123 // i的类型是int类型
 
 ```
 
+### 字符类型
 
+byte 和 rune 类型是 uint8 和 int32 的类型别名。
+
+在 go 中，没有char这种字符类型，byte 和 rune 是
 
 ### 整型字面量
 
@@ -951,6 +961,12 @@ Go 语言中以 `bool` 声明布尔型数据，布尔型只有 true 和 false �
 if 和 for 语句的条件部分都是布尔类型的值，并且 `==` 和`<` 等比较操作也会产生布尔型的值。
 
 **Go语言对于值之间的比较有非常严格的限制，只有两个相同类型的值才可以进行比较**
+
+
+
+
+
+
 
 ### 字符串
 

@@ -12,9 +12,10 @@
 安装环境
 
 - GNU/Linux 64位
+
 - 安装路径 /usr/local/nginx/
 
-
+  
 
 1. 安装依赖环境 
 
