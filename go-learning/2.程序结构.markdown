@@ -1285,18 +1285,46 @@ func Add(a int, b int) (ret int, err error) {
 	if a < 0 || b < 0 { 
 		err= errors.New("Should be non-negative numbers!")
 	return
-}
+	}
 	return a + b, nil   // 支持多重返回
 }
+// Go语言并不需要强制命名返回值，但是命名后的返回值可以让代码更清晰，可读性更强，
+
+
+// 调用多重返回函数时，可以忽略某个返回值
+n, _ := f.Read(buf)
+
+
+// 如果参数列表，返回值列表，中的多个参数的数据类型相同，可以合并
+func Add(a ,b int) (ret , num int, err error){
+    
+}
 
 
 
+// 不定参数，函数传入的参数数量是不确定的
+// ... type 这种格式只能存在于函数参数中，并且是最后一个参数
+// 类型 ...type 本质上是一个数组切片
+func myfunc(args ...int){
+    for _, arg := range args {
+		fmt.Println(arg)
+	}
+}
 
+
+// 任意类型的不定参数，指定类型为 interface{}
+// 下面是 Go 标准库中的fmt.Printf()的函数原型
+// 用 interface{} 传递任意类型数据是Go语言的?例用法
+func Printf(format string, args ...interface{}) {
+	// ...
+}
 ```
 
 
 
+### 匿名函数
 
+匿名函数由一个不带函数名的函数声明和函数体组成
 
 ## 结构体
 
