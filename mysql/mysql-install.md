@@ -163,7 +163,7 @@ $ chown -R mysql:mysql /data/mysql
 [client]
 port = 3306
 socket = /data/mysql/mysql.sock
-#default-character-set　=　utf8mb4
+# default-character-set　=　utf8mb4
 
 [mysql]
 no-auto-rehash
@@ -190,7 +190,14 @@ back_log = 1024
 
 ``` shell
 $ cd /tmp/
+
+# 5.7
 $ wget https://dev.mysql.com/get/Downloads/MySQL-5.7/mysql-5.7.24-linux-glibc2.12-x86_64.tar.gz
+
+# 8.0
+$ wget https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-8.0.18-linux-glibc2.12-x86_64.tar.xz
+
+
 ```
 
 #### 解压并安装
@@ -222,7 +229,12 @@ $ chkconfig mysql on
 
 ``` sql
 /usr/local/mysql/bin/mysql -u root -p  
-UPDATE mysql.user SET authentication_string=PASSWORD("123456") WHERE user='root' ;
+# 5.7
+UPDATE mysql.user SET authentication_string=PASSWORD("QH@123456") WHERE user='root';
+
+# 8.0
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'QH@123456';
+
 grant all privileges on *.* to 'root' @'%' identified by '123456';
 flush privileges;
 ```
