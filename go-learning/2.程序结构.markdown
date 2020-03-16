@@ -1324,7 +1324,187 @@ func Printf(format string, args ...interface{}) {
 
 ### 匿名函数
 
-匿名函数由一个不带函数名的函数声明和函数体组成
+匿名函数由一个不带函数名的函数声明和函数体组成，可以将函数赋值给变量
+
+```go
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+    // 声明一个函数，并将函数赋值给一个变量f
+	f := func() {
+		fmt.Println("hello world")
+	}
+	f()                   //hello world
+    // 打印变量数据类型
+	fmt.Printf("%T\n", f) //打印 func()
+}
+
+```
+
+
+
+```go
+package main
+
+import (
+   "fmt"
+)
+
+func main() {
+    // 声明匿名函数并赋值给一个变量，用变量名的方式去调用 
+   f:=func(args string){
+      fmt.Println(args)
+   }
+   f("hello world")//hello world
+   
+   // 直接将函数声明体括起来做为函数名，后跟括号来调用函数
+   (func(args string){
+        fmt.Println(args)
+    })("hello world")//hello world
+    
+    // 不用括号，直接调用
+    func(args string) {
+        fmt.Println(args)
+    }("hello world") //hello world
+
+```
+
+```go
+package main
+
+import (
+    "fmt"
+)
+
+func main() {
+	a := 1
+	b := 2
+	c := 3
+
+	r, _ = plus(a, b, c)
+	fmt.Println(r)
+
+}
+
+func plus(x, y int, z int) (name int, fun func()) {
+	sum1 := x + y + z
+	f := func() {
+		fmt.Println("hello world")
+	}
+    return sum1, f
+
+}
+
+```
+
+
+
+
+
+
+
+```go
+package main
+
+import (
+	"fmt"
+)
+
+func main() {
+   f1,f2:=F(1,2)
+   fmt.Println(f1(4))//6
+   fmt.Println(f2()) //6
+}
+// 声明一个函数，参数是两个int，返回值是两个函数（函数内部声明两个匿名函数并赋给变量）
+func F(x, y int)(func(int)int,func()int) {
+   // 调用 f1 的时候可以传 int 类型的参数，返回int类型的数据 
+   f1 := func(z int) int {
+      return (x + y) * z / 2
+   }
+
+   f2 := func() int {
+      return 2 * (x + y)
+   }
+   return f1,f2
+}
+```
+
+
+
+### 闭包
+
+闭包：说白了就是函数的嵌套，内层的函数可以使用外层函数的所有变量，即使外层函数已经执行完毕。
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+
+	// a是一个函数类型的变量，这里面也存了一个字符串变量x，每次调用a的时候，都会在 x 后面加 hello
+	a := Fun()
+	b := a(" hello")
+	c := a(" hello")
+	d := a(" hello")
+	fmt.Println(b) //world hello
+	fmt.Println(c) //world hello hello
+	fmt.Println(d) //world hello hello hello
+
+}
+
+// 声明一个名为 Fun 的函数, 这个函数的返回值的数据类型是一个函数，这个函数的参数和返回值的类型都是string
+func Fun() func(string) string {
+	x := "world"
+	return func(args string) string {
+		x += args
+		return x
+	}
+}
+
+```
+
+
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	a := 1
+	b := 2
+	c := 3
+
+	r, h := plus(a, b, c)
+	h()
+	//fmt.Printf(plus(a, b, c))
+	fmt.Println(r)
+	h()
+
+}
+
+func plus(x, y int, z int) (name int, fun func()) {
+	sum1 := x + y + z
+	f := func() {
+		fmt.Println("hello world")
+	}
+	f()
+	return sum1, f
+
+}
+
+```
+
+
+
+
+
+
 
 ## 结构体
 
