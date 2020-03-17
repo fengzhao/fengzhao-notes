@@ -9,6 +9,7 @@ OpenSSH 是一种 SSH 的开源实现。它是利用 OpenSSl 协议具体实现�
 在 Linux 中，sshd 是 OpenSSH SSH 得守护进程。用于在不可信网络上提供安全的连接通道。
 
  sshd 守护进程通常由root用户启动，它监听来自客户端的连接，然后为每个连接派生一个子进程。
+
  子进程负责处理密钥交换、加密、认证、执行命令、数据交换等具体事务。
 
 本文只记录 ssh 基本组件的用法，关于 ssh-agent 和 ssh-add 等命令，这里没有记录。
@@ -21,6 +22,7 @@ OpenSSH 是一种 SSH 的开源实现。它是利用 OpenSSl 协议具体实现�
 | [ssh-keygen](https://www.ssh.com/ssh/keygen/)  | 生成密钥对         |
 | [ssh-copy-id](https://www.ssh.com/ssh/copy-id) | 传输公钥到远程主机 |
 | [scp](https://www.ssh.com/ssh/scp/)            | 远程传输文件       |
+| [ssh-agent](<https://www.ssh.com/ssh/agent>)   |                    |
 
 
 
@@ -200,7 +202,7 @@ fengzhao@fengzhao-work:~$
 
 ### SSH端口转发
 
-SS H端口转发也被称作 SSH 隧道([SSH Tunnel](http://blog.trackets.com/2014/05/17/ssh-tunnel-local-and-remote-port-forwarding-explained-with-examples.html))，因为它们都是通过 SSH 登陆之后，在 **SSH客户端**与 **SSH服务端 **之间建立了一个隧道，从而进行通信。SSH隧道是非常安全的，因为SSH是通过加密传输数据的。
+SSH 端口转发也被称作 SSH 隧道([SSH Tunnel](http://blog.trackets.com/2014/05/17/ssh-tunnel-local-and-remote-port-forwarding-explained-with-examples.html))，因为它们都是通过 SSH 登陆之后，在 **SSH客户端**与 **SSH服务端 **之间建立了一个隧道，从而进行通信。SSH隧道是非常安全的，因为SSH是通过加密传输数据的。
 
 SSH有三种端口转发模式
 
@@ -218,10 +220,10 @@ SSH有三种端口转发模式
 
 所谓本地端口转发：是针对进行 SSH 操作的主机来说的，如下面的例子：端口转发命令是在 192.168.0.2 上执行的，所以 192.168.0.1 就叫本地，**本地端口转发**就是将发送到**本地主机端口**(192.168.0.2:8000)的请求，转到到**远程主机端口**(192.168.0.1:3000)。仿佛是通过 ssh 建立一个中间隧道一样。
 
-![SSH本地端口转发](/resources/SSH本地端口转发.jpg)
+![SSH本地端口转发](../resources/SSH本地端口转发.jpg)
 
 - 192.168.0.1——类比为远程的公网服务器，运行了 node 占用3000端口，仅对外开放 SSH 的 22 端口。
-- 192.168.0.2——类比为本地的端口转发服务器，将访问 192.168.0.2:8000 的请求转发到 192.168.168.1
+- 192.168.0.2——类比为本地的端口转发服务器，将访问 192.168.0.2:8000 的请求转发到 192.168.0.1
 - 192.168.0.3——类比为本地一个客户端，需要访问 192.168.0.1 上的 node 服务
 
 
@@ -275,7 +277,9 @@ root@fengzhao-work:~#
 在 192.168.0.2 上执行如下命令进行端口转发：
 
 ```shell
- ssh -NTfL  192.168.0.2:8000:192.168.0.1:3000 root@192.168.0.1
+# -L  [bind_address:]port:host:hostport 将发到本地端口的请求转发到远端的端口请求
+
+ssh -NTfL  192.168.0.2:8000:192.168.0.1:3000 root@192.168.0.1
 ```
 
 在 192.168.0.3 上访问 192.168.0.2： 
@@ -293,15 +297,15 @@ root@fengzhao-work:~#
 
 ```
 
-- N: 表示连接远程主机，不打开 shell
+- N: 表示连接远程主机，不打开 shell，不执行命令
 - T: 表示不为这个连接分配 TTY
 - f: 表示连接成功后，转入后台运行
-- L：表示本地端口转发
+- L：表示本地端口转发，-L  [bind_address:]port:host:hostport 
 
 SSH 本地端口转发的命令如下：
 
  ```shell
- ssh -L  本地地址:本地端口:远程地址:远程端口  远程服务器
+ ssh -L  本地地址:本地端口:远程地址:远程端口  user@remote-host-ip
  ```
 
 #### 远程端口转发
@@ -314,7 +318,7 @@ SSH 本地端口转发的命令如下：
 
 
 
-![SSH远程端口转发](/resources/SSH远程端口转发.png)
+![SSH远程端口转发](../resources/SSH远程端口转发.png)
 
 在 192.168.0.1 上运行 node 服务，占用 3000 端口。
 
