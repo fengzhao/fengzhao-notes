@@ -28,6 +28,7 @@ os包里面有个 file.go 文件，这个文件定义了很多文件操作。
 
 ```go
 // os/file.go源代码
+
 // Open()函数调用 OpenFile()函数来打开文件，用于读取，只读模式
 // 返回值是一个File类型的指针，代表了一个打开文件描述符
 func Open(name string) (*File, error) {

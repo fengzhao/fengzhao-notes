@@ -579,7 +579,7 @@ func gcd(x , y int) int {
 
 我们在使用传统的强类型语言编程时，经常会出现这种情况，在调用函数时为了获取一个值，却因为该函数返回多个值而不得不定义一堆没用的变量。
 
-在Go中这种情况可以通过结合使用多重返回和匿名变量来避免这种丑陋的写法，让代码看起来更加优雅
+在Go中这种情况可以通过结合使用多重返回和匿名变量来避免这种丑陋的写法，让代码看起来更加优雅。
 
 ```go
 // 假设 GetName 函数返回三个值， 分别为 firstName，lastName 和 nickName
@@ -597,7 +597,7 @@ _, _, nickName := GetName()
 在 golang 中获取变量的数据类型，使用反射：
 
 ```go
-// 获取变量数据类型方法1：
+// 获取变量数据类型方法1：通过反射
 package main
 
 import (
@@ -610,7 +610,7 @@ func main() {
     fmt.Println("the type of x is :", reflect.TypeOf(x))
 }
 
-// 获取变量数据类型方法2：
+// 获取变量数据类型方法2：自定义typeof方法
 
 package main
 
@@ -673,8 +673,6 @@ const (
     n3
 )
 
-
-
 ```
 
 
@@ -701,7 +699,8 @@ type name underlying-type
 
 类型的声明通常出现在包级别，一般在整个包内都可以可见，如果名字是导出的（开头大写），其他的包也可以访问到。
 
-译注：对于中文汉字，Unicode标志都作为小写字母处理，因此中文的命名默认不能导出；
+> 译注：对于中文汉字，Unicode标志都作为小写字母处理，因此中文的命名默认不能导出；
+>
 
 ```go
 // 进行华氏温度和摄氏温度的转换计算
@@ -893,7 +892,7 @@ Go语言支持两种浮点数 float32 和 float64
 
 ### nil
 
-golang中的`nil`，很多人都误以为与Java、PHP等编程语言中的null一样，但是实际上复杂很多，
+golang中的`nil`，很多人都误以为与Java、PHP 等编程语言中的null一样，但是实际上复杂很多，
 
 `nil` 为预声明的标示符，定义在`builtin/builtin.go` 中。
 
@@ -1011,9 +1010,9 @@ var s2 = s[0]  // s2="H"
 
 | 操作     | 方法                                    | 返回值                               |
 | -------- | --------------------------------------- | ------------------------------------ |
-| 长度     | len(s1)                                 | 返回字符串s1的长度                   |
+| 长度     | len(s1)                                 | 返回字符串 s1 的长度                 |
 | 拼接     | s1+s2 或者 fmt.Sprint( "%s%s", s1 , s2) | 返回新字符串                         |
-| 分割     | strings.Split(s1 , "\\")                | 将s1字符串按 \ 分割                  |
+| 分割     | strings.Split(s1 , "\\")                | 将 s1 字符串按 \ 分割                |
 | 包含     | strings.Contains(s1, "Hello")           | 判断字符串中是否包含子串，返回布尔值 |
 | 前缀判断 | fmt.HasPrefix(s1, "prefix")             | 判断字符串前缀中是否包含，返回布尔值 |
 | 后缀判断 | strings.HasSuffix(s1,"suffix")          | 判断字符串后缀中是否包含，返回布尔值 |
@@ -1339,10 +1338,15 @@ func main() {
 		fmt.Println("hello world")
 	}
 	f()                   //hello world
-    // 打印变量数据类型
+    // 打印变量的数据类型
 	fmt.Printf("%T\n", f) //打印 func()
 }
 
+
+
+// output:
+// hello world
+// func() 
 ```
 
 
@@ -1457,7 +1461,7 @@ func main() {
 
 }
 
-// 声明一个名为 Fun 的函数, 这个函数的返回值的数据类型是一个函数，这个函数的参数和返回值的类型都是string
+// 声明一个名为 Fun 的函数, 这个函数有一个返回值，数据类型是函数类型，这个函数类型的参数和返回值的类型都是string
 func Fun() func(string) string {
 	x := "world"
 	return func(args string) string {
@@ -1506,6 +1510,10 @@ func plus(x, y int, z int) (name int, fun func()) {
 
 
 
+
+
+
+
 ## 结构体
 
 Go 语言是一种静态类型的编程语言。这意味着，编译器需要在编译时知晓程序里每个值的类型。
@@ -1515,6 +1523,62 @@ Go 语言是一种静态类型的编程语言。这意味着，编译器需要�
 
 
 Go 语言允许用户定义类型，当用户声明一个新类型时，这个声明就给编译器提供了一个框架，告知必要的内存大小和表示信息。
+
+
+
+```go
+// user 在程序里定义一个用户类型
+// 结构类型通过组合一系列固定且唯一的字段来声明
+type user struct {
+	name       string
+	email      string
+	ext        int
+	privileged bool
+}
+
+// 零值声明user类型的变量
+var bill user
+
+// 任何时候，创建一个变量并初始化为其零值，习惯是使用关键字 var
+// 如果变量被初始化为某个非零值,就配合结构字面量和短变量声明操作符来创建变量
+
+// 声明user类型的变量
+Lisa := User{
+	name:       "Lisa",
+	email:      "lisa@email.com",
+	ext:        123,
+	privileged: true,
+}
+
+// 声明 user 类型的变量，这种形势，值的顺序必须和类型声明中的字段顺序一致
+lisa := user{"Lisa", "lisa@email.com", 123, true}
+
+
+
+// 定义一个新的结构体类型，这个结构体里面包含其他的自定义类型
+type admin struct {
+    person  user
+    level   string
+}
+
+
+// 先声明一个user类型的结构体字面量赋给person字段，再组合person和level一起组合成admin的结构体字面量
+tom :=  admin{
+    person := user{
+       	name:       "Lisa",
+		email:      "lisa@email.com",
+		ext:        123,
+		privileged: true, 
+    },
+    level: "superuser"
+}
+
+
+
+
+```
+
+
 
 
 

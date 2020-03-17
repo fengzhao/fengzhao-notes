@@ -14,6 +14,10 @@ redis 比较常见的作用，第一个是 cache，这是由于它的数据存�
 
 
 
+
+
+
+
 ## 安装
 
 ```shell
@@ -37,14 +41,15 @@ yum install redis
 
 
 
-
 # vim  /etc/sysctl.conf 设置内存参数
-# 内核参数overcommit_memory:内存分配策略，在Ubuntu中这个参数值默认是0，在
+# 内核参数overcommit_memory:内存分配策略，在Ubuntu和CentOS中这个参数值默认是0
+# 查看 cat /proc/sys/vm/overcommit_memory
 # 可选值：0、1、2。
 # 0， 表示内核将检查是否有足够的可用内存供应用进程使用；如果有足够的可用内存，内存申请允许；否则，内存申请失败，并把错误返回给应用进程。
 # 1， 表示内核允许分配所有的物理内存，而不管当前的内存状态如何。
 # 2， 表示内核允许分配超过所有物理内存和交换空间总和的内存
 vm.overcommit_memory = 1
+
 
 
 
@@ -57,19 +62,21 @@ vm.overcommit_memory = 1
 
 
 
-| 可执行文件               | 作用              |
-| ------------------------ | ----------------- |
-| /usr/bin/redis-cli       | redis客户端工具， |
-| /usr/bin/redis-check-rdb |                   |
-| /usr/bin/redis-server    |                   |
-| /usr/bin/redis-check-aof |                   |
-| /usr/bin/redis-benchmark |                   |
+| 可执行文件                            | 作用                        |
+| ------------------------------------- | --------------------------- |
+| /usr/bin/redis-cli                    | redis客户端工具，命令行工具 |
+| /usr/bin/redis-check-rdb              |                             |
+| /usr/bin/redis-server                 | redis服务端守护进程         |
+| /usr/bin/redis-check-aof              |                             |
+| /usr/bin/redis-benchmark              |                             |
+| /usr/lib/systemd/system/redis.service | redis启动脚本文件           |
+| /etc/redis.conf                       | redis配置文件               |
 
 
 
 #### redis-cli 
 
-与 MySQL 中的 mysql 二进制文件，redis-cli 也是一个客户端工具，使用 redis-cli  
+与 MySQL 中的 mysql 二进制文件，redis-cli 也是一个客户端工具，使用 redis-cli  去登陆
 
 
 
@@ -101,7 +108,7 @@ Redis 中的 Keys 是二进制安全的，这就意味着使用任何 **二进�
 
 - 使用非常大的 key 不是很好的选择，不仅仅是因为内存浪费，更是因为在数据集中搜索对比的时候需要耗费更多的成本。当要处理的是匹配一个非常大的值，从内存和带宽的角度来看，使用这个值的`hash`值是更好的办法（比如使用`SHA1`）。
 - 特别短的key通常也是不推荐的。在写像 u100flw 这样的键的时候，有一个小小的要点，我们可以用`user:1000:followers`代替。可读性更好，对于key对象和value对象增加的空间占用与此相比来说倒是次要的。当短的key可以很明显减少空间占用的时候。**这个例子就描述了使用 redis 一个场景：计数器。如：如知乎每个问题的被浏览次数，新浪微博的用户关注数，userid 为1000 这个用户的粉丝数这个 key 就可以用 "user:1000:followers" 这样的 key 名来表示 **。
-- 使用 schema 来限定域，例如使用  "object-type:id" 这种方式来表示，冒号和横线都可以用来分割域，例如  "comment​:123:​reply.to" or "comment​:123:​reply-to" 这样的格式。
+- 使用 schema 来限定域，例如使用  "object-type:id" 这种方式来表示，冒号和横线都可以用来分割域，例如  "comment:123:reply.to" or "comment:123:reply-to" 这样的格式。
 - **key 的最大限制是 512 MB。**  
 - 
 
@@ -418,6 +425,10 @@ TTL key
 
 
 
+
+
+
+https://liangshuang.name/2017/06/29/redis/
 
 
 

@@ -1,29 +1,46 @@
 ### URL结构
 
+
+
 ```go
+// net/url 源码
+
 type URL struct {
     Scheme   string
-    Opaque   string    // 编码后的不透明数据
-    User     *Userinfo // 用户名和密码信息
-    Host     string    // host或host:port
-    Path     string
-    RawQuery string // 编码后的查询字符串，没有'?'
-    Fragment string // 引用的片段（文档位置），没有'#'
+    Opaque   string      // 编码后的不透明数据
+    User     *Userinfo   // 用户名和密码信息
+    Host     string      // host或host:port
+    Path     string      // 路径
+    ForceQuery bool      // 
+    RawQuery string      // 编码后的查询字符串，没有'?'
+    Fragment string      // 引用的片段（文档位置），没有'#'
 }
 ```
 
 
 
+http://stxz.qh-1.cn/web_vue/dist/#/portal/login?jump=%2Fportal%2Flogin%3Fjump%3D%2Fportal%2Fdesktop
+
+
+
 ### URL 格式
 
+```shell
+[scheme:][//[userinfo@]host][/]path[?query][#fragment]
+
 "postgres://user:pass@host.com:5432/path?k=v#f"
+```
+
+
+
+
 
 
 
 ### URL解析
 
 ```go
-// Parse 将字符解析为URL对象
+// Parse 将字符串解析为URL对象
 func Parse(rawurl string) (url *URL, err error){
  	...   
 }
@@ -32,6 +49,8 @@ func Parse(rawurl string) (url *URL, err error){
 func ParseRequestURI(rawurl string) (url *URL, err error){
     ...
 }
+
+
 
 ```
 
@@ -62,25 +81,28 @@ import (
 
 func main() {
     // URL 示例，它包含了一个 scheme，认证信息，主机名，端口，路径，查询参数和片段。
-    s := "postgres://user:pass@host.com:5432/path?k=v#f"
+    s := "postgres://user:pass@192.168.2.159:5432/path?k=v#f"
+
+    
     //解析这个 URL 并确保解析没有出错
     u, err := url.Parse(s)
     if err != nil {
         panic(err)
     }
+    
 // scheme
     fmt.Println(u.Scheme)
-// User同时包括用户名和密码    
+// User 同时包括用户名和密码    
     fmt.Println(u.User)
     fmt.Println(u.User.Username())
     p, _ := u.User.Password()
     fmt.Println(p)
-//Host 同时包括主机名和端口信息，如过端口存在的话，使用 strings.Split() 从 Host 中手动提取端口。
+// Host 同时包括主机名和端口信息，如过端口存在的话，使用 strings.Split() 从 Host 中手动提取端口。
     fmt.Println(u.Host)
     h := strings.Split(u.Host, ":")
     fmt.Println(h[0])
     fmt.Println(h[1])
-//这里我们提出路径和查询片段信息。
+// 这里我们提出路径和查询片段信息。
     fmt.Println(u.Path)
     fmt.Println(u.Fragment)
 // 要得到字符串中的 k=v 这种格式的查询参数，可以使用 RawQuery 函数。你也可以将查询参数解析为一个map。
@@ -89,9 +111,25 @@ func main() {
     m, _ := url.ParseQuery(u.RawQuery)
     fmt.Println(m)
     fmt.Println(m["k"][0])
-    
-    
-    
+           
 }
+
+
+
+F:\golang>go run urltest.go
+postgres
+user:pass
+user
+pass
+192.168.2.159:5432
+192.168.2.159
+5432
+/path
+f
+k=v
+map[k:[v]]
+v
+
+F:\golang>
 ```
 

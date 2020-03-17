@@ -458,9 +458,15 @@ fengzhao@fengzhao-pc:~$
 
 
 
+## 3、shell  逻辑运算符
 
 
 
+
+
+顺序执行 
+
+​	
 
 
 
