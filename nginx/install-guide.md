@@ -21,14 +21,13 @@
 
    redhat 和 centos 系
    ```shell
-   $ yum -y install pcre openssl opssl-devel  # pcre支持url重写，openssl是https协议用到的库
+   # pcre支持url重写，openssl是https协议用到的库
+   yum -y install gcc pcre pcre-devel zlib zlib-devel openssl openssl-devel gcc-c++ autoconf automake make
    ```
-   debian 和 Ubuntu 系
-
+debian 和 Ubuntu 系
+   
    ```shell
-   $ sudo apt-get install libpcre3 libpcre3-dev
-   $ sudo apt-get install openssl libssl-dev libperl-dev
-   $ sudo apt-get install -y zlib1g zlib1g-dev
+   sudo apt-get install libpcre3 libpcre3-dev openssl libssl-dev libperl-dev zlib1g zlib1g-dev
    ```
 
 

@@ -60,7 +60,7 @@ win10 原版镜像自带了很多冗余的一大堆应用，包括一些UWP应�
 5、激活，一般找个 kms server 就可以用 kms 方式激活了(使用管理员身份运行 cmd )。
 
         slmgr.vbs -ipk W269N-WFGWX-YVC9B-4J6C9-T83GX
-        slmgr.vbs -skms kms.serveryoufind
+        slmgr.vbs -skms  ali.fengzhao.me: kms.serveryoufind
         slmgr.vbs -ato
 
 
