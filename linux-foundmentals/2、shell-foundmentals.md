@@ -121,9 +121,9 @@ fengzhao@fengzhao-pc:~$
 
 前面的是介绍变量定义的命令，并不严谨。有几条基本准测：变量定义中，key=value 中的等号两边不能有任何空格。常见的错误之一就是等号两边有空格。
 
-定义变量时，有三种定义方式，即 key=value,key='value',key="value" 这三种形式。
+定义变量时，有三种定义方式，即 key=value , key='value' , key="value" 这三种形式。
 
-- 不加引号，value中有变量的会被解析后再输出。
+- **不加引号，value中有变量的会被解析后再输出。**
 ```shell
 fengzhao@fengzhao-pc:~$ DEMO1=1234$PWD
 fengzhao@fengzhao-pc:~$ echo $DEMO1
@@ -131,30 +131,69 @@ fengzhao@fengzhao-pc:~$ echo $DEMO1
 fengzhao@fengzhao-pc:~$
 ```
 
-- 单引号，单引号里面是什么，输出变量就是什么，即使 value 内容中有命令和变量时，也会原样输出。
+- **单引号，单引号里面是什么，输出变量就是什么，即使 value 内容中有命令和变量时，也会原样输出。**（适用于显示字符串，即 raw string ）
 ``` shell
 fengzhao@fengzhao-pc:~$ DEMO2='1234$PWD'
 fengzhao@fengzhao-pc:~$ echo $DEMO2
 1234$PWD
 fengzhao@fengzhao-pc:~$
 ```
-- 双引号，输出变量时引号中的变量和命令和经过解析后再输出。
+- **双引号，输出变量时引号中的变量和命令和经过解析后再输出。(适用于字符串中附带有变量内容的定义)**
 ``` shell
 fengzhao@fengzhao-pc:~$ DEMO4="1234$(pwd)"
-fengzhao@fengzhao-pc:~$ echo $DEMO4
+fengzhao@fengzhao-pc:~$ echo ${DEMO4}
 1234/home/fengzhao
 fengzhao@fengzhao-pc:~$
 
 fengzhao@fengzhao-pc:~$ DEMO5="1234$DEMO4"
-fengzhao@fengzhao-pc:~$ echo $DEMO5
+fengzhao@fengzhao-pc:~$ echo ${DEMO5}
 12341234/home/fengzhao
 fengzhao@fengzhao-pc:~$
 
 ```
 
+- **反引号，一般用于命令，要把命令执行后的结果赋给变量**
+
+```shell
+root@vpsServer:~# echo `date`
+Tue Apr 7 21:26:16 CST 2020
+root@vpsServer:~#
+root@vpsServer:~# a=`date`
+root@vpsServer:~# echo ${a}
+Tue Apr 7 21:26:25 CST 2020
+root@vpsServer:~#
+# 第二种办法
+root@vpsServer:~# a=$(date)
+root@vpsServer:~# echo $a
+Tue Apr  7 21:40:53 CST 2020
+```
+
+- **变量合并，多个变量合并在一起组成一个变量**
+
+```shell
+SOFRWARE_NAME="MySQL"
+VERSION="5.7.26"
+
+SOFTWARE_FULLNAME="${SOFTWARE_NAME}-${VERSION}.tar.gz"
+echo ${SOFTWARE_FULLNAME}
+
+MySQL-5.7.26.tar.gz
+
+```
+
+- **变量使用**
+
+```shell
+在使用变量的时候，一般用 ${VIRABLE_NAME}
+```
+
+
+
 ### 2.3、常用环境变量
 
-环境变量是操作系统中的软件运行时的一些参数，环境变量一般是由变量名和变量值组成的键值对来表示。应用程序通过读取变量名来获取变量值。通过和设置环境变量，可以调整软件运行时的一些参数。最著名的操作系统变量就是 PATH 了。在 windows 和 linux 都存在这个环境变量。它表示在命令行中执行命令时的查找路径。在 Linux 命令行中，可以通过 echo $VARIABLENAME 来查看变量值。
+环境变量是操作系统中的软件运行时的一些参数，环境变量一般是由变量名和变量值组成的键值对来表示。应用程序通过读取变量名来获取变量值。通过和设置环境变量，可以调整软件运行时的一些参数。
+
+最著名的操作系统变量就是 PATH 。在 windows 和 linux 都存在这个环境变量。它表示在命令行中执行命令时的查找路径。在 Linux 命令行中，可以通过 echo $VARIABLENAME 来查看变量值。
 
 常用环境变量
 
@@ -470,9 +509,127 @@ fengzhao@fengzhao-pc:~$
 
 
 
+## 4、标准输入输出重定向
 
 
 
+程序=指令+数据
+
+当命令解释程序（即shell）运行一个程序的时候，它将打开三个文件，对应当文件描述符分别为0，1，2，依次表示标准输入、标准输出、标准错误。
+
+一个程序的执行，一般都会有标准输入和标准输出，例如 ls 如果不跟参数，标准输入就是当前路径，标准输出就是列出当前目录和文件
+
+读入数据：input
+
+输出数据：output
+
+文件描述符：每一个打开的文件，都有一个fd（file descriptor）
+
+- 标准输入：keyboard（键盘），文件描述符用0表示。  /dev/stdin
+
+- 标准输出：monitor（监视器），文件描述符用1表示。 /dev/sdtout
+
+- 标准错误：monitor（监视器），文件描述符用2表示。 /dev/stderr
+
+
+
+### 标准输出重定向
+
+
+
+**标准输出重定向：一般是把程序运行结果重定向到文件中。**
+
+​	command > new_position          覆盖重定向：覆盖文件，多次执行后，文件中只保留最后一次执行结果。
+
+​	command >> new_position        追加重定向：追加文件，多次执行，每次都在文件中追加执行结果。
+
+​	set -C ： 禁止将内容覆盖重定向到已有文件中。当这个开启后，不允许直接对已有文件进行覆盖重定向。
+
+​	强制覆盖：command >| new_position
+
+​	set +C :   打开之后，可以进行覆盖重定向。
+
+
+
+### 标准错误重定向
+
+
+
+**标准错误重定向：把错误输出流进行重定向 **
+
+ 	command 2> new_position       覆盖
+
+​	 command 2>> new_position     追加
+
+
+
+**标准输出和标准错误各自重定向至不同位置**：
+
+​	如果成功了，后面是空，如果失败了，前面是空
+
+​	command   >   /path/file.out         2>  /path/file.error
+
+
+
+**将标准输出和标准错误重定向到同一个位置：**
+
+​	command  &>   /path/file.out       追加
+
+​	command  &>>   /path/file.out     覆盖
+
+​	特殊用法： command  >   /path/file.out   2> &1
+
+
+
+### 标准输入重定向
+
+
+
+**标准输入重定向：**
+
+​	command < file.txt    
+
+​	举个例子 file.txt 的内容是 /root 
+
+​	当前执行 `ls <  dir.txt > result.txt`  的时候，就是把 `dir.txt` 做为 ls 的标准输入，把 `result.txt` 做为 ls 的标准输出
+
+
+
+<https://www.cnblogs.com/sparkdev/p/10247187.html>
+
+
+
+### 管道
+
+
+
+在 Linux 中，管道符 | 是一个经常用的命令，管道的本质实际上就是 Linux 里面的进程间通讯。
+
+
+
+把一个程序的输出直接连接到另一个程序的输入，Linux的管道主要包括两种：无名管道和有名管道。
+
+
+
+#### 无名管道
+
+ 无名管道是Linux中管道通信的一种原始方法，它具有以下特点：
+
+- 它只能用于具有亲缘关系的进程之间的通信（也就是父子进程或者兄弟进程之间）；
+- 它是一个半双工的通信模式，具有固定的读端和写端；
+- 管道也可以看成是一种特殊的文件，对于它的读写也可以使用普通的 read()、write()等函数。但它不是普通的文件，并不属于其他任何文件系统并且只存在于内存中。
+
+
+
+
+
+<https://www.cnblogs.com/electronic/p/10939995.html>
+
+
+
+## 5、后台进程
+
+​	
 
 
 
