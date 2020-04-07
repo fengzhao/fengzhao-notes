@@ -89,6 +89,19 @@ net start mysql
 mysql -u root -p
 use mysql;
 update user set authentication_string=PASSWORD("123456AWS!@#") where user="root";
+
+
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '9kYsmoEt';
+
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY "KWUjpCEI" ;
+
+
+ALTER USER `root`@`localhost` IDENTIFIED WITH mysql_native_password BY '9kYsmoEt';
+
+
+ALTER USER `root`@`localhost` IDENTIFIED BY '9kYsmoEt';
+
+
 flush privileges;
 quit;
 ```
@@ -174,7 +187,9 @@ default-character-set = utf8mb4
 log_timestamps=SYSTEM
 user = mysql
 port = 3306
+
 basedir = /usr/local/mysql
+
 log_error = /data/mysql/
 datadir = /data/mysql/
 socket = /data/mysql/mysql.sock
