@@ -53,6 +53,43 @@ vm.overcommit_memory = 1
 
 
 
+# docker版本
+docker pull redis:latest
+
+
+REDIS=/home/ybd/data/docker/redis && \
+docker run -p 6379:6379 --restart=always \
+-v $REDIS/redis.conf:/usr/local/etc/redis/redis.conf \
+-v $REDIS/data:/data \
+--name redis -d redis \
+redis-server /usr/local/etc/redis/redis.conf --appendonly yes
+
+
+
+
+# docker-compose.yml 
+version: '3'
+services:
+  redis:
+    image: redis:latest
+#    command: ["redis-server", "--appendonly", "yes"]
+    command: ["redis-server", "/usr/local/etc/redis/redis.conf"]
+    restart: always
+    ports:
+      - "6379:6379"
+    networks:
+      backend-swarm:
+        aliases:
+         - redis
+    volumes:
+      - ./data:/data
+      - ./config/redis.conf:/usr/local/etc/redis/redis.conf
+
+# docker network create -d=overlay --attachable backend
+networks:
+  backend-swarm:
+    external:
+      name: backend-swarm
 
 ```
 
@@ -68,7 +105,7 @@ vm.overcommit_memory = 1
 | /usr/bin/redis-check-rdb              |                             |
 | /usr/bin/redis-server                 | redis服务端守护进程         |
 | /usr/bin/redis-check-aof              |                             |
-| /usr/bin/redis-benchmark              |                             |
+| /usr/bin/redis-benchmark              | redis性能测试工具           |
 | /usr/lib/systemd/system/redis.service | redis启动脚本文件           |
 | /etc/redis.conf                       | redis配置文件               |
 
@@ -350,7 +387,7 @@ OK
 
 
 
-### 操作和查询 key 空间
+### 操作和查询 key 
 
 有些命令不是针对某个特定的数据类型的，但是和`key`空间交互的时候是非常有用的，所以，可以使用在任意类型的`key`之上。
 
