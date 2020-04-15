@@ -55,8 +55,44 @@ $ chsh -s /bin/zsh  # 修改当前用户的 shell
 ### 1.4、Shell 配置文件
 
 - ~/.zshrc 和 ~/.bashrc：分别是当前用户的 bash 和 zsh 的配置文件，这个文件是用户级别的，当用户登陆打开终端后每一个shell进程生成时，执行的一组命令，包括设置别名，提示文本，颜色等设置。
-
 - ~/.bash_history 和 ~/.zshhistory  记录用户运行的历史命令。
+
+
+
+### 1.5 、Shell 脚本的运行方式
+
+- 赋予脚本文件可执行权限，直接运行该脚本，系统靠文件第一行的 [shebang](https://blog.wolfogre.com/redirect/v3/A8gOfTBRYllgozADe6yKtmASAwM8Cv46xcXbEm5BCP5rCNCBBG4qO8VBCP5rCMX-UxBaGjsxEgMDPAr-OsXFWhYGO25BBhbcOyH9xTwGTQrFTcU) 来确定解释器。（解释器可以是 py，bash，perl）
+
+  比如，以 ./startup.sh 这样直接运行
+
+- 运行解释器，并将脚本文件名作为参数传入。
+
+  比如，以 bash  startup.sh  这样运行
+
+- 启动解释器，解释器从标准输入读取内容并执行（如果这个标准输入是用户键盘，那就是所谓的“交互式执行”）。
+
+  比如，非常流行的直接运行网络上的脚本。
+
+  ```shell
+  curl -sSL https://get.daocloud.io/daotools/set_mirror.sh | sh -s http://f1361db2.m.daocloud.io
+  
+  # sh -s 用于从标准输入中读取命令，命令在子shell中执行
+  # 当sh -s 后面跟的参数,从第一个非 - 开头的参数，就被赋值为子shell的$1,$2,$3....
+  
+  ## 本质就是下载 set_mirror.sh 这个脚本，然后再执行 ./set_mirror.sh  http://f1361db2.m.daocloud.io
+  ```
+
+- 使用 source shellscript.sh 或 . shellscript.sh 这种格式去运行。
+
+source 的意思是读入或加载指定的 shell 脚本文件，然后依次执行其中的所有语句。
+
+当在脚本中调用其他脚本时，通常使用 source 命令，因为这样子脚本是在父脚本的进程中执行的（其他方式都会启动新的进程执行脚本）
+
+因此，使用 source 这种方式可以将子脚本中的变量值或函数等返回值传递到当前父脚本中使用。这是与其他方式最重要的区别。
+
+所以我们在 /etc/profile 中声明一些环境变量时，想立马生效，就直接 source /etc/profile ，这样就对当前会话生效，而不需要重新登陆。
+
+这种情况最多的用法就是 shell 脚本中调其他 shell 。在单个进程中执行的。
 
 ## 2、变量
 
@@ -605,9 +641,33 @@ fengzhao@fengzhao-pc:~$
 
 在 Linux 中，管道符 | 是一个经常用的命令，管道的本质实际上就是 Linux 里面的进程间通讯。
 
+**Linux 中管道符的作用是把上一个命令的标准输出做为下一个命令的标准输入**
+
+------
 
 
-把一个程序的输出直接连接到另一个程序的输入，Linux的管道主要包括两种：无名管道和有名管道。
+
+#### 管道的特殊用法
+
+命令组
+
+比如，我想将多个命令的标准输入合并到一个流后再用管道传给下一个命令
+
+可以使用命令组的方式进行：
+
+```shell
+# 将多个命令的执行结果，合并到一个流，用 cat 连接起来
+(ls -l; echo "hello world"; cat foo.txt;) | cat
+
+# 当然，也可以将多个命令的结果合并到一个流，然后重定向到文件中
+(ls -l; echo "hello world"; cat foo.txt;) > output.txt
+```
+
+
+
+
+
+Linux的管道主要包括两种：无名管道和有名管道。
 
 
 
