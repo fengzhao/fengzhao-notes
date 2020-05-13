@@ -39,7 +39,6 @@ Docker 使用的是 c/s 架构，Docker 客户端与 Docker 守护进程通讯�
 ![docker-architecture](./resources/docker-architecture.png)
 
 <center>docker架构图</center>
-
 #### docker 守护进程
 
 Docker守护程序（`dockerd`）监听 Docker API 请求并管理 Docker 对象，如图像，容器，网络和卷。守护程序还可以与其他守护程序通信以管理 Docker 服务。

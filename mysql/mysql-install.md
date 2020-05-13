@@ -91,7 +91,7 @@ use mysql;
 update user set authentication_string=PASSWORD("123456AWS!@#") where user="root";
 
 
-ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY '9kYsmoEt';
+ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'QHdata@0508';
 
 ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY "KWUjpCEI" ;
 
@@ -204,7 +204,7 @@ back_log = 1024
 #### 下载
 
 ``` shell
-$ cd /tmp/
+$ cd /usr/local/src/
 
 # 5.7
 $ wget https://dev.mysql.com/get/Downloads/MySQL-5.7/mysql-5.7.24-linux-glibc2.12-x86_64.tar.gz
