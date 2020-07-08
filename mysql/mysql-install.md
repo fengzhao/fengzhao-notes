@@ -250,6 +250,7 @@ UPDATE mysql.user SET authentication_string=PASSWORD("QH@123456") WHERE user='ro
 # 8.0
 ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'QH@123456';
 
+
 grant all privileges on *.* to 'root' @'%' identified by '123456';
 flush privileges;
 ```
