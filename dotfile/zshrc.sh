@@ -112,24 +112,47 @@ export GOBIN=$GOPATH/bin
 export PATH=$PATH:$GOPATH/bin
 export PATH=$PATH:$GOROOT/bin
 
+# getIP
+# winip=$(cat /etc/resolv.conf | grep nameserver | awk '{ print $2 }')
+export winip=$(ip route | grep default | awk '{print $3}')
+export wslip=$(hostname -I | awk '{print $1}')
+
+
+# gitproxy(){
+# 	git config --global https.proxy socks5://${winip}:1080                                                                                                                                             
+# 	git config --global http.proxy socks5://${winip}:1080   
+# }
+
+# proxy
+alias proxy='
+        export http_proxy=socks5://$windows_host:1080; 
+        export https_proxy=socks5://$windows_host:1080; 
+        ALL_PROXY=socks5://$windows_host:1080
+        '
+alias unproxy='unset http_proxy; unset https_proxy'
+alias testproxy='curl -I https://www.google.com'
+
 alias note='cd /mnt/c/Users/fengz/Desktop/fengzhao-notes'
 
-export windows_host=`ipconfig.exe | grep -n4 WSL  | tail -n 1 | awk -F":" '{ print $2 }'  | sed 's/^[ \r\n\t]*//;s/[ \r\n\t]*$//'`
-alias proxy='export http_proxy=socks5://$windows_host:1080; export https_proxy=socks5://$windows_host:1080; ALL_PROXY=socks5://$windows_host:1080'
-alias unproxy='unset http_proxy; unset https_proxy'
-alias testproxy='curl https://www.google.com'
-# 设置git的代理
-if [ "`git config --global --get proxy.https`" != "socks5://$windows_host:1080" ]; then
-    git config --global proxy.https socks5://$windows_host:1080
-fi
+gitproxy(){
+	git config --global https.proxy socks5://$windows_host:1080                                                                                                                                             
+	git config --global http.proxy socks5://$windows_host:1080   
+}
+
+
+# export http_proxy="${PROXY_HTTP}"
+# export HTTP_PROXY="${PROXY_HTTP}"
+# export https_proxy="${PROXY_HTTP}"
+# export HTTPS_PROXY="${PROXY_HTTP}"
+# export ftp_proxy="${PROXY_HTTP}"
+# export FTP_PROXY="${PROXY_HTTP}"
+# export rsync_proxy="${PROXY_HTTP}"
+# export RSYNC_PROXY="${PROXY_HTTP}"
+# export ALL_PROXY="${PROXY_SOCKS5}"
+# export all_proxy="${PROXY_SOCKS5}"
+
+
+
+
 ssh-add .ssh/vultr
 
-
-
-# Proxy configuration
-getIp() {
-    export winip=$(ip route | grep default | awk '{print $3}')
-    export wslip=$(hostname -I | awk '{print $1}')
-    export PROXY_SOCKS5="socks5://${winip}:1080"
-    export PROXY_HTTP="http://${winip}:1080"
-}
