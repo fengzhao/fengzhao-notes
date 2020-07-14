@@ -129,7 +129,9 @@ docker 守护进程的配置，有两种方式指定：
   "tls": true,
   "tlscert": "/var/docker/server.pem",
   "tlskey": "/var/docker/serverkey.pem",
-  "hosts": ["tcp://192.168.59.3:2376"]
+  "hosts": ["tcp://192.168.59.3:2376"],
+  // 设置阿里镜像
+  "registry-mirrors": ["https://td520t0f.mirror.aliyuncs.com"] 
 }
 ```
 
@@ -145,11 +147,28 @@ dockerd --debug \
 
 具体的配置选项可以参考 [dockerd reference doc](https://docs.docker.com/engine/reference/commandline/dockerd/) 或者使用 dockerd --help来查看。
 
+在 Linux 中，一般使用包管理器安装 docker , 默认的 dockerd 守护进程是通过 systemd 管理的。
+
+```shell
+# 在这两个文件中，一般都默认设置了 dockerd 的启动参数。
+# Ubuntu的路径
+/lib/systemd/system/docker.service 
+# CentOS 的路径为
+/usr/lib/systemd/system/docker.service
+
+ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock  --ipv6=false       
+ExecReload=/bin/kill -s HUP $MAINPID 
+```
+
+
+
 #### 远程访问
 
 docker 守护进程使用 unix, tcp, fd 三种类型的 Socket 通信来监听 [Docker Engine API](https://docs.docker.com/develop/sdk/) 。
 
-默认地，docker 会创建一个 /var/run/docker.sock 文件，它只允许本地的 root 权限的用户访问，或 docker 用户组。这是进程间通讯。
+默认地，docker 会创建一个 /var/run/docker.sock 文件，它只允许本地的 root 权限的用户访问，或 docker 用户组。
+
+这就是进程间通讯（IPC）。我们平时使用 docker ps 等命令就是这样操作的。
 
 默认地，docker 没有开启远程访问，如果需要开启远程访问，需要开启 tcp socket 通讯，需要注意的是，默认安装没有启用对服务端访问的加密和认证。也就是说一旦开启远程访问，任何人都可以通过 docker 客户端来访问并控制你的 docker 守护进程来进行创建删除容器等操作。所以必须要开启加密认证或者在守护进程前面加上一个安全的代理。
 
@@ -210,6 +229,30 @@ export DOCKER_HOST="tcp://192.168.1.2:2375"
 
 ```shell
 export DOCKER_HOST=""
+```
+
+
+
+#### **Docker-API**
+
+docker-API 的官网地址是 https://docs.docker.com/engine/api/
+
+不仅仅是容器，还有网络，镜像，
+
+```json
+// 如果没有开启远程访问，在宿主机上，可以用 curl 通过 socket 文件来进行通讯，请求这些API
+
+// 查看容器，返回json格式的数据
+curl --unix-socket /var/run/docker.sock -X GET http://localhost/containers/json
+
+// 创建容器
+curl --unix-socket /var/run/docker.sock -X POST http://localhost/containers/create
+{
+	// 请求的数据体为json数据
+}
+
+// 启动容器
+curl --unix-socket /var/run/docker.sock -X POST /containers/{id}/start
 ```
 
 
@@ -372,12 +415,60 @@ CMD ["/usr/lib/postgresql/9.3/bin/postgres", "-D", "/var/lib/postgresql/9.3/main
 
 
 
+### docker-compose
+
+#### 编排
+
+编排指根据被部署的对象之间的耦合关系，以及被部署对象对环境的依赖。
+
+制定部署流程中各个动作的执行顺序，部署过程所需要的依赖文件和被部署文件的存储位置和获取方式，以及如何验证部署成功。
+
+这些信息都会在编排工具中以指定的格式(比如配置文件或特定的代码)来要求运维人员定义并保存起来，从而保证这个流程能够随时在全新的环境中可靠有序地重现出来。
 
 
 
+#### 部署
+
+部署是指按照编排所指定的内容和流程，在目标机器上执行环境初始化，存放指定的依赖文件，运行指定的部署动作，最终按照编排中的规则来确认部署成功。
+
+所以说，编排是一个指挥家，他的大脑里存储了整个乐曲此起彼伏的演奏流程，对于每一个小节每一段音乐的演奏方式都了然于胸。
+
+而部署就是整个乐队，他们严格按照指挥家的意图用乐器来完成乐谱的执行。
+
+最终，两者通过协作就能把每一位演奏者独立的演奏通过组合、重叠、衔接来形成高品位的交响乐。这也是 docker compose 要完成的使命。
 
 
 
+docker-compose的安装
+
+```shell
+curl -L "https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+
+sudo chmod +x /usr/local/bin/docker-compose
+
+# 自动补全的bash_completion文件
+https://raw.githubusercontent.com/docker/compose/master/contrib/completion/bash/docker-compose 
+# 自动补全的zsh_completion文件
+https://raw.githubusercontent.com/docker/compose/master/contrib/completion/zsh/_docker-compose
+```
 
 
+
+#### 概念
+
+**project**
+
+通过 docker compose 管理的一个项目被抽象称为一个 project，它是由一组关联的应用容器组成的一个完整的业务单元。
+
+简单点说就是一个 docker-compose.yml 文件定义一个 project。
+
+我们可以在执行 docker-compose 命令时通过 -p 选项指定 project 的名称，如果不指定，则默认是 docker-compose.yml 文件所在的目录名称。
+
+**service**
+
+运行一个应用的容器，实际上可以是一个或多个运行相同镜像的容器。可以通过 docker-compose up 命令的 --scale 选项指定某个 service 运行的容器个数：
+
+```shell
+docker-compose up -d --scale redis=2
+```
 
