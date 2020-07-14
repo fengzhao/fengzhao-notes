@@ -283,6 +283,17 @@ $ docker
 
 
 
+```shell
+# docker支持很多子命令
+
+docker run 
+
+
+
+```
+
+
+
 ## Docker 对象
 
 
@@ -295,7 +306,11 @@ docker 镜像的概念，前面已经大致讲过，这里不再赘述，容器�
 - 启动一个容器后，在容器中通过一些基本操作做出改变后，用 docker commit 将容器提交为镜像。
 - 按上述之一方式做好镜像后，推送到镜像仓库，下次使用时，可以直接从镜像仓库拉取到本地。
 
-举个例子，我们在一台新电脑上安装操作系统时，主要步骤是去微软官网下载 windows iso 镜像，然后刻录到U盘，然后去电脑上安装，然后自己去安装各种开发环境，和常用软件。我们可以在安装好软件后，通过工具创建镜像，这样下次通过自己制作的镜像安装操作系统，就会自带这些额外的软件，这就是第二种方式。但是有人认为制作镜像还是要手工安装软件。于是写了一个文件，里面包含安装开发环境和常用软件的指令，执行这个文件就会自动创建自己制作的镜像，这就是第一种方式，这个文件就是 Dockerfile。
+举个例子，我们在一台新电脑上安装操作系统时，主要步骤是去微软官网下载 windows iso 镜像，然后刻录到U盘，然后去电脑上安装，然后自己去安装各种开发环境，和常用软件。
+
+我们可以在安装好软件后，通过工具创建镜像，这样下次通过自己制作的镜像安装操作系统，就会自带这些额外的软件，这就是第二种方式。
+
+但是有人认为制作镜像还是要手工安装软件。于是写了一个文件，里面包含安装开发环境和常用软件的指令，执行这个文件就会自动创建自己制作的镜像，这就是第一种方式，这个文件就是 Dockerfile。
 
 通常，使用 Dockerfile 文件来构建镜像是比较多的做法。Dockerfile 中有一系列指令来构建镜像。
 
@@ -317,9 +332,9 @@ docker 镜像的命名空间主要是 Registry/Users/Repository/Tag，分别表�
 
 每个镜像，下载到当前服务器内，都有一个唯一的镜像 id，我们可以给同一个镜像打多个标签，使用 docker tag命令来给镜像添加标签，docker tag 
 
+docker tag 一般用于给镜像打标签，用于区分设置镜像的版本号。
 
-
-#### 镜像管理常用命令
+#### 镜像管理
 
 
 
@@ -349,7 +364,7 @@ $ docker
 $ docker build -f /path/to/a/Dockerfile 
 ```
 
--t 选项来指定用户空间:仓库名称:标签，可以指定多个标签（tag）。
+-t  选项来指定 **用户空间:仓库名称:标签**，可以指定多个标签（tag）。
 
 ```shell
 docker build -t shykes/myapp:1.0.2 -t shykes/myapp:latest .  #最后的. 表示以当前路径作为上下文开始构建
@@ -417,6 +432,18 @@ CMD ["/usr/lib/postgresql/9.3/bin/postgres", "-D", "/var/lib/postgresql/9.3/main
 
 ### docker-compose
 
+docker-compose 是定义多个容器的编排工具。通过 yaml 文件来描述一组容器。
+
+通过一个命令来管理一组应用中的容器。使用 docker-compose 的流程大致分为：
+
+- 编写 dockerfile 来定义环境
+- 在 docker-compose.yml 文件中来定义服务。
+- 使用docker-compose 命令来管理服务中容器。
+
+
+
+
+
 #### 编排
 
 编排指根据被部署的对象之间的耦合关系，以及被部署对象对环境的依赖。
@@ -469,6 +496,136 @@ https://raw.githubusercontent.com/docker/compose/master/contrib/completion/zsh/_
 运行一个应用的容器，实际上可以是一个或多个运行相同镜像的容器。可以通过 docker-compose up 命令的 --scale 选项指定某个 service 运行的容器个数：
 
 ```shell
+# 启动两个redis容器
 docker-compose up -d --scale redis=2
 ```
+
+
+
+**网络**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Docker核心原理
+
+
+
+<https://www.redhat.com/zh/topics/containers/whats-a-linux-container>
+
+很多人都知道 docker 底层其实就是 Linux 的容器技术。
+
+Linux 内核实现 namespace 的主要目的，就是实现轻量级虚拟化（容器）服务。**namespace 是 Linux 内核用来隔离内核资源的方式。**
+
+在同一个 namespace 下的进程可以感知彼此的变化，而对外界的进程一无所知。
+
+这样就可以让容器中的进程产生错觉，仿佛自己置身于一个独立的系统环境中。以达到独立和隔离的目的。
+
+docker 通过 namespace 实现资源隔离，通过 cgroups 实现了资源限制。
+
+网络隔离，进程隔离，用户隔离，权限隔离，文件隔离。
+
+
+
+| namespace |      | 隔离内容                   |
+| --------- | ---- | -------------------------- |
+| UTS       |      | 主机名和域                 |
+| IPC       |      | 信号量，消息队列，共享内存 |
+| PID       |      | 进程编号                   |
+| Network   |      | 网络设备，网络栈，端口等   |
+| Mount     |      | 挂载点，（文件系统）       |
+| User      |      | 用户和用户组               |
+
+
+
+从 3.8 版本的内核开始，用户就可以在 **/proc/[pid]/ns** 文件下看到指向不同 namespace 号的文件
+
+```shell
+root@pve:~# ps -ef | grep docker                                                                                    
+root      7921 31025  0 00:05 pts/1    00:00:00 grep docker                                                                                 
+root     31377     1  0 Jul14 ?        00:00:11 /usr/sbin/dockerd -H fd://                                                                                 
+root     31386 31377  0 Jul14 ?        00:00:18 docker-containerd --config /var/run/docker/containerd/containerd.toml --log-level info                                               
+root@pve:~#  
+root@pve:~#
+root@pve:~# ls -al /proc/31377/ns/
+total 0
+dr-x--x--x 2 root root 0 Jul 15 00:05 .
+dr-xr-xr-x 9 root root 0 Jul 14 23:09 ..
+lrwxrwxrwx 1 root root 0 Jul 15 00:05 cgroup -> 'cgroup:[4026531835]'
+lrwxrwxrwx 1 root root 0 Jul 15 00:05 ipc -> 'ipc:[4026531839]'
+lrwxrwxrwx 1 root root 0 Jul 15 00:05 mnt -> 'mnt:[4026531840]'
+lrwxrwxrwx 1 root root 0 Jul 15 00:05 net -> 'net:[4026531992]'
+lrwxrwxrwx 1 root root 0 Jul 15 00:05 pid -> 'pid:[4026531836]'
+lrwxrwxrwx 1 root root 0 Jul 15 00:05 pid_for_children -> 'pid:[4026531836]'
+lrwxrwxrwx 1 root root 0 Jul 15 00:05 user -> 'user:[4026531837]'
+lrwxrwxrwx 1 root root 0 Jul 15 00:05 uts -> 'uts:[4026531838]'
+root@pve:~#
+```
+
+这些 namespace 文件都是链接文件。链接文件的内容的格式为 xxx:[inode number]。
+
+其中的 xxx 为 namespace 的类型，inode number 则用来标识一个 namespace，我们也可以把它理解为 namespace 的 ID。
+
+如果两个进程的某个 namespace 文件指向同一个链接文件，说明其相关资源在同一个 namespace 中。
+
+一旦这些链接文件被打开，即使这个namespace中的所有进程都已经结束，这个 namespace 还是会保留继续存在，后续的进程也可以添加进来。
+
+在 docker 中，通过文件描述符定位和加入一个存在的 namespace 是最基本的方式。
+
+```shell
+#  把 /proc/xxxx/ns 目录文件使用 --bind 的方式挂载起来，就可以起到上述作用。
+root@pve:~# touch ~/uts
+root@pve:~#
+root@pve:~#
+root@pve:~# mount --bind /proc/16239/ns/uts ~/uts
+root@pve:~#
+root@pve:~#
+root@pve:~# stat ~/uts
+  File: /root/uts
+  Size: 0               Blocks: 0          IO Block: 4096   regular empty file
+Device: 4h/4d   Inode: 4026531838  Links: 1
+Access: (0444/-r--r--r--)  Uid: (    0/    root)   Gid: (    0/    root)
+Access: 2020-07-15 00:26:00.130037180 +0800
+Modify: 2020-07-15 00:26:00.130037180 +0800
+Change: 2020-07-15 00:26:00.130037180 +0800
+ Birth: -
+root@pve:~#
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
