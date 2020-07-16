@@ -344,11 +344,17 @@ docker image COMMAND 是镜像管理的基本命令，可以通过帮助命令�
 
 ```shell
 $ docker pull  Registry/Users/Repository/Tag # 从registry上拉取镜像，私有的可能需要docker login认证
-$ docker image ls # 列出所有镜像
-$ docker rmi  45fb1e3aa  # 删除这个id的镜像，参数可以是id，也可以是repoistry+tag，
-$ docker tag busybox:latest  fengzhao/busybox:latest  # 给镜像添加额外的标签
-$ docker 
+# 列出所有镜像
+$ docker image ls
+# 删除这个id的镜像，参数可以是id，也可以是repoistry+tag，
+$ docker rmi  45fb1e3aa
+# 给镜像添加额外的标签
+$ docker tag busybox:latest  fengzhao/busybox:latest  
 
+
+# docker 镜像导出
+
+# docker 加载本地镜像
 
 ```
 
@@ -613,7 +619,29 @@ root@pve:~#
 
 
 
+# kubernets
 
+
+
+
+
+
+
+## 开发环境安装
+
+
+
+
+
+```shell
+
+sudo apt-get update && sudo apt-get install -y apt-transport-http
+curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
+sudo apt-get update
+sudo apt-get install -y kubectl
+
+```
 
 
 
