@@ -1,4 +1,4 @@
-## Docker 概述
+# Docker 概述
 
 
 Docker是一个开发，运输和运行应用程序的开放平台。 Docker使您可以将应用程序与基础架构分离，以便快速交付软件。使用Docker，您可以像管理应用程序一样管理基础架构。通过利用Docker的方法快速发送，测试和部署代码，您可以显着减少编写代码和在生产中运行代码之间的延迟。
@@ -294,7 +294,7 @@ docker run
 
 
 
-## Docker 对象
+# Docker 实战
 
 
 
@@ -432,11 +432,163 @@ CMD ["/usr/lib/postgresql/9.3/bin/postgres", "-D", "/var/lib/postgresql/9.3/main
 
 
 
+## 网络概述
 
 
 
 
-### docker-compose
+
+
+
+### 网络驱动
+
+docker 网络子系统
+
+
+
+### bridge网络
+
+这是 docker 默认的网络驱动设置，在网络术语中，桥接是工作在链路层的。在 docker 中，可以让所有的容器连接到 docker 网桥中。
+
+可以理解为一个子网，然后使用 NAT 技术通过宿主机与外界通讯
+
+当 Docker 启动后，会自动创建一个默认的网桥 docker0 ，其IP地址默认为 172.17.0.1/16 。新启动的容器默认会加入到其中。
+
+在宿主机中，使用 ip addr 看到多了一块docker0 的网卡。有了这样一块网卡，宿主机也会在内核路由表上添加一条到达相应网络的静态路由。
+
+可以使用 ip route 命令看到
+
+
+
+```sh
+
+```
+
+
+
+```shell
+# 查看所有网络
+docker network ls
+# 用户自定义bridge网络，可以理解为创建一个子网，新建的子网，会自动在内核中添加静态路由
+docker network create my-net  
+# 用户自定义bridge网络，自定义子网地址，自定义宿主机中的网卡名称
+docker network create docker02 --subnet=172.30.0.0/16 -o com.docker.network.bridge.name=docker02
+
+# 查看network基本信息 
+docker network inspect bridge
+
+
+
+```
+
+
+
+**用户自定义 bridge 和 默认 bridge 的区别**
+
+- 用户自定义 bridge 自动提供容器间的 DNS 解析，可以直接使用容器名称来进行网络通讯。
+
+  - 使用默认 bridge 启动的容器只能通过 IP 地址互联，或者使用 --link 选项。这是一个历史遗留的选项，一般不建议使用默认 brige。
+
+- 用户自定义 bridge 提供更好的隔离性，所有没有使用 --network 选项的容器都会连到默认 bridge 
+
+- 在用户自定义 bridge 中的容器，可以随时把容器 disconnect 出来，再 connect 到其他的用户自定义 bridge 中。而不用关闭容器
+
+  而在默认 bridge 中的容器，必须要关闭重启才能设置其他网络选项。
+
+
+
+
+
+**配置容器访问外部**
+
+默认情况下，从容器发送到默认网桥的流量，并不会被转发到外部。要开启转发，需要改变两个设置。这些不是 Docker 命令，并且它们会影响 Docker 主机的内核。
+
+```sh
+# 配置 Linux 内核来允许 IP 转发
+sysctl net.ipv4.conf.all.forwarding=1
+
+# 改变iptables的FORWARDDROP策略，从drop变为ACCEPT
+sudo iptables -P FORWARD ACCEPT
+```
+
+
+
+**配置默认网桥**
+
+```json
+// daemon.json文件中声明配置
+{
+  "bip": "192.168.1.5/24",
+  "fixed-cidr": "192.168.1.5/25",
+  "fixed-cidr-v6": "2001:db8::/64",
+  "mtu": 1500,
+  "default-gateway": "10.20.1.1",
+  "default-gateway-v6": "2001:db8:abcd::89",
+  "dns": ["10.20.1.2","10.20.1.3"]
+}
+```
+
+
+
+
+
+### host网络模式
+
+
+
+
+
+### Docker高级网络实践
+
+
+
+####  Linux network namespace
+
+```sh
+# 管理Linux network namespace
+
+# 创建一个networkspace，
+ip netns add nstest
+# 删除
+ip netns delete nstest 
+# 查看所有
+ip netns list
+# 在namespace中执行命令
+ip netns exec nstest commad
+# 例如:在nstest namespace中显示网卡信息
+ip netns exec nstest ip addr
+# 在name space中启动一个shell方便
+ip netns exec nstest bash 
+
+
+
+# 为Linux network namespace配置网络
+
+# 当使用ip命令创建一个network space后，默认创建一个回环设备lo，该设备默认不启动，用户最好将其启动
+ip netns exec nstest ip link set dev lo up
+
+# 在主机上创建两张虚拟网卡，veth-a和veth-b
+ip link add veth-a type veth peer name veth-b
+
+# 将 veth-b 设备添加到nstest这个network namespace中
+ip link set veth-b netns nstest
+
+# 现在 nstest这个network namespace就有了两块网卡 lo和veth-b，验证一下
+ip netns exec nstest ip link  
+
+# 为网卡分配IP并启动网卡
+# 在 
+
+
+```
+
+
+
+
+
+
+
+## docker-compose
 
 docker-compose 是定义多个容器的编排工具。通过 yaml 文件来描述一组容器。
 
@@ -516,9 +668,17 @@ docker-compose up -d --scale redis=2
 
 
 
+## Docker 高级实践
 
 
 
+### 容器化思维 
+
+一些人将 docker 是为轻量级虚拟机技术，如果这理解，可以会提出如下问题，sshd 如何配置 ？ 如何备份容器 ？
+
+要正确使用 docker ，就要建立容器化思维，从本质上理解容器，其实就是一个进程以及运行该进程所需的各种依赖。
+
+有了容器化思维，
 
 
 
@@ -623,6 +783,64 @@ root@pve:~#
 
 
 
+## k8s简介
+
+
+
+## 核心概念
+
+k8s集群
+
+
+
+### master组件
+
+
+
+#### kubectl 
+
+用户通过 kubectl 发送指令，将管理容器的请求提交到 API server 
+
+#### kube-apiserver
+
+主节点上负责提供 Kubernetes API 服务的组件；它是 Kubernetes 控制面的前端。
+
+kube-apiserver 在设计上考虑了水平扩缩的需要。 换言之，通过部署多个实例可以实现扩缩。
+
+#### kube-controller-manager
+
+
+
+#### kube-scheduler
+
+从多个worker node 节点中选举一个来启动服务
+
+#### etcd
+
+k8s的数据库，用来注册节点、服务、记录、记录账号、记录节点的信息。
+
+### node组件
+
+#### kubelet
+
+向 docker 发送指令管理 docker 容器的组件
+
+#### kubeproxy
+
+管理 docker 容器的网络
+
+
+
+### pod
+
+<https://kubernetes.io/zh/docs/concepts/workloads/pods/pod/>
+
+kubernetes 中创建和管理的、最小的可部署的计算单元。kubernetes 中是无法直接操作容器的。
+
+pod就是一组容器，这些容器共享存储、网络、以及怎样运行这些容器的声明。
+
+在 [Docker](https://www.docker.com/) 体系的术语中，Pod 被建模为一组具有共享命名空间和共享文件系统[卷](https://kubernetes.io/docs/concepts/storage/volumes/) 的 Docker 容器。
+
 
 
 
@@ -635,7 +853,7 @@ root@pve:~#
 
 ```shell
 
-sudo apt-get update && sudo apt-get install -y apt-transport-http
+sudo apt-get update && sudo apt-get install -y apt-transport-httprnets
 curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
 echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
 sudo apt-get update
