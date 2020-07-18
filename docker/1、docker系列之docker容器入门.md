@@ -1,3 +1,7 @@
+---
+typora-root-url: resources
+---
+
 # Docker 概述
 
 Docker是一个开发，运输和运行应用程序的开放平台。 Docker使您可以将应用程序与基础架构分离，以便快速交付软件。使用Docker，您可以像管理应用程序一样管理基础架构。
@@ -563,6 +567,8 @@ macvlan 可以给容器分配 mac 地址，在网络中就像一个物理设备�
 
 ####  Linux network namespace
 
+
+
 ```sh
 # 管理Linux network namespace
 
@@ -705,19 +711,80 @@ docker-compose up -d --scale redis=2
 
 ## Docker核心原理
 
+### **docker 中的组件**
 
+docker 底层有一些概念，可以进一步梳理一下。通过 ps 等命令可以查看到详细的关系
+
+```shell
+ # 启动两个alpine容器， 
+root@pve /data#  docker run -dit --name alpine1 alpine ash  
+root@pve /data#  docker run -dit --name alpine2 alpine ash  
+root@pve /data#                                                                                               
+root@pve /data# docker ps                                                                                                        
+CONTAINER ID        IMAGE               COMMAND             CREATED             STATUS              PORTS               NAMES                                            
+0a03403e05ef        alpine              "ash"               35 hours ago        Up 35 hours                             alpine2                                       
+057b5a67bb89        alpine              "ash"               35 hours ago        Up 34 hours                             alpine1
+
+
+# 通过 ps 可以看到docker daemon是通过dockerd这个二进制起来的，进程号是31377 
+root@pve /data# ps -ef | grep docker
+root       548 31386  0 Jul17 ?        00:00:07 docker-containerd-shim -namespace moby -workdir /var/lib/docker/containerd/daemon/io.containerd.runtime.v1.linux/moby/0a03403e05ef43ccccc3a80dd7961e4d8e27f4a203144c8a65ee91379baa470c -address /var/run/docker/containerd/containerd.so
+ck -containerd-binary /usr/bin/docker-containerd -runtime-root /var/run/docker/runtime-runc                                                                                                                                                                                             
+root      1132 31386  0 Jul17 ?        00:00:06 docker-containerd-shim -namespace moby -workdir /var/lib/docker/containerd/daemon/io.containerd.runtime.v1.linux/moby/057b5a67bb89b8cf5e3b8fada72d3a8c21c75732cb5dc95ebf352bae95a68e54 -address /var/run/docker/containerd/containerd.so
+ck -containerd-binary /usr/bin/docker-containerd -runtime-root /var/run/docker/runtime-runc 
+root     29615  2099  0 23:43 pts/4    00:00:00 grep --color=auto docker                                                                                                               root     31377     1  0 Jul14 ?        00:19:20 /usr/sbin/dockerd -H fd:// 
+root     31386 31377  0 Jul14 ?        00:31:54 docker-containerd --config /var/run/docker/containerd/containerd.toml --log-level info  
+
+root@pve /data#                                                                                                                                                                       
+root@pve /data#   
+root@pve /data#   
+# 通过 pstree 可以查看到进程树的调用关系
+root@pve /data# pstree  -l -a -A 31377                                                                                                                                                                                                                                                  
+dockerd -H fd://                                                                                                                                                                                                                                                                        
+  |-docker-containe --config /var/run/docker/containerd/containerd.toml --log-level info                                                                                                                                                                                                
+  |   |-docker-containe -namespace moby -workdir /var/lib/docker/containerd/daemon/io.containerd.runtime.v1.linux/moby/0a03403e05ef43ccccc3a80dd7961e4d8e27f4a203144c8a65ee91379baa470c -address /var/run/docker/containerd/containerd.sock -containerd-binary /usr/bin/docker-container
+d -runtime-root /var/run/docker/runtime-runc                                                                                                                                                                                                                                            
+  |   |   |-ash                                                                                                                                                      
+  |   |   `-9*[{docker-containe}]                                                                                                                                                                                                                                                       
+  |   |-docker-containe -namespace moby -workdir /var/lib/docker/containerd/daemon/io.containerd.runtime.v1.linux/moby/057b5a67bb89b8cf5e3b8fada72d3a8c21c75732cb5dc95ebf352bae95a68e54 -address /var/run/docker/containerd/containerd.sock -containerd-binary /usr/bin/docker-container
+d -runtime-root /var/run/docker/runtime-runc                                                                                                                                                                                                                                            
+  |   |   |-ash                                                                                                                                                                                                                                                                         
+  |   |   `-9*[{docker-containe}]                                                                                                                                                                                                                                                       
+  |   `-19*[{docker-containe}]                                                                                                                                                                                                                                                          
+  `-17*[{dockerd}]                                                                                                                                                                                                                                                                      
+root@pve /data#    
+
+```
+
+
+
+可以看到，docker 的进程树大概是如下结构
+
+```
+----
+```
+
+
+
+
+
+
+
+### namespace资源隔离
 
 <https://www.redhat.com/zh/topics/containers/whats-a-linux-container>
 
 很多人都知道 docker 底层其实就是 Linux 的容器技术。
 
-Linux 内核实现 namespace 的主要目的，就是实现轻量级虚拟化（容器）服务。**namespace 是 Linux 内核用来隔离内核资源的方式。**
+> **docker 通过 namespace 实现资源隔离，通过 cgroups 实现了资源限制。**
+
+实质上，Linux 内核实现 namespace 的主要目的，就是实现轻量级虚拟化（容器）服务。**namespace 是 Linux 内核用来隔离内核资源的方式。**
 
 在同一个 namespace 下的进程可以感知彼此的变化，而对外界的进程一无所知。
 
 这样就可以让容器中的进程产生错觉，仿佛自己置身于一个独立的系统环境中。以达到独立和隔离的目的。
 
-docker 通过 namespace 实现资源隔离，通过 cgroups 实现了资源限制。
+
 
 网络隔离，进程隔离，用户隔离，权限隔离，文件隔离。
 
@@ -731,6 +798,19 @@ docker 通过 namespace 实现资源隔离，通过 cgroups 实现了资源限�
 | Network   |      | 网络设备，网络栈，端口等   |
 | Mount     |      | 挂载点，（文件系统）       |
 | User      |      | 用户和用户组               |
+
+
+
+
+
+####  namespace API 
+
+Linux 对 namespace 提供了四种API：
+
+- 通过 clone() 在创建新进程的时候创建namespace
+- 查看 /proc/pid/ns 目录，具体可以看内核文档  <https://linux.die.net/man/5/proc>
+  -  /proc/pid/ns 里面其实是几个链接文件，其实就是指向不同 namespace 号的文件。
+- 通过 setns() 加入一个已经存在的 namespace 
 
 
 
@@ -756,6 +836,11 @@ lrwxrwxrwx 1 root root 0 Jul 15 00:05 pid_for_children -> 'pid:[4026531836]'
 lrwxrwxrwx 1 root root 0 Jul 15 00:05 user -> 'user:[4026531837]'
 lrwxrwxrwx 1 root root 0 Jul 15 00:05 uts -> 'uts:[4026531838]'
 root@pve:~#
+root@pve:~#
+root@pve:~# ls -al /proc/$$/ns/           <<-- $$ 在bash shell中表示当前shell的进程pid号 
+root@pve:~# ls -al /proc/$fish_pid/ns/    <<-- 在fish shell中用 $fish_pid 来表示 
+root@pve:~#
+
 ```
 
 这些 namespace 文件都是链接文件。链接文件的内容的格式为 xxx:[inode number]。
@@ -764,7 +849,7 @@ root@pve:~#
 
 如果两个进程的某个 namespace 文件指向同一个链接文件，说明其相关资源在同一个 namespace 中。
 
-一旦这些链接文件被打开，即使这个namespace中的所有进程都已经结束，这个 namespace 还是会保留继续存在，后续的进程也可以添加进来。
+一旦这些链接文件被打开，只要打开的文件描述符 (fd) 存在。即使这个namespace中的所有进程都已经结束，这个 namespace 还是会保留继续存在，后续的进程也可以添加进来。
 
 在 docker 中，通过文件描述符定位和加入一个存在的 namespace 是最基本的方式。
 
@@ -790,6 +875,99 @@ root@pve:~#
 
 
 
+#### 内核调用
+
+
+
+ fork,vfork,clone都是linux的系统调用，这三个函数分别调用了sys_fork、sys_vfork、sys_clone。
+
+最终都调用了do_fork函数，差别在于参数的传递和一些基本的准备工作不同，主要用来linux创建新的子进程或线程（vfork创造出来的是线程）。
+
+    进程的四要素：
+       （1）有一段程序供其执行（不一定是一个进程所专有的），就像一场戏必须有自己的剧本。
+       （2）有自己的专用系统堆栈空间（私有财产）
+       （3）有进程控制块（task_struct）（“有身份证，PID”）
+       （4）有独立的存储空间。
+          缺少第四条的称为线程，如果完全没有用户空间称为内核线程，共享用户空间的称为用户线程。
+
+
+##### fork() 调用
+
+在 Linux 多进程中，系统函数 **fork()** 可以在父进程中创建一个子进程，并为其分配资源，例如存储数据和代码的空间。然后把原来进程的所有值都复制到新进程中。
+
+ fork 创造的子进程复制了父亲进程的资源（写时复制技术），包括内存的内容task_struct内容（2个进程的pid不同）。这里是资源的复制不是指针的复制。
+
+在一个进程接到来自客户端新的请求时就可以复制出一个子进程让其来处理，父进程只需负责监控请求的到来，然后创建子进程让其去处理，这样就能做到并发处理。
+
+```python
+#!/usr/bin/env python
+import os
+
+print('当前进程:%s 启动中 ....' % os.getpid())
+# 在 Linux 版本的 python 中，os模块才支持fork函数去调用操作系统的fork()函数。
+pid = os.fork()
+if pid == 0:
+    print('子进程:%s,父进程是:%s' % (os.getpid(), os.getppid()))
+else:
+    print('进程:%s 创建了子进程:%s' % (os.getpid(),pid ))
+    
+    
+# 程序输出      
+# 当前进程:27223 启动中 ....
+# 进程:27223 创建了子进程:27224
+# 子进程:27224,父进程是:27223  
+
+```
+
+
+
+代码执行过程中，在语句  `pid = os.fork() ` 之前，只有一个进程在执行这段代码，在之后，就启动了子进程开始执行，这两个进程几乎完全相同。
+
+将要执行的下一条语句都是 if 判断，fork 调用，可以返回两个值分别为父进程和子进程。
+
+- 给父进程返回的是子进程的ID。
+- 给子进程返回的是0
+
+所以这段代码的判断语句的逻辑可以理解为:
+
+- 通过判断 fork 返回值，来指定子进程中的代码和父进程中的代码。
+- 在这里，上面一行代码是在子进程中执行的，下面一行是在父进程中执行的。
+
+使用 fork 后，父进程有义务监控子进程的运行状态，并在子进程退出后自己才能正常退出。否则子进程就会成为 `孤儿进程`。
+
+
+
+![1595089414773](/1595089414773.png)
+
+
+
+可以看到，在 python 中调用 fork 函数时，并不总是异步的。
+
+
+
+
+
+
+
+#### UTS namespace
+
+UTS(Unix Time-sharing System) namespace 提供了主机名和域名的隔离。这样每个 docker container 就拥有独立的主机名和域名了。
+
+在网络上被视为一个独立的节点，而非宿主机上的进程。
+
+
+
+#### IPC namespace 
+
+进程间通讯(IPC) 涉及的 IPC 资源包括创建的 信号量，消息队列和共享内存。
+
+申请 IPC 资源就申请一个全局唯一的 32 位 ID，所以 IPC namespace 中实际上包含了系统 IPC 标识符以及实现了 POSIX 消息队列的文件系统。
+
+在同一个 IPC namespace 下的进程彼此可见，不同 IPC namespace 下的进程则互相不可见。
+
+
+
+首先在 shell 中华使用 ipcmk -Q 命令创建一个消息队列。通过 ipcs -q 查看已经开启的消息队列和序号
 
 
 
@@ -798,7 +976,56 @@ root@pve:~#
 
 
 
-# kubernets
+
+#### PID namespace
+
+pid namespace 隔离非常有用，它对进程 PID 重新标号，即两个不同namespace下的进程可以有相同的PID。每个PID namespace 都有自己的计数程序。	
+
+内核为所有 pid namespace 维护了一个树状结构，最顶层是系统初始化创建的，称为 root namespace 。它创建的新 pid namespace 被称为子 namespace。
+
+通过这种方式，不同的 namespace 会形成一个层次体系，父节点可以看到子节点中的进程，并可以通过信号等方式对子节点产生影响。
+
+- 每个 pid namespace 的第一个进程 pid1 都像传统 Linux 中的init进程一样有特权，起特殊作用。
+- 一个 namespace 中的进程，不能影响其父节点和兄弟节点中的进程。
+- 在 root namespace 中，可以看到所有进程，并且递归包含子节点中的进程。
+
+监控 docker 容器中的程序的方案之一，就是监控 docker daemon 所在 pid namespace 下的所有进程及其子进程，在进行筛选即可。
+
+
+
+**PID namespace 下的 init 进程**
+
+在传统的 Unix 系统中，PID 为 1 的进程是 init ，地位非常特殊。它作为所有进程的父进程，维护一张进程表，不断检查进程状态。
+
+一旦发现某个子进程因为父进程错误而成了 `孤儿进程` 。就会回收资源并结束进程。
+
+所以容器中的 init 进程，也需要实现类似的功能，维护所有后续进程的状态。
+
+#### mount namespace
+
+
+
+启动一个 alpine 容器
+
+```sh
+ docker run -dit --name alpine1 alpine ash  
+ 
+ 
+```
+
+
+
+#### network namespace
+
+network namespace 主要提供了关于网络资源的隔离，
+
+
+
+
+
+
+
+# kubernetes
 
 
 
@@ -864,27 +1091,40 @@ pod就是一组容器，这些容器共享存储、网络、以及怎样运行�
 
 
 
-## 开发环境安装
+## 生产安装
+
+
+
+**集群规划**
+
+
+
+**服务器初始化**
+
+
+
+- 配置主机名
+- 关闭selinux
+- 关闭防火墙
+- 禁用swap
+- 设置时间同步
+- 设置主机名解析
 
 
 
 
 
-```shell
+**证书颁发**
 
-sudo apt-get update && sudo apt-get install -y apt-transport-httprnets
-curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
-echo "deb https://apt.kubernetes.io/ kubernetes-xenial main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
-sudo apt-get update
-sudo apt-get install -y kubectl
+使用 cfssl 工具来进行颁发，cloudflare 出品的 ssl 证书，githup 地址是 <https://github.com/cloudflare/cfssl>
 
-```
+https://app.yinxiang.com/shard/s67/res/2eb07eec-ef64-4114-8a75-003b0fdca2ee/TLS.tar.gz
 
 
 
 
 
-
+**etcd安装**
 
 
 
