@@ -695,6 +695,10 @@ docker-compose up -d --scale redis=2
 
 ## Docker 高级实践
 
+<https://michaelyou.github.io/2017/09/07/%E6%B5%99%E6%B1%9F%E5%A4%A7%E5%AD%A6SEL%E5%AE%9E%E9%AA%8C%E5%AE%A4docker%E7%B3%BB%E5%88%97%E6%96%87%E7%AB%A0%E7%9B%AE%E5%BD%95/>
+
+
+
 
 
 ### 容器化思维 
@@ -1051,11 +1055,41 @@ pid namespace 隔离非常有用，它对进程 PID 重新标号，即两个不�
 
 #### network namespace
 
-network namespace 主要提供了关于网络资源的隔离，
+network namespace 主要提供了关于网络资源的隔离。
+
+包括网络设备，IPV4 和 IPV6 协议栈，IP路由表，防火墙，/proc/net 目录，/sys/class/net 目录，套接字（socket）等。
+
+一个物理的网络设备最多存在于一个 network namespace 中，可以通过创建 veth pair 在不同的 network space 间建立通道并通讯。
+
+一般情况下，物理网络设备都分配在最初的 network namespace 中（即系统默认的 name space）。
+
+如果有多块物理网卡，也可以把其中一块或多块分配给新建的 network namespace 中。
 
 
 
+在 network namespace 中，
 
+
+
+#### user namespace
+
+
+
+### cgroups 资源限制
+
+
+
+> 官方定义
+>
+> cgroups 是 Linux 内核提供的一种机制，这种机制可以根据需求把一系列系统任务及其子任务整合（或分割）到按资源划分等级的不同组内，从而为系统管理提供一个统一的框架。
+
+
+
+通俗的说，cgroups 可以限制，记录任务组所使用的物理资源（CPU，内存，IO等），为容器实现虚拟化提供了基本保证，是构建 docker 等虚拟化管理工具的基石。
+
+
+
+- **资源限制：** cgroups 可以对任务使用的资源总额进行限制。如设定应用运行时使用内存的上限。一旦超出就发出 OOM（Out of Memory） 提示。
 
 
 
