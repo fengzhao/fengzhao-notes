@@ -306,6 +306,14 @@ docker run
 
 
 
+## docker-machine
+
+
+
+
+
+
+
 # Docker 实战
 
 
@@ -470,7 +478,7 @@ docker 网络子系统
 
 在宿主机中，使用 ip addr 看到多了一块docker0 的网卡。有了这样一块网卡，宿主机也会在内核路由表上添加一条到达相应网络的静态路由。
 
-可以使用 ip route 命令看到。
+可以使用 ip route 命令看到这个路由。
 
 
 
@@ -554,6 +562,54 @@ host 网络，其实就是去除网络隔离，让容器直接使用宿主机的
 ### overlay网络
 
 overlay网络可以让两个运行在不同宿主机上的直接通讯，而不需要通过宿主机 OS 层面的路由。这是比较高阶的用法。
+
+可以像创建 bridge 网络一样创建 overlay 网络，services 和 containers 可以同时加入不止一个网络。
+
+
+
+> 前提条件
+>
+> 
+>
+> 防火墙要求
+>
+> - TCP port 2377 for cluster management communications
+>
+> - TCP and UDP port 7946 for communication among nodes
+> - UDP port 4789 for overlay network traffic
+>
+> 
+>
+> 创建 overlay 网络之前，必须通过 docker swarm init 来创建 swarm manager ， 或者用 docker swarm join 加入到一个已存在的 swarm 
+>
+> 这会创建一个默认的名为 ingress 的 overlay 网络 ，
+
+
+
+
+
+
+
+
+
+```shell
+# 创建一个 
+
+➜  ~ docker swarm init                                                                                
+Swarm initialized: current node (slwgtq37q2d51739ln5up6f10) is now a manager.                                                                    To add a worker to this swarm, run the following command:                                                                                         docker swarm join --token SWMTKN-1-0evohu0bywvpdrmeqap5m2uwr4qpddkyilp3l60yv8u9dbobfm-bk6hc1kjjjayuequ2ugc9bvbu 192.168.2.83:2377                                                                                                                                                              To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.                                             ➜  ~  
+```
+
+
+
+**定义自己的 ingress 网络**
+
+大多数用户，可能都不需要配置默认的 ingress 网络， docker 17.05 版本以上允许自定义。
+
+当自动生成的子网跟你的网络有冲突时就可以自定义，或者在网络底层要自定义，例如 MTU。
+
+自定义或者重建 ingress 网络，通常要在 swarm 中创建服务之前就要完成。（如果有服务占用端口，那么需要关闭才可以修改）
+
+
 
 
 
