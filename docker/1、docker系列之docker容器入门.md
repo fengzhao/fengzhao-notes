@@ -582,7 +582,7 @@ overlay网络可以让两个运行在不同宿主机上的直接通讯，而不�
 >
 > 创建 overlay 网络之前，必须通过 docker swarm init 来创建 swarm manager ， 或者用 docker swarm join 加入到一个已存在的 swarm 
 >
-> 这会创建一个默认的名为 ingress 的 overlay 网络 ，
+> 这会创建一个默认的名字为 ingress 的 overlay 网络 ，
 
 
 
@@ -593,7 +593,7 @@ overlay网络可以让两个运行在不同宿主机上的直接通讯，而不�
 
 
 ```shell
-# 创建一个 
+# 创建一个swarm集群，
 
 ➜  ~ docker swarm init                                                                                
 Swarm initialized: current node (slwgtq37q2d51739ln5up6f10) is now a manager.                                                                    To add a worker to this swarm, run the following command:                                                                                         docker swarm join --token SWMTKN-1-0evohu0bywvpdrmeqap5m2uwr4qpddkyilp3l60yv8u9dbobfm-bk6hc1kjjjayuequ2ugc9bvbu 192.168.2.83:2377                                                                                                                                                              To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.                                             ➜  ~  
@@ -601,11 +601,15 @@ Swarm initialized: current node (slwgtq37q2d51739ln5up6f10) is now a manager.   
 
 
 
+**overlay网络上的加密传输**
+
+swarm 中的服务的网络流量默认都是加密传输，使用 GCM 模式的 AES 算法。
+
 **定义自己的 ingress 网络**
 
 大多数用户，可能都不需要配置默认的 ingress 网络， docker 17.05 版本以上允许自定义。
 
-当自动生成的子网跟你的网络有冲突时就可以自定义，或者在网络底层要自定义，例如 MTU。
+当自动生成的子网跟你的网络有冲突时就可以自定义，或者在网络底层要自定义一些设置，例如 MTU。
 
 自定义或者重建 ingress 网络，通常要在 swarm 中创建服务之前就要完成。（如果有服务占用端口，那么需要关闭才可以修改）
 
