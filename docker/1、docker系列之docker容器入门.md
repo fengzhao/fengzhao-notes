@@ -771,6 +771,65 @@ docker-compose up -d --scale redis=2
 
 
 
+### 数据持久化
+
+docker 镜像是以 layer 概念存在的，一层一层的叠加，最终成为我们需要的镜像。
+
+但该镜像的每一层都是 `ReadOnly` 只读的。只有在我们运行容器的时候才会创建读写层。文件系统的隔离使得：
+
+- 容器不再运行时，数据将不会持续存在，数据很难从容器中取出。
+- 无法在不同主机之间很好的进行数据迁移。
+- 数据写入容器的读写层需要内核提供联合文件系统，这会额外的降低性能。
+
+docker 为我们提供了三种不同的方式将数据挂载到容器中：volume、bind mount、`tmpfs`。
+
+
+
+![types of mounts and where they live on the Docker host](https://docs.docker.com/storage/images/types-of-mounts.png)
+
+
+
+#### volume 方式
+
+volume 方式是 docker 中数据持久化的最佳方式。
+
+- volume 可以通过 `docker volume` 进行管理，如创建、删除等操作。
+
+- docker 默认会在主机上（`/var/lib/docker/volumes/` ）存放 volume。
+- 非 docker 进程不应该去修改该区域。
+- 当 volumes 被 mount 进 容器时，有点像 bind network 一样。一个 volume 可以同时被多个 container mount 
+
+- volume 在生成的时候如果不指定名称，会随机生成名称。
+
+```shell
+$ ls /var/lib/docker/volumes
+ff664768bfe64e1a8cae4369dd4a2e1929362e29580735480290684e38c8f140
+ffa4846b581c1a50a01e7a12a6342ad2aaa442701a35ae56ef2f0e5d7888b22c
+```
+
+- volume 在容器停止或删除的时候会继续存在，如需删除需要显示声明。
+
+```shell
+$ docker rm -v <container_id>
+$ docker volume rm <volume_name>
+```
+
+
+
+#### mount 方式
+
+mount 方式可能是最常见最常用的方式了，可以放到宿主机的任何路径中，任何非 docker 进程都可以直接访问它。
+
+当使用 bind mount , host machine 中一个文件或路径被  mount 进 container ，通过完整的路径名引用。甚至可以不存在这个路径名。
+
+
+
+
+
+
+
+
+
 
 
 ## Docker核心原理
