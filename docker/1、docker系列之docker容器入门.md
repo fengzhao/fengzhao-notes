@@ -53,7 +53,9 @@ Docker 使用的是 c/s 架构，Docker 客户端与 Docker 守护进程通讯�
 <center>docker架构图</center>
 #### docker 守护进程
 
-Docker守护程序（`dockerd`）监听 Docker API 请求并管理 Docker 对象，如图像，容器，网络和卷。守护程序还可以与其他守护程序通信以管理 Docker 服务。
+Docker守护程序（`dockerd`）监听 Docker API 的请求，并对各种 Docker 对象进行管理，如镜像，容器，网络和卷的管理。
+
+守护程序还可以与其他守护程序通信以管理 Docker 服务。
 
 #### docker 客户端
 
@@ -65,9 +67,13 @@ Docker Registry 就是一个镜像商店，它里面可以包括各种镜像，�
 
 一个 Docker Registry 中可以包含多个仓库（`Repository`）；每个仓库可以包含多个标签（`Tag`）；每个标签对应一个镜像。  
 
-> 注意：docker registry是镜像站点，仓库是镜像商店内的软件，人们常说的搭建私有仓库，应该理解成搭建私有docker registry。这与 maven 或者其他私有代码仓库的概念有些区别。
+> 注意：docker registry是镜像站点，仓库是镜像商店内的软件，人们常说的搭建私有仓库，应该理解成搭建私有docker registry。
+>
+> 这与 maven 或者其他私有代码仓库的概念有些区别。
 
-通常，一个仓库会包含同一个软件不同版本的镜像，而标签就常用于对应该软件的各个版本。我们可以通过 `<仓库名>:<标签>` 的格式来指定具体是哪个软件哪个版本的镜像。如果不给出标签，将以 `latest` 作为默认标签。
+通常，一个仓库会包含同一个软件不同版本的镜像，而标签就常用于对应该软件的各个版本。
+
+我们可以通过 `<仓库名>:<标签>` 的格式来指定具体是哪个软件哪个版本的镜像。如果不给出标签，将以 `latest` 作为默认标签。
 
 以 [Ubuntu 镜像](https://store.docker.com/images/ubuntu) 为例，`ubuntu` 是仓库的名字，其内包含有不同的版本标签，如，`14.04`, `16.04`。我们可以通过 `ubuntu:14.04`，或者 `ubuntu:16.04` 来具体指定所需哪个版本的镜像。如果忽略了标签，比如 `ubuntu`，那将视为 `ubuntu:latest`。
 
@@ -265,6 +271,8 @@ curl --unix-socket /var/run/docker.sock -X POST http://localhost/containers/crea
 
 // 启动容器
 curl --unix-socket /var/run/docker.sock -X POST /containers/{id}/start
+
+
 ```
 
 
@@ -485,9 +493,9 @@ docker 网络子系统
 ```shell
 # 查看所有网络
 docker network ls
-# 用户自定义bridge网络，可以理解为创建一个子网，新建的子网，会自动在内核中添加静态路由
+# 用户自定义bridge网络，后跟网络名字，可以理解为创建一个子网，新建的子网，会自动在内核中添加静态路由
 docker network create my-net  
-# 用户自定义bridge网络，自定义子网地址，自定义宿主机中的网卡名称
+# 用户自定义bridge网络（也可以 -o 指定名字），自定义子网地址，自定义宿主机中的网卡名称
 docker network create docker02 --subnet=172.30.0.0/16 -o com.docker.network.bridge.name=docker02
 
 # 查看network基本信息，可以看到连接到这个网络的网段，连接到其中的容器。 
@@ -495,10 +503,27 @@ docker network inspect bridge
 
 # 将容器从某个网络中移除
 docker network disconnect network_name container_id
-# 将容器加入到某个网络中，一个容器可以加入到多个网络中。
+# 将容器加入到某个网络中，一个容器可以加入到多个网络中
 docker network connect network_name container_id
 
 
+# 启动两个容器，都加入到 docker02 这个桥接的网络中。
+
+docker run -dit --name alpine1 alpine ash  --network=docker02
+
+docker run -dit --name alpine2 alpine ash  --network=docker02
+
+
+# 可以直接用域名通讯
+
+docker exec -it alpine1 sh
+
+ping alpine2
+
+64 bytes from 172.30.0.3: seq=0 ttl=64 time=0.134 ms
+64 bytes from 172.30.0.3: seq=1 ttl=64 time=0.214 ms
+64 bytes from 172.30.0.3: seq=2 ttl=64 time=0.218 ms
+64 bytes from 172.30.0.3: seq=3 ttl=64 time=0.214 ms
 
 ```
 
@@ -518,11 +543,13 @@ docker network connect network_name container_id
 
 
 
-
-
 **配置容器访问外部**
 
-默认情况下，从容器发送到默认网桥的流量，并不会被转发到外部。要开启转发，需要改变两个设置。这些不是 Docker 命令，并且它们会影响 Docker 主机的内核。
+默认情况下，从容器发送到默认网桥的流量，并不会被转发到外部。要开启转发，需要改变两个设置。
+
+这些不是 Docker 命令，并且它们会影响 Docker 主机的内核。
+
+默认桥接网络被视为 Docker 的遗留细节，不建议用于生产用途。配置默认网桥是一个手动操作，并且它有技术上的缺点。
 
 ```sh
 # 配置 Linux 内核来允许 IP 转发
@@ -1136,9 +1163,13 @@ UTS(Unix Time-sharing System) namespace 提供了主机名和域名的隔离。�
 
 #### PID namespace
 
-pid namespace 隔离非常有用，它对进程 PID 重新标号，即两个不同namespace下的进程可以有相同的PID。每个PID namespace 都有自己的计数程序。	
+pid namespace 隔离非常有用，它对进程 PID 重新标号，即两个不同namespace下的进程可以有相同的PID。
 
-内核为所有 pid namespace 维护了一个树状结构，最顶层是系统初始化创建的，称为 root namespace 。它创建的新 pid namespace 被称为子 namespace。
+每个PID namespace 都有自己的计数程序。	
+
+内核为所有 pid namespace 维护了一个树状结构，最顶层是系统初始化创建的，称为 root namespace 。
+
+它创建的新 pid namespace 被称为子 namespace。
 
 通过这种方式，不同的 namespace 会形成一个层次体系，父节点可以看到子节点中的进程，并可以通过信号等方式对子节点产生影响。
 
@@ -1209,6 +1240,49 @@ network namespace 主要提供了关于网络资源的隔离。
 
 
 - **资源限制：** cgroups 可以对任务使用的资源总额进行限制。如设定应用运行时使用内存的上限。一旦超出就发出 OOM（Out of Memory） 提示。
+
+
+
+## harbor
+
+
+
+在企业中，可以搭建自建的镜像仓库，harbor 
+
+https://goharbor.io/docs/2.0.0/install-config/
+
+
+
+
+
+> **Installation Prerequisites**
+>
+> harbor 是部署在
+>
+> docker 
+
+
+
+
+
+
+
+
+
+推送镜像到harbor私服
+
+```shell
+# 打标签
+docker tag  busybox:latest  demo.goharbor.io/test-demo/busybox:latest
+
+
+
+docker login -u username -p password  xxx.goharbor.io
+
+docker push demo.goharbor.io/test-demo/busybox
+```
+
+
 
 
 
