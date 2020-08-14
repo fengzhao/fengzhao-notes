@@ -468,11 +468,11 @@ docker 网络子系统
 
 ### bridge网络
 
-这是 docker 默认的网络驱动设置，大多数情况下都可以用这种方式来使用 docker 的网络。
+这是 docker 默认的网络驱动设置，大多数情况下都可以用这种方式来使用 docker 网络。
 
 在网络术语中，桥接是工作在链路层的。在 docker 中，可以让所有的容器连接到 docker 网桥中。
 
-可以理解为一个子网，然后使用 NAT 技术通过宿主机与外界通讯。
+可以理解为创建一个子网，然后使用 NAT 技术通过宿主机与外界通讯。
 
 当 Docker 启动后，会自动创建一个默认的网桥 docker0 ，其IP地址默认为 172.17.0.1/16 。新启动的容器默认会加入到其中。
 
@@ -485,16 +485,19 @@ docker 网络子系统
 ```shell
 # 查看所有网络
 docker network ls
+
 # 用户自定义bridge网络，可以理解为创建一个子网，新建的子网，会自动在内核中添加静态路由
 docker network create my-net  
+
 # 用户自定义bridge网络，自定义子网地址，自定义宿主机中的网卡名称
 docker network create docker02 --subnet=172.30.0.0/16 -o com.docker.network.bridge.name=docker02
 
-# 查看network基本信息，可以看到连接到这个网络的网段，连接到其中的容器。 
+# 查看network基本信息，可以看到这个网络的网段，连接到其中的容器。 
 docker network inspect bridge
 
 # 将容器从某个网络中移除
 docker network disconnect network_name container_id
+
 # 将容器加入到某个网络中，一个容器可以加入到多个网络中。
 docker network connect network_name container_id
 
@@ -557,7 +560,17 @@ sudo iptables -P FORWARD ACCEPT
 
 host 网络，其实就是去除网络隔离，让容器直接使用宿主机的网络。
 
-从网络的角度看，这个进程就像直接运行在宿主机上一样。但是其他的存储，进程和用户空间，又跟宿主机进行隔离。
+从网络的角度看，这个进程就像直接运行在宿主机上一样。但是文件系统，进程和用户空间，又跟宿主机进行隔离。
+
+让容器运行在 host 模式很简单：启动容器的命令行添加 `--net=host` 参数就搞定了！
+
+```shell
+$ docker run -d --name=busybox --net=host busybox top
+
+$  docker exec busybox ip addr
+```
+
+
 
 ### overlay网络
 
@@ -596,7 +609,8 @@ overlay网络可以让两个运行在不同宿主机上的直接通讯，而不�
 # 创建一个swarm集群，
 
 ➜  ~ docker swarm init                                                                                
-Swarm initialized: current node (slwgtq37q2d51739ln5up6f10) is now a manager.                                                                    To add a worker to this swarm, run the following command:                                                                                         docker swarm join --token SWMTKN-1-0evohu0bywvpdrmeqap5m2uwr4qpddkyilp3l60yv8u9dbobfm-bk6hc1kjjjayuequ2ugc9bvbu 192.168.2.83:2377                                                                                                                                                              To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.                                             ➜  ~  
+Swarm initialized: current node (slwgtq37q2d51739ln5up6f10) is now a manager.                                                   To add a worker to this swarm, run the following command:                                                                       docker swarm join --token SWMTKN-1-0evohu0bywvpdrmeqap5m2uwr4qpddkyilp3l60yv8u9dbobfm-bk6hc1kjjjayuequ2ugc9bvbu 192.168.2.83:2377                                                                                                                To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.                              
+➜  ~  
 ```
 
 
@@ -620,6 +634,10 @@ swarm 中的服务的网络流量默认都是加密传输，使用 GCM 模式的
 ### macvlan网络
 
 macvlan 可以给容器分配 mac 地址，在网络中就像一个物理设备一样。	
+
+
+
+
 
 ### Docker高级网络实践
 
@@ -1252,7 +1270,13 @@ kube-apiserver 在设计上考虑了水平扩缩的需要。 换言之，通过�
 
 k8s的数据库，用来注册节点、服务、记录、记录账号、记录节点的信息。
 
+
+
 ### node组件
+
+Node 是 Pod 真正运行的主机，可以是物理机，也可以是虚拟机。
+
+为了管理 Pod，每个 Node 节点上至少要运行 container runtime（比如 docker 或者 rkt）、`kubelet` 和 `kube-proxy` 服务。
 
 #### kubelet
 
@@ -1270,9 +1294,32 @@ k8s的数据库，用来注册节点、服务、记录、记录账号、记录�
 
 kubernetes 中创建和管理的、最小的可部署的计算单元。kubernetes 中是无法直接操作容器的。
 
-pod就是一组容器，这些容器共享存储、网络、以及怎样运行这些容器的声明。
+pod 就是一组紧密关联的容器集合，它们共享 PID、IPC、Network 和 UTS namespace。
 
-在 [Docker](https://www.docker.com/) 体系的术语中，Pod 被建模为一组具有共享命名空间和共享文件系统[卷](https://kubernetes.io/docs/concepts/storage/volumes/) 的 Docker 容器。
+Pod 内的多个容器共享网络和文件系统，可以通过进程间通信和文件共享这种简单高效的方式组合完成服务。
+
+在 Kubernetes 中，所有对象都使用 manifest（yaml 或 json）来定义。
+
+比如一个简单的 nginx 服务可以定义为 nginx.yaml，它包含一个镜像为 nginx 的容器：
+
+```yml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: nginx
+  labels:
+    app: nginx
+spec:
+  containers:
+  - name: nginx
+    image: nginx
+    ports:
+    - containerPort: 80
+```
+
+
+
+
 
 
 
