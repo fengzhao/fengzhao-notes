@@ -628,3 +628,22 @@ Redis服务器启动后，直接通过客户端执行命令：slaveof <masterip>
 
 
 
+
+
+
+
+### Redis-cluster教程
+
+
+
+这是一份 redis-cluster 的教程，不会讲解一些复杂的分布式系统知识，提供了安装搭建配置 redis-cluster 的教程。这份教程仅仅是从用户视角来描述cluster 
+
+
+
+
+
+
+
+
+
+实际上，在 redis-cluster 
