@@ -642,8 +642,235 @@ Redis服务器启动后，直接通过客户端执行命令：slaveof <masterip>
 
 
 
+redis-cluster 提供了一种可以让数据自动分片在多节点的安装方式。（**automatically sharded across multiple Redis nodes**.）
+
+
+
+实际上，在 redis-cluster 中。
+
+- 在多个节点中自动分片数据集的能力。
+- 当集群中有节点失联或者故障时，继续提供支持的能力。
 
 
 
 
-实际上，在 redis-cluster 
+
+#### TCP端口
+
+每个 redis 节点都需要开放两个 tcp 端口，默认的 6379 是给客户端连接使用。
+
+
+
+第二个高端口用于集群总线，这是使用二进制协议进行点对点的通讯信道。
+
+集群总线用于节点间的故障检测，配置更新，故障转移授权(failover authorization)等。
+
+客户端永远不会与集群总线端口通讯。而是应该使用普通的命令端口。（但是要注意在防火墙中打开集群间的总线端口）
+
+集群总线端口和命令端口的偏移量始终是固定的。值为 10000 （也就是说客户端端口是 6379，那么总线端口就是 16379）
+
+
+
+
+
+#### Redis集群数据分片
+
+
+
+redis 集群没有使用**一致性哈希**。它用一种不同的分片形式，在这种形式中，每个key都是一个概念性（**hash slot**）的一部分。
+
+
+
+Redis集群中有16384个hash slots，为了计算给定的key应该在哪个hash slot上，我们简单地用这个key的CRC16值来对16384取模。
+
+（即：key的CRC16  %  16384）
+
+Redis集群中的每个节点负责一部分hash slots，假设你的集群有3个节点，那么：
+
+- Node A contains hash slots from 0 to 5500
+- Node B contains hash slots from 5501 to 11000
+- Node C contains hash slots from 11001 to 16383
+
+
+
+允许添加和删除集群节点。比如，如果你想增加一个新的节点D，那么久需要从A、B、C节点上删除一些hash slot给到D。
+
+同样地，如果你想从集群中删除节点A，那么会将A上面的 hash slots 移动到B和C，当节点A上是空的时候就可以将其从集群中完全删除。
+
+因为将 hash slots 从一个节点移动到另一个节点并不需要停止其它的操作。
+
+添加、删除节点、更改节点所维护的 hash slots 的百分比 都不需要任何停机时间。也就是说，移动hash slots是并行的，移动hash slots不会影响其它操作。
+
+
+
+Redis支持多个key操作，只要这些key在一个单个命令中执行（或者一个事务，或者Lua脚本执行），那么它们就属于相同的hash slot。
+
+你也可以用hash tags俩强制多个key都在相同的hash slot中。
+
+
+
+#### redis 主从模型
+
+
+
+当部分master节点失败了，或者不能够和大多数节点通信的时候，为了保持可用，Redis集群用一个master-slave模式。
+
+这样的话每个hash slot就有1到N个副本。
+
+在我们的例子中，集群有A、B、C三个节点，如果节点B挂了，那么 5501-11000 之间的 hash slot 将无法提供服务。
+
+然而，当我们给每个 master 节点添加一个 slave 节点以后，我们的集群最终会变成由A、B、C三个 master 节点和 A1、B1、C1 三个 slave 节点组成。
+
+节点 B1 是 B 的副本，如果 B 失败了，集群会将 B1 提升为新的 master，从而继续提供服务。然而，如果 B 和 B1 同时挂了，那么整个集群将不可用。
+
+
+
+#### redis集群一致性保证
+
+
+
+Redis集群不能保证强一致性。换句话说，Redis集群可能会丢失一些写操作。
+
+Redis集群可能丢失写的第一个原因是因为它用异步复制。
+
+
+
+写可能是这样发生的：
+
+- 客户端写到 master B
+- master B 返回客户端OK
+- master B 将这个写操作广播给它的slaves B1、B2、B3
+
+
+
+正如你看到的那样，B 没有等到 B1、B2、B3 确认就回复客户端了，也就是说，B 在回复客户端之前没有等待 B1、B2、B3 的确认，
+
+这对应Redis来说是一个潜在的风险。所以，如果客户端写了一些东西，B 也确认了这个写操作，但是在它将这个写操作发给它的 slaves 之前它宕机了，
+
+随后其中一个slave（没有收到这个写命令）可能被提升为新的master，于是这个写操作就永远丢失了。
+
+
+
+这和大多数配置为每秒刷新一次数据到磁盘的情况是一样的。你可以通过强制数据库在返回客户端之前先刷新数据。
+
+但是这样做的结果会导致性能很低，这就相当于同步复制了。
+
+基本上，需要在性能和一致性之间做一个权衡。
+
+
+
+#### redis集群配置参数
+
+
+
+```
+cluster-enabled  <yes/no>: 如果是yes，表示启用集群，否则以单例模式启动
+cluster-config-file <filename>: 可选，这不是一个用户可编辑的配置文件，这个文件是Redis集群节点自动持久化每次配置的改变，为了在启动的时候重新读取它。
+cluster-node-timeout <milliseconds>: 超时时间，集群节点不可用的最大时间。如果一个master节点不可到达超过了指定时间，则认为它失败了。注意，每一个在指定时间内不能到达大多数master节点的节点将停止接受查询请求。
+cluster-slave-validity-factor <factor>: 如果设置为0，则一个slave将总是尝试故障转移一个master。如果设置为一个正数，那么最大失去连接的时间是node timeout乘以这个factor。
+cluster-migration-barrier <count>: 一个master和slave保持连接的最小数量（即：最少与多少个slave保持连接），也就是说至少与其它多少slave保持连接的slave才有资格成为master。
+cluster-require-full-coverage <yes/no>: 如果设置为yes，这也是默认值，如果key space没有达到百分之多少时停止接受写请求。如果设置为no，将仍然接受查询请求，即使它只是请求部分key。
+```
+
+
+
+#### 创建并使用 redis 集群
+
+为了创建 redis 集群，必须要先启动一些以 cluster mode 模式运行的实例
+
+
+
+最小配置文件如下：
+
+```shell
+# 端口
+port 7000
+# 开启集群模式
+cluster-enabled yes
+# 每个实例都包含一个文件，这个文件存储该节点的配置，模式是nodes.conf。是Redis集群实例启动的时候生成的，并且每次在需要的时候自动更新。
+cluster-config-file nodes.conf
+cluster-node-timeout 5000
+appendonly yes
+```
+
+
+
+**最小的集群至少需要3个master节点**。这里，我们为了测试，在一台机器上用三主三从。
+
+```shell
+
+mkdir cluster-test
+cd cluster-test
+mkdir 7000 7001 7002 7003 7004 7005
+cd 7000
+
+# 填入配置
+vim  redis.conf
+
+# 记得修改端口
+cp 7000/redis.conf 7001/
+cp 7000/redis.conf 7002/
+cp 7000/redis.conf 7003/
+cp 7000/redis.conf 7004/
+cp 7000/redis.conf 7005/
+
+# 传入redis-server二进制文件
+
+# 打开多个终端，依次启动多个实例
+
+cd 7000
+./redis-server 7000/redis.conf
+
+cd 7001
+./redis-server 7001/redis.conf 
+
+cd 7002
+./redis-server 7002/redis.conf 
+
+cd 7003
+./redis-server 7003/redis.conf 
+
+cd 7004
+./redis-server 7004/redis.conf
+```
+
+
+
+每个Redis实例都有一个ID，这是实例在集群上下文中的唯一标识。在节点的整个生命周期中这个唯一的ID是不会变的，我们把它叫做**Node ID**
+
+每个节点内部，都是通过 Node ID 来记住其他 node，而不是IP和端口。
+
+
+
+**创建集群**
+
+
+
+现在已经有一些运行中的节点了，需要创建集群。
+
+redis5 可以使用 redis-cli 工具来管理集群
+
+redis3 或 redis4 可以使用 redis-trib.rb 这个工具。在 redis 源代码中的 src 目录中。
+
+```shell
+#  redis-trib.rb是一个 ruby 语言的工具，所以需要安装ruby
+yum install ruby
+yum install rubygems
+gem install redis
+
+# 如果提示ruby版本过低，可以使用这个
+gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
+curl -sSL https://get.rvm.io | bash -s stable
+source /etc/profile.d/rvm.sh
+rvm list known
+rvm install 2.4.1
+```
+
+
+
+```shell
+# 在 redis5 中使用redis-cli创建集群
+redis-cli --cluster create 127.0.0.1:7000 127.0.0.1:7001 \
+127.0.0.1:7002 127.0.0.1:7003 127.0.0.1:7004 127.0.0.1:7005 \
+--cluster-replicas 1
+```
