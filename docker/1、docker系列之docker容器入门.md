@@ -381,8 +381,9 @@ $ docker tag busybox:latest  fengzhao/busybox:latest
 
 
 # docker 镜像导出
-
+docker save spring-boot-docker  -o  /home/docker/spring-boot-docker.tar
 # docker 加载本地镜像
+docker load -i spring-boot-docker.tar  
 
 ```
 
