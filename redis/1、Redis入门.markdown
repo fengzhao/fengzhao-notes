@@ -42,6 +42,36 @@ redis 比较常见的作用和应用场景：
 ## 安装
 
 ```shell
+# 源码包安装 6.0
+
+## 准备gcc环境
+# centos7 默认的 gcc 版本为：4.8.5 < 5.3 无法编译
+sudo yum -y install centos-release-scl
+sudo yum -y install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils
+# 临时有效，退出 shell 或重启会恢复原 gcc 版本
+sudo scl enable devtoolset-9 bash
+# 长期有效
+sudo echo "source /opt/rh/devtoolset-9/enable" >>/etc/profile
+
+# 下载源代码包
+git clone -b 6.0 https://github.com/redis/redis.git  /usr/local/src/
+wget http://download.redis.io/releases/redis-6.0.5.tar.gz  -O  /usr/local/src/redis-6.0.5.tar.gz
+
+# 编译安装，编译安装后，二进制文件会被复制到/usr/local/bin目录下
+tar xf redis-6.0.5.tar.gz
+cd redis-6.0.5
+make
+sudo make install
+
+
+# 修改配置文件 redis.conf 
+bind 127.0.0.1     #根据情况是否需要远程访问去掉注释
+requirepass 123456  #修改密码
+
+
+sudo mkdir /etc/redis
+sudo cp redis.conf /etc/redis/
+
 
 # Install Redis Server on Ubuntu 18.04
 
@@ -58,8 +88,6 @@ supervised systemd
 
 yum install epel-release
 yum install redis 
-
-
 
 
 # vim  /etc/sysctl.conf 设置内存参数
@@ -863,11 +891,9 @@ yum install rubygems
 gem install redis
 
 # 如果提示ruby版本过低，可以使用这个
-gpg --keyserver hkp://keys.gnupg.net --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
-curl -sSL https://get.rvm.io | bash -s stable
-source /etc/profile.d/rvm.sh
-rvm list known
-rvm install 2.4.1
+yum install -y centos-release-scl-rh rh-ruby23
+scl  enable  rh-ruby23 bash
+ruby -v
 ```
 
 
@@ -983,3 +1009,18 @@ https://github.com/antirez/redis-rb-cluster
 
 
 
+#### 集群分片
+
+
+
+分片其实就是把 hash slots 从一组 nodes 移动到另外一组 nodes 。就像使用 redis-cli 工具创建 cluster 一样。
+
+
+
+```shell
+redis-cli --cluster reshard 127.0.0.1:7000
+```
+
+
+
+当前 redis-cli 是唯一官方支持的分片管理方式，
