@@ -1,5 +1,13 @@
 ## 简介
 
+redis 学习网站
+
+ http://huangz.me/
+
+http://redisguide.com/
+
+
+
 > Redis is an open source (BSD licensed), in-memory data structure store, used as database, cache and message broker.
 
 这是 redis 的官方的定义，它是一个数据库，且是把数据存到内存中，能用作 cache (缓存) 和消息队列。
@@ -525,7 +533,92 @@ https://liangshuang.name/2017/06/29/redis/
 
 
 
+## 深入理解 redis 内存模型
 
+
+
+工欲善其事必先利其器，在说明Redis内存之前首先说明如何统计Redis使用内存的情况。
+
+在客户端通过redis-cli连接服务器后（后面如无特殊说明，客户端一律使用redis-cli），通过 info 命令可以查看内存使用情况：
+
+其中，info 命令可以显示 redis 服务器的许多信息，包括服务器基本信息、CPU、内存、持久化、客户端连接信息等等；
+
+memory是参数，表示只显示内存相关的信息。
+
+```shell
+127.0.0.1:7000>infomemory
+# Memory
+used_memory:1536400
+used_memory_human:1.47M
+used_memory_rss:8212480
+used_memory_rss_human:7.83M
+used_memory_peak:1539032
+used_memory_peak_human:1.47M
+used_memory_peak_perc:99.83%
+used_memory_overhead:1478258
+used_memory_startup:1461272
+used_memory_dataset:58142
+used_memory_dataset_perc:77.39%
+allocator_allocated:1538472
+allocator_active:1814528
+allocator_resident:4329472
+total_system_memory:8185995264
+total_system_memory_human:7.62G
+used_memory_lua:37888
+used_memory_lua_human:37.00K
+used_memory_scripts:0
+used_memory_scripts_human:0B
+number_of_cached_scripts:0
+maxmemory:0
+maxmemory_human:0B
+maxmemory_policy:noeviction
+allocator_frag_ratio:1.18
+allocator_frag_bytes:276056
+allocator_rss_ratio:2.39
+allocator_rss_bytes:2514944
+rss_overhead_ratio:1.90
+rss_overhead_bytes:3883008
+mem_fragmentation_ratio:5.49
+mem_fragmentation_bytes:6717096
+mem_not_counted_for_evict:0
+mem_replication_backlog:0
+mem_clients_slaves:0
+mem_clients_normal:16986
+mem_aof_buffer:0
+mem_allocator:jemalloc-5.1.0
+active_defrag_running:0
+lazyfree_pending_objects:0
+127.0.0.1:7000>
+127.0.0.1:7000>
+```
+
+
+
+返回结果中比较重要的几个说明如下：
+
+（1）**used_memory**：Redis分配器分配的内存总量（单位是字节），包括使用的虚拟内存（即swap）；Redis分配器后面会介绍。used_memory_human 只是显示更友好。
+
+（2）**used_memory_rss**：Redis进程占据操作系统的内存（单位是字节），与top及ps命令看到的值是一致的；除了分配器分配的内存之外，used_memory_rss还包括进程运行本身需要的内存、内存碎片等，但是不包括虚拟内存。
+
+因此，used_memory和used_memory_rss，前者是从Redis角度得到的量，后者是从操作系统角度得到的量。二者之所以有所不同，一方面是因为内存碎片和Redis进程运行需要占用内存，使得前者可能比后者小，另一方面虚拟内存的存在，使得前者可能比后者大。
+
+由于在实际应用中，Redis的数据量会比较大，此时进程运行占用的内存与Redis数据量和内存碎片相比，都会小得多；因此used_memory_rss和used_memory的比例，便成了衡量Redis内存碎片率的参数；这个参数就是 mem_fragmentation_ratio。
+
+（3）**mem_fragmentation_ratio**：内存碎片比率，该值是 used_memory_rss / used_memory 的比值。
+
+mem_fragmentation_ratio一般大于1，且该值越大，内存碎片比例越大。mem_fragmentation_ratio<1，说明Redis使用了虚拟内存，由于虚拟内存的媒介是磁盘，比内存速度要慢很多，当这种情况出现时，应该及时排查，如果内存不足应该及时处理，如增加Redis节点、增加Redis服务器的内存、优化应用等。
+
+一般来说，mem_fragmentation_ratio在1.03左右是比较健康的状态（对于jemalloc来说）；上面截图中的mem_fragmentation_ratio值很大，是因为还没有向Redis中存入数据，Redis进程本身运行的内存使得used_memory_rss 比used_memory大得多。
+
+（4）**mem_allocator****：**Redis使用的内存分配器，在编译时指定；可以是 libc 、jemalloc或者tcmalloc，默认是jemalloc；截图中使用的便是默认的jemalloc。
+
+
+
+### redis 内存划分
+
+redis 作为内存数据库，在内存中存储的内容主要是数据（键值对）；通过前面的叙述可以知道，除了数据以外，redis 的其他部分也会占用内存
+
+redis 的内存占用主要可以划分为以下几个部分：
 
 ## Redis集群
 
@@ -543,10 +636,6 @@ https://liangshuang.name/2017/06/29/redis/
 - 哨兵
 - 集群
 
-
-
-
-
 ### 主从复制原理 
 
 主从复制，是指将一台Redis服务器的数据，复制到其他的Redis服务器。
@@ -560,15 +649,20 @@ https://liangshuang.name/2017/06/29/redis/
 主从复制的主要作用：
 
 - 数据冗余：主从复制实现了数据的热备份，是持久化之外的一种数据冗余方式。
+
 - 故障恢复：当主节点出现问题时，可以由从节点提供服务，实现快速的故障恢复；实际上是一种服务的冗余。
-- 负载均衡：通过主从复制和读写分离，可以由主节点提供写服务，由从节点提供读服务。尤其是在写少读多的场景下，通过多个从节点分担读负载，可以大大提高Redis服务器的并发。（如电商网站的商品）
+
+- 负载均衡：通过主从复制和读写分离，可以由主节点提供写服务，由从节点提供读服务。
+
+  尤其是在写少读多的场景下，通过多个从节点分担读负载，可以大大提高Redis服务器的并发。（如电商网站的商品）
+
 - 高可用基石：除了上述作用以外，主从复制还是哨兵和集群能够实施的基础，因此说主从复制是Redis高可用的基础。
 
 
 
 
 
-#### 建立复制
+#### 建立主从复制
 
 **主从复制的开启，完全是在从节点发起的；不需要我们在主节点做任何事情。**
 
@@ -586,7 +680,33 @@ redis-server启动命令后加入 --slaveof <masterip> <masterport>
 
 Redis服务器启动后，直接通过客户端执行命令：slaveof <masterip> <masterport>，则该Redis实例成为从节点。
 
-上述3种方式是等效的，下面以客户端命令的方式为例，看一下当执行了slaveof后，Redis主节点和从节点的变化。
+上述3种方式是等效的，下面以客户端命令的方式为例，看一下当执行了 slaveof 后，Redis主节点和从节点的变化。
+
+
+
+需要注意的是，从节点默认也可以进行读写操作，但从节点的写入将会导致这部分数据不会被同步，从而造成数据不一致的问题
+
+可以通过指定配置来强制从节点不可写入：
+
+```shell
+replica-read-only yes
+```
+
+此时对从节点进行写入操作会报错：
+
+```shell
+(error) READONLY You can't write against a read only replica.
+```
+
+在 redis-cli 中，通过执行 info replication 可以看到集群信息
+
+```shell
+# 其中有两个标识：
+
+#     master_replid -- 长度为41个字节的字符串，主节点标识
+
+#     master_replid2 -- 该节点上一次连接主实例的实例 master_replid
+```
 
 
 
@@ -660,13 +780,11 @@ Redis服务器启动后，直接通过客户端执行命令：slaveof <masterip>
 
 
 
-### Redis-cluster教程
+### redis-cluster 教程
 
 
 
 这是一份 redis-cluster 的教程，不会讲解一些复杂的分布式系统知识，提供了安装搭建配置 redis-cluster 的教程。这份教程仅仅是从用户视角来描述cluster 
-
-
 
 
 
@@ -751,7 +869,7 @@ Redis支持多个 key 操作，只要这些key在一个单个命令中执行（�
 
 在我们的例子中，集群有A、B、C三个节点，如果节点B挂了，那么 5501-11000 之间的 hash slot 将无法提供服务。
 
-然而，当我们给每个 master 节点添加一个 slave 节点以后，我们的集群最终会变成由A、B、C三个 master 节点和 A1、B1、C1 三个 slave 节点组成。
+然而，当我们给每个 master 节点添加一个 slave 节点以后，我们的集群最终会变成由 A、B、C 三个 master 节点和 A1、B1、C1 三个 slave 节点组成。
 
 节点 B1 是 B 的副本，如果 B 失败了，集群会将 B1 提升为新的 master，从而继续提供服务。然而，如果 B 和 B1 同时挂了，那么整个集群将不可用。
 
@@ -876,11 +994,9 @@ cd 7004
 
 **创建集群**
 
-
-
 现在已经有一些运行中的节点了，需要创建集群。
 
-redis5 可以使用 redis-cli 工具来管理集群
+redis5 可以使用 redis-cli 工具来管理集群。
 
 redis3 或 redis4 可以使用 redis-trib.rb 这个工具。在 redis 源代码中的 src 目录中。
 
@@ -932,6 +1048,8 @@ redis-cli --cluster create 127.0.0.1:7000 127.0.0.1:7001 \
 
 
 #### 使用脚本创建redis集群
+
+如果不想手动创建 redis 集群实例
 
 在 redis 源代码的 utils/create-cluster 目录中，有一个脚本文件 create-cluster ，这是一个简单的 bash 脚本，可以直接启动三主三从节点的集群。
 
@@ -1011,6 +1129,92 @@ https://github.com/antirez/redis-rb-cluster
 
 #### 集群分片
 
+Redis 集群是通过分片（shard）方式， 将一个数据库划分为多个部分， 并将不同部分交给集群中的不同服务器来处理， 从而达到扩展性能的目的。
+
+其中， 数据库的每个部分就是一个槽（slot）， 一个槽可以包含任意多个键（key）； 而集群中的每个服务器则是一个节点（node）。
+
+
+
+在一般情况下， Redis 集群的客户端都会在内部缓存集群的槽分配情况（但并不需要强制）， 比如这样：
+
+| 槽          | 负责的节点 |
+| :---------- | :--------- |
+| 0~5461      | node_a     |
+| 5462~10922  | node_b     |
+| 10923~16383 | node_c     |
+
+https://redis.io/topics/client-side-caching
+
+然后， 每当用户想要访问键 k 时， 客户端都会通过以下公式， 计算出键 k 所在的槽：
+
+```shell
+slot = CRC16(k) % 16384
+```
+
+然后客户端就可以根据 `slot` 的值以及槽分配的表格， 直接对槽所在的节点进行访问， 在这种情况下， 客户端只需要一次访问就可以获取到键 k 的值。
+
+
+
+
+
+按照 redis 官方规范，一个 Redis 客户端可以向集群中的任意节点（包括从节点）发送命令请求。
+
+节点会对命令请求进行分析，如果该命令是集群可以执行的命令，那么节点会查找这个命令所要处理的键所在的槽。
+
+如果处理该命令的槽位于当前节点，那么命令可以顺利执行，否则当前节点会返回 MOVED 错误（重定向），让客户端到另一个节点执行该命令
+
+redis 官方规范要求所有客户端都应处理 MOVED 错误，从而实现对用户的透明。
+
+我们上面看到的错误就是 MOVED 错误：
+
+ 
+
+他表示，该执行该命令所需要的 slot 是 866 号哈希槽，负责该槽的节点是 172.21.16.4:6379
+
+
+
+比如，redis-go-cluster 是基于 Redigo 实现的 Golang Redis 客户端。redis-go-cluster 可以在本地缓存 slot 信息，并且当集群修改的时候会自动更新。
+
+此客户端管理每个节点连接池，使用 goroutine 来尽可能的并发执行，达到了高效，低延迟。
+
+
+
+
+
+**写入安全性**
+
+redis cluster 集群节点间使用**异步复制**传输数据，最后一次故障转移执行隐式合并动作（last failover wins implicit merge function）。
+
+这意味着最后被选举出来的master的数据集最终会覆盖到其他 slave 副本节点。
+
+使用异步复制的缺点就是在故障期间总会丢失一点数据，但连接到大多数 master 节点的客户端与连接到极少部分 master 节点的客户端情况完全不同。
+
+redis 集群会尽量保存所有与大多数 master 节点连接的客户端执行的写入，但以下两种情况除外：
+
+1、一个写入操作能到达一个master节点，但当master节点准备回复客户端时，此写入可能还未通过异步复制到它的 slave 复制节点。
+
+若master节点在写入还未复制到slave节点时挂掉，那么此次写入就会丢失，若 master 节点不可达，就会有一个合适的 slave 被提升为新 master。
+
+2、理论上另一种写入可能的丢失的情况：
+
+　　　　　　a、网络故障造成网络分区，致使 master 节点不可达
+
+　　　　　　b、故障转移导致 slave 节点被提升为 master
+
+　　　　　　c、master节点再次可达
+
+　　　　　　d、网络分区后 master 节点隔离，使用过时路由信息（out-of-date routing table）的客户端写入数据到旧 master 节点
+
+
+
+
+
+#### redis 重分片
+
+随着数据量的增多或者访问量的加大， 集群中的一个或多个节点可能会无法继续处理之前分配给它们的槽， 这时用户就需要对集群进行重分片（reshard）。
+
+ 也即是， 给集群增加更多节点， 并把之前由已有节点处理的槽分配一部分给新节点负责。
+
 
 
 分片其实就是把 hash slots 从一组 nodes 移动到另外一组 nodes 。就像使用 redis-cli 工具创建 cluster 一样。
@@ -1024,3 +1228,38 @@ redis-cli --cluster reshard 127.0.0.1:7000
 
 
 当前 redis-cli 是唯一官方支持的分片管理方式，
+
+
+
+
+
+
+
+### redis-cluster 规范
+
+
+
+redis 集群不像单机 redis 那样支持多数据库功能， 集群只使用默认的 `0` 号数据库(database0)， 并且不能使用 [SELECT index](http://redisdoc.com/database/select.html#select) 命令。
+
+
+
+#### Redis 集群协议中的客户端和服务器
+
+Redis 集群中的节点有以下责任：
+
+- 持有键值对数据。
+- 记录集群的状态，包括键到正确节点的映射（mapping keys to right nodes）。
+- 自动发现其他节点，识别工作不正常的节点，并在有需要时，在从节点中选举出新的主节点。
+
+为了执行以上列出的任务， 集群中的每个节点都与其他节点建立起了“集群总线（cluster bus）”， 该连接是一个 TCP 连接， 使用二进制协议进行通讯。
+
+节点之间使用 [Gossip 协议](http://en.wikipedia.org/wiki/Gossip_protocol) 来进行以下工作：
+
+- 传播（propagate）关于集群的信息，以此来发现新的节点。
+- 向其他节点发送 `PING` 数据包，以此来检查目标节点是否正常运作。
+- 在特定事件发生时，发送集群信息。
+
+除此之外， 集群连接还用于在集群中发布或订阅信息
+
+
+
