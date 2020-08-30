@@ -12,17 +12,19 @@ http://redisguide.com/
 
 这是 redis 的官方的定义，它是一个数据库，且是把数据存到内存中，能用作 cache (缓存) 和消息队列。
 
-Redis 是完全开源免费的，遵守 BSD 协议，是一个高性能的 key-value 数据库，与其它 key/value 缓存产品有以下三个特点：
+Redis 是完全开源免费的，遵守 BSD 协议，是一个高性能的 key-value 数据库，与其它 key/value 缓存产品相比有以下三个特点：
 
 - Redis 支持数据的持久化，可以将内存中的数据保存在磁盘中，重启的时候可以再次加载进行使用。
-- Redis 不仅支持 key-value 类型的数据，还提供list，set，zset，hash等数据结构的存储，对程序员透明，无需进行额外的抽象
+- Redis 不仅支持 key-value 类型的数据，还提供 list，set，zset，hash 等数据结构的存储，对程序员透明，无需进行额外的抽象
 - Redis 支持数据的备份，即 master-slave 模式的数据备份
 
 说到数据库，可能大家用得最多的是关系型数据库，比如 MySQL，PostgreSQL 等。
 
 这种数据库是把数据存到磁盘中的，这种能存大量的数据，然而我们的应用是经常需要访问数据库来查找数据，每次访问，无论怎样，都是需要消耗CPU和IO等待。
 
-当应用的数据积累到很庞大时，这种性能的问题更严重，所以有一种解决方法是这样的，把经常被访问的数据放到内存中，因为内存的访问速度比磁盘快太多了，而这部分数据可能不会是全部的数据，因为内存的价格比磁盘贵多了。
+当应用的数据积累到很庞大时，这种性能的问题更严重，所以有一种解决方法是这样的，把经常被访问的数据放到内存中，因为内存的访问速度比磁盘快太多了。
+
+而这部分数据可能不会是全部的数据，因为内存的价格比磁盘贵多了。
 
 所以有了 memcached ，这种就是把数据放到内存中，但它仅支持一种最简单的数据结构，就是键值对，这种数据库又不同于传统结构型的关系型数据库，所以又被称为 nosql。
 
@@ -32,12 +34,14 @@ Redis 是完全开源免费的，遵守 BSD 协议，是一个高性能的 key-v
 
 毕竟如果数据不能持久化，丢失了也是件麻烦的事，谁也保证不了不会出问题。
 
-还有一个很重要的特征就是 redis 支持分布式集群，用它可以轻易地部署到多台机器中，成为一个集群。特别是3.0开始，redis对集群的支持比较健全了。
+还有一个很重要的特征就是 redis 支持分布式集群，用它可以轻易地部署到多台机器中，成为一个集群。特别是 3.0 开始，redis 对集群的支持比较健全了。
 
 redis 比较常见的作用和应用场景：
 
-- 第一个是 cache，这是由于它的数据存在内存中，访问速度比较快，它能让数据在一定时间后过期，且又有丰富的数据结构的支持，所以它能作为一个高性能的cache。
-- 第二个是作为消息队列，用的是它的 sub/pub的功能，能具有消息费生产者的模式，且是数据存在内存中，访问速度高。
+- 第一个是 cache，这是由于它的数据存在内存中，访问速度比较快，它能让数据在一定时间后过期，且又有丰富的数据结构的支持，所以它能作为一个高性能的 cache。
+- 第二个是作为消息队列，用的是它的 sub/pub 的功能，能具有消息费生产者的模式，且是数据存在内存中，访问速度高。
+- 做为 session 的存储，可以轻松的实现分布式 session 服务器。
+- 项目中使用Redis，主要考虑**性能**和**并发**。如果仅仅是分布式锁这些，完全可以用中间件 zookeeper 等代替。
 
 
 
@@ -182,6 +186,86 @@ networks:
 | port      |      |      |
 | loglevel  |      |      |
 | logfile   |      |      |
+
+
+
+## redis 基本概念
+
+Redis默认提供了16个数据库（database），每个数据库有一个id，从0到15，他们没有名字，只有id。
+
+可以在Redis配置文件中修改数据库个数，使用以下配置(代表启动时提供32个数据库)：
+
+>   databases 32 
+
+客户端登录 redis 时默认登录的是 id 为 0 的数据库。可以随时使用 SELECT 命令更换数据库。
+
+在实际项目中则可以通过以配置文件的形式指定数据库。
+
+```shell
+# https://www.jianshu.com/p/5abbee8e4564
+####单机模式#######
+##redis的服务器地址
+redis.host=192.168.1.20
+##redis的服务端口 
+redis.port=6400 
+
+####哨兵模式
+##redis的服务器地址
+redis.sentinel.master.host=192.168.1.20
+##redis的服务端口 
+redis.sentinel.master.port=26379
+redis.sentinel.slave1.host=192.168.1.21
+redis.sentinel.slave1.port=26380
+redis.sentinel.slave2=192.168.1.22
+redis.sentinel.slave2.port=26381
+
+####集群模式
+##redis的服务器地址
+redis.cluster.host1=192.168.1.20
+##redis的服务端口 
+redis.cluster.port1=6400
+redis.cluster.host2=192.168.1.20
+redis.cluster.port2=6400
+redis.cluster.host3=192.168.1.20
+redis.cluster.port3=6400
+
+
+##redis密码
+redis.pass=1234xxxxx
+##redis连接数据库
+redis.default.db=0
+##客户端超时时间单位是毫秒  
+redis.timeout=100000
+##最大连接数
+redis.maxActive=300
+##最大空闲数
+redis.maxIdle=100
+##最大建立连接等待时间  
+redis.maxWait=1000
+##指明是否在从池中取出连接前进行检验,如果检验失败,则从池中去除连接并尝试取出另一个
+redis.testOnBorrow=true
+```
+
+
+
+由于Redis不支持自定义数据库的名字，所以每个数据库都以编号命名。开发者则需要自己记录存储的数据与数据库的对应关系。
+
+另外Redis也不支持为每个数据库设置不同的访问密码，所以一个客户端要么可以访问全部数据库，要么全部数据库都没有权限访问。
+
+```shell
+# 清空一个Redis实例中所有数据库中的数据 
+redis 127.0.0.1:6379> FLUSHALL 
+
+#　该命令可以清空实例下的所有数据库数据，这与我们所熟知的关系型数据库所不同。关系型数据库多个库常用于存储不同应用程序的数据 ，且没有方式可以同时清空实例下的所有库数据。
+
+# redis集群模式下只有一个db0。
+
+# 对于db正确的理解应为“命名空间”，多个应用程序不应使用同一个Redis不同库，而应一个应用程序对应一个Redis实例，不同的数据库可用于存储不同环境的数据。
+```
+
+
+
+
 
 
 
@@ -620,7 +704,7 @@ redis 作为内存数据库，在内存中存储的内容主要是数据（键�
 
 redis 的内存占用主要可以划分为以下几个部分：
 
-## Redis集群
+## redis 集群
 
 
 
@@ -863,11 +947,11 @@ Redis支持多个 key 操作，只要这些key在一个单个命令中执行（�
 
 
 
-当部分master节点失败了，或者不能够和大多数节点通信的时候，为了保持可用，Redis集群用一个master-slave模式。
+当部分master节点失败了，或者不能够和大多数节点通信的时候，为了保持可用，Redis集群用一个master-slave 模式。
 
-这样的话每个hash slot就有1到N个副本。
+这样的话每个 hash slot 就有 1 到 N 个副本。
 
-在我们的例子中，集群有A、B、C三个节点，如果节点B挂了，那么 5501-11000 之间的 hash slot 将无法提供服务。
+在我们的例子中，集群有 A、B、C 三个节点，如果节点B挂了，那么 5501-11000 之间的 hash slot 将无法提供服务。
 
 然而，当我们给每个 master 节点添加一个 slave 节点以后，我们的集群最终会变成由 A、B、C 三个 master 节点和 A1、B1、C1 三个 slave 节点组成。
 
@@ -1129,13 +1213,52 @@ https://github.com/antirez/redis-rb-cluster
 
 #### 集群分片
 
-Redis 集群是通过分片（shard）方式， 将一个数据库划分为多个部分， 并将不同部分交给集群中的不同服务器来处理， 从而达到扩展性能的目的。
+分布式系统的数据分片，可以看这篇文章 <https://www.cnblogs.com/xybaby/p/7076731.html>
+
+redis 集群是通过分片（shard）方式， 将一个数据库划分为多个部分， 并将不同部分交给集群中的不同服务器来处理， 从而达到扩展性能的目的。
+
+分片后，redis 集群有 16384个 哈希槽，每个 key 通过CRC16 校验后对 16384 取模来决定放置哪个槽，集群的每个节点负责一部分 hash 槽。
+
+数据库中的每个键都属于这 16384 个槽的其中一个，集群中的每个节点可以处理 0 个或者最多 16384 个槽。
+
+> 为什么集群中只能有 16384 个槽？
+>
+> <https://github.com/redis/redis/issues/2576>
+
+集群最主要的，解决的是一个“数据分片”的问题，它能把 redis 的数据分散到不同的 slot 里，而不是都集中在一台机器的内存里。这样也就给单进程单线程、纯内存的 redis 提供了水平扩容的能力。
+
+但是这是有代价的， 一部分命令无法跨节点执行，比如 zunionstore 等一些命令，它涉及多个 key，因此在集群状态下，需要自行保证这些 key 都在一个 slot 上；
+
+再比如 watch exec， 在单节点或哨兵场景下可以用，但集群模式下是不能使用的。还有一些命令，在集群状态下虽能执行或有替代方案，但会丧失原子性。 比如 mget 等。
+
+
+
+redis cluster 并没有使用一致性哈希来计算 key 对应的节点，而是通过记录一张映射表 hash slots 的方式。通过对 key 进行如下算法，来确认 key 所在节点的 slot 。
+
+ ```shell
+# 计算 slotid
+slot = CRC16(key) % 16384
+ ```
+
+
+
+仅仅定位到 slotid，还需要通过 slotid 定位到 nodeid，在集群内部通过记录一张映射表（slotId->nodeId）的方式来实现的。节点之间通过 gossip 协议来广播这个关系，可以迅速收敛。
+
+如果客户端将不属于该 node 的一个 slot 请求发送到该 node 上，redis 会通过查表，快速找到该 slot 请求本应该去的 node，然后向 client 返回 MOVED 消息。
+
+
 
 其中， 数据库的每个部分就是一个槽（slot）， 一个槽可以包含任意多个键（key）； 而集群中的每个服务器则是一个节点（node）。
 
+redis cluster 并没有使用一致性哈希来计算 key 对应的节点，而是通过记录一张映射表 hash slots 的方式。
+
+通过对 key 进行如下算法，来确认 key 所在节点的 slot 
+
+```shell
+
+```
 
 
-在一般情况下， Redis 集群的客户端都会在内部缓存集群的槽分配情况（但并不需要强制）， 比如这样：
 
 | 槽          | 负责的节点 |
 | :---------- | :--------- |
@@ -1145,33 +1268,57 @@ Redis 集群是通过分片（shard）方式， 将一个数据库划分为多�
 
 https://redis.io/topics/client-side-caching
 
-然后， 每当用户想要访问键 k 时， 客户端都会通过以下公式， 计算出键 k 所在的槽：
+
+
+
+
+
+
+然后， 每当用户想要访问键 k 时， 客户端都会通过以下公式， 计算出键 key 所在的槽：
 
 ```shell
-slot = CRC16(k) % 16384
+slot = CRC16(key) % 16384
 ```
 
 然后客户端就可以根据 `slot` 的值以及槽分配的表格， 直接对槽所在的节点进行访问， 在这种情况下， 客户端只需要一次访问就可以获取到键 k 的值。
 
 
 
+**客户端实现**
 
+按照 redis 官方规范，一个 redis 客户端可以向集群中的任意节点（包括从节点）发送命令请求。
 
-按照 redis 官方规范，一个 Redis 客户端可以向集群中的任意节点（包括从节点）发送命令请求。
+单节点 redis 和 redis 集群的客户端的实现方式不一样，redis集群客户端的大致处理流程如下:
+
+- 客户端初始化，随机选择一个node 通信，获取 hashslot->node 映射表和 nodes 信息；
+- 向 cluster 中所有 node 建立连接，并为每个 node 创建一个连接池;
+- 发送请求的时候，先在本地计算key的hashslot，再在本地映射表找到对应node;
+- 若目标 node 正好持有那个 hashslot ，那么正常处理.
+- 
+
+比如这样：
 
 节点会对命令请求进行分析，如果该命令是集群可以执行的命令，那么节点会查找这个命令所要处理的键所在的槽。
 
-如果处理该命令的槽位于当前节点，那么命令可以顺利执行，否则当前节点会返回 MOVED 错误（重定向），让客户端到另一个节点执行该命令
+如果处理该命令的槽位于当前节点，那么命令可以顺利执行，否则当前节点会返回 MOVED 错误（重定向），让客户端到另一个节点执行该命令。
 
 redis 官方规范要求所有客户端都应处理 MOVED 错误，从而实现对用户的透明。
 
 我们上面看到的错误就是 MOVED 错误：
 
- 
+```shell
+(error) MOVED 866 172.21.16.4:6379
+```
+
+
 
 他表示，该执行该命令所需要的 slot 是 866 号哈希槽，负责该槽的节点是 172.21.16.4:6379
 
 
+
+> 在一般情况下， redis 集群的客户端都会在内部缓存集群的槽分配情况（但并不是强制）
+>
+> 每次 REDIS 指令操作后，客户端应该记录下正确的节点与槽之间的对应关系 -- 槽位路由表，来提升性能	
 
 比如，redis-go-cluster 是基于 Redigo 实现的 Golang Redis 客户端。redis-go-cluster 可以在本地缓存 slot 信息，并且当集群修改的时候会自动更新。
 
@@ -1197,13 +1344,13 @@ redis 集群会尽量保存所有与大多数 master 节点连接的客户端执
 
 2、理论上另一种写入可能的丢失的情况：
 
-　　　　　　a、网络故障造成网络分区，致使 master 节点不可达
+　　　a、网络故障造成网络分区，致使 master 节点不可达
 
-　　　　　　b、故障转移导致 slave 节点被提升为 master
+　　    b、故障转移导致 slave 节点被提升为 master
 
-　　　　　　c、master节点再次可达
+　　    c、master节点再次可达
 
-　　　　　　d、网络分区后 master 节点隔离，使用过时路由信息（out-of-date routing table）的客户端写入数据到旧 master 节点
+　　    d、网络分区后 master 节点隔离，使用过时路由信息（out-of-date routing table）的客户端写入数据到旧 master 节点
 
 
 
@@ -1260,6 +1407,88 @@ Redis 集群中的节点有以下责任：
 - 在特定事件发生时，发送集群信息。
 
 除此之外， 集群连接还用于在集群中发布或订阅信息
+
+
+
+
+
+## redis 哨兵模式
+
+<https://www.cnblogs.com/kevingrace/p/9004460.html>
+
+redis 哨兵（sentinel ）也是企业场景中最常见的高可用方案。
+
+sentinel 可以让 redis 实现主从复制。当一个集群中的master失效之后，sentinel可以选举出一个新的master用于自动接替master的工作，集群中的其他redis服务器自动指向新的master同步数据。
+
+一般建议 sentinel 采取奇数台，防止某一台 sentinel 无法连接到 master 导致误切换。其结构如下:
+
+
+
+![img](assets/907596-20190323122922777-731412975.png)
+
+
+
+redis-sentinel 本身也是一个独立运行的进程，它能监控多个 master-slave 集群，发现 master 宕机后能进行自动切换。
+
+**哨兵(sentinel) 是一个分布式系统,你可以在一个架构中运行多个哨兵(sentinel) 进程**，这些进程使用流言协议(gossip protocols)来接收关于Master是否下线的信息，
+
+**Sentinel 状态持久化**
+snetinel 的状态会被持久化地写入sentinel的配置文件中。每次当收到一个新的配置时，或者新创建一个配置时，配置会被持久化到硬盘中，并带上配置的版本戳。这意味着，可以安全的停止和重启sentinel进程。
+
+
+
+redis的哨兵(sentinel) 系统用于管理多个 redis 服务器，该系统执行以下三个任务:
+
+- **监控(Monitoring)**：哨兵(sentinel) 会不断地检查你的 Master 和 Slave 是否运作正常。
+
+- **提醒(Notification)**：当被监控的某个 Redis 出现问题时, 哨兵(sentinel) 可以通过 API 向管理员或者其他应用程序发送通知。
+- **故障转移(Automatic failover)**：当一个Master不能正常工作时，哨兵(sentinel) 会开始一次自动故障迁移操作；
+  - 它会将失效Master的其中一个Slave升级为新的Master,
+  -  并让失效Master的其他Slave改为复制新的Master; 
+  - 当客户端试图连接失效的Master时,集群也会向客户端返回新Master的地址,使得集群可以使用新 master代替失效的 Master。
+  - master_redis.conf、slave_redis.conf和 sentinel.conf 的内容都会发生改变，即 master_redis.conf 中会多一行 slaveof 的配置，sentinel.conf 的监控目标会随之调换。
+
+
+
+**Sentinel工作方式（每个Sentinel实例都执行的定时任务）**
+1）每个 Sentinel 以每秒钟一次的频率向它所知的 Master，Slave 以及其他 Sentinel 实例发送一个 PING 命令。
+2）如果一个实例（instance）距离最后一次有效回复 PING 命令的时间超过 own-after-milliseconds 选项所指定的值，则这个实例会被 Sentinel 标记为主观下线。 
+3）如果一个 Master 被标记为主观下线，则正在监视这个 Master 的所有 Sentinel 要以每秒一次的频率确认 Master 的确进入了主观下线状态。 
+4）当有足够数量的 Sentinel（大于等于配置文件指定的值）在指定的时间范围内确认 Master 的确进入了主观下线状态，则 Master 会被标记为客观下线。
+5）在一般情况下，每个 Sentinel 会以每 10 秒一次的频率向它已知的所有 Master，Slave 发送 INFO 命令。
+6）当 Master 被 Sentinel 标记为客观下线时，Sentinel 向下线的 Master 的所有 Slave 发送 INFO 命令的频率会从 10 秒一次改为每秒一次。 
+7）若没有足够数量的 Sentinel 同意 Master 已经下线，Master 的客观下线状态就会被移除。 若 Master 重新向 Sentinel 的 PING 命令返回有效回复，Master 的主观下线状态就会被移除。
+
+**sentinel在内部有3个定时任务**
+
+- 每10秒每个sentinel会对master和slave执行info命令，这个任务达到两个目的：
+  - a）发现slave节点
+  - b）确认主从关系
+
+- 每2秒每个sentinel通过master节点的channel交换信息（pub/sub）。master节点上有一个发布订阅的频道(__sentinel__:hello)。sentinel节点通过__sentinel__:hello频道进行信息交换(对节点的"看法"和自身的信息)，达成共识。
+- 每1秒每个 sentinel 对其他 sentinel 和 redis 节点执行 ping 操作（相互监控），这个其实是一个心跳检测，是失败判定的依据。
+
+## redis 实现分布式 session
+
+传统的 session 由服务器端生成并存储，当应用进行分布式集群部署的时候，  如何保证不同服务器上session信息能够共享呢？可以使用 redis 
+
+
+
+ Cookie 保存在客户端浏览器中，而 Session 保存在服务器上。客户端浏览器访问服务器的时候，服务器把客户端信息以某种形式记录在服务器上，这就是 Session。
+
+客户端浏览器再次访问时只需要从该 Session 中查找该客户的状态就可以了。
+
+
+
+ 在实际工作中我们建议使用外部的缓存设备来共享 Session，避免单个服务器节点挂掉而影响服务，共享数据都会放到外部缓存容器中。
+
+
+
+
+
+
+
+## redis 开发规范
 
 
 

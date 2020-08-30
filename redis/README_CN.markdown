@@ -7,7 +7,7 @@
 ### 单机版redis安装
 
 ```shell
-######  与redis 相关的重要的Linux内存参数配置
+######  与redis相关的重要的Linux内存参数配置
 
 # vim  /etc/sysctl.conf 设置内存参数
 # 内核参数overcommit_memory:内存分配策略，在Ubuntu和CentOS中这个参数值默认是0
@@ -32,7 +32,7 @@ sudo yum -y install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils
 # 临时有效，退出 shell 或重启会恢复原 gcc 版本
 sudo scl enable devtoolset-9 bash
 # 长期有效
-sudo echo "source /opt/rh/devtoolset-9/enable" >>/etc/profile
+sudo echo "source /opt/rh/devtoolset-9/enable" >> /etc/profile
 
 
 
