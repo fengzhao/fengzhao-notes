@@ -366,6 +366,32 @@ docker tag 一般用于给镜像打标签，用于区分设置镜像的版本号
 
 
 
+- 镜像仓库（Registry）                         					                        
+
+  Docker 的镜像存储中心通常被称为 `Registry`。目前有 docker hub 和 阿里云镜像仓库                     
+
+  当您需要获取您自己的私有镜像的时候，首先需要登录 `Registry`，然后拉取镜像。
+
+  在您修改过镜像之后，您可以再次将镜像推送回 `Registry` 中去。或者在本地通过Docker镜像构建的功能生成镜像，再推送到`Registry` 中。                        
+
+- Docker 的镜像地址                         					                        
+
+  镜像地址示例（以容器服务的公共镜像为例）：
+
+  `registry.cn-hangzhou.aliyuncs.com/acs/agent:0.8`
+
+  - `registry.cn-hangzhou.aliyuncs.com` 是 Registry 的域名。                           
+  - `acs` 是您所使用的命名空间的名称。                           
+  - `agent` 是您所使用的仓库的名称。                           
+  - `0.8` 是镜像标签（Tag）。非必须，默认为latest。                           
+
+  组合以上概念还可以形成以下概念：
+
+  - `registry.cn-hangzhou.aliyuncs.com/acs/agent` 称为仓库坐标。                           
+  - `acs/agent` 称为仓库全名（通常在API中使用）。                           
+
+
+
 
 
 docker image COMMAND 是镜像管理的基本命令，可以通过帮助命令，逐层查看其所有的子命令。下面仅列举一些常用的 docker 镜像管理命令：
@@ -1304,6 +1330,26 @@ docker tag  busybox:latest  demo.goharbor.io/test-demo/busybox:latest
 docker login -u username -p password  xxx.goharbor.io
 
 docker push demo.goharbor.io/test-demo/busybox
+
+
+
+docker pull gotok8s/kube-apiserver:v1.19.0
+docker pull gotok8s/kube-controller-manager:v1.19.0
+docker pull gotok8s/kube-scheduler:v1.19.0
+docker pull gotok8s/kube-proxy:v1.19.0
+docker pull gotok8s/coredns:1.7.0
+docker pull mirrorgcrio/pause:3.2
+docker pull mirrorgcrio/etcd:3.4.9-1
+docker pull mirrorgcrio/coredns:1.7.0
+
+# 从其他地方下载镜像
+docker pull registry.aliyuncs.com/google_containers/etcd:3.4.9
+# 打自己命名空间的标签
+docker tag registry.aliyuncs.com/google_containers/etcd:3.4.9  registry.cn-hangzhou.aliyuncs.com/fengzhao/etcd:3.4.9-1
+# 登陆自己的阿里镜像仓库
+sudo docker login --username=fengzhao1124@163.com registry.cn-hangzhou.aliyuncs.com
+# 推到自己的命名空间
+docker push   registry.cn-hangzhou.aliyuncs.com/fengzhao/etcd:3.4.9-1
 ```
 
 
