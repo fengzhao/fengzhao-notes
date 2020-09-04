@@ -1293,7 +1293,44 @@ network namespace 主要提供了关于网络资源的隔离。
 
 
 
-## harbor
+## docker-registry
+
+当我使用docker 对私有存储库执行docker login时，docker 会记住对应 registry的登陆用户名。
+
+Docker利用docker login命令来校验用户镜像仓库的登录凭证，实际并不是真正意义上的登录(Web Login)，仅仅是一种登录凭证的试探校验。
+
+如果用户名密码正确，Docker则会把用户名、密码 以及仓库域名等信息进行base64编码保存在docker的配置文件中。
+
+```shell
+docker login -u username -p password  xxx.goharbor.io
+
+echo "Test@123" | docker login 192.168.1.102:2019 -u test --password-stdin
+
+# 登陆自己的阿里镜像仓库
+sudo docker login --username=fengzhao1124@163.com registry.cn-hangzhou.aliyuncs.com
+# 推到自己的命名空间
+docker push   registry.cn-hangzhou.aliyuncs.com/fengzhao/etcd:3.4.9
+
+
+# 其实这些
+[root@node1 ~]# cat /root/.docker/config.json
+{
+        "auths": {
+                "registry.cn-hangzhou.aliyuncs.com": {
+                        "auth": "YWRtaW46YWRtaW4xMjM="
+                }
+        },
+        "HttpHeaders": {
+                "User-Agent": "Docker-Client/19.03.12 (linux)"
+        }
+}
+[root@node1 ~]#
+[root@node1 ~]#
+```
+
+
+
+
 
 
 
