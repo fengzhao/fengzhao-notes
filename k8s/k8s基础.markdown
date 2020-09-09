@@ -67,26 +67,81 @@ k8s集群分为两类节点
 
 Pod: Pod 是 Kubernetes 最基本的部署调度单元。每个 Pod 可以由一个或多个业务容器和一个根容器(Pause 容器)组成。一个 Pod 表示某个应用的一个实例。
 
-- 一个 pod 中的容器共享网络命名空间
-- Pod 是短暂的
+- kubernetes 中的大多数资源都可以缩写：replicationcontrollers是rc ，pods是po ，service是 svc 
+
+- 一个 pod 中的容器共享网络命名空间，pod 有自己的独立私有IP地址和主机名。
+
+- ReplicationController 它确保始终存在运行中的 pod 实例，用于描述 pod 副本的数量。
+
+  查看 kubectl get replicationcontrollers 或者   kubectl get rc
+
+  增加期望副本数   kubectl scale  rc  rc_name --replicas=3
+
+  再回头看 pods 时应该是3个了 kubetctl get pods 
+
+  > 注意，kubernetes的基本原则之一：不是告诉kubernetes应该执行什么操作，而是声明性的概念系统的期望状态。
+  >
+  > 并让kubernetes检查当前状态是否与期望的状态一致。
 
 - ReplicaSet：是 Pod 副本的抽象，用于解决 Pod 的扩容和伸缩
 
 - Deployment：Deployment 表示部署，在内部使用 ReplicaSet 来实现。可以通过 Deployment 来生成相应的 ReplicaSet 完成 Pod 副本的创建
 
+- pod 是短暂的，可能由于各种原因pod挂掉，pod消失后，ReplicationController会启动新的pod，
+
 - Service：Service 是 Kubernetes 最重要的资源对象。Kubernetes 中的 Service 对象可以对应微服务架构中的微服务。
 
-  Service 
+  Service 的存在就是为了解决老pod挂了之后，启动的新pod地址发生变化，service 主要就是为了在固定的IP:port上对外暴露pod
+
+  当一个服务创建后，在其生命周期内，IP地址不会变更，客户端应该通过其固定IP地址连接服务。
+
+  服务表示一组或多组提供相同服务的pod的静态地址，到达服务IP:port的请求会被转发到术语该服务的一个容器的IP:port  
 
   Service 定义了服务的访问入口，服务的调用者通过这个地址访问 Service 后端的 Pod 副本实例。
 
   Service 通过 Label Selector 同后端的 Pod 副本建立关系，Deployment 保证后端Pod 副本的数量，也就是保证服务的伸缩性。
 
 - label ：
+
 - 
+
 - namespace 
   - 用来隔离 pod 的运行环境 （默认情况下，pod 是可以互相访问的）
   - 使用场景
     - 多租户 k8s 集群
     - 多个不同项目环境
+
+
+
+### 水平伸缩应用
+
+```shell
+# 使用最简单的命令在k8s中运行一个node.js应用
+kubectl run kubia --image=luksa/kubia --port=8080 --generator=run/v1
+
+# 列出pods
+kubectl get pods
+
+# 创建服务对象
+kubectl expose rc kubia --type=LoadBalancer --name kubia-http
+
+# 查看服务
+kubectl get services
+
+# 查看ReplicationController
+kube get rc 
+
+# 增加期望的副本数
+kubectl scale  rc  rc_name --replicas=3
+
+
+# 当有多个pods时，请求会被随机调度到不同的pod，服务做为负载均衡挡在多个pod前面。
+
+
+# 在kubernetes中，pod运行在哪个节点并不重要，只要它被调度到一个可以提供pod正常运行所需的cpu和内存的节点上就可以了
+
+kubectl get pods -o wide 
+
+kubectl describe pod kubia-hczji
+```
 
