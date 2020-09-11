@@ -70,6 +70,11 @@ root@fengzhao-work:~#
 # -t 算法 -b 密钥长度 -C 标识（一般设为邮箱） -f 密钥对名称  
 # 这个命令会生成 /path/keyname.pub（传到远程主机的公钥）和 /path/keyname（登陆远程主机的密钥） 
 $ ssh-keygen -t rsa -b 2048  -C "comment" -f /path/keyname  
+
+
+# 清除ssh私钥中的phrase，交互式弹出让输入老密码，然后新密码置空，即可清除老密码
+ ssh-keygen -f ~/.ssh/kc_id_rsa -p
+
 ```
 
 ### ssh-copy-id 用法
@@ -156,6 +161,7 @@ Host *
 ``` shell
 # /etc/ssh/sshd_config  sshd 服务端常用配置选项
 
+port 22 #ssh端口，Linux一般都是22端口做为ssh服务
 PermitRootLogin yes #允许root远程登录
 PasswordAuthentication no　 #不允许密码方式登录
 RSAAuthentication yes #允许RSA认证，只针对SSH1
@@ -178,7 +184,7 @@ Enter file in which to save the key (/home/fengzhao/.ssh/id_rsa):
 生成的两个文件 id_rsa 和 id_rsa.pub 分别是私钥（私钥自己保留）和公钥（传到远程主机）。
 > 注意保存好私钥文件，开启私钥认证之后，就可以直接凭私钥登陆。
 
-2. 通过 ssh-copy-id 命令将公钥传到远程主机。（ssh-copy-id 拥有到远程机器的home, ~./ssh , 和~/.ssh/authorized_keys的权限，这个命令其实就是将公钥写入到远程主机~/.ssh/authorized_key文件中，所以也可以手动复制写进去）。
+2. 通过 ssh-copy-id 命令将公钥传到远程主机。（ssh-copy-id 拥有到远程机器的home, ~./ssh , 和 ~/.ssh/authorized_keys的权限，这个命令其实就是将公钥写入到远程主机~/.ssh/authorized_key文件中，所以也可以手动复制写进去）。
 
 ``` shell
 fengzhao@fengzhao-work:~$ ssh-copy-id    -i /home/fengzhao/.ssh/id_rsa.pub  root@192.168.8.23
