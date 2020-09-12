@@ -459,3 +459,53 @@ kubectl annotate  pod kubia-manual mycompany.com/someannotation="foo bar"
 
 
 
+### 使用命名空间对资源分组
+
+kubernetes 命名空间简单地为对象名称提供了一个作用域。我们并不会将所有资源都放在同一个命名空间中。
+
+而是将它们组织到多个命名空间中。这样允许我们多次使用相同的资源名称（跨不同的命名空间）
+
+
+
+在使用多个 namespace 的前提下，我们将包含大量组件的复杂系统拆分为更小的不同组。
+
+如果有多个用户和用户组在使用同一个集群，并且它们都管理各自独特的资源集合。那么它们就应该分别使用各自的命名空间。
+
+这样一来，它们就不用特别担心无意中修改或删除其他用户的资源。
+
+```shell
+# 查看集群内的所有namespace
+kubectl get ns
+
+# 查看某个namespace下的pod
+kubectl get po --namespace kube-system
+
+# 
+```
+
+
+
+#### 创建 namespace
+
+命名空间和其他资源一样，可以通过把YAML提交给Kunernetes API Server来创建该资源。
+
+
+
+#### 管理命名空间中的对象
+
+如果想要在 namespace 中创建资源，可以选择在 YAML 的 metadata 字段中添加一个 namespace: custom-namespace 属性。
+
+也可以在 kubectl create 命令中创建资源时指定命名空间。-n 来指定资源所属 namespace 
+
+
+
+
+
+
+
+
+
+
+
+
+
