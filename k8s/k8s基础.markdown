@@ -436,9 +436,9 @@ spec:
 
 除标签外，pod 和其他对象还可以包含注解。注解也是键值对。所以它们本质上与标签非常相似。
 
-但与标签不同，注解不是为了保存标识信息而存在。
+但与标签不同，注解不是为了保存标识信息而存在。它们不能像标签一样用于对对象进行分组。
 
-向 kubernetes 引入新特性
+向 kubernetes 引入新特性时，
 
 
 
@@ -473,6 +473,8 @@ kubernetes 命名空间简单地为对象名称提供了一个作用域。我们
 
 这样一来，它们就不用特别担心无意中修改或删除其他用户的资源。
 
+命名空间的隔离只是逻辑上的隔离，不同命名空间之间的 pod 并不存在网络隔离，它们之间可以通过IP地址进行通讯。
+
 ```shell
 # 查看集群内的所有namespace
 kubectl get ns
@@ -491,17 +493,181 @@ kubectl get po --namespace kube-system
 
 
 
+
+
+
+
+
+
 #### 管理命名空间中的对象
 
 如果想要在 namespace 中创建资源，可以选择在 YAML 的 metadata 字段中添加一个 namespace: custom-namespace 属性。
 
-也可以在 kubectl create 命令中创建资源时指定命名空间。-n 来指定资源所属 namespace 
+也可以在 kubectl create 命令中创建资源时指定命名空间。-n 来指定资源所属 namespace 。
+
+比如，创建 pod 时使用 :
+
+```shell
+# 创建pod时指定pod所属的命名空间
+kubectl create -f kubia-manual.yaml -n custom-namespace
+```
 
 
 
 
 
 
+
+### 停止和移除 pod 
+
+```shell
+# 按照名称来删除pod。删除多个pod则用空格分割多个pod名称
+# 在删除pod的过程中，实际上是指示kubernetes终止该pod中的所有容器，发送 SIGTERM 信号并等待30s使其正常关闭。
+kubectl delete po kubia-gpu  pod1 pod2
+
+
+#　使用标签选择器删除
+kubectl delete po -l creation_method=manual
+
+
+# 删除命名空间来删除其空间下的所有pod
+
+
+#　删除命名空间下的所有资源,kubectl命令有上下文，这是指删除上下文的命名空间中的所有资源
+#　第一个 all 指删除所有资源类型
+#　--all 指定删除所有资源实例
+kubectl delete all --all
+
+
+
+```
+
+
+
+
+
+
+
+## 副本机制和控制器
+
+
+
+pod 代表了 kubernetes 中的基本部署单元，我们也可以手动创建管理它们。在实际应用中，几乎不会去手动管理 pod 。而是使用 ReplicationController 或 Deployment 这样的资源来管理 pod 
+
+只要将 pod 调度到某个节点，该节点上的 kubelet 就会运行 pod 的容器，如果容器主进程崩溃，kubelet 会将容器重启。
+
+
+
+### 探针 
+
+
+
+kubernetes 可以通过存活探针检查容器是否还在运行。可以为 pod 中的每个容器单独指定存活探针。
+
+- 基于 HTTP GET 的存活探针
+- 
+
+
+
+
+
+#### 基于 HTTP 的存活探针
+
+
+
+```shell
+# 基于下面那段node应用来构建docker image
+FROM node:7
+ADD app.js /app.js
+ENTRYPOINT ["node", "app.js"]
+
+
+# 这是一个简单的nodejs应用，启动后被访问超过5，就会返回http500状态码
+const http = require('http');
+const os = require('os');
+
+console.log("Kubia server starting...");
+
+var requestCount = 0;
+
+var handler = function(request, response) {
+  console.log("Received request from " + request.connection.remoteAddress);
+  requestCount++;
+  if (requestCount > 5) {
+    response.writeHead(500);
+    response.end("I'm not well. Please restart me!");
+    return;
+  }
+  response.writeHead(200);
+  response.end("You've hit " + os.hostname() + "\n");
+};
+
+var www = http.createServer(handler);
+www.listen(8080);
+
+
+
+# 基于下面这个YAML文件创建pod
+# https://github.com/luksa/kubernetes-in-action/blob/master/Chapter04/kubia-liveness-probe.yaml
+
+apiVersion: v1
+kind: Pod
+metadata:
+  name: kubia-liveness
+spec:
+  containers:
+  - image: luksa/kubia-unhealthy
+    name: kubia
+    livenessProbe:
+      httpGet:
+        path: /
+        port: 8080
+
+
+
+```
+
+
+
+
+
+> 当容器被强行终止时，会创建一个全新的容器——而不是重启原来的容器。
+
+
+
+配置探针的属性
+
+在 kubectl describe pod kubia-liveness 中，可以看到探针的一些属性
+
+
+
+
+
+
+
+# kubernetes 学习资料
+
+>  
+>
+> kubernetes-in-action-second-edition
+>
+> https://livebook.manning.com/book/kubernetes-in-action-second-edition/
+>
+> 代码 https://github.com/luksa/kubernetes-in-action-2nd-edition
+>
+> What happens when I type kubectl run?
+>
+> https://github.com/jamiehannaford/what-happens-when-k8s/blob/master/zh-cn/README.md
+>
+>   
+>
+>   
+>
+>  
+>
+>  才云科技 kubernetes 学习路径规划
+>
+> https://github.com/caicloud/kube-ladder
 
 
 
