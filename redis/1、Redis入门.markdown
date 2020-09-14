@@ -41,13 +41,7 @@ redis 比较常见的作用和应用场景：
 - 第一个是 cache，这是由于它的数据存在内存中，访问速度比较快，它能让数据在一定时间后过期，且又有丰富的数据结构的支持，所以它能作为一个高性能的 cache。
 - 第二个是作为消息队列，用的是它的 sub/pub 的功能，能具有消息费生产者的模式，且是数据存在内存中，访问速度高。
 - 做为 session 的存储，可以轻松的实现分布式 session 服务器。
-- 项目中使用Redis，主要考虑**性能**和**并发**。如果仅仅是分布式锁这些，完全可以用中间件 zookeeper 等代替。
-
-
-
-
-
-
+- 项目中使用Redis，主要考虑 **性能**和**并发**。如果仅仅是分布式锁这些，完全可以用中间件 zookeeper 等代替。
 
 
 
@@ -66,7 +60,7 @@ sudo scl enable devtoolset-9 bash
 sudo echo "source /opt/rh/devtoolset-9/enable" >>/etc/profile
 
 # 下载源代码包
-git clone -b 6.0 https://github.com/redis/redis.git  /usr/local/src/
+git clone -b 6.0 https://github.com/redis/redis.git  /usr/local/src/redis/
 wget http://download.redis.io/releases/redis-6.0.5.tar.gz  -O  /usr/local/src/redis-6.0.5.tar.gz
 
 # 编译安装，编译安装后，二进制文件会被复制到/usr/local/bin目录下
@@ -80,9 +74,9 @@ sudo make install
 bind 127.0.0.1     #根据情况是否需要远程访问去掉注释
 requirepass 123456  #修改密码
 
-
 sudo mkdir /etc/redis
 sudo cp redis.conf /etc/redis/
+
 
 
 # Install Redis Server on Ubuntu 18.04
@@ -261,6 +255,9 @@ redis 127.0.0.1:6379> FLUSHALL
 # redis集群模式下只有一个db0。
 
 # 对于db正确的理解应为“命名空间”，多个应用程序不应使用同一个Redis不同库，而应一个应用程序对应一个Redis实例，不同的数据库可用于存储不同环境的数据。
+
+
+
 ```
 
 
@@ -868,6 +865,19 @@ replica-read-only yes
 
 
 
+#### redis-cluster基本要求
+
+- 在构建 redis cluster 集群时，至少需要3(Master)+3(Slave)才能建立集群。否则会创建失败。Redis-Cluster采用无中心结构，每个节点保存数据和整个集群状态，每个节点都和其他所有节点连接。
+
+并且，**当集群中存活的master节点数小于总节点数的一半的话，集群就无法提供服务了。**
+
+- 一般可以规划为：7 台机器，可以三台为 master，4 台为 replica 。这样 7 台机器中可以随便挂掉任意两台。（必须是依次挂掉，不能同时挂）
+- **真集群： 准备6台服务器**，6个不同的ip地址，都是访问6379端口。**假集群：一台服务器存在6个redis服务**，一个ip地址 6个不同的端口。
+
+
+
+
+
 这是一份 redis-cluster 的教程，不会讲解一些复杂的分布式系统知识，提供了安装搭建配置 redis-cluster 的教程。这份教程仅仅是从用户视角来描述cluster 
 
 
@@ -1011,8 +1021,6 @@ cluster-require-full-coverage <yes/no>: 如果设置为yes，这也是默认值�
 #### 创建并使用 redis 集群
 
 为了创建 redis 集群，必须要先启动一些以 cluster mode 模式运行的实例
-
-
 
 最小配置文件如下：
 
@@ -1416,9 +1424,13 @@ Redis 集群中的节点有以下责任：
 
 <https://www.cnblogs.com/kevingrace/p/9004460.html>
 
-redis 哨兵（sentinel ）也是企业场景中最常见的高可用方案。
+https://v2ex.com/t/696387
 
-sentinel 可以让 redis 实现主从复制。当一个集群中的master失效之后，sentinel可以选举出一个新的master用于自动接替master的工作，集群中的其他redis服务器自动指向新的master同步数据。
+redis 哨兵（sentinel ）也是企业场景中最常见的高可用方案。也是官方推荐的高可用方案
+
+redis-sentinel 本身也是一个独立运行的进程，它能监控多个 master-slave 集群，发现 master 宕机后能进行自动切换。
+
+当一个集群中的master失效之后，sentinel 可以选举出一个新的 master 用于自动接替 master 的工作，集群中的其他 redis 服务器自动指向新的 master 同步数据。
 
 一般建议 sentinel 采取奇数台，防止某一台 sentinel 无法连接到 master 导致误切换。其结构如下:
 
@@ -1428,12 +1440,15 @@ sentinel 可以让 redis 实现主从复制。当一个集群中的master失效�
 
 
 
-redis-sentinel 本身也是一个独立运行的进程，它能监控多个 master-slave 集群，发现 master 宕机后能进行自动切换。
 
-**哨兵(sentinel) 是一个分布式系统,你可以在一个架构中运行多个哨兵(sentinel) 进程**，这些进程使用流言协议(gossip protocols)来接收关于Master是否下线的信息，
+
+**哨兵(sentinel) 是一个分布式系统,你可以在一个架构中运行多个哨兵(sentinel) 进程**，这些进程使用流言协议(gossip protocols)来接收关于Master是否下线的信息。
 
 **Sentinel 状态持久化**
-snetinel 的状态会被持久化地写入sentinel的配置文件中。每次当收到一个新的配置时，或者新创建一个配置时，配置会被持久化到硬盘中，并带上配置的版本戳。这意味着，可以安全的停止和重启sentinel进程。
+
+snetinel 的状态会被持久化地写入sentinel 的配置文件中。每次当收到一个新的配置时，或者新创建一个配置时，配置会被持久化到硬盘中，并带上配置的版本戳。
+
+这意味着，可以安全的停止和重启sentinel进程。
 
 
 
@@ -1464,9 +1479,145 @@ redis的哨兵(sentinel) 系统用于管理多个 redis 服务器，该系统执
 - 每10秒每个sentinel会对master和slave执行info命令，这个任务达到两个目的：
   - a）发现slave节点
   - b）确认主从关系
-
 - 每2秒每个sentinel通过master节点的channel交换信息（pub/sub）。master节点上有一个发布订阅的频道(__sentinel__:hello)。sentinel节点通过__sentinel__:hello频道进行信息交换(对节点的"看法"和自身的信息)，达成共识。
 - 每1秒每个 sentinel 对其他 sentinel 和 redis 节点执行 ping 操作（相互监控），这个其实是一个心跳检测，是失败判定的依据。
+
+
+
+**Sentinel支持集群**（可以部署在多台机器上，也可以在一台物理机上通过多端口实现伪集群部署）
+
+很显然，只使用单个sentinel进程来监控redis集群是不可靠的，当sentinel进程宕掉后
+
+(sentinel本身也有单点问题，single-point-of-failure) 整个集群系统将无法按照预期的方式运行。所以有必要将sentinel集群，这样有几个好处：
+
+1）即使有一些sentinel进程宕掉了，依然可以进行redis集群的主备切换；
+
+2）如果只有一个sentinel进程，如果这个进程运行出错，或者是网络堵塞，那么将无法实现redis集群的主备切换（单点问题）;
+
+3）如果有多个sentinel，redis的客户端可以随意地连接任意一个 sentinel来获得关于redis集群中的信息。
+
+
+
+
+
+
+
+### redis 哨兵方案
+
+
+
+在 redis 中，一主两从三哨兵，这是最经典的 redis 哨兵方案。
+
+生产环境使用三台服务器搭建redis哨兵集群，3个redis实例（1主2从）+ 3个哨兵实例：
+
+
+
+![img](assets/2b172a3ba4d71e7a2005e9bf4074d9adab7.jpg)
+
+
+
+- redis.conf 配置主从
+- sentinel.conf 配置哨兵
+
+
+
+
+
+
+
+## redis 哨兵和集群的异同
+
+
+
+### 高可用角度
+
+哨兵： 哨兵仅仅提供故障切换能力，在这之上，对使用方来说，和单机的 redis 是完全一样的。
+
+集群： 集群最主要的，解决的是一个“数据分片”的问题，它能把 redis 的数据分散到不同的 slot 里，而不是都集中在一台机器的内存里。这样也就给单进程单线程、纯内存的 redis 提供了水平扩容的能力。
+
+
+
+### 数据分片
+
+哨兵：哨兵就没有高可用，
+
+
+
+### 运维复杂度
+
+集群模式显然比哨兵模式更重、需要更多的资源去运行；再就是部署运维复杂度也是更高的。
+
+而哨兵和单节点，一般来说除了配置稍有区别以外，绝大部分业务代码是可以相容的，无需特地修改。
+
+ 而现有的代码如果使用了集群模式不支持的那些命令，那么集群模式下是无法正常工作的。所以目前哨兵模式仍然被广泛使用，没有被集群模式彻底替代。  
+
+
+
+### 方案选择和对比
+
+
+
+1. 集群 cluster 中,主服务器的从服务器不能读取数据，操作从服务器会发送 move 转向错误到对应的主服务器。
+
+2. 集群 cluster 中从服务器存在意义：
+
+   - 作为主服务器的数据备份;
+
+   - 在 redis.config 配置允许的情况下，在主服务器故障时候会触发 [自动故障转移] ，升级为主服务器;
+
+   - 在 redis.config 配置允许的情况下，主服务器裸奔后，可以自动从其他主服务器的从服务器中迁移一台过来成为裸奔主服务器的从服务器。
+
+3. 哨兵 sentine 不是吃白饭的，可以监控、通知、自动故障转移，可以监控多个主从体系。数据量不是瓶颈的话 sentinel 更有保障，更省钱（生产 2 台服务器就行）
+
+
+
+
+
+
+
+
+
+
+
+## redis 持久化
+
+持久化就是把内存的数据写到磁盘中去，防止服务宕机了内存数据丢失。
+
+
+
+Redis 提供两种持久化机制 RDB（默认） 和 AOF 机制:
+
+
+
+### RDB
+
+RDB：是 Redis DataBase 缩写快照（默认）
+
+
+
+RDB是Redis默认的持久化方式。按照一定的时间将内存的数据以快照的形式保存到硬盘中，对应产生的数据文件为dump.rdb。通过配置文件中的save参数来定义快照的周期。
+
+
+
+![img](https://imgconvert.csdnimg.cn/aHR0cHM6Ly91cGxvYWQtaW1hZ2VzLmppYW5zaHUuaW8vdXBsb2FkX2ltYWdlcy80MDU1NjY2LWMwNzAyMjIzMTUxODUyMjkucG5n?x-oss-process=image/format,png)
+
+
+
+
+
+优点：
+
+- 1、只有一个文件 dump.rdb，方便持久化。
+- 2、容灾性好，一个文件可以保存到安全的磁盘。
+- 3、性能最大化，fork 子进程来完成写操作，让主进程继续处理命令，所以是 IO 最大化。使用单独子进程来进行持久化，主进程不会进行任何 IO 操作，保证了 redis 的高性能
+- 4.相对于数据集大时，比 AOF 的启动效率更高。
+
+缺点：
+
+- 1、数据安全性低。RDB 是间隔一段时间进行持久化，如果持久化之间 redis 发生故障，会发生数据丢失。所以这种方式更适合数据要求不严谨的时候)
+- 2、AOF（Append-only file)持久化方式： 是指所有的命令行记录以 redis 命令请 求协议的格式完全持久化存储)保存为 aof 文件。
+
+
 
 ## redis 实现分布式 session
 
@@ -1486,9 +1637,27 @@ redis的哨兵(sentinel) 系统用于管理多个 redis 服务器，该系统执
 
 
 
-
-
 ## redis 开发规范
+
+
+
+
+
+
+
+
+
+## 关于redis的经典文章以及回答
+
+<https://www.cnblogs.com/kevingrace/p/9004460.html>
+
+https://v2ex.com/t/696387
+
+
+
+
+
+
 
 
 
