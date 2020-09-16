@@ -558,16 +558,23 @@ pod 代表了 kubernetes 中的基本部署单元，我们也可以手动创建�
 
 
 
-### 探针 
+### 保持 pod 健康
+
+使用 kubernetes 的一个主要好处是，可以声明一个容器列表，由 kubernetes 来保持容器在集群中的运行。由 kuberneter 自动选择调度节点。
+
+只要将 pod 调度到某个节点，该节点上的 kubelet 就会运行 pod 的容器。
+
+### 存活探针（liveness probe）
 
 
 
-kubernetes 可以通过存活探针检查容器是否还在运行。可以为 pod 中的每个容器单独指定存活探针。
+kubernetes 可以通过 **存活探针** 检查容器是否还在运行。可以为 pod 中的每个容器单独指定存活探针。
 
-- 基于 HTTP GET 的存活探针
-- 
+**kubernetes 容器探测机制**
 
-
+- 基于 HTTP GET 的存活探针，对容器的IP地址端口执行 HTTP GET 请求。通过状态码判断
+- TCP套接字探针，
+- Exec 探针在容器内执行任意命令，通过返回的状态码，来确定是否探测成功。
 
 
 
@@ -622,9 +629,6 @@ spec:
       httpGet:
         path: /
         port: 8080
-
-
-
 ```
 
 
@@ -637,11 +641,20 @@ spec:
 
 
 
-配置探针的属性
+#### 配置探针的属性
 
 在 kubectl describe pod kubia-liveness 中，可以看到探针的一些属性
 
+- delay（延迟）       delay=0s 部分指示容器启动后立刻开始探测。
+- timeout（超时）  timeout=1s 部分指示容器必须在1s内响应
+- period（周期）    period=10s 只是每10s进行一次探测
+- 
 
+
+
+定义探针时可以自定义这些参数，
+
+如果没有设置初始延时，探针将在启动时立即开始探测容器，通常会导致探测失败。
 
 
 
