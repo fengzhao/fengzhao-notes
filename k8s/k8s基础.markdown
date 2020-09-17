@@ -660,6 +660,28 @@ spec:
 
 
 
+### ReplicationController
+
+rc 是 kubernetes 中的一种资源，可确保它的 pod 始终保持运行。如果 pod 因任何原因消失（节点从集群中消失，或者 pod 被节点逐出）
+
+
+
+rc 会持续监控正在运行的 pod 列表，并保证 相应 类型 的 pod 数量与期望相符。少了会创建副本，对了会删除多余的副本。
+
+**rc 协调流程**
+
+rc 的工作是确保 pod 数量始终与其标签选择器匹配。
+
+
+
+一个 rc 主要有三个部分：
+
+- label 确定 rc 作用域的 pod 范围
+- relica count 确定 pod 副本数量
+- 
+
+
+
 # kubernetes 学习资料
 
 >  
