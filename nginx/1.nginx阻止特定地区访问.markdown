@@ -1,0 +1,39 @@
+## 背景
+
+
+
+由于各种原因，我们可能希望某些特定站点仅对某些用户（某些地区的用户）开放。
+
+
+
+
+
+无论是出于什么原因，屏蔽和阻止特定地区和国家的 IP 访问都是我们日常建站中经常要用到的。
+
+如果你用的是 PHP，比较简单的方法就是在 PHP 文件加入判断 IP 的代码，利用 IP 库进行比对，如果 IP 为限定访问范围内，则阻止其继续访问。
+
+如果网站是 Nginx，则可以直接使用 Nginx-ngx_http_geoip_module 模块。
+
+该模块可以精确到国家、省、市等一级的 IP，并且全部由 Nginx 执行识别和阻止访问，所以相对于 PHP 来说比较省资源，但是 Nginx 编译起来比较费事。
+
+
+
+
+
+## GEOIP 地址库
+
+
+
+IP地理信息是天然不精确的。尤其是现在很多客户端是 NAT 上网，通过IP很难定位到具体的地址或房子。
+
+GeoLite2 Free Downloadable Databases
+
+https://dev.maxmind.com/geoip/geoip2/geolite2/
+
+
+
+
+
+**阿里巴巴IP地址库**
+
+https://help.aliyun.com/document_detail/153347.html

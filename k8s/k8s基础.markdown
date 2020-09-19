@@ -352,7 +352,8 @@ spec:
   - image: luksa/kubia
     name: kubia
     ports:
-    - containerPort: 8080
+    - name: http
+      containerPort: 8080
       protocol: TCP
 ```
 
@@ -399,7 +400,7 @@ kube get nodes -l gpu=true
 
 
 
-**将pod调度到特定节点**
+##### **将pod调度到特定节点**
 
 假设现在有一个需要gpu来执行其工作的pod，为了让调度器将其调度到适当GPU的节点上，可以使用如下pod定义文件。
 
@@ -662,7 +663,7 @@ spec:
 
 ### ReplicationController
 
-rc 是 kubernetes 中的一种资源，可确保它的 pod 始终保持运行。如果 pod 因任何原因消失（节点从集群中消失，或者 pod 被节点逐出）
+rc 是 kubernetes 中的一种资源，可确保它的 pod 始终保持运行。如果 pod 因任何原因消失（节点从集群中消失，或者 pod 被节点逐出）。
 
 
 
@@ -676,9 +677,235 @@ rc 的工作是确保 pod 数量始终与其标签选择器匹配。
 
 一个 rc 主要有三个部分：
 
-- label 确定 rc 作用域的 pod 范围
-- relica count 确定 pod 副本数量
-- 
+- label 确定 rc 作用域的 pod 范围 
+- relica count 确定 pod 副本数量，指定应运行 pod 的数量
+- pod template 用于创建新 pod 副本的模板
+
+**rc 中的标签选择器，副本数量都可以随时修改，但是只有副本数量的变更会影响现有 pod** 
+
+
+
+> 更改标签选择器和 pod 模板对现有 pod 没有影响。更改标签选择器会使现有的 pod 脱离 rc 的范围。
+>
+> 在创建 Pod 后，ReplicationController 也不关心其 pod 的实际“内容”（容器镜像、环境变量及其他）。
+>
+> 因此，该模板仅影响此 ReplicationController 创建的新 pod。可以将其视为创建新 pod 的曲奇切模（cookie cutter）。
+>
+> 《 Kubernetes In Action 》
+
+ReplicationController 的 pod 模板可以随时修改。更改 pod 就像用一个曲奇刀替换另一个。它只会影响你之后切出的曲奇，并且不会影响你已经剪切的曲奇。
+
+```yaml
+apiVersion: v1
+kind: ReplicationController
+metadata:
+  name: nginx
+spec:
+  replicas: 3
+  selector:
+    app: nginx
+  # 这里定义的就是 cookie cutter
+  template:
+    metadata:
+      name: nginx
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx
+        ports:
+        - containerPort: 80
+```
+
+**模板中的 pod 标签必须和 rc 的标签选择器匹配，否则，rc 将会无休止的创建新容器。**
+
+如果你想切出不一样的饼干，更换模具即可，至于之前已经做好的饼干，你也无法改变了。
+
+就像你曾经走过的路啊，终究会是你人生的烙印。
+
+```shell
+kubectl create -f kuba-rc.yaml
+
+# 获取rc的信息
+kubectl get rc
+
+# 获取rc的详细信息
+kubectl describe rc kubia
+
+```
+
+
+
+
+
+由 rc 创建的 pod 并不是绑定到 rc 中。在任何时刻，rc 只管理与 rc 标签选择器匹配的 pod 。通过直接修改 pod 的标签，可以将其从 rc 的作用域中添加或删除。
+
+当你向 rc 管理的 pod 添加其他标签，它并不关心，因为对于 rc 来说，并没有什么变化，rc 只关注匹配到标签的 pod 。
+
+**从 rc 中删除 pod** 
+
+当你想操作特定 pod 时，从 rc 管理范围内移除某个 pod 很有用，
+
+
+
+
+
+
+
+#### 伸缩集群的声明式方法
+
+在 kubernetes 中水平伸缩 pod 只是陈述式的：“ 我想要运行 x 个实例 ” 。
+
+你不是告诉 kubernetes 做什么或如何去做。只是指定了期望的状态。
+
+这种声明式做法使得与 kubernetes 集群的交互更容易。试想，如果你必须手动确认当前运行的实例数量，再去指定 kubernetes 运行多少个实例。工作容易出错且更复杂。
+
+
+
+#### 删除 rc
+
+
+
+### 使用 replicaSet 而不是 rc
+
+最初，ReplicationController 是用于复制和异常时重新调度节点的唯一组件。后来引入了 RepliaSet 这种资源。它是新一代的 rc。（rc最终将被弃用）
+
+
+
+ReplicaSet 的行为与 rc 完全相同，但 pod 的选择器的表达能力更强。
+
+- 单个 rc 无法同时匹配两个标签，即无法匹配到同时存在 env=pro 和 env=dev 的容器。而 RepliaSet 可以。 
+- rc 无法通过标签名来匹配 pod 。即 rc 无法匹配 env=* 的容器。
+
+
+
+#### 创建和检查rs
+
+rs 
+
+
+
+### 使用 DaemonSet 在节点上运行 pod
+
+rc 和 rc 都用于在 kubernetes 集群上部署特定数量的 pod 。但是当你希望在集群中的每个节点上运行 pod 时（并且每个节点正好要运行一个 pod ）。
+
+例如，希望在每个节点上运行日志收集器和资源监控器。另一个典型的例子是 kubernetes 自己的 kube-proxy 进程。它需要运行在所有节点上才能工作。
+
+
+
+
+
+### 运行执行单个任务的 pod 
+
+
+
+
+
+## 服务：让客户端发现 pod 并与之通信
+
+现在已经学习过了 pod ，以及如何通过 rs 和类似资源部署运行。尽管特定的 pod 可以独立的应对外部刺激，现在大多数应用都需要根据外部请求做出响应。
+
+例如，就微服务而言，pod 通常需要对来自集群内部的其他 pod ，以及来自外部客户端的 HTTP 请求做出响应。
+
+
+
+在没有 kubernetes 的世界，一般需要在配置文件中明确指出服务端的IP地址来使用。在 Kubernetes 中并不适用。
+
+- pod 是短暂的，它们随时会被启动或者关闭。
+
+
+
+kubernetes 服务是一种做为一组功能相同的 pod 提供单一不变的接入点的资源。kubernets 使用服务来暴露应用。
+
+当服务存在时，它的 IP 地址和端口不会变。客户端通过 IP 地址和端口号建立连接，这些连接会被路由到提供该服务的任意一个 pod 上。 
+
+
+
+### 创建服务
+
+创建服务一般有两种方法，有
+
+
+
+```shell
+#　创建一个服务对象
+kubectl expose rc kubia --type=LoadBalancer --name kubia-http
+
+
+```
+
+
+
+
+
+通过YAML描述文件来创建服务，定义服务的端口，服务将连接转到的容器端口，标签选择器匹配到的 pod 都属于该服务。
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubia
+spec:
+  ports:
+  - port: 80
+    targetPort: 8080
+  selector:
+    app: kubia
+```
+
+通过 kubernetes create 命令创建服务后，可以在命名空间下列出所有服务资源 kubectl get svc 
+
+列表可以显示出分配给服务的 IP 地址，一般是集群内部的地址，只能在集群内部被访问。服务一般要被集群内部其他 pod 访问，以及外部客户端访问。
+
+先看内部访问的几种方法：
+
+- 创建一个 pod ，它将请求发送到服务的集群 IP 并记录响应
+- 通过 ssh 远程到其中一个 kubernetes 节点上，然后执行 curl 命令
+- 通过 kubectl exec 命令在一个已存在的 pod 中执行 curl 命令
+
+
+
+可以使用 kubectl exec 命令远程地在一个已经存在的 pod 容器上执行任何命令。使用 kubectl get pod 列出所有 pod 
+
+```shell
+kubectl exec kubia-7nogl -- curl http://10.111.249.153
+
+# 双斜杠代表着 kubectl 命令的结束。
+```
+
+
+
+### 同一个服务暴露多个端口
+
+创建的服务可以暴露一个端口，也可以暴露多个端口。
+
+比如，pod 监听两个端口，http 监听 8080 端口，https 监听 8443 端口。
+
+可以在一个服务中暴露 80 和 443 端口，并分别转发到 pod 中的对应端口。通过一个集群IP，使用一个服务将多个端口暴露出来。
+
+```shell
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubia
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: 8080
+  - name: https
+    port: 443
+    targetPort: 8443
+  selector:
+    app: kubia
+```
+
+标签选择器将应用于整个服务，如果
+
+
+
+### 使用命名的端口
 
 
 
