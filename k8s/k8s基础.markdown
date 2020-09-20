@@ -769,7 +769,9 @@ kubectl describe rc kubia
 
 ### 使用 replicaSet 而不是 rc
 
-最初，ReplicationController 是用于复制和异常时重新调度节点的唯一组件。后来引入了 RepliaSet 这种资源。它是新一代的 rc。（rc最终将被弃用）
+最初，ReplicationController 是用于复制和异常时重新调度节点的唯一组件。后来引入了 RepliaSet 这种资源。它是新一代的 rc。
+
+请记住，始终使用 rs ，而不是使用 rc 。
 
 
 
@@ -782,7 +784,13 @@ ReplicaSet 的行为与 rc 完全相同，但 pod 的选择器的表达能力更
 
 #### 创建和检查rs
 
-rs 
+```shell
+kubectl get rs 
+
+kubectl describe  rs 
+```
+
+rs 的 YAML 定义
 
 
 
@@ -907,31 +915,169 @@ spec:
 
 ### 使用命名的端口
 
+可以看到上面这种方式，在 pod 定义中直接指定端口号，然后在服务的定义中也直接硬编码写端口号，一旦 pod 修改端口号，svc 中的定义也需要修改。
+
+使用命名端口的意思，即在 pod 定义中为端口命名，在 svc 中直接将端口转发到名称中。
+
+
+
+### 服务发现
+
+通过创建服务，可以通过一个单一稳定的 IP 地址访问到 pod。在服务器的整个生命周期内这个IP地址保持不变。
+
+客户端 pod 如何知道服务的 IP 地址和端口？
+
+
+
+
+
+#### 通过环境变量发现服务
+
+在 pod 开始运行的时候，kubernetes 会初始化一系列的环境变量指向现在存在的服务。
+
+如果你创建的服务早于客户端 pod 的创建，pod 上的进程可以根据环境变量获得服务的 IP 地址和端口号。
+
+
+
+
+
+
+
+#### 通过 DNS 发现服务
+
+在 kube-system 命名空间下，其中一个 pod 被称为 kube-dns 。这个 pod 运行 DNS 服务。在集群中的其他 pod 都被配置为使用其做为 DNS。
+
+kubernetes 通过修改每个容器的 /etc/resolv.conf 文件实现。
+
+运行在 pod 上的进程 DNS 查询都会被 kubernetes 自身的 DNS 服务器响应。该服务器知道系统中运行的所有服务。
+
+> **pod 是否使用内部的 DNS 服务是根据 pod 中的 spec 的 dnsPolicy 属性来决定的。**
+
+
+
+每个服务从内部 DNS 服务器中获得一个 DNS 条目，客户端的 pod 在知道服务名称的情况下通过**全限定域名（FQDN）**来访问。
+
+### 连接集群外部的服务
+
+服务并不是直接和 pod 相连接的。
+
+
+
+如果创建了不包含选择器的服务，kubernetes 将不会创建 Endpoint 资源，（毕竟，缺少选择器，将不会知道服务中包含那些 pod ）
+
+
+
+这样就需要
+
+
+
+Endpoint 是一个单独的资源并不是服务的一个属性。由于创建的资源中并不包含选择器，相关的 Endpint 资源并没有自动创建，所以必须手动创建。
+
+
+
+
+
+### 将服务暴露给外部客户端
+
+
+
+有几种方式可以在外部访问服务：
+
+- 将服务的类型设置为 NodePort —— 每个集群节点都会在节点上打开一个端口。
+
+
+
+#### NodePort 
+
+将一组 pod 公开给外部客户端的第一种方法是创建一个服务并将其类型设置为 NodePort 。
+
+通过创建的 NodePort 服务，可以让 kubernetes 在其所有节点上保留一个端口（所有节点上都是用相同的端口号）
+
+这与常规服务类似（它们实际的类型 ClusterIP），但是不仅可以通过服务的内部集群 IP 访问 NodePort 服务。还可以通过任何节点的 IP 和预留节点端口访问 NodePort 服务。
+
+当尝试与 NodePort 服务交互式，意义更大。
+
+
+
+```yaml
+# https://github.com/luksa/kubernetes-in-action/blob/master/Chapter05/kubia-svc-nodeport.yaml
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubia-nodeport
+spec:
+  type: NodePort
+  ports:
+  - port: 80
+    targetPort: 8080
+    nodePort: 30123
+  selector:
+    app: kubia
+
+# Type设置svc的类型为NodePort
+# port: 80 服务器集群IP的端口号
+# targetPort: 8080 背后pod的目标端口号
+# nodePort: 30123 通过集群节点的30123端口号可以访问服务
+```
+
+
+
+查看 NodePort 类型的服务
+
+```shell
+kubectl get svc kubia-nodeport 
+
+```
+
+
+
+NodePort 暴露的服务，是通过将所有 pod 所在节点上对外暴露的方式提供，一旦其中一个节点挂掉，那么直接访问这个节点自然也无法成功。
+
+**找到节点 IP** 
+
+可以在节点的 JSON 或者 YAML 描述中找到IP。
+
+#### 通过负载均衡器暴露服务
+
+
+
+
+
+#### 通过 Ingress 暴露服务
+
+
+
+Ingress 
+
+
+
 
 
 # kubernetes 学习资料
 
 >  
 >
-> kubernetes-in-action-second-edition
+>  kubernetes-in-action-second-edition
 >
-> https://livebook.manning.com/book/kubernetes-in-action-second-edition/
+>  https://livebook.manning.com/book/kubernetes-in-action-second-edition/
 >
-> 代码 https://github.com/luksa/kubernetes-in-action-2nd-edition
+>  代码 https://github.com/luksa/kubernetes-in-action-2nd-edition
 >
-> What happens when I type kubectl run?
+>  What happens when I type kubectl run?
 >
-> https://github.com/jamiehannaford/what-happens-when-k8s/blob/master/zh-cn/README.md
+>  https://github.com/jamiehannaford/what-happens-when-k8s/blob/master/zh-cn/README.md
 >
->   
+>  
 >
->   
+>  
 >
 >  
 >
 >  才云科技 kubernetes 学习路径规划
 >
-> https://github.com/caicloud/kube-ladder
+>  https://github.com/caicloud/kube-ladder
 
 
 
