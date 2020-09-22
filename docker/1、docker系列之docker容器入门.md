@@ -505,6 +505,34 @@ CMD ["/usr/lib/postgresql/9.3/bin/postgres", "-D", "/var/lib/postgresql/9.3/main
 
 
 
+#### Dockerfile 中的指令
+
+
+
+Dockerfile 中的 COPY 指令和 ADD 指令都可以将主机上的资源复制或加入到容器镜像中，都是在构建镜像的过程中完成的。
+
+COPY 指令和 ADD 指令的唯一区别在于是否支持从远程URL获取资源。
+
+COPY 指令只能从执行 docker build 所在的主机上读取资源并复制到镜像中。
+
+而 ADD 指令还支持通过 URL 从远程服务器读取资源并复制到镜像中。
+
+满足同等功能的情况下，推荐使用 COPY 指令。ADD 指令更擅长读取本地 tar 文件并解压缩。
+
+
+
+WORKDIR 
+
+WORKDIR指令设置 Dockerfile 中的任何 RUN，CMD，ENTRPOINT，COPY 和 ADD 指令的工作目录。
+
+如果 WORKDIR 指 定的目录不存在，即使随后的指令没有用到这个目录，都会创建。
+
+
+
+
+
+
+
 ## 网络概述
 
 
@@ -776,6 +804,10 @@ docker-compose的安装
 
 ```shell
 curl -L "https://github.com/docker/compose/releases/download/1.26.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+
+# 国内镜像
+curl -L https://get.daocloud.io/docker/compose/releases/download/1.23.2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose
+
 
 sudo chmod +x /usr/local/bin/docker-compose
 
