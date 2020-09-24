@@ -113,6 +113,9 @@ cd "C:\Program Files\Microsoft Office\Office16"
 cscript ospp.vbs /sethst:kms.03k.org
 # 执行激活
 cscript ospp.vbs /act
+
+
+slmgr.vbs -skms kms.03k.org
 ```
 
 
