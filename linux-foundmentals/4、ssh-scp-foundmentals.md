@@ -384,7 +384,9 @@ scp -i 指定私钥文件。（如果公钥已经传到远程主机，并且开�
 
 第一个问题，可以在本地 ssh 客户端配置文件（~/.ssh/config）中配置 StrictHostKeyChecking=no 或在 ssh 命令中使用 -o StrictHostKeyChecking=no 来关闭公钥提示。
 
-第二个问题，考虑用第三方工具 sshpass 来解决，这个工具支持在 ssh 命令行直接使用密码，而不需要弹出 prompt 再手动输入密码。直接用 yum 或者 apt 包管理器安装 sshpass 。
+第二个问题，考虑用第三方工具 sshpass 来解决，这个工具支持在 ssh 命令行直接使用密码，而不需要弹出 prompt 再手动输入密码。
+
+直接用 yum 或者 apt 包管理器安装 sshpass 。
 
 > 这个配置修改和安装软件，都是在本地进行，而不需要在远程进行。
 
