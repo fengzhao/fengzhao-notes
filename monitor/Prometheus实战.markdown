@@ -136,11 +136,56 @@ Prometheus 中的 metric 种类
 ```shell
 # 下载 
 
+cd /usr/local/src/
+
 wget  https://github.com/prometheus/prometheus/releases/download/v2.21.0/prometheus-2.21.0.linux-amd64.tar.gz
+
+mkdir /usr/local/prometheus/
+
+tar xf prometheus-2.21.0.linux-amd64.tar.gz  -C /usr/local/prometheus/
+
+cd /usr/local/prometheus/
+
+ln -s prometheus-2.21.0.linux-amd64  prometheus
 
 
 #　配置文件
 
+cd /usr/lib/systemd/system
+ 
+vim  prometheus.service 
+
+[Unit]
+Description=prometheus
+After=network.target 
+
+[Service]
+User=prometheus
+Group=prometheus
+WorkingDirectory=/usr/local/prometheus/prometheus
+ExecStart=/usr/local/prometheus/prometheus/prometheus
+[Install]
+WantedBy=multi-user.target
+
+
+# 启动管理
+systemctl start prometheus 
+systemctl status prometheus
+# 开机自启
+systemctl enable prometheus
+
+
+
+# 默认情况下prometheus会将采集的数据防止到本机的data目录的， 存储数据的大小受限和扩展不便。
+# 这是使用influxdb作为后端的数据库来存储数据。
+
+# influxdb的官方文档地址为： https://docs.influxdata.com/influxdb/v1.7/introduction/downloading/ 
+# 可以根据不同系统进行下载，这里使用官方提供的rpm进行安装。
+
+cd /usr/local/src/
+wget https://dl.influxdata.com/influxdb/releases/influxdb-1.7.8.x86_64.rpm
+
+sudo yum localinstall influxdb-1.7.8.x86_64.rpm
 
 ```
 
@@ -148,7 +193,24 @@ wget  https://github.com/prometheus/prometheus/releases/download/v2.21.0/prometh
 
 
 
-Prometheus 通过 HTTP 
+
+
+Prometheus 是将所有数据存为时序数据。
+
+每个时序数据是由指标名称和可选的键值对（称之为标签）唯一标识。
 
 
 
+![img](Prometheus实战.assets/429277-20190924170625913-1325486532.png)
+
+
+
+#### 度量类型
+
+- counter: 单调递增的计数器，如果标识已经服务的请求数量可以使用该类型。
+
+- Guage: 仪表盘类型， 可以任意上升或者下降的度量类型。
+
+- Histogram：直方图类型， 可以通过该类型获取分位数，计算分位点数据是在服务端完成的。
+
+- Summary： 摘要类型，类似于直方图，计算分位点数据是在客户端完成的
