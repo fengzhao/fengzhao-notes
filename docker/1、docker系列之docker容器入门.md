@@ -533,6 +533,118 @@ WORKDIR指令设置 Dockerfile 中的任何 RUN，CMD，ENTRPOINT，COPY 和 ADD
 
 
 
+## docker 文件系统
+
+
+
+docker 镜像分层，一个新的镜像层的建立，其实就是用上一层的镜像启动容器，然后直接 dockerfile 指令，再它保存为一个新的镜像。
+
+当 dockerfile 指令执行成功后，上一层的容器就会被删除。
+
+由于每个指令的结果都是个静态的镜像，
+
+
+
+```shell
+
+# 默认地，当没有镜像和容器时，/var/lib/docker/overlay2/文件目录中是空的。仅有一个l目录，用于存放链接
+
+
+
+# 一开始overlay路径下为空，用docker pull命令下载一个由3层镜像层组成的docker镜像(ubuntu):
+root@fengzhao:~# docker pull ubuntu                                                                                        
+Using default tag: latest                                                        
+latest: Pulling from library/ubuntu                                                                          
+d72e567cc804: Pull complete                                                                         
+0f3630e5ff08: Pull complete                                                                       
+b6a83d81d1f4: Pull complete                                                                 
+Digest: sha256:bc2f7250f69267c9c6b66d7b6a81a54d3878bb85f1ebb5f951c896d13e6ba537    
+Status: Downloaded newer image for ubuntu:latest                                                                  
+docker.io/library/ubuntu:latest                                                                            
+root@fengzhao:~# 
+
+# 此时，在路径 /var/lib/docker/overlay2/ 下，每个镜像层都有一个对应的目录
+
+
+root@fengzhao:~# tree -L 2 /var/lib/docker/overlay2/                                                                             
+/var/lib/docker/overlay2/                                                                  
+├── 251f5bb4a1f43d8d437d97b166e3112e6d3fd27724e7e09f03e7a700d3684285      
+│   ├── committed                                                                     
+│   ├── diff                                                                             
+│   ├── link                                                                           
+│   ├── lower                                                                         
+│   └── work                                                                              
+├── 2d1bbb653ff8e4d592f850dec47c35aef0da8754515dc54638cab3198b52f230       
+│   ├── diff                                                               
+│   ├── link                                                                    
+│   ├── lower                                                                     
+│   └── work                                                                    
+├── bbc3cc6b589e3840f450ab623889ee00e0eba84b21dda83118644113ca723092
+│   ├── committed                                                                        
+│   ├── diff                                                                   
+│   └── link                                                                      
+└── l                                                                         
+    ├── 2XZAHJTU7QZTYQ5J4X77ZHXXSH -> ../bbc3cc6b589e3840f450ab623889ee00e0eba84b21dda83118644113ca723092/diff                  
+    ├── 7VAHNQQUOE4W2FE7CEWJAC2KDA -> ../251f5bb4a1f43d8d437d97b166e3112e6d3fd27724e7e09f03e7a700d3684285/diff
+    └── RENSXZAHFGKKQVTIMEB77EPTTY -> ../2d1bbb653ff8e4d592f850dec47c35aef0da8754515dc54638cab3198b52f230/diff                                                                                                
+12 directories, 7 files                                                                              
+root@fengzhao:~# 
+
+
+root@fengzhao:~# du -sch /var/lib/docker/overlay2/*                                                                                                                                                              
+96K     /var/lib/docker/overlay2/251f5bb4a1f43d8d437d97b166e3112e6d3fd27724e7e09f03e7a700d3684285
+32K     /var/lib/docker/overlay2/2d1bbb653ff8e4d592f850dec47c35aef0da8754515dc54638cab3198b52f230
+79M     /var/lib/docker/overlay2/bbc3cc6b589e3840f450ab623889ee00e0eba84b21dda83118644113ca723092
+16K     /var/lib/docker/overlay2/l                                           
+80M     total                                                                       
+root@fengzhao:~# 
+```
+
+
+
+
+
+玩过容器的同学肯定都知道，容器里所看到的文件系统和宿主机是不一样的。以docker为例，运行一个alpine的容器并进入：
+
+```shell
+# 默认地，当没有镜像和容器时，/var/lib/docker/overlay2/文件目录中是空的。仅有一个l目录，用于存放链接
+
+
+
+[root@staight chmdocker]# ls /
+bin  boot  cgroup  data  dev  etc  home  lib  lib64  lost+found  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
+[root@staight chmdocker]# docker run -it --name=alpine alpine
+/ # ls
+bin    dev    etc    home   lib    media  mnt    opt    proc   root   run    sbin   srv    sys    tmp    usr    var
+```
+
+
+
+可以看到两者的根文件系统是不同的。如果是虚拟机，虚拟化一个硬盘文件可以达到这一目的。
+
+而在容器中，该文件系统则是真实存在于宿主机上的，可以使用`inspect`子命令查看:
+
+```shell
+[root@staight chmdocker]# docker inspect alpine | grep MergedDir
+                "MergedDir": "/var/lib/docker/overlay2/16361198b12618b2234306c6998cd8eb1c55f577a02144913da60dba4ca0c6e5/merged",
+[root@staight chmdocker]# ls /var/lib/docker/overlay2/16361198b12618b2234306c6998cd8eb1c55f577a02144913da60dba4ca0c6e5/merged
+bin  dev  etc  home  lib  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
+```
+
+如上，`/var/lib/docker/overlay2/id/merged`目录即是 alpine 容器使用的根文件系统。
+
+
+
+不过，如果使用每个镜像都需要一个独立的根文件系统的话，那想必磁盘早已拥挤不堪了；
+
+且一个镜像可以同时运行多个容器，每个容器对文件的改动该怎么办？
+
+
+
+
+
+
+
 ## 网络概述
 
 
@@ -608,7 +720,7 @@ ping alpine2
 
   - 使用默认 bridge 启动的容器只能通过 IP 地址互联，或者使用 --link 选项。这是一个历史遗留的选项，一般不建议使用默认 brige。
 
-- 用户自定义 bridge 提供更好的隔离性，所有没有使用 --network 选项的容器都会连到默认 bridge 
+- 用户自定义 bridge 提供更好的隔离性，所有没有使用 --network 选项的容器都会连到默认 bridge 网络中。
 
 - 在用户自定义 bridge 中的容器，可以随时把容器 disconnect 出来，再 connect 到其他的用户自定义 bridge 中。而不用关闭容器
 
@@ -652,7 +764,7 @@ host 网络，其实就是去除网络隔离，让容器直接使用宿主机的
 
 ### overlay网络
 
-overlay网络可以让两个运行在不同宿主机上的直接通讯，而不需要通过宿主机 OS 层面的路由。这是比较高阶的用法。
+overlay网络可以让两个运行在不同宿主机上的容器直接通讯，而不需要通过宿主机 OS 层面的路由。这是比较高阶的用法。
 
 可以像创建 bridge 网络一样创建 overlay 网络，services 和 containers 可以同时加入不止一个网络。
 
