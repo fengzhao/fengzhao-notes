@@ -73,25 +73,24 @@ sudo make install
 # 修改配置文件 redis.conf 
 bind 127.0.0.1     #根据情况是否需要远程访问去掉注释
 requirepass 123456  #修改密码
-
 sudo mkdir /etc/redis
 sudo cp redis.conf /etc/redis/
 
 
 
 # Install Redis Server on Ubuntu 18.04
-
 sudo apt-get update
 sudo apt-get upgrade
-
 sudo apt-get install redis-server
 # 开机自启
 sudo systemctl enable redis-server.service
 # 在配置文件中修改使用systemd来做为redis的守护进程管理工具
 supervised systemd
 
-# Installing Redis Server on CentOS 7
 
+
+
+# Installing Redis Server on CentOS 7
 yum install epel-release
 yum install redis 
 

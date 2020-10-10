@@ -490,4 +490,117 @@ https://blog.csdn.net/DiamondXiao/article/details/52488628
 
 
 
+# ssh安全
+
+
+
+火狐信息安全openssh—guidelines
+
+https://infosec.mozilla.org/guidelines/openssh
+
+
+
+
+
+https://github.com/jtesta/ssh-audit
+
+
+
+
+
+
+
+
+
+## ssh-audit审计
+
+
+
+**ssh-audit** 是一款 ssh 安全审计工具，
+
+
+
+[jtesta/ssh-audit](https://github.com/jtesta/ssh-audit/)(v2.x) 是基于[arthepsy/ssh-audit](https://github.com/arthepsy/ssh-audit) (v1.x) 进行fork的一个项目，由于后者已经不再更新，所以现在也有很多人用这个。
+
+
+
+主要功能特性:
+
+- 支持 ssh1 和 ssh2 协议；
+- 可以分析 ssh 客户端配置；
+- 识别 ssh banner , 识别操作系统，软硬件等；
+- 输出算法信息 (available since, removed/disabled, unsafe/weak/legacy, etc等);
+- 输出算法建议（添加或删除基于公认的软件版本）;
+- 输出安全信息（有关的问题，分配CVE列表等）;
+- 没有依赖关系，与 Python 2.6+，Python的3.x和PyPy兼容;
+- 从OpenSSH的，Dropbear SSH和libssh历史信息;
+- 分析基于算法的信息SSH版本的兼容性;
+
+
+
+
+
+### install-and-usage
+
+------
+
+
+
+```shell
+# 通过 pip 安装
+pip install ssh-audit
+
+
+git clone https://github.com/jtesta/ssh-audit.git  ~/ssh-audit
+
+
+
+usage: ssh-audit.py [options] <host>
+
+   -h,  --help             print this help
+   -1,  --ssh1             force ssh version 1 only
+   -2,  --ssh2             force ssh version 2 only
+   -4,  --ipv4             enable IPv4 (order of precedence)
+   -6,  --ipv6             enable IPv6 (order of precedence)
+   -b,  --batch            batch output
+   -c,  --client-audit     starts a server on port 2222 to audit client
+                               software config (use -p to change port;
+                               use -t to change timeout)
+   -j,  --json             JSON output
+   -l,  --level=<level>    minimum output level (info|warn|fail)
+   -L,  --list-policies    list all the official, built-in policies
+        --lookup=<alg1,alg2,...>    looks up an algorithm(s) without
+                                    connecting to a server
+   -M,  --make-policy=<policy.txt>  creates a policy based on the target server
+                                    (i.e.: the target server has the ideal
+                                    configuration that other servers should
+                                    adhere to)
+   -n,  --no-colors        disable colors
+   -p,  --port=<port>      port to connect
+   -P,  --policy=<policy.txt>  run a policy test using the specified policy
+   -t,  --timeout=<secs>   timeout (in seconds) for connection and reading
+                               (default: 5)
+   -T,  --targets=<hosts.txt>  a file containing a list of target hosts (one
+                                   per line, format HOST[:PORT])
+   -v,  --verbose          verbose output
+
+
+
+
+
+# 比如，我们在服务器上执行 ssh-audit 来解决  
+
+ ./ssh-audit.py   127.0.0.1
+
+
+# 一般会报ssh加密算法不安全问题。可以在 sshd_config 文件中设置为如下加密算法
+
+
+Ciphers chacha20-poly1305@openssh.com,aes256-gcm@openssh.com,aes128-gcm@openssh.com,aes256-ctr,aes192-ctr,aes128-ctr
+HostKeyAlgorithms rsa-sha2-512,rsa-sha2-256,ssh-ed25519
+KexAlgorithms curve25519-sha256@libssh.org,diffie-hellman-group16-sha512,diffie-hellman-group18-sha512,diffie-hellman-group14-sha256
+MACs umac-128-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@openssh.com
+
+
+```
 
