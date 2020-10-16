@@ -78,3 +78,21 @@ go get 命令可以借助代码管理工具通过远程拉取或更新代码包�
 在使用 go get 命令前，需要安装与远程包匹配的代码管理工具，如 Git、SVN、HG 等，参数中需要提供一个包名。
 
 go get 命令实际上可以理解为 git clone + go install 
+
+
+
+
+
+
+
+## go doc 
+
+
+
+godoc webserver 已经被golang主发布包移除，
+
+```shell
+go get golang.org/x/tools/cmd/godoc
+godoc
+```
+
