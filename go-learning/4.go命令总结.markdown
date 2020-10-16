@@ -1,10 +1,46 @@
+# go安装
+
+
+
+ GO下载：
+
+GO语言中文网下载：https://studygolang.com/dl
+Mac下直接通过brew instatll go指令即可完成下载安装
+
+
+
+```shell
+GO环境变量配置：
+$GOROOT=/usr/local/go                        GO安装目录
+$GOPATH=/usr/local/var/www/go                GO工作目录
+$GOBIN=$GOPATH/bin                           GO可执行文件目录
+$PATH=$PATH:$GOBIN:$GOROOT/bin  将GO可执行文件加入PATH中，使GO指令与我们编写的GO应用可以全局调用
+```
+
+
+
+
+
 # Go命令总结
 
-Go 安装目录中自带一个可执行文件 go ，这个命令可以接收很多参数，用来执行各种各样的
+Go 安装目录中自带一个可执行文件 go ，这个命令可以接收很多参数，用来执行各种各样的命令
+
+
+
+```shell
+# go 命令用法
+go <command> [arguments]
+```
 
 
 
 ## go build 
+
+```shell
+go build [-o output] [-i] [build flags] [packages]
+```
+
+编译指定导入路径的包，以及其依赖包，但不安装结果。
 
 `go build` 命令编译命令行参数指定的每个包。
 
@@ -15,3 +51,30 @@ Go 安装目录中自带一个可执行文件 go ，这个命令可以接收很�
 
 
 
+## go install 
+
+
+
+## go get 
+
+
+
+Go语言的代码被托管于 Github.com 网站，该网站是基于 Git 代码管理工具的，很多有名的项目都在该网站托管代码。
+
+
+
+这些网站的项目包路径都有一个共同的标准：
+
+```shell
+# 域名/作者或机构/项目名
+github.com/golang/go
+
+```
+
+go get 命令可以借助代码管理工具通过远程拉取或更新代码包及其依赖包，并自动完成编译和安装。整个过程就像安装一个 App 一样简单。
+
+这个命令可以动态获取远程代码包，目前支持的有 BitBucket、GitHub、Google Code 和 Launchpad。
+
+在使用 go get 命令前，需要安装与远程包匹配的代码管理工具，如 Git、SVN、HG 等，参数中需要提供一个包名。
+
+go get 命令实际上可以理解为 git clone + go install 

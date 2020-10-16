@@ -2,17 +2,74 @@
 
 - 国外官网: https://golang.org/ 
 - 国内官网: https://golang.google.cn/ 
-- Go 语言中文网: https://studygolang.com/
+- Go 语言中文网: https://studygolang.com/ https://studygolang.com/dl
 
-官网下载 [go1.13.5.windows-amd64.msi](https://dl.google.com/go/go1.13.5.windows-amd64.msi) 安装包，双击执行安装，安装路径选择 D:\Go （如果不存在，则在d盘新建这个目录），下一步下一步直接安装。
+官网下载 [go1.13.5.windows-amd64.msi](https://dl.google.com/go/go1.13.5.windows-amd64.msi) 安装包，双击执行安装，安装路径选择 D:\Go （如果不存在，则在d盘新建这个目录），下一步直接安装。
 
-默认情况下,安装 Go 语言后新增了 GOPATH 和 PATH 用户变量,同时修改了系统环境变量PATH。
+默认情况下，安装 Go 语言后新增了 GOPATH 和 PATH 用户变量，同时修改了系统环境变量PATH。
 
-一般我喜欢保持 D盘 环境，所以安装之前在D盘新建 go  gopath 两个目录：
 
-- D:\go             go安装目录，自带的系统库，二进制文件等。
+
+
+
+```shell
+# 一般软件我安装在D盘，所以安装之前在D盘新建go和gopath两个文件夹：
+
+# go安装目录结构
+
+root@gcp-2:~#ls -al /usr/local/go/                                                                                                                                                                              
+total 224                                                                                        
+drwxr-xr-x 10 root root  4096 Oct 31  2019 .                                     
+drwxr-xr-x 11 root root  4096 Oct 11 16:53 ..                                  
+-rw-r--r--  1 root root 55389 Oct 31  2019 AUTHORS                          
+-rw-r--r--  1 root root  1339 Oct 31  2019 CONTRIBUTING.md                       
+-rw-r--r--  1 root root 84339 Oct 31  2019 CONTRIBUTORS                         
+-rw-r--r--  1 root root  1479 Oct 31  2019 LICENSE                                                                          
+-rw-r--r--  1 root root  1303 Oct 31  2019 PATENTS                             
+-rw-r--r--  1 root root  1607 Oct 31  2019 README.md                            
+-rw-r--r--  1 root root   397 Oct 31  2019 SECURITY.md                       
+-rw-r--r--  1 root root     8 Oct 31  2019 VERSION                            
+drwxr-xr-x  2 root root  4096 Oct 31  2019 api                                 
+drwxr-xr-x  2 root root  4096 Oct 31  2019 bin                           
+drwxr-xr-x  8 root root  4096 Oct 31  2019 doc                                    
+-rw-r--r--  1 root root  5686 Oct 31  2019 favicon.ico                           
+drwxr-xr-x  3 root root  4096 Oct 31  2019 lib                              
+drwxr-xr-x 13 root root  4096 Oct 31  2019 misc                                  
+drwxr-xr-x  6 root root  4096 Oct 31  2019 pkg                                
+-rw-r--r--  1 root root    26 Oct 31  2019 robots.txt                            
+drwxr-xr-x 47 root root  4096 Oct 31  2019 src                                
+drwxr-xr-x 23 root root 12288 Oct 31  2019 test  
+
+你的 Go 安装目录（$GOROOT）的文件夹结构应该如下所示：
+
+README.md, AUTHORS, CONTRIBUTORS, LICENSE
+
+/bin：包含可执行文件，如：编译器，Go 工具
+/doc：包含示例程序，代码工具，本地文档等
+/lib：包含文档模版
+/misc：包含与支持 Go 编辑器有关的配置文件以及 cgo 的示例
+/os_arch：包含标准库的包的对象文件（.a）
+/src：包含源代码构建脚本和标准库的包的完整源代码（Go 是一门开源语言）
+/src/cmd：包含 Go 和 C 的编译器和命令行脚本
+
+
+
+# gopath目录结构
+
+root@gcp-2:~# tree -L  2 /root/go/                                                                                                                                                                               
+/root/go/                                                                      
+├── bin           # bin 编译后生成的可执行文件，（为了方便，可以把此目录加入到 $PATH 变量中)            
+├── pkg           # pkg 编译后生成的文件（比如：.a）                                                                  
+│   └── mod                                                                            
+└── src        	  # src 存放源代码（比如：.go .c .h .s 等）                                                                                                                                                                                 
+root@gcp-2:~# 
+```
+
+
+
+- D:\go             go 安装目录，自带的系统库，二进制文件等。
 - D:\gopath    工作区目录，工作区目录一般约定有三个子目录：
-  -  src 存放源代码（比如：.go .c .h .s等）   
+  -  src 存放源代码（比如：.go .c .h .s 等）   
   -  pkg 编译后生成的文件（比如：.a）   
   -  bin 编译后生成的可执行文件，（为了方便，可以把此目录加入到 $PATH 变量中)
 
@@ -37,19 +94,36 @@ GOPATH下的 src 目录就是平时开发程序的主要目录，所有的源码
 
 
 - **$GOROOT:  Go 在你的电脑上的安装位置，它的值一般都是 $HOME/go，当然，你也可以安装在别的地方。**
+
 - $GOARCH：目标机器的处理器架构，它的值可以是 386、amd64 或 arm。（ 386理解为**x86架构**，amd64理解为**x86-64架构**）
 
   - x86架构的特点是cpu的寄存器是32位的，因此也叫32位cpu。一般我们在32位cpu上安装32位操作系统。
 
   - x86_64,x64,AMD64，在表示cpu架构的时候都是一个意思，表示cpu的寄存器是64位的，因此也叫64位cpu。一般我们在64位cpu上安装64位操作系统
+  
 - $GOOS：目标机器的操作系统，它的值可以是 darwin、freebsd、linux 或 windows、android等等。
+
 - $GOBIN：go install 安装可执行文件所在的目录，默认是 $GOROOT/bin，如果你使用的是 Go 1.0.3 及以后的版本，一般情况下可以将它置空，Go 将会使用前面提到的默认值。
+
 - **GOPATH**： **工作区所在的绝对目录**
-- 
+
+- 目标机器是指你打算运行你的 Go 应用程序的机器。
+
+  Go 编译器支持交叉编译，也就是说你可以在一台机器上构建运行在具有不同操作系统和处理器架构上运行的应用程序。
+
+  也就是说编写源代码的机器可以和目标机器有完全不同的特性（操作系统与处理器架构）。
+
+  为了区分本地机器和目标机器，你可以使用 $GOHOSTOS 和 $GOHOSTARCH 设置本地机器的操作系统名称和编译体系结构。
+
+  这两个变量只有在进行交叉编译的时候才会用到，如果你不进行显示设置，他们的值会和目标机器（$GOOS 和 $GOARCH）一样。
+
+  
 
 
 
-任意目录下打开命令行窗口都能调用 Go 相关命令,比如 go version 和 go env ,这是因为安装 Go 时已自动追加了系统环境变量 PATH=%PATH%;:\Go\bin,如果上述验证失败,记得修改环境变量 PATH 试试看！
+任意目录下打开命令行窗口都能调用 Go 相关命令,比如 go version 和 go env 。
+
+这是因为安装 Go 时已自动追加了系统环境变量 PATH=%PATH%;:\Go\bin。如果上述验证失败，记得修改环境变量 PATH 试试看！
 
 
 
