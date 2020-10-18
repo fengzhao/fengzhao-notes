@@ -34,11 +34,76 @@
 
 
 
+
+
+## 扩展头部
+
+
+
+### X-Forwarded-For
+
+X-Forwarded-For 是一个 HTTP 扩展头部。HTTP/1.1（RFC 2616）协议并没有对它的定义，它最开始是由 Squid 这个缓存代理软件引入，用来表示 HTTP 请求端真实 IP。
+
+如今它已经成为事实上的标准，被各大 HTTP 代理、负载均衡等转发服务广泛使用，并被写入 [RFC 7239](http://tools.ietf.org/html/rfc7239)（Forwarded HTTP Extension）标准之中。
+
+
+
+> X-Forwarded-For 请求头格式
+>
+> X-Forwarded-For: client, proxy1, proxy2
+
+可以看到，XFF 的内容由「英文逗号 + 空格」隔开的多个部分组成，最开始的是离服务端最远的设备 IP，然后是每一级代理设备的 IP。
+
+如果一个 HTTP 请求到达服务器之前，经过了三个代理 Proxy1、Proxy2、Proxy3，IP 分别为 IP1、IP2、IP3，用户真实 IP 为 IP0，那么按照 XFF 标准，服务端最终会收到以下信息：
+
+
+
+> X-Forwarded-For: IP0, IP1, IP2
+
+
+
+Proxy3 直连服务器，它会给 XFF 追加 IP2，表示它是在帮 Proxy2 转发请求。
+
+列表中并没有 IP3，在服务端通过 Remote Address 字段获得 IP3。我们知道 HTTP 连接基于 TCP 连接，HTTP 协议中没有 IP 的概念，Remote Address 来自 TCP 连接，表示与服务端建立 TCP 连接的设备 IP 。
+
+Remote Address 无法伪造，因为建立 TCP 连接需要三次握手，如果伪造了源 IP，无法建立 TCP 连接，更不会有后面的 HTTP 请求。
+
+不同语言获取 Remote Address 的方式不一样，例如 php 是 `$_SERVER["REMOTE_ADDR"]`，Node.js 是 `req.connection.remoteAddress`，但原理都一样 。
+
+
+
+示例  
+
+
+
+```javascript
+// 启动一个 nodejs 的应用，监听9009端口
+var http = require('http');
+
+http.createServer(function (req, res) {
+    res.writeHead(200, {'Content-Type': 'text/plain'});
+    res.write('remoteAddress: ' + req.connection.remoteAddress + '\n');
+    res.write('x-forwarded-for: ' + req.headers['x-forwarded-for'] + '\n');
+    res.write('x-real-ip: ' + req.headers['x-real-ip'] + '\n');
+    res.end();
+}).listen(9009, '0.0.0.0');
+```
+
+
+
+
+
+
+
+
+
+
+
 # HTTP报文
 
 
 
-HTTP报文是服务器和客户端之间交换数据的方式，有两种类型的消息︰
+HTTP 报文是服务器和客户端之间交换数据的方式，有两种类型的消息︰
 
 - 请求（requests）--由客户端发送用来触发一个服务器上的动作；
 - 响应（responses）--来自服务器的应答。
@@ -47,7 +112,7 @@ HTTP报文是服务器和客户端之间交换数据的方式，有两种类型�
 
 
 
-HTTP消息由采用ASCII编码的多行文本构成。在HTTP/1.1及早期版本中，这些消息通过连接公开地发送。
+HTTP消息由采用 ASCII 编码的多行文本构成。在HTTP/1.1及早期版本中，这些消息通过连接公开地发送。
 
 在HTTP/2中，为了优化和性能方面的改进，HTTP报文被分到多个HTTP帧中。
 
@@ -399,9 +464,9 @@ HTTP/2 的主要目标是通过支持完整的请求与响应复用来减少延�
 
 因此，所有现有的应用都可以不必修改而在新协议下运行。
 
-HTTP 2.0 性能增强的核心，全在于新增的二进制分帧层（图 12-1），它定义了如何封装 HTTP 消息并在客户端与服务器之间传输。
+HTTP 2.0 性能增强的核心，全在于新增的二进制分帧层，它定义了如何封装 HTTP 消息并在客户端与服务器之间传输。
 
-
+![http2_binary_framing_layer](assets/http2_1.png.webp)
 
 
 
@@ -427,6 +492,14 @@ HTTP/2 中新的二进制分帧层突破了这些限制，实现了完整的请�
 
 
 https://imququ.com/post/http2-and-wpo-2.html
+
+
+
+#### 服务器推送
+
+
+
+HTTP 2.0 新增的一个强大的新功能，就是服务器可以对一个客户端请求发送多个响应。
 
 
 

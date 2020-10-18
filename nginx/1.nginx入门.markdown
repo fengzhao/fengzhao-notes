@@ -309,6 +309,168 @@ nginx -s reload
 
 # 升级
 
-但想要更换 nginx 版本时，就需要采用热部署的方式：
+但想要更换或者升级 nginx 版本时，就需要采用热部署的方式：
 
 1. 查看现有 master 进程的 pid。可以看出来，worker 进程是 master 进程的子进程
+
+
+
+
+
+# Nginx 配置指令
+
+
+
+
+
+nginx.conf 文件是 nginx 中的核心文件，用于控制 nginx 的运行。
+
+
+
+一个典型的 nginx 配置文件如下：
+
+```nginx
+main
+
+http {
+    upstream { … }
+    split_clients {…}
+    map {…}
+    geo {…}
+    server {
+        if () {…}
+        location {
+            limit_except {…}
+        }
+        location {
+            location {
+            }
+        }
+    }
+    server {
+    }
+}
+```
+
+
+
+
+
+## 指令块的嵌套
+
+
+
+在 Nginx 配置文件中，指令块是可以嵌套分层的，例如上面的示例，http 块中可以包含多个 server 块，server 块中还会包含多个 location 块，每一个块中都有相应的指令。
+
+
+
+而每一个指令都有 Context 上下文，也就是生效的环境，这在 Nginx 的官方文档中说的很清楚，例如下面的两条指令，Context 中都表明了各自可以生效的环境，access_log 指令可以在多个上下文中生效：
+
+
+
+```nginx
+Syntax:  access_log path [format [buffer=size] [gzip[=level]] [flush=time] [if=condition]];
+         access_log off;
+Default: access_log logs/access.log combined; 
+Context: http, server, location, if in location, limit_except
+
+Syntax:  log_format name [escape=default|json|none] string ...;
+Default: log_format combined "..."; 
+Context: http
+```
+
+
+
+
+
+## 指令的继承
+
+
+
+既然 nginx 指令是可以嵌套分层的，而且指令可以存在于多个上下文环境。所以必然存在指令的继承。
+
+
+
+例如下面的配置文件，这里面在 server 块和 location 块中都配置了 root 指令，Nginx 的继承规则如下：
+
+- 子配置不存在时，直接使用父配置块的指令
+- 子配置存在时，覆盖父配置块
+
+
+
+```nginx
+server {
+    listen 8080;
+    root /home/geek/nginx/html;
+    access_log logs/geek.access.log main;
+    location /test {
+        root /home/geek/nginx/test;
+        access_log logs/access.test.log main;
+    }
+    location /dlib {
+        alias dlib/;
+    }
+    location / {
+    }
+}    
+```
+
+
+
+根据上面这两条规则，第一个 location 使用自己的 root 指令，后面两个 location 则使用 server 块的 root 指令。这和编程语言中变量的作用域也是类似的，作用域更小的变量优先级往往更高，Nginx 的指令也是一样。
+
+
+
+## 常用 nginx 指令
+
+
+
+### listen 指令
+
+listen 指令在 server 块中生效，用来配置监听哪些端口，由这些端口来处理请求。listen 指令的配置语法如下：
+
+```nginx
+Syntax:	listen address[:port] [default_server] [ssl] [http2 | spdy] [proxy_protocol] [setfib=number] [fastopen=number] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [ipv6only=on|off] [reuseport] [so_keepalive=on|off|[keepidle]:[keepintvl]:[keepcnt]];
+listen port [default_server] [ssl] [http2 | spdy] [proxy_protocol] [setfib=number] [fastopen=number] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [ipv6only=on|off] [reuseport] [so_keepalive=on|off|[keepidle]:[keepintvl]:[keepcnt]];
+listen unix:path [default_server] [ssl] [http2 | spdy] [proxy_protocol] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [so_keepalive=on|off|[keepidle]:[keepintvl]:[keepcnt]];
+Default:	
+listen *:80 | *:8000;
+# 只能出现在server块中
+Context:	server
+
+
+
+＃常见的litsen配置语法
+
+listen 443 ssl http2;
+
+listen 127.0.0.1:8080;
+
+listen 8080；
+
+listen *:8080；
+
+listen *:8080；
+
+
+
+```
+
+
+
+
+
+### server_name 指令
+
+server_name 指令是用来配置究竟是哪个 server 来处理我们的请求的。
+
+- server_name 指令后可以跟多个域名，第一个是主域名，多个域名之间空格分隔
+- 泛域名：仅支持在最前或最后加 *，例如：`server_name* .taohui.tech`
+- 正则表达式匹配：`server_name www.taohui.tech ~^www\d+\.taohui\.tech$;`
+
+```nginx
+Syntax  server_name_in_redirect on | off;
+Default server_name_in_redirect off; 
+Context http, server, location
+```
+
