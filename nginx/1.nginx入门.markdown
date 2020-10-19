@@ -58,19 +58,52 @@ Nginx 有一个 master 进程和若干个 worker 进程，master 进程是用来
 
 
 
-## 编译 Nginx 和 OpenResty
+# 安装 Nginx 和 OpenResty
 
-在 Linux 上，当然可以使用 yum、apt-get 等软件包管理工具来下载 Nginx，但是 Nginx 的很多模块并不是默认开启的，第三方模块很多也并不包含，所以，如果想要开启内置的模块或编译第三方模块，还是需要编译 Nginx。
+在 Linux 上，当然可以使用 yum、apt-get 等软件包管理工具来下载 Nginx，但是 Nginx 的很多模块并不是默认开启的，第三方模块很多也并不包含。
+
+所以，如果想要开启内置的模块或编译第三方模块，还是需要编译 Nginx。
 
 
 
+### 包管理器安装 nginx
+
+------
+
+```shell
+# 配置yum源：/etc/yum.repos.d/nginx.repo 
+
+# CentOS
+[nginx]
+name=nginx repo
+# 系统:CentOS7 架构:x86_64
+baseurl=https://nginx.org/packages/centos/7/x86_64/
+# 系统:CentOS8 架构:x86_64
+# baseurl=https://nginx.org/packages/centos/7/x86_64/
+# 系统:RHEL7 架构:x86_64
+baseurl=https://nginx.org/packages/rhel/7/x86_64/
+# 系统:RHEL8 架构:x86_64
+# baseurl=https://nginx.org/packages/rhel/7/x86_64/
+
+gpgcheck=0
+enabled=1
 
 
-### 下载 Nginx 源代码
+```
+
+
+
+### 编译安装Nginx
+
+
 
 在 <http://nginx.org/en/download.html> 里面可以直接下载 Nginx 源代码。包含以下目录：
 
-```
+```shell
+# 在 http://nginx.org/en/download.html 里面下载 Nginx 源代码
+
+wget http://nginx.org/download/nginx-1.16.0.tar.gz
+
 nginx-1.17.8
 ├── CHANGES # 每个版本提供的特性和 bugfix
 ├── CHANGES.ru # 俄罗斯版本的 CHANGES 文件
@@ -84,6 +117,52 @@ nginx-1.17.8
 ├── html # 一个 500 错误的默认页面，另一个是默认的 index 页面
 ├── man # nginx 对 Linux 的帮助文件，man ./nginx.8
 └── src # nginx 源代码
+
+
+
+# 配置 Vim 高亮, 如果 Vim 没有开启语法高亮的话，最好开启一下
+
+cp -r contrib/vim/* ~/.vim
+echo 'syntax on' > ~/.vimrc 
+
+
+# configure
+
+./configure   --user=nginx --group=nginx  --prefix=/usr/local/nginx/  --with-http_stub_status_module  --with-http_ssl_module
+
+./configure --help # --help 命令可以查看配置脚本支持哪些参数
+
+# 第一类配置参数
+
+--prefix=PATH                      set installation prefix # 指定这个路径就可以了，其他文件会在 prefix 目录下建立相应的文件夹
+--sbin-path=PATH                   set nginx binary pathname
+--modules-path=PATH                set modules path
+--conf-path=PATH                   set nginx.conf pathname
+--error-log-path=PATH              set error log pathname
+--pid-path=PATH                    set nginx.pid pathname
+--lock-path=PATH                   set nginx.lock pathname
+
+
+# 第二类配置参数
+# 可以配置使用或不使用哪些模块，前缀通常是 with 和 with out，需要加 with 参数的通常是不会被 Nginx 默认编译的，without 则是会移出编译。
+
+--with-http_ssl_module             enable ngx_http_ssl_module
+--with-http_v2_module              enable ngx_http_v2_module
+--with-http_realip_module          enable ngx_http_realip_module
+...
+
+--without-http_charset_module      disable ngx_http_charset_module
+--without-http_gzip_module         disable ngx_http_gzip_module
+--without-http_ssi_module          disable ngx_http_ssi_module
+...
+
+
+make && make install 
+
+
+
+
+
 ```
 
 
