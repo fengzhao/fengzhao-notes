@@ -1,0 +1,117 @@
+# Nginx 配置 HTTP2
+
+
+
+> 前提条件
+>
+> - Nginx1.10.0以上版本才支持 HTTP/2，如果使用的是 Tengine，版本需要大于 2.2.1，且需要添加 --with-http_v2_module 模块。
+>
+> - HTTP/2 只支持 HTTPS 协议的网站，且 openssl 版本需要高于 1.0.2。
+
+
+
+
+
+```shell
+# 查看nginx编译安装，以及安装的模块
+
+/usr/sbin/nginx -V
+
+nginx version: nginx/1.12.2
+built by gcc 4.8.5 20150623 (Red Hat 4.8.5-16) (GCC)
+built with OpenSSL 1.0.2k-fips  26 Jan 2017
+TLS SNI support enabled
+configure arguments: --prefix=/usr/share/nginx --sbin-path=/usr/sbin/nginx --modules-path=/usr/lib64/nginx/modules --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log --http-log-path=/var/log/nginx/access.log --http-client-body-temp-path=/var/lib/nginx/tmp/client_body --http-proxy-temp-path=/var/lib/nginx/tmp/proxy --http-fastcgi-temp-path=/var/lib/nginx/tmp/fastcgi --http-uwsgi-temp-path=/var/lib/nginx/tmp/uwsgi --http-scgi-temp-path=/var/lib/nginx/tmp/scgi --pid-path=/run/nginx.pid --lock-path=/run/lock/subsys/nginx --user=nginx --group=nginx --with-file-aio --with-ipv6 --with-http_ssl_module --with-http_v2_module --with-http_realip_module --with-http_addition_module --with-http_xslt_module=dynamic --with-http_image_filter_module=dynamic --with-http_geoip_module=dynamic --with-http_sub_module --with-http_dav_module --with-http_flv_module --with-http_mp4_module --with-http_gunzip_module --with-http_gzip_static_module --with-http_random_index_module --with-http_secure_link_module --with-http_degradation_module --with-http_slice_module --with-http_stub_status_module --with-http_perl_module=dynamic --with-mail=dynamic --with-mail_ssl_module --with-pcre --with-pcre-jit --with-stream=dynamic --with-stream_ssl_module --with-google_perftools_module --with-debug --with-cc-opt='-O2 -g -pipe -Wall -Wp,-D_FORTIFY_SOURCE=2 -fexceptions -fstack-protector-strong --param=ssp-buffer-size=4 -grecord-gcc-switches -specs=/usr/lib/rpm/redhat/redhat-hardened-cc1 -m64 -mtune=generic' --with-ld-opt='-Wl,-z,relro -specs=/usr/lib/rpm/redhat/redhat-hardened-ld -Wl,-E'
+```
+
+
+
+## Nginx 配置
+
+
+
+
+
+
+
+```nginx
+server {
+    # 443端口，SSL协议，启用http2，也可以用非443端口
+    listen       443 ssl http2;
+    server_name  www.example.com;
+
+    ssl_certificate /etc/letsencrypt/live/www.example.com/fullchain.pem; 
+    ssl_certificate_key /etc/letsencrypt/live/www.example.com/privkey.pem;
+	# 支持的协议
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+    location / {
+        proxy_pass http://localhost:12345;
+    }
+}
+```
+
+
+
+
+
+# CDN场景下的HTTPS
+
+
+
+> 背景：在上CDN之前，源站服务器的情况是：安装了SSL，配置了HTTPS，并且已经正常运行了一段时间。
+>
+> 因为想要提高访问速度，决定上CDN，并且开启HTTPS。
+>
+> 这时，产生了疑问：源站上的HTTPS配置，是否仍需保留？跟CDN上开启的HTTPS有什么关系呢？
+
+
+
+- 加速域名：即您需要使用CDN加速的域名，也是您的客户访问时直接请求访问的域名。
+  - 可以自己在 CDN 厂商处随意添加，但是会验证域名所有权。
+  - 需要在域名注册商处添加 txt 记录进行验证。
+- **CNAM域名**：
+  - 在CDN服务商创建加速域名后，CDN厂商会分配一个CNAME域名。
+  - 把 
+
+- 源站地址：指您的业务服务器IP地址对应的域名。（源站可以是域名，也可以是IP）
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+以阿里云为例：
+
+> 阿里云把全站加速从CDN中拆分出来，做为一个独立的服务，叫**全站加速（DCDN）** https://www.aliyun.com/product/dcdn
+>
+> 把 安全加速从CDN中拆分出来，叫 **安全加速（SCDN）**  https://www.aliyun.com/product/scdn
+
+
+
+打开**控制台** --> **产品与服务** --> **存储与CDN** --> **CDN**
+
+添加CDN加速域名
+
+
+
+
+
+
+
+
+
