@@ -15,8 +15,9 @@ http://redisguide.com/
 Redis 是完全开源免费的，遵守 BSD 协议，是一个高性能的 key-value 数据库，与其它 key/value 缓存产品相比有以下三个特点：
 
 - Redis 支持数据的持久化，可以将内存中的数据保存在磁盘中，重启的时候可以再次加载进行使用。
-- Redis 不仅支持 key-value 类型的数据，还提供 list，set，zset，hash 等数据结构的存储，对程序员透明，无需进行额外的抽象
+- Redis 不仅支持 key-value 类型的数据，还提供 list，set，zset，hash 等数据结构的存储，对程序员透明，无需进行额外的抽象。
 - Redis 支持数据的备份，即 master-slave 模式的数据备份
+- Redis 可以存储键和五种不同类型的值之间的映射。键的类型只能为字符串，值支持五种数据类型：字符串、列表、集合、散列表、有序集合
 
 说到数据库，可能大家用得最多的是关系型数据库，比如 MySQL，PostgreSQL 等。
 
@@ -63,16 +64,21 @@ sudo echo "source /opt/rh/devtoolset-9/enable" >>/etc/profile
 git clone -b 6.0 https://github.com/redis/redis.git  /usr/local/src/redis/
 wget http://download.redis.io/releases/redis-6.0.5.tar.gz  -O  /usr/local/src/redis-6.0.5.tar.gz
 
+
 # 编译安装，编译安装后，二进制文件会被复制到/usr/local/bin目录下
 tar xf redis-6.0.5.tar.gz
 cd redis-6.0.5
-make
+# 编译参数 USE_SYSTEMD=yes BUILD_TLS=yes 
+make  
+# 默认会把二进制文件安装到 /usr/local/bin 。也可以 make PREFIX=/some/other/directory install 指定不同目录
 sudo make install
 
 
+
+
 # 修改配置文件 redis.conf 
-bind 127.0.0.1     #根据情况是否需要远程访问去掉注释
-requirepass 123456  #修改密码
+bind 127.0.0.1     # 根据情况是否需要远程访问去掉注释
+requirepass 123456  # 修改密码
 sudo mkdir /etc/redis
 sudo cp redis.conf /etc/redis/
 
@@ -724,7 +730,7 @@ redis 的内存占用主要可以划分为以下几个部分：
 
 默认情况下，每台Redis服务器都是主节点；且一个主节点可以有多个从节点(或没有从节点)，但一个从节点只能有一个主节点。
 
-
+每当 slave 和 master 之间的连接断开时， slave 会自动重连到 master 上，并且无论这期间 master 发生了什么， slave 都将尝试让自身成为 master 的精确副本。
 
 主从复制的主要作用：
 
@@ -737,6 +743,20 @@ redis 的内存占用主要可以划分为以下几个部分：
   尤其是在写少读多的场景下，通过多个从节点分担读负载，可以大大提高Redis服务器的并发。（如电商网站的商品）
 
 - 高可用基石：除了上述作用以外，主从复制还是哨兵和集群能够实施的基础，因此说主从复制是Redis高可用的基础。
+
+
+
+
+
+它主要通过如下机制实现：
+
+- 当主节点和从节点连接良好时，主节点通过发送一个命令流来保持从节点的数据更新。（包括客户端的写入和更新，key过期或被逐出，或者其他变更）
+- 当主节点和从节点连接故障，比如网络超时等。 slave 重新连接上 master 并会尝试进行部分重同步：这意味着它会尝试只获取在断开连接期间内丢失的命令流。
+- 当无法进行部分重同步时， slave 会请求进行全量重同步。这会涉及到一个更复杂的过程，例如 master 需要创建所有数据的快照，将之发送给 slave ，之后在数据集更改时持续发送命令流到 slave 。
+
+
+
+Redis 默认使用异步复制，其热点是低延迟和高性能，是绝大数的应用场景。
 
 
 
@@ -816,9 +836,9 @@ replica-read-only yes
 
 **步骤一、保存主节点信息**
 
-从节点服务器内部维护了两个字段，即masterhost和masterport字段，用于存储主节点的ip和port信息。
+从节点服务器内部维护了两个字段，即 masterhost 和 masterport 字段，用于存储主节点的 ip 和 port 信息。
 
-需要注意的是，**slaveof** 是异步命令，从节点完成主节点ip和port的保存后，向发送slaveof命令的客户端直接返回OK。然后才开始进行复制。
+需要注意的是，**slaveof** 是异步命令，从节点完成主节点 ip 和 port 的保存后，向发送 slaveof 命令的客户端直接返回 OK。然后才开始进行复制。
 
 
 
@@ -850,9 +870,9 @@ replica-read-only yes
 
 **步骤四、身份验证**
 
-如果从节点中设置了masterauth选项，则从节点需要向主节点进行身份验证；没有设置该选项，则不需要验证。从节点进行身份验证是通过向主节点发送auth命令进行的，auth命令的参数即为配置文件中的masterauth的值。
+如果从节点中设置了masterauth 选项，则从节点需要向主节点进行身份验证；没有设置该选项，则不需要验证。从节点进行身份验证是通过向主节点发送auth命令进行的，auth 命令的参数即为配置文件中的 masterauth 的值。
 
-如果主节点设置密码的状态，与从节点masterauth的状态一致（一致是指都存在，且密码相同，或者都不存在），则身份验证通过，复制过程继续；如果不一致，则从节点断开socket连接，并重连。
+如果主节点设置密码的状态，与从节点 `masterauth` 的状态一致（一致是指都存在，且密码相同，或者都不存在），则身份验证通过，复制过程继续；如果不一致，则从节点断开 socket 连接，并重连。
 
 
 
@@ -862,33 +882,49 @@ replica-read-only yes
 
 ### redis-cluster 教程
 
+Redis集群提供一种方式自动将数据分布在多个Redis节点上。
 
+> Redis Cluster provides a way to run a Redis installation where data is **automatically sharded across multiple Redis nodes**.
+
+
+
+Redis集群是一个distribute、fault-tolerant的Redis实现，主要设计目标是达到线性可扩展性、可用性、数据一致性。
+
+
+
+- **线性拓展** 官方推荐最大的节点数量为1000，由于Cluster架构中无Proxy层，Master与Slave之间使用异步replication。
+- **数据一致性** 客户端容忍一定程度的数据丢失，集群尽可能保存 Client write 操作的数据，保证数据一致性。
+- **可用性** Redis集群通过 partition 来提供一定程度的可用性，当集群中的一部分节点失效或者无法进行通讯时，集群仍可以继续提供服务。
+  - **只要集群中大多数 master 可达、且失效的 master 至少有一个 slave 可达，即集群非 Fail 状态，集群都是可用的。**
+  - Redis集群的 replicas migration 机制可以将拥有多个 Slave 的 master的某个 slave，迁移到没有 slave的 master下，即 slave 分布相对平衡，确保 master 都有一定数量的 slave 备份。
+  - 即在  A (A1, A2) B ( B1 , B1)  C ( C1 , C2 ) 这种机制下。
 
 #### redis-cluster基本要求
 
-- 在构建 redis cluster 集群时，至少需要3(Master)+3(Slave)才能建立集群。否则会创建失败。Redis-Cluster采用无中心结构，每个节点保存数据和整个集群状态，每个节点都和其他所有节点连接。
+- 在构建 redis cluster 集群时，至少需要 3(Master)+3(Slave) 才能建立集群。否则会创建失败。
 
-并且，**当集群中存活的master节点数小于总节点数的一半的话，集群就无法提供服务了。**
+  Redis-Cluster 采用无中心结构，每个节点保存数据和整个集群状态，每个节点都和其他所有节点连接。
+
+  并且，**当集群中存活的master节点数小于总节点数的一半的话，集群就无法提供服务了。**
 
 - 一般可以规划为：7 台机器，可以三台为 master，4 台为 replica 。这样 7 台机器中可以随便挂掉任意两台。（必须是依次挂掉，不能同时挂）
-- **真集群： 准备6台服务器**，6个不同的ip地址，都是访问6379端口。**假集群：一台服务器存在6个redis服务**，一个ip地址 6个不同的端口。
+
+- **真集群： 生产环境中一定要准备6台服务器**，6个不同的 ip 地址，都是访问 637 端口。**假集群：一台服务器存在6个redis服务**，一个ip地址 6个不同的端口。
 
 
 
 
 
-这是一份 redis-cluster 的教程，不会讲解一些复杂的分布式系统知识，提供了安装搭建配置 redis-cluster 的教程。这份教程仅仅是从用户视角来描述cluster 
+这是一份 redis-cluster 的教程，不会讲解一些复杂的分布式系统知识，提供了安装搭建配置 redis-cluster 的教程。这份教程仅仅是从用户视角来描述 cluster 。
 
 
-
-redis-cluster 提供了一种可以让数据自动分片在多节点的安装方式。（**automatically sharded across multiple Redis nodes**.）
 
 
 
 实际上，在 redis-cluster 中。
 
-- 在多个节点中自动分片数据集的能力。每个 master 上放一部分数据
-- 当集群中有节点失联或者故障时，继续提供支持的能力。
+- 在多个节点中自动分片数据集的能力。每个 master 上放一部分数据。
+- 当集群中有节点失联或者故障时，继续提供支持的能力。（除非超过一半的 mater 节点挂掉）
 - redis cluster 支撑 N 个 redis master node，每个 master node 都可以挂载多个 slave node。
 - 可以很轻松的横向扩容更多 master 节点，每个 master 节点就能存放更多的数据了。
 
@@ -900,7 +936,7 @@ redis-cluster 提供了一种可以让数据自动分片在多节点的安装方
 
 每个 redis 节点都需要开放两个 tcp 端口，默认的 6379 是给客户端连接使用。
 
-第二个高端口用于集群总线，这是使用二进制协议进行点对点的通讯信道。
+第二个高端口用于集群总线（cluster bus），这是使用二进制协议进行点对点的通讯信道。
 
 集群总线用于节点间的故障检测，配置更新，故障转移授权(failover authorization)等。
 
@@ -916,33 +952,33 @@ redis-cluster 提供了一种可以让数据自动分片在多节点的安装方
 
 https://www.cnblogs.com/zhusihua/p/11328042.html
 
-redis 集群没有使用**一致性哈希**。它用一种不同的分片形式，在这种形式中，每个key都是一个概念性（**hash slot**）的一部分。
+redis 集群没有使用**一致性哈希**。它用一种不同的分片形式，在这种形式中，每个 key 都是一个概念性（**hash slot**）的一部分。中文也叫**哈希槽** 。
 
-Redis集群中默认分配了 16384 个hash slots，当我们 set一个key 时，会用`CRC16`算法来取模得到所属的`slot`，然后将这个 key 分到哈希槽区间的节点上。
+Redis 集群中默认分配了 16384 个 hash slots，当我们 set 一个key 时，会对 key 用`CRC16`算法来取模得到所属的`slot`，然后将这个 key 分到哈希槽区间的节点上。
 
 为了计算给定的 key 应该在哪个 hash slot 上，我们简单地用这个 key 的 CRC16 值来对 16384 取模。
 
 （即：key的CRC16  %  16384）
 
-Redis集群中的每个节点负责一部分hash slots，假设你的集群有3个节点，那么：
+Redis集群中的每个节点负责一部分 hash slots，假设你的集群有3个节点，那么：
 
 - Node A contains hash slots from 0 to 5500
 - Node B contains hash slots from 5501 to 11000
 - Node C contains hash slots from 11001 to 16383
 
-**在构建redis cluster集群时，master必须大于等于3，否则会创建失败。**
+**在构建 redis cluster 集群时，master 必须大于等于3，否则会创建失败。**
 
-并且，**当集群中存活的master节点数小于总节点数的一半的话，集群就无法提供服务了。**
+并且，**当集群中存活的 master 节点数小于总节点数的一半的话，集群就无法提供服务了。**
 
 
 
-允许添加和删除集群节点。比如，如果你想增加一个新的节点 D，那么久需要从 A、B、C 节点上删除一些 hash slot 给到 D。
+redis cluster 还允许随时添加和删除集群节点。比如，如果你想增加一个新的节点 D，那么就需要从 A、B、C 节点上删除一些 hash slot 给到 D。
 
 同样地，如果你想从集群中删除节点 A，那么会将 A 上面的 hash slots 移动到 B 和 C，当节点 A 上是空的时候就可以将其从集群中完全删除。
 
 因为将 hash slots 从一个节点移动到另一个节点并不需要停止其它的操作。
 
-添加、删除节点、更改节点所维护的 hash slots 的百分比 都不需要任何停机时间。也就是说，移动hash slots是并行的，移动 hash slots 不会影响其它操作。
+添加、删除节点、更改节点所维护的 hash slots 的百分比 都不需要任何停机时间。也就是说，移动 hash slots 是并行的，移动 hash slots 不会影响其它操作。
 
 
 
@@ -952,15 +988,15 @@ Redis支持多个 key 操作，只要这些key在一个单个命令中执行（�
 
 
 
-#### redis 主从模型
+#### redis-cluster 主从模型
 
 
 
-当部分master节点失败了，或者不能够和大多数节点通信的时候，为了保持可用，Redis集群用一个master-slave 模式。
+当部分 master 节点挂掉，或者不能够和大多数节点通信的时候，为了保持可用，Redis 集群使用 master-slave 模型。
 
 这样的话每个 hash slot 就有 1 到 N 个副本。
 
-在我们的例子中，集群有 A、B、C 三个节点，如果节点B挂了，那么 5501-11000 之间的 hash slot 将无法提供服务。
+在我们的例子中，集群有 A、B、C 三个节点，如果节点 B 挂了，那么 5501-11000 之间的 hash slot 将无法提供服务。
 
 然而，当我们给每个 master 节点添加一个 slave 节点以后，我们的集群最终会变成由 A、B、C 三个 master 节点和 A1、B1、C1 三个 slave 节点组成。
 
@@ -982,7 +1018,7 @@ Redis集群可能丢失写的第一个原因是因为它用异步复制。
 
 - 客户端写到 master B
 - master B 返回客户端OK
-- master B 将这个写操作广播给它的slaves B1、B2、B3
+- master B 将这个写操作广播给它的 slaves B1、B2、B3
 
 
 
@@ -994,13 +1030,39 @@ Redis集群可能丢失写的第一个原因是因为它用异步复制。
 
 
 
-这和大多数配置为每秒刷新一次数据到磁盘的情况是一样的。你可以通过强制数据库在返回客户端之前先刷新数据。
+这和大多数的关系型数据库配置为每秒刷新一次数据到磁盘的情况是一样的。你可以通过强制数据库在返回客户端之前先刷新数据。
 
 但是这样做的结果会导致性能很低，这就相当于同步复制了。
 
-基本上，需要在性能和一致性之间做一个权衡。
+**基本上，还是需要在性能和一致性之间做一个权衡。**
+
+> **Basically, there is a trade-off to be made between performance and consistency.**
+
+当需要一致性时，redis-cluster 也是支持同步写的。通过 `WAIT` 命令。
+
+然而，需要注意的是，Redis集群没有实现强一致性，即使用同步复制，因为总是有更复杂的失败场景使得一个没有接受到这个写操作的 slave 当选为新的 master。
 
 
+
+在  A,B,C,A1,B1,C1 的场景中， Z 是客户端，当发生网络问题时，A, C, A1, B1, C1 在一个网络分区，Z和B在一个网络分区。
+
+Z 仍然可以向 B 写入，如果很快网络好了，集群恢复，一切正常。
+
+如果网络分区持续较长时间，这时候Z1往B中写数据，于此同时另一边（即A、C、A1、B1、C1）认为B已经挂了，于是将B1提升为master，当分区恢复的时候，由于B1变成了master，所以B就成了slave，于是B就要丢弃它自己原有的数据而从B1那里同步数据，于是乎先去Z1写到B的数据就丢失了。
+
+**注意，有一个最大窗口，这是Z1能够向B写的最大数量：如果时间足够的话，分区的多数的那一边已经选举完成，选择一个slave成为master，此时，所有在少数的那一边的master节点将停止接受写。**
+
+也就是说，有一个最大窗口的设置项，它决定了Z1在那种情况下能够向B发送多数写操作：如果分隔的时间足够长，多数的那边已经选举slave成为新的master，此后少数那边的所有master节点将不再接受写操作。
+
+在Redis集群中，这个时间数量是一个非常重要的配置指令，它被称为node timeout。在超过 node timeout 以后，一个 master 节点被认为已经失败了，并且选择它的一个副本接替 master。
+
+类似地，如果在过了node timeout时间以后，没有一个master能够和其它大多数的master通信，那么整个集群都将停止接受写操作。
+
+
+
+
+
+ 
 
 #### redis集群配置参数
 
@@ -1140,7 +1202,7 @@ redis-cli --cluster create 127.0.0.1:7000 127.0.0.1:7001 \
 
 #### 使用脚本创建redis集群
 
-如果不想手动创建 redis 集群实例
+在生产环境，一般都不会手动创建 redis 集群实例
 
 在 redis 源代码的 utils/create-cluster 目录中，有一个脚本文件 create-cluster ，这是一个简单的 bash 脚本，可以直接启动三主三从节点的集群。
 
@@ -1291,7 +1353,7 @@ slot = CRC16(key) % 16384
 
 
 
-**客户端实现**
+#### **reid-cluster 客户端实现**
 
 按照 redis 官方规范，一个 redis 客户端可以向集群中的任意节点（包括从节点）发送命令请求。
 
@@ -1330,6 +1392,17 @@ redis 官方规范要求所有客户端都应处理 MOVED 错误，从而实现�
 比如，redis-go-cluster 是基于 Redigo 实现的 Golang Redis 客户端。redis-go-cluster 可以在本地缓存 slot 信息，并且当集群修改的时候会自动更新。
 
 此客户端管理每个节点连接池，使用 goroutine 来尽可能的并发执行，达到了高效，低延迟。
+
+
+
+
+
+> github.com/go-redis/redis 是一个非常友好的 redis 的SDK
+
+
+  
+
+
 
 
 
@@ -1441,7 +1514,7 @@ redis-sentinel 本身也是一个独立运行的进程，它能监控多个 mast
 
 
 
-**哨兵(sentinel) 是一个分布式系统,你可以在一个架构中运行多个哨兵(sentinel) 进程**，这些进程使用流言协议(gossip protocols)来接收关于Master是否下线的信息。
+**哨兵(sentinel) 是一个分布式系统,你可以在一个架构中运行多个哨兵(sentinel) 进程。**这些进程使用流言协议(gossip protocols)来接收关于Master 是否下线的信息。
 
 **Sentinel 状态持久化**
 
