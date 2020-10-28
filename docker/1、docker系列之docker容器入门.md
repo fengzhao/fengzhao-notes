@@ -691,7 +691,7 @@ docker 网络子系统
 
 这是 docker 默认的网络驱动设置，大多数情况下都可以用这种方式来使用 docker 的网络。
 
-在网络术语中，桥接是工作在链路层的。在 docker 中，可以让所有的容器连接到 docker 网桥中。
+在网络术语中，桥接是工作在链路层的，它在网络段之间转发流量。网桥可以是运行在主机内核中的硬件设备或软件设备。在 docker 中，可以让所有的容器连接到 docker 网桥中。
 
 可以理解为一个子网，然后使用 NAT 技术通过宿主机与外界通讯。
 
@@ -727,7 +727,7 @@ docker run -dit --name alpine1 alpine ash  --network=docker02
 docker run -dit --name alpine2 alpine ash  --network=docker02
 
 
-# 可以直接用域名通讯
+# 可以直接用容器名通讯
 
 docker exec -it alpine1 sh
 
@@ -747,12 +747,13 @@ ping alpine2
 - 用户自定义 bridge 自动提供容器间的 DNS 解析，可以直接使用容器名称来进行网络通讯。
 
   - 使用默认 bridge 启动的容器只能通过 IP 地址互联，或者使用 --link 选项。这是一个历史遗留的选项，一般不建议使用默认 brige。
+  - 在一个典型的 web 应用 和 db 数据库的场景，两个容器在连接到同一个网桥，它们之间可以直接使用容器名称来通讯。
 
-- 用户自定义 bridge 提供更好的隔离性，所有没有使用 --network 选项的容器都会连到默认 bridge 网络中。
+- 用户自定义 bridge 提供更好的隔离性，所有没有使用 --network 选项的容器都会连到默认的 bridge 网络中。
 
 - 在用户自定义 bridge 中的容器，可以随时把容器 disconnect 出来，再 connect 到其他的用户自定义 bridge 中。而不用关闭容器
 
-  而在默认 bridge 中的容器，必须要关闭重启才能设置其他网络选项。
+  而在默认 bridge 中的容器，必须要关闭重启才能为其设置其他网络选项。
 
 
 
@@ -851,22 +852,6 @@ swarm 中的服务的网络流量默认都是加密传输，使用 GCM 模式的
 ### macvlan网络
 
 macvlan 可以给容器分配 mac 地址，在网络中就像一个物理设备一样。	
-
-### Docker高级网络实践
-
-
-
-####  Linux network namespace
-
-
-
-```sh
-
-
-
-```
-
-
 
 
 
@@ -1547,11 +1532,13 @@ network namespace 主要提供了关于网络资源的隔离。能够隔离的Li
 - /sys/class/net 目录
 - 套接字（socket端口）等。
 
-一个物理的网络设备最多存在于一个 network namespace 中，可以通过创建 veth pair 在不同的 network space 间建立通道并通讯。
+**一个物理的网络设备最多存在于一个 network namespace 中，可以通过创建 veth pair 在不同的 network space 间建立通道并通讯。**
 
-一般情况下，物理网络设备都分配在最初的 network namespace 中（即系统默认的 namespace）。
+**一般情况下，物理网络设备都分配在最初的 network namespace 中（即系统默认的 namespace）。**
 
-如果有多块物理网卡，也可以把其中一块或多块分配给新建的 network namespace 中。
+**Linux 系统启动即创建一个初始的网络命名空间（default），创建的任何进程默认都从属于该网络命名空间。用户可以使用 ip netns add ... 创建新的网络命名空间，该命令即是在/var/run/netns目录下创建同名的文件。**
+
+它在网络段之间转发流量。网桥可以是运行在主机内核中的硬件设备或软件设备。
 
 
 
@@ -1565,19 +1552,33 @@ Linux系统启动即创建一个初始的网络命名空间（default），创�
 
 
 
+**Linux 虚拟网络的背后都是由一个个的虚拟设备构成的。虚拟化技术没出现之前，计算机网络系统都只包含物理的网卡设备，通过网卡适配器，线缆介质，连接外部网络，构成庞大的 Internet。**
+
+
+
+
+
 ```shell
 # 管理 Linux network namespace
 
 # 创建一个networkspace，
-ip netns add nstest
+$ ip netns add nstest
 # 删除
-ip netns delete nstest 
-# 查看
-ip netns list
-# 在namespace中执行命令 ip netns exec <namespace> <command>
-ip netns exec nstest commad
+$ ip netns delete nstestnstest
+# 查看所有ns
+$ ip netns list
+nstest
+nstest2
+# 在新建的namespace中执行命令 ip netns exec <namespace> <command>
+$ ip netns exec nstest commad
 # 例如:在nstest namespace 中显示网卡信息
-ip netns exec nstest ip addr
+$ ip netns exec nstest ip addr
+1: lo: <LOOPBACK> mtu 65536 qdisc noop state DOWN group default qlen 1000 
+	link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+$ exit # 退出nstest
+
+# 每个 namespace 在创建的时候会自动创建一个回环接口 lo ，默认不启用，可以通过 ip link set lo up 启用。
+
 
 
 # 在name space中启动一个shell方便
@@ -1743,7 +1744,7 @@ docker stats
 
 ## docker-registry
 
-当我使用docker 对私有存储库执行docker login时，docker 会记住对应 registry的登陆用户名。
+当我使用 docker 对私有存储库执行docker login时，docker 会记住对应 registry的登陆用户名。
 
 Docker利用docker login命令来校验用户镜像仓库的登录凭证，实际并不是真正意义上的登录(Web Login)，仅仅是一种登录凭证的试探校验。
 

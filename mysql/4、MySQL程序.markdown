@@ -17,11 +17,13 @@ MySQL 安装目录下的 /bin 目录中有很多二进制的可执行程序，�
 
 -  mysql_install_db  系统初始化程序，这个程序会生成数据目录，创建 mysql 系统数据库，初始化默认权限
 
-> mysql_install_db 这个程序在 MySQL 5.7.6 中已经弃用，因为它的功能已经集成在 mysqld 中了，所以在安装 5.7 时，直接使用  mysqld --initialize  或者  mysqld  --initialize-insecure 就可以直接初始化。在 5.7.5 之前，这个程序是用 perl 脚本写的，所以需要安装 perl ，5.7.5 之后，改为用 C++ 写的，并且可以直接做为二进制文件执行。
+> mysql_install_db 这个程序在 MySQL 5.7.6 中已经弃用，因为它的功能已经集成在 mysqld 中了，所以在安装 5.7 时，直接使用  mysqld --initialize  或者  mysqld  --initialize-insecure 就可以直接初始化。
+>
+> 在 5.7.5 之前，这个程序是用 perl 脚本写的，所以需要安装 perl ，5.7.5 之后，改为用 C++ 写的，并且可以直接做为二进制文件执行。
 
 -  mysql_plugin  这个程序用来配置管理服务端插件
 -  mysql_secure_installation  这个程序用来提升安装过程的安全性
--  mysql_ssl_rsa_setup  这个程序用来生成 ssl 证书和密钥文件，主要用于数据库的安全连接
+-  mysql_ssl_rsa_setup  这个程序用来生成 ssl 证书和密钥文件，主要用于数据库的 SSL 安全连接
 -  mysql_upgrade  这个程序在 MySQL 升级时使用。
 
 
