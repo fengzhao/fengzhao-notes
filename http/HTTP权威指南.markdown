@@ -1,3 +1,27 @@
+# HTTP简介
+
+
+
+HTTP（HyperText Transfer Protocol）即超文本传输协议，是一种详细规定了浏览器和万维网服务器之间互相通信的规则，它是万维网交换信息的基础。
+
+它允许将HTML（超文本标记语言）文档从Web服务器传送到Web浏览器。
+
+
+
+## HTTP工作原理：
+
+HTTP协议工作于客户端-服务端架构上。浏览器作为 HTTP 客户端通过 URL 向 HTTP 服务端即 WEB 服务器发送所有请求。
+
+Web服务器有：Apache服务器，IIS服务器（Internet Information Services），Nginx 等。
+
+Web服务器根据接收到的请求后，向客户端发送响应信息。
+
+HTTP默认端口号为80，但是你也可以改为8080或者其他端口。
+
+HTTPS 的默认端口是443 
+
+
+
 # HTTP头部
 
 
