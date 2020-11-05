@@ -68,12 +68,18 @@ root@fengzhao-work:~#
 
 ```shell
 # -t 算法 -b 密钥长度 -C 标识（一般设为邮箱） -f 密钥对名称  
-# 这个命令会生成 /path/keyname.pub（传到远程主机的公钥）和 /path/keyname（登陆远程主机的密钥） 
+# 这个命令会生成 /path/keyname.pub（传到远程主机的公钥）和 /path/keyname（登陆远程主机的私钥） 
 $ ssh-keygen -t rsa -b 2048  -C "comment" -f /path/keyname  
 
 
 # 清除ssh私钥中的phrase，交互式弹出让输入老密码，然后新密码置空，即可清除老密码
- ssh-keygen -f ~/.ssh/kc_id_rsa -p
+ssh-keygen -f ~/.ssh/kc_id_rsa -p
+ 
+# 语法
+ssh-keygen -p [-P old_passphrase] [-N new_passphrase] [-f keyfile]
+
+
+
 
 ```
 
