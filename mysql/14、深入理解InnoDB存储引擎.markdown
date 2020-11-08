@@ -2,11 +2,21 @@
 
 ### 缓冲池
 
-InnoDB 存储引擎是基于磁盘存储的，并将其中的记录按照页的方式进管理，因此可以将其视为基于磁盘的数据库系统。在数据库系统中，由于 CPU 和磁盘交换速度的差距，基于磁盘的数据库系统通常使用缓冲池技术来提高数据库的整体性能。
+**InnoDB 存储引擎是基于磁盘存储的，并将其中的记录按照页的方式进管理，因此可以将其视为基于磁盘的数据库系统。**
+
+在数据库系统中，由于 CPU 和磁盘交换速度的差距，基于磁盘的数据库系统通常使用缓冲池技术来提高数据库的整体性能。
 
 缓冲池简单说就是一块内存区域，通过内存的速度来弥补磁盘的速度，在数据库中读取页时，首先将磁盘读到的页放到缓冲池中，这个过程称为将页 fix 到缓冲池，下次再读取相关的页时，下次再读取相同的页时，先判断是否在缓冲池中，若在，则称为该页在缓冲池被命中。
 
-对于修改数据，同样首先修改缓冲池中的页，然后在以一定的频率刷新到磁盘。通过一种 checkpoint 的机制刷回磁盘。
+对于修改数据（增删改），同样首先修改缓冲池中的页，然后在以一定的频率刷新到磁盘。通过一种 checkpoint 的机制刷回磁盘。
+
+
+
+**缓冲池中的内容**
+
+缓冲池是 MySQL 向操作系统申请的一块内存区域，操作管理内存是以页为单位进行管理：
+
+具体来看，缓冲池中的页类型有：数据页，索引页，undo页，插入缓冲，自适应哈希索引，InnoDB存储的锁信息，数据字典信息等。不能简单的认为，缓冲池只是缓冲索引和数据页。
 
 
 
@@ -102,6 +112,69 @@ innodb_buffer_pool_chunk_size=128M # 默认内存块是128M，可以以1MB为单
 
 ## 两阶段提交
 
+在 MySQL 中，两阶段提交有几个最重要的文件：
+
+
+
+### 重做日志 redo log
+
+
+
+在 MySQL 里，如果每一次的更新操作都需要写进磁盘，然后磁盘也要找到对应的那条记录，然后再更新，整个过程IO成本、查找成本都很高。
+
+所以有一种 WAL 技术，全称是Write-Ahead Logging，它的关键点就是先写日志，再写磁盘。
+
+具体来说，当有一条记录需要更新的时候，InnoDB 引擎就会先把记录写到 redo log 里面，并更新内存，这个时候更新就算完成了。（严格说还不算commit成功）
+
+由于 redo-log 是顺序写的，所以速度比较快。redo-log 是物理日志，记录的是“在某个数据页上做了什么修改”。
+
+redo-log是循环写的，当 redo-log 写完后，就要刷盘。把数据刷到磁盘中。
+
+
+
+由于内存缓冲的存在，对数据的增删改都先修改内存中的数据页，再定期 flush 落盘持久化。
+
+在每次事务提交的时候，将该事务涉及修改的数据页全部刷新到磁盘中。但是这么做会有严重的性能问题，主要体现在两个方面：
+
+- 因为 Innodb 是以页为单位进行磁盘交互的，而一个事务很可能只修改一个数据页里面的几个字节，这个时候将完整的数据页刷到磁盘的话，太浪费资源了。
+- 一个事务可能涉及修改多个数据页，并且这些数据页在物理上并不连续，使用随机 IO 写入性能太差。
+
+
+
+因此 MySQL 设计了 `redo log` 。具体来说就是只记录事务对数据页做了哪些修改，这样就能完美地解决性能问题了(相对而言文件更小并且是顺序IO)。
+
+redo log 包括两部分：
+
+- 一个是内存中的日志缓冲（redo log buffer）。
+- 另一个是磁盘上的日志文件（redo log file）。
+
+MySQL 每执行一条 DML 语句，先将记录写入 redo log buffer ，后续某个时间点再一次性将多个操作记录写到 redo log file 。
+
+默认情况下，redo log 在磁盘上由名为 `ib_logfile0` 和 `ib_logfile1` 的两个物理文件展示。
+
+
+
+```shell
+innodb_log_files_in_group：redo log 文件的个数，命名方式如：ib_logfile0，iblogfile1... iblogfilen。默认2个，最大100个。
+
+innodb_log_file_size：单个 redo log 文件设置大小，默认值为 48M，最大值为512G，注意最大值指的是整个 redo log 系列文件之和，即（innodb_log_files_in_group * innodb_log_file_size ）不能大于最大值512G。
+
+innodb_log_group_home_dir：指定 redo log 文件组所在的路径，默认./ ，表示在数据库的数据目录下。
+
+innodb_log_buffer_size：redo log buffer 大小，默认16M。延迟事务日志写入磁盘，把 redo log 放到该缓冲区，然后根据 innodb_flush_log_at_trx_commit 参数的设置，再把日志从 buffer 中 flush 到磁盘中。
+
+innodb_flush_log_at_trx_commit：
+# 控制 redo log 刷新到磁盘的策略，
+# 默认为1。值为1，每次 commit 都会把 redo log 从 redo log buffer 写入到 system ，并 fsync 刷新到磁盘文件中。
+# 值为2，每次事务提交时 MySQL 会把日志从 redo log buffer 写入到 system ，但只写入到 file system buffer，由系统内部来 fsync 到磁盘文件。如果数据库实例 crash ，不会丢失 redo log，但是如果服务器 crash，由于 file system buffer 还来不及 fsync 到磁盘文件，所以会丢失这一部分的数据。值为0，表示事务提交时不进行写入 redo log 操作，这个操作仅在 master thread 中完成，而在 master thread 中每1秒进行一次重做日志的 fsync 操作，因此实例 crash 最多丢失1秒钟内的事务。
+```
+
+
+
+
+
+
+
 redo-log 和 binlog 是 两阶段提交的重点，
 
 - 当未开启 binlog 时，InnoDB 通过 redo 和 undo 日志来恢复数据库 (safe crash recovery)：
@@ -185,7 +258,7 @@ innodb_page_size=16KB
 
 - 操作系统使用 **缓存** 来填补内存和磁盘访问的差距，对磁盘文件的写入会先写入道页面缓存中。
 
-- 在一些 GNU/Linux 和 UNIX 中，使用  Unix fsync()  系统调用来把数据刷到磁盘（InnoDB默认使用 *fsyn*c 这个）
+- 在一些 GNU/Linux 和 UNIX 中，使用  **Unix fsync()  系统调用**来把数据刷到磁盘（InnoDB默认使用 *fsyn*c 这个）
 
 - 数据库在事务提交过程中调用 fsync 将数据持久化到磁盘，才满足**ACID**中的**D（持久化）**
 
