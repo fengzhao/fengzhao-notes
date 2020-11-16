@@ -370,6 +370,45 @@ SELECT @@default_storage_engine;
 
 
 
+## 表空间
+
+
+
+
+
+### 系统表空间
+
+系统表空间是 change buffer 的存放区域，如果没有启用独立表空间，也会存放业务表的表空间。
+
+系统表空间可以由多个文件组成，默认是一个，名为 ibdata1，默认放在 datadir 目录下面。
+
+
+
+由如下参数控制
+
+```shell
+# 文件路径，默认是 datadir 下，也可以自定义路径
+innodb_data_home_dir=/myibdata/
+
+# 参数语法:文件名:文件初始大小:自增长属性：最大属性（初始大小不低于12M）
+innodb_data_file_path=file_name:file_size[:autoextend[:max:max_file_size]]
+
+# 每次自动扩展的增量大小，由innodb_autoextend_increment控制，单位为M，默认是64M
+innodb_autoextend_increment=64
+
+# 默认值如下:ibdata1:12M:自增长
+innodb_data_file_path=ibdata1:12M:autoextend
+
+# 也可以一次定义两个系统表空间文件
+innodb_data_file_path=ibdata1:50M;ibdata2:50M:autoextend
+```
+
+
+
+
+
+他里面
+
 
 
 

@@ -31,27 +31,52 @@ mysql> FLUSH PRIVILEGES;
 
 ```sql
 
+-- 建用户
 CREATE USER 'dba'@'%' IDENTIFIED WITH 'mysql_native_password' by 'admin@123' ;
- GRANT ALL PRIVILEGES ON *.* TO 'dba'@'%';
- 
 
+-- 赋超级权限
+GRANT ALL PRIVILEGES ON *.* TO 'dba'@'%';
+ 
 CREATE USER 'shendandan'@'192.168.%' IDENTIFIED WITH 'mysql_native_password' by 'admin@123' ;
 
 -- 指定密码过期，以便用户第一次使用的时候需要修改密码
-
 CREATE USER 'jeffrey'@'localhost' IDENTIFIED WITH 'caching_sha2_password' BY 'new_password' PASSWORD EXPIRE DEFAULT;
 
 -- 不使用加密连接
-REQUIRE NONE
+CREATE USER 'dba'@'%' IDENTIFIED WITH 'mysql_native_password' by 'admin@123'  REQUIRE NONE ;
 -- 使用加密连接
-REQUIRE SSL
+CREATE USER 'dba'@'%' IDENTIFIED WITH 'mysql_native_password' by 'admin@123'  REQUIRE NONE ;
 
--- 单位小时内，账户被允许查询500次，更新100次，单位小时内最大连接数不限制。最大并发连接数不限制
-CREATE USER 'jeffrey'@'localhost' WITH MAX_QUERIES_PER_HOUR 500 MAX_UPDATES_PER_HOUR 100 MAX_CONNECTIONS_PER_HOUR 0 MAX_USER_CONNECTIONS 0；
 
--- 锁定
+
+
+
+
+-- 创建用户并且设置资源闲置（如果不带资源选项，默认不限制资源）
+
+-- 单位小时内账户被允许查询500次
+-- 单位小时内账户被允许更新100次
+-- 单位小时内最大连接数不限制
+-- 同一时刻最大并发连接数不限制
+
+
+CREATE USER 'jeffrey'@'%' 
+
+IDENTIFIED WITH 'mysql_native_password' by 'admin@123'
+
+WITH 
+	MAX_QUERIES_PER_HOUR 500 
+	MAX_UPDATES_PER_HOUR 100 
+	MAX_CONNECTIONS_PER_HOUR 0 
+	MAX_USER_CONNECTIONS 0;
+
+
+
+
+
+-- 锁定用户
 CREATE USER 'jeffrey'@'localhost' ACCOUNT LOCK
--- 解锁
+-- 解锁用户
 ALTER USER 'jeffrey'@'localhost' ACCOUNT UNLOCK
 
 -- 删除用户
@@ -60,13 +85,14 @@ DROP USER 'jeffrey'@'localhost';
 -- 修改用户
 RENAME USER 'jeffrey'@'localhost' TO 'jeff'@'127.0.0.1';
 
--- 修改自己当前的密码
+
+-- 修改当前用户自己账号的密码
 ALTER USER USER() IDENTIFIED BY 'new_password';
 
--- 修改其他账号的密码
+-- 修改其他用户账号的密码
 ALTER USER 'jeffrey'@'localhost' IDENTIFIED BY 'new_password';
 
--- 修改认证插件
+-- 修改用户认证插件
 ALTER USER 'jeffrey'@'localhost' IDENTIFIED WITH mysql_native_password;
 
 -- 修改密码和插件
@@ -76,6 +102,7 @@ ALTER USER 'jeffrey'@'localhost' IDENTIFIED WITH mysql_native_password BY 'new_p
 
 
 
+-- 详细语法
 
 CREATE USER [IF NOT EXISTS]
     user [auth_option] [, user [auth_option]] ...
@@ -126,7 +153,14 @@ lock_option: {
 
 ### 角色管理
 
+
+
+MySQL 8.0 引入了 RBAC（Role-Based Access Control） ， 中文译名就是**基于角色的权限访问控制**。
+
+简单说，就是把一组权限赋给角色，角色并不能直接登陆，然后把用户权限赋给角色。
+
 ```sql
+
 -- 应用程序需要读/写权限。
 -- 运维人员需要完全访问数据库。
 -- 部分开发人员需要读取权限。
