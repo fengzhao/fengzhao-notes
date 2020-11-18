@@ -2234,6 +2234,10 @@ func Fun() func(string) string {
 	}
 }
 
+
+
+
+
 ```
 
 
@@ -2274,7 +2278,29 @@ func plus(x, y int, z int) (name int, fun func()) {
 
 
 
+## 错误处理
 
+
+
+go 引入了一个关于错误处理的标准模式。
+
+
+
+
+
+## defer 关键字
+
+> refer 
+>
+> https://deepzz.com/post/how-to-use-defer-in-golang.html
+>
+> https://www.cyub.vip/2020/05/30/%E6%B7%B1%E5%85%A5%E4%BA%86%E8%A7%A3golang%E4%B8%AD%E7%9A%84defer%E5%85%B3%E9%94%AE%E5%AD%97/
+
+
+
+
+
+golang 中的 defer 关键字用来声明一个延迟函数，该函数会放在一个列表中，在 defer 语句的外层函数返回之前系统会执行该延迟函数。
 
 
 
