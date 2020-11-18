@@ -1074,6 +1074,60 @@ fmt.Printf("%g\n", boilingF-FreezingC)
 
 
 
+
+
+## 面向对象
+
+在 go 语言中，你可以给任意类型添加方法（包括内置类型，但不包括指针类型）
+
+
+
+
+
+```go
+// 基于int声明一个类型Intger
+type Integer int
+
+// 声明一个函数 Less，可以作用于Integer类型的变量上。有点像面对对象中，给某个类声明一个方法 
+func (a Integer) Less(b Integer) bool {
+	return a < b
+}
+
+
+// 使用
+
+func main() {
+    // 声明
+	var a Integer = 1
+    // 调用其方法
+	if a.Less(2) {
+	fmt.Println(a, "Less 2")
+	}
+}
+
+
+
+
+
+
+
+
+
+
+// 面向过程的用法
+
+type Integer int
+
+// 声明一个函数 Less，用于比较两个Integer变量
+func Less(a , b Integer) bool {
+	return a < b
+}
+```
+
+
+
+
+
 ## 基本数据类型
 
 
@@ -2012,7 +2066,12 @@ func Sum(a, b int) int { return a + b }
 ### 函数结构
 
 ```go
-// func 函数名（），参数列表，返回值列表，函数体，函数语句
+// 
+
+func  函数名（）（参数列表) (返回值列表) {
+
+	函数体
+}
 
 
 func functionName(parameter_list) (return_value_list) {
@@ -2021,8 +2080,8 @@ func functionName(parameter_list) (return_value_list) {
 
 // 函数入参：parameter_list 的形式为 (param1 type1, param2 type2, …)
 
-// 由于golang支持多重返回
-// return_value_list 的形式为 (ret1 type1, ret2 type2, …)
+// 
+// 返回参数：return_value_list 的形式为 (ret1 type1, ret2 type2, …)
 
 // 只有当某个函数需要被外部包调用的时候才使用大写字母开头，并遵循 Pascal 命名法；
 // 否则就遵循骆驼命名法，即第一个单词的首字母小写，其余单词的首字母大写。
@@ -2441,9 +2500,11 @@ tom :=  admin{
 
 ### 方法
 
-**方法能给用户定义的类型添加新的行为。方法实际上也是函数，只是在声明时，在关键字 func 和方法名之间增加了一个参数**
+**方法能给用户定义的类型添加新的行为。方法实际上也是函数，只是在声明时，在关键字 func 和方法名之间增加了一个参数。**
 
-关键字 func 和函数名之间的参数被称作接收者，将函数与接收者的类型绑在一起。如果一个函数有接收者，这个函数就被称为方法。
+**参见面向对象章节**
+
+**关键字 func 和函数名之间的参数被称作接收者，将函数与接收者的类型绑在一起。如果一个函数有接收者，这个函数就被称为方法。**
 
 ```go
 
@@ -2469,7 +2530,6 @@ bill.notify()
 // 可以认为 go 指向了 (*lisa).notify() 这种方式的调用，notify 操作的是一个副本，只不过这次操作的是从 lisa 指针指向的值的副本。
 lisa := &user{"Lisa", "lisa@email.com"}
 lisa.notify()
-
 
 
 
