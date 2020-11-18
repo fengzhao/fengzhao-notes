@@ -1639,6 +1639,8 @@ func foo(array *[1e6]int) {
 
 ### 数组切片
 
+切片其实就是动态数组，它的长度并不固定，我们可以随意向切片中追加元素，而切片会在容量不足时自动扩容。
+
 数组切片的数据结构可以抽象为包含三个变量的结构体：
 
 - 一个指向原生底层数组的指针；
@@ -1648,6 +1650,7 @@ func foo(array *[1e6]int) {
 
 
 ```go
+// 
 type slice struct {
   	array unsafe.Pointer
   	length int
@@ -1670,7 +1673,7 @@ type slice struct {
 // 从第n个元素开始，mySlice = myArray[5:]
 
 // mySlice = myArray[x:y:z]
-// 从第x个元素开始，第z个元素止，z-x是容量，如果z-y，可以省略
+// 从第x个元素开始，第z个元素止，z-x是容量，如果z=y，可以省略
 
 
 // 直接创建切片
@@ -1830,13 +1833,15 @@ slice := [][]int{{10}, {100, 200}}
 
 ### map
 
-在C++/Java中， map 一般都以库的方式提供，比如在C++中是STL的 std::map<> ，在C#中是Dictionary<> ，在Java中是 Hashmap<> ，在这些语言中，如果要使用 map ，事先要引用相应的库。
+在C++/Java中， map 一般都以库的方式提供，比如在C++中是STL的 std::map<> ，在C#中是 Dictionary<> ，在Java中是 Hashmap<> ，在这些语言中，如果要使用 map ，事先要引用相应的库。
 
 在Go中，使用 map 不需要引入任何库，并且用起来也更加方便。
 
 **map 是一系列无序的键值对集合。map 是一个集合，可以用类似数组和切片的方式来迭代map中的元素。**
 
-**但 map 是无序的集合，意味着没有办法预测键值对被返回的顺序。即便使用同样的顺序保存键值对，每次迭代映射的时候顺序也可能不一样。无序的原因是 map 的实现使用了散列表，**
+**但 map 是无序的集合，意味着没有办法预测键值对被返回的顺序。即便使用同样的顺序保存键值对，每次迭代映射的时候顺序也可能不一样。**
+
+**无序的原因是 map 的实现使用了散列表，**
 
 
 
@@ -1850,6 +1855,8 @@ slice := [][]int{{10}, {100, 200}}
 dict := make(map[string]int)
 // 声明一个map(key的类型是 string，value的类型是 string)
 dict := make(map[string]string)
+// 声明一个map(key的类型是 string，value的类型是字符串切片)
+dict := make(map[string] []string)
 
 // 使用map字面量声明并初始化map，map的长度由键值对的数量决定
 dict := map[string]string{
