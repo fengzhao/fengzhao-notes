@@ -20,8 +20,17 @@ Linux 系统下载的文件：一般推荐用 **Linux - Generic**  这种源格�
 - 5.7：[mysql-5.7.28-linux-glibc2.12-x86_64.tar.gz](https://dev.mysql.com/get/Downloads/MySQL-5.7/mysql-5.7.28-linux-glibc2.12-x86_64.tar.gz) 
 - 8.0：[mysql-8.0.18-linux-glibc2.12-x86_64.tar.xz](https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-8.0.18-linux-glibc2.12-x86_64.tar.xz) 
 
-
 ​    
+
+https://dev.mysql.com/downloads/file/?id=499557
+
+
+
+https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-8.0.22-linux-glibc2.12-x86_64.tar.xz
+
+https://mirrors.huaweicloud.com/mysql/Downloads/MySQL-8.0/mysql-8.0.22-linux-glibc2.12-x86_64.tar.xz
+
+
 
 
 ## 1、windows 安装过程
