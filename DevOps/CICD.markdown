@@ -230,3 +230,134 @@ Role-Based 插件
 
 
 ## 流水线
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Drone CI 工具
+
+
+
+
+
+Drone 是一个基于 Docker 的持续集成平台，用 Go 语言编写。Drone 本身和所有插件都是镜像，易于使用。
+
+
+
+- Drone 官网地址：[https://drone.io](https://drone.io/)
+- Drone 的 GitHub 地址：https://github.com/drone/drone
+- 简介：https://imnerd.org/drone.html
+
+
+
+### drone 的基本概念
+
+Drone 是一个基于 Docker 容器技术的可扩展的持续集成引擎，用于自动化测试与构建，甚至发布。
+
+每个构建都在一个临时的Docker容器中执行，使开发人员能够完全控制其构建环境并保证隔离。
+
+开发者只需在项目中包含 .drone.yml 文件，将代码推送到 git 仓库，Drone 就能够自动化的进行编译、测试、发布。
+
+
+
+#### drone 的基本原理
+
+
+
+Drone 的部署分为 `Server(Drone-Server)` 和 `Agent(Drone-agent)`:
+
+- Server端：负责后台管理界面以及调度
+- Agent端：负责具体的任务执行
+
+
+
+
+
+
+
+
+
+drone 和 jenkins 不一样的是，drone 和gitlab，github 是无缝集成的，所以在搭建之前第一步需要你在gitlab上创建一个OAuth应用，这样drone才可以通过OAuth接口获取用户在 gitlab 上的所有信息。
+
+
+
+gitlab创建oauth应用的方式很简单，直接登录点击设置然后点击application，输入名字并且赋予权限点击保存应用就好了
+
+
+
+要注意的是Redirect URI这里一定要写drone的url加`/login`,比如下面
+
+```
+https://drone.example.cn/login
+```
+
+创建完成之后会有`Application ID`和`Secret`这两个东西之后的docker-compose.yaml需要这两个参数
+
+
+
+
+
+
+
+### 安装
+
+
+
+```she
+docker pull drone/drone
+
+docker pull drone/agent
+
+docker pull drone/drone-runner-docker
+
+docker pull drone/drone-runner-ssh
+
+
+```
+
+
+
+
+
+```yaml
+version: "3"
+services: 
+  drone:
+    image: "drone/drone:latest"
+    container_name: "drone-server"
+    restart: "always"
+    volumes: 
+      - "/etc/localtime:/etc/localtime"
+      - "drone-data:/data"
+    ports: 
+      - "80:80"
+    environment: 
+      - "DRONE_AGENTS_ENABLED=true"
+      - "DRONE_GITLAB_SERVER=https://git.qh-1.cn"
+      - "DRONE_GITLAB_CLIENT_ID=client_id"
+      - "DRONE_GITLAB_CLIENT_SECRET=client_secret"
+      - "DRONE_RPC_SECRET=secret"
+      - "DRONE_SERVER_HOST=drone.qh-1.cn"
+      - "DRONE_SERVER_PROTO=http"
+
+volumes:
+  drone-data:
+```
+
