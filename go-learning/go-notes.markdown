@@ -600,17 +600,21 @@ import (
 )
 
 func main() {
+    
     // 声明两个整型变量a,b
+    // 两个指针变量cd，分别指向ab的内存地址
     var (
     	a int32 = 1
     	b int = 2
+        c = &b 
+        d = &c
     )
     // 打印变量a,b的值
     fmt.Println(a,b)
     // 创建一个指针c，存放变量b的地址
-    var c = &b
+    // var c = &b 
     // 创建一个指针d，存放指针c的地址
-    var d = &c
+    // var d = &c
     
     *c = 3
     fmt.Println(a,b,c,d)
@@ -1085,13 +1089,8 @@ fmt.Printf("%g\n", boilingF-FreezingC)
 
 
 ```go
-// 基于int声明一个类型Intger
-type Integer int
 
-// 声明一个函数 Less，可以作用于Integer类型的变量上。有点像面对对象中，给某个类声明一个方法 
-func (a Integer) Less(b Integer) bool {
-	return a < b
-}
+
 
 
 // 使用
@@ -1106,22 +1105,54 @@ func main() {
 }
 
 
-
-
-
-
-
-
-
-
-// 面向过程的用法
-
+// 声明一个基于int的类型Integer。有点像java中的extend关键字（类继承）
 type Integer int
 
-// 声明一个函数 Less，用于比较两个Integer变量
-func Less(a , b Integer) bool {
+// 面向过程
+
+// 声明一个函数Integer_Less，两个integer入参，一个bool返回参数
+func Integer_Less(a , b Integer) bool {
 	return a < b
 }
+
+// 面向过程的函数调用
+Integer_Less(a , 2)
+
+
+
+// 面向对象
+
+// 声明一个函数 Less，可以作用于Integer类型的变量上。有点像面对对象中，给某个类声明一个方法 
+func (a Integer) Less(b Integer) bool { 
+ 	return a < b   
+}
+
+// 面对对象的函数调用
+a.Less(2)
+
+
+// 基于指针的传递（Integer类型的指针变量a）
+func (a* Integer) Add_pointer (b Integer) {
+    *a += b
+}
+
+// 基于值的传递。
+func (a Integer) Add_value (b Integer) {
+    a += b
+}
+
+
+func main() {
+    var a Integer = 1
+    var b Integer = 1
+    a.Add_pointer(2)
+    b.Add_value(2)
+    fmt.Println("a =", a)
+    fmt.Println("b =", b)
+}
+
+// a=3
+// b=1
 ```
 
 
