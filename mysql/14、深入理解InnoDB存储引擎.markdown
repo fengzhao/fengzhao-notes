@@ -66,7 +66,7 @@ MySQL默认在InnoDB缓冲池（而不是整个缓冲池）中仅保留最频繁
 ```shell
 # 缓冲池实例数量，默认为1，不可以动态调整
 innodb_buffer_pool_instances=1
-# 缓冲池总大小，默认是128MB，一般设置为物理内存的70%左右。MySQL5.7.5之后可以动态调整，繁忙时不要动态调整。
+# 缓冲池总大小，默认是128MB，一般设置为物理内存的70%左右。MySQL5.7.5之后可以动态调整，不要在业务繁忙的时候进行动态调整。
 innodb_buffer_pool_size=134217728
 # 缓冲池配置时的基本单位，以块的形式配置，指明块大小，innodb_buffer_pool_size=innodb_buffer_pool_chunk_size * innodb_buffer_pool_instances * n 
 innodb_buffer_pool_chunk_size=128M # 默认内存块是128M，可以以1MB为单位(1048576 字节)增加或减少
@@ -176,7 +176,7 @@ innodb_log_group_home_dir=/data/mysql_redo_log/
 innodb_log_file_size=48MB
 
 # rego-log是以一组文件的形式出现。这个参数了指定了一组里面有多少个redo log文件
-innodb_log_files_in_group=2  # 默认值是0
+innodb_log_files_in_group=2  # 默认值是2
 # regolog文件的总大小就是等于 innodb_log_file_size*innodb_log_files_in_group
 
 # redo log buffer 大小，默认16M。延迟事务日志写入磁盘，把 redo log 放到该缓冲区
@@ -188,12 +188,12 @@ innodb_log_buffer_size=16M
 innodb_flush_log_at_trx_commit：
 # 控制 redolog 从 redolog buffer刷新到磁盘的策略:
 
-# 默认为1。值为1，每次 commit 都会把 redo log 从 redo log buffer 写入到 system ，并 fsync 刷新到磁盘文件中。
+# 默认为1。值为1，每次 commit 都会把 redo log 从 redo log buffer 写入到 system ，并fsync刷新到磁盘文件中。
 
 # 值为2，每次事务提交时 MySQL 会把日志从 redo log buffer 写入到 system ，但只写入到 file system buffer，由系统内部来 fsync 到磁盘文件。
 # 如果数据库实例 crash ，不会丢失 redo log，但是如果服务器 crash，由于 file system buffer 还来不及 fsync 到磁盘文件，所以会丢失这一部分的数据。
 
-# 值为0，表示事务提交时不进行写入 redo log 操作，这个操作仅在 master thread 中完成，而在 master thread 中每1秒进行一次重做日志的 fsync 操作，因此实例 crash 最多丢失1秒钟内的事务。
+# 值为0，表示事务提交时不进行写入redo log操作，这个操作仅在 master thread 中完成，而在 master thread 中每1秒进行一次重做日志的 fsync 操作，因此实例 crash 最多丢失1秒钟内的事务。
 
 
 # 这个参数是innodb的数据页大小单位，一般设置为
@@ -201,6 +201,8 @@ innodb_page_size=16KB
 ```
 
 
+
+https://blog.csdn.net/qq_35246620/article/details/79345359
 
 ### 回滚日志undolog
 
