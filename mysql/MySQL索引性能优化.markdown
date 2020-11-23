@@ -651,7 +651,7 @@ select * FROM test where last_name like '张%' and age=10 ;
 
 
 
-# 索引提示
+# 索引提示(index hint)
 
 
 
