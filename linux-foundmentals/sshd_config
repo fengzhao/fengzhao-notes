@@ -6,23 +6,25 @@
 ########## Binding ##########
 
 #SSH server listening address and port
-#监听的IP地址和端口号 
-#Port 22
+# 监听的IP地址和端口号 
+# Port 22
 #ListenAddress 0.0.0.0
 #ListenAddress ::
 
-#only listen to IPv4
-#仅监听IPv4
-#AddressFamily inet
+# only listen to IPv4
+# 仅监听IPv4
+# AddressFamily inet
 
 # only listen to IPv6
 # 仅监听IPv6
 #AddressFamily inet6
 
+
+
 ########## Features ##########
 
 # accept locale-related environment variables
-# 接受本地环境变量
+# 接受本地环境变量，
 AcceptEnv LANG LC_*
 
 # disallow ssh-agent forwarding to prevent lateral movement

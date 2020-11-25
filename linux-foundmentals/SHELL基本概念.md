@@ -12,23 +12,27 @@
 
 
 
-### 命令行界面
+### 命令行界面CLI
 
 命令行界面，通俗来讲，就是我们看到的那种满屏幕都是字符的界面。用户主要使用命令来控制计算机。
 
-> 命令行界面（英语：Command-line Interface，缩写：CLI）是在图形用户界面得到普及之前使用最为广泛的用户界面，它通常不支持鼠标，用户通过键盘输入指令，计算机接收到指令后，予以执行                         —— 摘自 [Wikipedia](https://zh.wikipedia.org/wiki/%E5%91%BD%E4%BB%A4%E8%A1%8C%E7%95%8C%E9%9D%A2)
+> 命令行界面（英语：Command-line Interface，缩写：CLI）是在图形用户界面得到普及之前使用最为广泛的用户界面，它通常不支持鼠标，用户通过键盘输入指令，计算机接收到指令后，予以执行              
+>
+>  —— 摘自 [Wikipedia](https://zh.wikipedia.org/wiki/%E5%91%BD%E4%BB%A4%E8%A1%8C%E7%95%8C%E9%9D%A2)
 
 
 
-在图形化桌面出现之前，与 Unix 系统进行交互的唯一方式就是借助由shell所提供的文本命令行界面（command line interface，CLI）。CLI只能接受文本输入，也只能显示出文本和基本的图形输出。
+在图形化桌面出现之前，与 Unix 系统进行交互的唯一方式就是借助由 shell 所提供的文本命令行界面（command line interface，CLI）。
 
-#### 控制台终端
+CLI 只能接受文本输入，也只能显示出文本和基本的图形输出。
 
-在 Linux 命令行界面模式中，开机后显示器出现的命令行界面（shell CLI）就叫终端，这种模式称作Linux控制台，因为它仿真了早期的硬接线控制台终端，而且是一种同Linux系统交互的直接接口。
+#### 控制台终端Terminal
 
-大多数Linux发行版会启动5~6个（有时会更多）虚拟控制台（tty），虚拟控制台是运行在Linux系统内存中的终端会话。你在一台计算机的显示器和键盘上就可以访问它们。
+在 Linux 命令行界面模式中，开机后显示器出现的命令行界面（shell CLI）就叫终端，这种模式称作 Linux 控制台，因为它仿真了早期的硬接线控制台终端，而且是一种同 Linux系 统交互的直接接口。
 
-**Ctrl +Alt组合键配合 F1 或 F7** 来进入虚拟机控制台终端或图形界面。
+大多数 Linux 发行版会启动5~6个（有时会更多）虚拟控制台（tty），虚拟控制台是运行在Linux系统内存中的终端会话。你在一台计算机的显示器和键盘上就可以访问它们。
+
+**Ctrl +Alt 组合键配合 F1 或 F7** 来进入虚拟机控制台终端或图形界面。
 
 命令行终端中，默认的背景色是黑色的，白色字体，但是这些特性都可以调整，使用 **setterm** 命令调整。
 
@@ -50,7 +54,9 @@
 
 #### 图形化终端（终端模拟器）
 
-但是在图形界面时，如果我也想使用命令行操作系统时，这样在图形界面中就产生了 **终端模拟器（terminal-emulators）**，要想在桌面中使用命令行，关键在于终端模拟器。可以把终端模拟器看作GUI中（in the GUI）的CLI终端，将虚拟控制台终端看作GUI以外（outside the GUI）的CLI终端。
+但是在图形界面时，如果我也想使用命令行来操作 Linux 系统时，这样在图形界面中就需要 **终端模拟器（terminal-emulators）**，要想在桌面中使用命令行，关键在于终端模拟器。
+
+可以把终端模拟器看作GUI中（in the GUI）的CLI终端，将虚拟控制台终端看作GUI以外（outside the GUI）的CLI终端。
 
 在 Linux 发行版上，最好用的终端模拟器：
 
@@ -74,7 +80,11 @@ rename 's/\.tpl$/\.blade.php/' ./**/*.tpl
 
 ### SHELL
 
-Shell 是 Linux 下的命令交互程序，其实就是一个命令解释器。它用来接收用户输入的指令，传递给内核执行。所以它可以被理解为内核外面的一层壳，用户通过它来与内核交互。它虽然不是 Unix/Linux 系统内核的一部分，但它调用了系统核心的大部分功能来执行程序、建立文件并以并行的方式协调各个程序的运行。因此，对于用户来说，shell 是最重要的实用程序，深入了解和熟练掌握 shell 的基本特性及其使用方法，是用好 Unix/Linux 系统的关键。
+Shell 是 Linux 下的命令交互程序，其实就是一个命令解释器。它用来接收用户输入的指令，传递给内核执行。所以它可以被理解为内核外面的一层壳，用户通过它来与内核交互。
+
+它虽然不是 Unix/Linux 系统内核的一部分，但它调用了系统核心的大部分功能来执行程序、建立文件并以并行的方式协调各个程序的运行。
+
+因此，对于用户来说，shell 是最重要的实用程序，深入了解和熟练掌握 shell 的基本特性及其使用方法，是用好 Unix/Linux 系统的关键。
 
 #### SHELL的分类
 
@@ -84,13 +94,15 @@ Linux 的 Shell 种类众多，常见的有：
 
   是UNIX最初使用的 shell，而且在每种 UNIX 上都可以使用。Bourne Shell 在 shell 编程方面相当优秀，但在处理与用户的交互方面做得不如其他几种 shell。
 
-- Bourne Again Shell（/bin/bash）
+- **Bourne Again Shell（/bin/bash）**
 
-  Linux默认的脚本种类，它是 Bourne Shell 的扩展。 与 Bourne Shell 完全兼容，并且在 Bourne Shell 的基础上增加了很多特性，可以提供命令补全，命令编辑和命令历史等功能。
+  - **Linux 默认的 shell 它是 Bourne Shell 的扩展。 与 Bourne Shell 完全兼容，并且在 Bourne Shell 的基础上增加了很多特性，可以提供命令补全，命令编辑和命令历史等功能。**
+
+  
 
 - C Shell（/usr/bin/csh）
 
-  是一种比 Bourne Shell更适合的变种 Shell，它的语法与 C 语言很相似。
+  是一种比 Bourne Shell 更适合的变种 Shell，它的语法与 C 语言很相似。
 
 - K Shell（/usr/bin/ksh）
 
@@ -98,7 +110,7 @@ Linux 的 Shell 种类众多，常见的有：
 
 这里演示用的是 Bash，也就是 Bourne Again Shell，由于易用和免费，Bash 在日常工作中被广泛使用。同时，Bash 也是大多数Linux 系统默认的 Shell。
 
-在一般情况下，人们并不区分 Bourne Shell 和 Bourne Again Shell，所以，像 **#!/bin/sh**，它同样也可以改为 **#!/bin/bash**。
+在一般情况下，人们并不区分 Bourne Shell 和 Bourne Again Shell，所以，像  **#!/bin/sh**，它同样也可以改为 **#!/bin/bash**。
 
 
 
@@ -123,7 +135,9 @@ daemon:x:2:2:daemon:/sbin:/sbin/nologin
 ...
 ```
 
-可以看到，root 用户和其他可以登录系统的普通用户的登录 Shell 都是 /bin/bash，也就是 Linux 的标准 Shell，所以这些用户登录之后可以执行权限允许范围内的所有命令。不过，所有的系统用户（伪用户）因为登录 Shell 是 /sbin/nologin，所以不能登录系统。
+可以看到，root 用户和其他可以登录系统的普通用户的登录 Shell 都是 /bin/bash，也就是 Linux 的标准 Shell，所以这些用户登录之后可以执行权限允许范围内的所有命令。
+
+不过，所有的系统用户（伪用户）因为登录 Shell 是 /sbin/nologin，所以不能登录系统。
 
 
 
@@ -154,7 +168,7 @@ find is /usr/bin/find
 
 ### SHELL脚本
 
-SHELL 脚本，其实就是将一大堆可执行命令放在一个文本文件中，其中也可以包含一些逻辑判断，就类似一种批处理。
+SHELL 脚本，其实就是将一大堆可执行命令放在一个文本文件中，其中也可以包含一些逻辑判断，循环遍历等，就类似一种批处理。
 
 
 
@@ -378,7 +392,189 @@ export PATH USER LOGNAME MAIL HOSTNAME HISTSIZE HISTCONTROL
 
 
 
+### IO重定向和管道
 
+在 Unix 中，一切皆文件。有 `普通文件`、`目录文件`、`链接文件`和`设备文件`。 然而，进程访问文件数据必须要先 “打开” 这些文件。
+
+内核为了跟踪某个进程打开的文件，则用一个个`文件描述符`组成了一个`打开文件表`。
+
+
+
+命令行运行的过程就是通过一些指令来处理某些数据或文件。
+
+程序 = 指令 + 数据
+
+读入数据：input
+
+输出数据：output
+
+
+
+文件描述符：每一个打开的文件，都有一个 fd（file descriptor）
+
+文件描述符是与一个打开的文件或数据流相关的整数，文件描述符 0,1,2 是 Linux 系统预留的
+
+- 标准输入：keyboard（键盘），文件描述符用0表示。
+
+标准输入：keyboard（键盘），文件描述符用`0`表示。
+
+- 标准输出：monitor（监视器），文件描述符用`1`表示。
+- 标准错误：monitor（监视器），文件描述符用`2`表示。
+
+
+
+###### IO重定向：改变标准位置
+
+- **标准输出重定向：一般是把程序运行结果重定向到文件中。**
+
+  - command > new_position     覆盖重定向：覆盖文件，多次执行后，文件中只保留最后一次执行结果。
+
+  - command >> new_position   追加重定向：追加文件，多次执行，每次都在文件中追加执行结果。
+
+  - set -C ： 禁止将内容覆盖重定向到已有文件中。当这个开启后，不允许直接对已有文件进行覆盖重定向。
+
+  - 强制覆盖：command >| new_position ，不管有没有设置 set 。
+
+    set +C :   打开之后，可以进行覆盖重定向。
+
+- **标准错误重定向：把错误输出流进行重定向**
+
+  - command 2> new_position       覆盖
+  - command 2>> new_position     追加
+
+- **在一次命令执行过程中，标准输出和标准错误各自重定向至不同位置**：
+
+  - 如果成功了，后面是空，如果失败了，前面是空
+  - command   >   /path/file.out         2>  /path/file.error
+
+- **将标准输出和标准错误重定向到同一个位置：**
+
+  command  &>   /path/file.out       追加
+
+  command  &>>   /path/file.out     覆盖
+
+  特殊用法： command  >   /path/file.out   2> &1
+
+
+
+
+
+
+
+### cat命令
+
+
+
+**预备知识**
+
+用一个单行命令将标准输入和文件中的数据合并，通常的解决办法是将`stdin`重定向到文件中，再将两个文件拼接在一起。更方便的做法是使用 `cat` 命令。
+
+
+
+**实战**
+
+`cat` 命令是一个日常经常使用的，cat 本身表示 concatenate （拼接）：
+
+```shell
+# cat 命令的help文档中是这么描述的: 
+
+# concatenate files and print on the standard output
+# Concatenate FILE(s) to standard output.
+# With no FILE, or when FILE is -, read standard input.
+
+# 拼接文件并将其输出到标准输出，如果参数不是文件，则从标准输入读取
+
+
+# 所以cat命令的常规用法是这样的，打开两个文本文件，拼接后输出到标准输出
+
+cat file1.txt  file2.txt 	
+
+# 如果cat后面跟的文件不存在，则报错：cat: file3.txt: No such file or directory  
+cat file3.txt 
+
+# 如果空输入一个cat，则光标一直闪烁，等待输入，输入一段字符，然后回车，则表示这段输入结束，cat就将其输出到标准输出。
+
+
+# 输入下面的命令后，光标闪烁，一直在等输入，然后依次输入1234回车换行，再输入5678，再 ctr+c 终止这次输入
+# cat > file  这个命令的本质是从标准输入中读取，然后将其重定向到文件。
+root@pve:~# cat > file3.txt 
+1234
+5678
+^C
+root@pve:~# cat file3.txt
+1234
+5678
+root@pve:~# 
+
+
+
+
+```
+
+
+
+
+
+
+
+### 数组和关联数组
+
+Bash 的数组，其元素的个数没有限制。数组的索引由 0 开始，但不一定要连续(可以跳号)。索引也可以是算术表达式。bash仅支持一维数组。
+
+关联数组从 `Bash4.0` 开始引入。
+
+Bash的数组，其元素的个数没有限制。数组的索引由0开始，但不一定要 连续(可以跳号)。索引也可以算术表达式。bash仅支持一维数组。
+
+
+
+
+
+```shell
+#!/bin/bash
+
+# 数组用法
+# 声明数组：
+# 1、等号两边不要有空格
+# 2、数组元素间以空格分隔
+# 3、数组元素一般都是基本类型:数字，字符串等
+# 4、数组索引从 0 开始
+array_var=(1 2 3 4 5 6 'demo')
+
+# 按下标取数组中的元素：demo
+echo  ${array_var[6]) 
+
+# 以清单形式打印数组中的所有值
+
+
+# 数组遍历方法一
+for var in ${array_var[@]};
+do
+	echo $var
+done
+
+
+# 数组遍历方法二
+for(( i=0;i<${#array[@]};i++)) do
+#${#array[@]}获取数组长度用于循环
+echo ${array[i]};
+done;
+
+
+
+
+# 关联数组
+# 在关联数组中，索引下标可以是任意文本，而在普通数组中，只能用整数做数组索引。
+
+# 声明数组
+
+declare -A ass_array
+
+# 赋值方法1
+ass_array=( [index1]=value1 [index2]=value2)
+# 赋值方法2
+ass_array[index1]=value1
+ass_array[index2]=value2
+```
 
 
 

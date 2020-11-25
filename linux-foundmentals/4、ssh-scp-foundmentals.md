@@ -2,13 +2,15 @@
 
 ## OpenSSH 概览
 
-SSH 是 Secure SHELL 的缩写，顾名思义，这是一种建立在应用层基础上的安全协议，是一种加密的[网络传输协议](https://zh.wikipedia.org/wiki/%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%8D%8F%E8%AE%AE)，可在不安全的网络中为网络服务提供安全的传输环境，专为 Linux 远程登陆和其他服务提供的安全协议。人们通常利用SSH来远程执行命令。
+SSH 是 Secure SHELL 的缩写，顾名思义，这是一种建立在应用层基础上的安全协议，是一种加密的[网络传输协议](https://zh.wikipedia.org/wiki/%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%8D%8F%E8%AE%AE)，可在不安全的网络中为网络服务提供安全的传输环境，专为 Linux 远程登陆和其他服务提供的安全协议。
 
-OpenSSH 是一种 SSH 的开源实现。它是利用 OpenSSl 协议具体实现的开源软件，包括 ssh,ssh-copyid,ssh-keygen 等一系列套件，在 Linux 各大发行版基本上都已经预先安装好了。可以使用 ssh -V 命令来查看 OpenSSH 版本。
+人们通常利用SSH来远程执行命令。
+
+OpenSSH 是一种 SSH 的开源实现。它是利用 OpenSSL  协议具体实现的开源软件，包括 ssh,ssh-copyid,ssh-keygen 等一系列套件，在 Linux 各大发行版基本上都已经预先安装好了。可以使用 ssh -V 命令来查看 OpenSSH 版本。
 
 在 Linux 中，sshd 是 OpenSSH SSH 得守护进程。用于在不可信网络上提供安全的连接通道。
 
- sshd 守护进程通常由root用户启动，它监听来自客户端的连接，然后为每个连接派生一个子进程。
+ sshd 守护进程通常由 root 用户启动，它监听来自客户端的连接，然后为每个连接派生一个子进程。
 
  子进程负责处理密钥交换、加密、认证、执行命令、数据交换等具体事务。
 
@@ -66,10 +68,13 @@ root@fengzhao-work:~#
 
 ### ssh-keygen 用法
 
+ssh-keygen 命令是用来生成一对新密钥对的。
+
 ```shell
 # -t 算法 -b 密钥长度 -C 标识（一般设为邮箱） -f 密钥对名称  
 # 这个命令会生成 /path/keyname.pub（传到远程主机的公钥）和 /path/keyname（登陆远程主机的私钥） 
-$ ssh-keygen -t rsa -b 2048  -C "comment" -f /path/keyname  
+
+ssh-keygen -t rsa -b 2048  -C "comment" -f /path/keyname  
 
 
 # 清除ssh私钥中的phrase，交互式弹出让输入老密码，然后新密码置空，即可清除老密码
@@ -86,8 +91,11 @@ ssh-keygen -p [-P old_passphrase] [-N new_passphrase] [-f keyfile]
 ### ssh-copy-id 用法
 
 ```shell
-# 这个命令会交互式提示输入密码，把公钥传入user用户的家目录下。~/.ssh/authorized_keys
+# 这个命令会交互式提示输入密码，把公钥传入远程主机中的user用户的家目录下：~/.ssh/authorized_keys
 $ ssh-copy-id -i /path/publice_key  user@host -p port
+
+-f: force mode -- copy keys without trying to check if they are already installed
+-n: dry run    -- no keys are actually copied
 ```
 
 ### scp 用法
@@ -116,23 +124,31 @@ $ ssh root@192.168.1.102  -p 22 -i ~/.ssh/id_rsa
 $ ssh root@192.168.1.102  -p 22 
 ```
 
-### ssh 相关配置文件
+### ssh 相关文件
 
 ssh 的配置文件一般在 ~/.ssh 目录中，由于安全原因，该目录的权限一般要设置为 700 。
 
 ```shell
-/etc/ssh/ssh_config
 # ssh客户端全局配置文件，所有用户公用的配置文件。
-~/.ssh/config
+/etc/ssh/ssh_config
 # ssh客户端用户配置文件，针对某个用户的具体配置文件，可以覆盖全局配置文件
+~/.ssh/config
+
+
+# ssh服务端配置文件，用来配置认证方式，是否启用root登陆，加密方式
 /etc/ssh/sshd_config
-# ssh服务端配置文件，用来配置认证方式，是否启用root登陆等。
+
+
+# 客户端用户私钥，从客户端登陆服务端需要提供这个私钥证明合法登陆。为了安全，这个文件的权限必须是600。~/.ssh 目录的权限必须是700
 ~/.ssh/id_rsa
-# 客户端用户私钥，从客户端登陆服务端需要提供这个私钥证明合法登陆。为了安全，这个文件的权限必须是600。
+
+# ssh服务端公钥，公钥与私钥是一对密钥对
 ~/.ssh/authorized_keys
-# ssh服务端公钥，公钥与私钥是一对密钥对。
+
+
+# 你访问过远程主机的公钥指纹都记录在~/.ssh/known_hosts。当下次访问相同计算机时，OpenSSH 会核对公钥指纹。如果公钥不同，OpenSSH 会发出警告。
 ~/.ssh/known_hosts
-# 个你访问过计算机的公钥(public key)都记录在~/.ssh/known_hosts。当下次访问相同计算机时，OpenSSH 会核对公钥。如果公钥不同，OpenSSH 会发出警告。
+
 
 
 # SSH中文手册和配置文件
@@ -167,11 +183,11 @@ Host *
 ``` shell
 # /etc/ssh/sshd_config  sshd 服务端常用配置选项
 
-port 22 #ssh端口，Linux一般都是22端口做为ssh服务
-PermitRootLogin yes #允许root远程登录
-PasswordAuthentication no　 #不允许密码方式登录
-RSAAuthentication yes #允许RSA认证，只针对SSH1
-PubkeyAuthentication yes #允许公钥认证
+port 22 # ssh端口，Linux一般都是22端口做为ssh服务
+PermitRootLogin yes  # 允许root远程登录
+PasswordAuthentication no　 # 不允许密码方式登录
+RSAAuthentication yes # 允许RSA认证，只针对SSH1
+PubkeyAuthentication yes # 允许公钥认证
 AuthorizedKeysFile .ssh/authorized_keys #保存公钥的认证文件
 ```
 
@@ -381,7 +397,7 @@ scp -i 指定私钥文件。（如果公钥已经传到远程主机，并且开�
 如果本地ssh客户端配置好了主机，也可以直接用 scp server1 这种格式。
 
 
-## 利用 ssh-copy-id 复制公钥到多台主机
+## 批量分发公钥到多台主机
 
 如果有多台远程主机时，一个一个去远程复制比较麻烦，所以考虑需要一次性把公钥复制到多个主机，之前的过程存在两个问题需要人工输入：
 
@@ -412,8 +428,8 @@ done
 
 主机文件格式：
 ``` 
-    10.10.10.11:2221:YOURPASSWORD1
-    10.10.10.12:2222:YOURPASSWORD2
+10.10.10.11:2221:YOURPASSWORD1
+10.10.10.12:2222:YOURPASSWORD2
 ```
 
 
@@ -493,6 +509,10 @@ $ sftp -oProxyCommand="nc -Xconnect -x127.0.0.1:1080 %h %p" USER@SSH_SERVER
 https://blog.csdn.net/DiamondXiao/article/details/52488628
 
 
+
+
+
+ssh 批量分发密钥
 
 
 
@@ -610,3 +630,14 @@ MACs umac-128-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@op
 
 ```
 
+
+
+
+
+# ssh漏洞及安全基线
+
+
+
+
+
+https://www.cnblogs.com/canyezhizi/p/13537495.html
