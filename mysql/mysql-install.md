@@ -131,7 +131,7 @@ mysql>
 
 ### 用户管理
 
-我们在创建数据库用户的时候都会指定host，即一个完整的用户可描述为 'username'@'host' 。
+我们在创建数据库用户的时候都会指定host，即一个完整的用户可描述为 'username'@'host' 。（即 username@host 是唯一确定一个用户）
 
 创建用户时不显式指定host则默认为%，%代表所有 ip 段都可以使用这个用户，我们也可以指定host为某个ip或ip段，这样会仅允许在指定的ip主机使用该数据库用户。
 
@@ -199,6 +199,10 @@ collation-server = utf8mb4_unicode_ci
 skip_name_resolve = 1
 open_files_limit    = 65535
 back_log = 1024
+
+
+
+
 ```
 
 #### 下载

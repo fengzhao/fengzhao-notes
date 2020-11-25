@@ -57,18 +57,24 @@ actions 是 GitHub Actions 的核心，简单来说，它其实就是一段可�
 
 
 ```yaml
+# 工作流名称
 name: Docker Image CI
 
+# on设置触发工作流的事件：当有pull到master，pr到master，每隔十五分钟运行一次
 on:
   push:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  schedule:
+	- cron:  '*/15 * * * *' 
 
+# 工作流的作业
 jobs:
-
+  # 第一个job是构建
   build:
-
+    name: build a test image 
+	
     runs-on: ubuntu-latest
 
     steps:

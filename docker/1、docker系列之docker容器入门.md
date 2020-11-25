@@ -559,6 +559,12 @@ WORKDIR指令设置 Dockerfile 中的任何 RUN，CMD，ENTRPOINT，COPY 和 ADD
 
 
 
+#### dockerfile多阶段构建
+
+
+
+
+
 
 
 ## docker 文件系统

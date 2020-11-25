@@ -68,7 +68,8 @@ MySQL默认在InnoDB缓冲池（而不是整个缓冲池）中仅保留最频繁
 innodb_buffer_pool_instances=1
 # 缓冲池总大小，默认是128MB，一般设置为物理内存的70%左右。MySQL5.7.5之后可以动态调整，不要在业务繁忙的时候进行动态调整。
 innodb_buffer_pool_size=134217728
-# 缓冲池配置时的基本单位，以块的形式配置，指明块大小，innodb_buffer_pool_size=innodb_buffer_pool_chunk_size * innodb_buffer_pool_instances * n 
+# 缓冲池配置时的基本单位，以块的形式配置，指明块大小。
+# innodb_buffer_pool_size=innodb_buffer_pool_chunk_size * innodb_buffer_pool_instances * n 
 innodb_buffer_pool_chunk_size=128M # 默认内存块是128M，可以以1MB为单位(1048576 字节)增加或减少
 
 
