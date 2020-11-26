@@ -84,6 +84,23 @@ insert into db_test.employees_mgr values
 (4610, "Sarah", 29);    /* Sarah has id 4610 and reports to 29 (Pedro) */
 
 
+-- 要查询出如下这种树形结果
+                       
++------+---------+--------------------+                                                                                                                                                                          
+| id   | name    | path               |                                                                                               
++------+---------+--------------------+                                                                
+|  333 | Yasmina | 333                |                                                                                           
+|  198 | John    | 333->198           |                                                                                            
+|  692 | Tarek   | 333->692           |                                                                                           
+|   29 | Pedro   | 333->198->29       |                                                                                              
+| 4610 | Sarah   | 333->198->29->4610 |                                                                                             
++------+---------+--------------------+                                                                                                 
+5 rows in set (0.00 sec)                                                                                              
+mysql>   
+
+
+
+
 -- MySQL8.0中支持with子句
 -- 通过递归CTE来查询用户的层级关系
 -- 规划一个ID，name，path这样的一个层级临时表
@@ -98,19 +115,6 @@ insert into db_test.employees_mgr values
      on ep.id = e.manager_id
     )
      select * from employee_paths;
-
-                       
-+------+---------+--------------------+                                                                                                                                                                          
-| id   | name    | path               |                                                                                               
-+------+---------+--------------------+                                                                
-|  333 | Yasmina | 333                |                                                                                           
-|  198 | John    | 333->198           |                                                                                            
-|  692 | Tarek   | 333->692           |                                                                                           
-|   29 | Pedro   | 333->198->29       |                                                                                              
-| 4610 | Sarah   | 333->198->29->4610 |                                                                                             
-+------+---------+--------------------+                                                                                                 
-5 rows in set (0.00 sec)                                                                                              
-mysql>   
 
 ```
 
