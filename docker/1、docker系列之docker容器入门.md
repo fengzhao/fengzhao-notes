@@ -677,6 +677,75 @@ bin  dev  etc  home  lib  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp 
 
 
 
+## 操作容器
+
+容器的启动方式有两种：
+
+- 基于镜像新建一个容器并启动
+- 将在终止状态（`stopped`）的容器重新启动。
+
+
+
+```shell
+# docker run 
+
+# Usage:  docker run [OPTIONS] IMAGE [COMMAND] [ARG...]
+
+# docker run [启动参数]  镜像  [镜像中的命令]  [命令参数]
+
+# 启动参数
+
+-a, --attach 
+# 把指定的数据流（STDOUT，STDERR）连接到终端。若未指定，则默认链接stdout和stderr。若数据流未指定，而容器以交互模式(-i)启动，则stdin也会被连接至终端。
+# 此选项与-d不兼容。
+
+
+-d, --detach  
+# 使容器在“分离”模式下运行。容器会在后台运行，而命令的返回值是容器的ID。
+
+
+-i,--interactive
+# 保持stdin打开（即使它没有被连接至终端）。一般与-t同时使用。用作启动交互式会话的容器。例如： docker run -it debian /bin/bash
+-t,--tty
+# 分配一个伪终端，通常与-i使用，用来启动交互式容器
+
+--rm 
+# 容器退出时自动删除容器，不能与选项-d同时使用。
+
+-h,--hostname NAME
+# 设置容器的主机名为NAME。例如：docker run -h "myhost" debian 
+
+--name NAME
+# 设置容器的名称。以后其他docker命令可以使用这个名称来标识这个容器。
+
+
+-v  hostdir:containerdir
+
+
+```
+
+
+
+
+
+
+
+
+
+容器重新启动
+
+
+
+
+
+### 容器启动策略
+
+docker run 有容器自动启动策略，当容器退出时可以自动再启动容器。
+
+容器重启策略，可以让一组关联的容器按照相关顺序启动，docker 推荐给容器配上重启策略。
+
+重启是通过 docker start 
+
 
 
 ## 网络概述
@@ -980,8 +1049,6 @@ docker-compose up -d --scale redis=2
 
 
 
-
-
 docker 镜像是以 layer 概念存在的，一层一层的叠加，最终成为我们需要的镜像。
 
 但该镜像的每一层都是 `ReadOnly` 只读的。只有在我们运行容器的时候才会创建读写层。文件系统的隔离使得：
@@ -1000,17 +1067,17 @@ docker 为我们提供了三种不同的方式将数据挂载到容器中：volu
 
 #### volume 方式
 
-volume 是数据卷
+volume 是数据卷，一个可供一个或多个容器使用的特殊目录，
 
 volume 方式是 docker 中数据持久化的最佳方式。
 
 - volume 可以通过 `docker volume` 进行管理，如创建、删除等操作。
-
 - docker 默认会在主机上（`/var/lib/docker/volumes/` ）存放 volume。
-- 非 docker 进程不应该去修改该区域。
+- 非 docker 进程不应该去修改该区域的文件。
 - 当 volumes 被 mount 进 容器时，有点像 bind network 一样。一个 volume 可以同时被多个 container mount 
-
+  - 有点像 Linux 文件系统里面的 mount 
 - volume 在生成的时候如果不指定名称，会随机生成名称。
+- 在容器停止或删除时，volume 会继续存在，如需删除需要显示声明。
 
 ```shell
 $ ls /var/lib/docker/volumes
@@ -1018,7 +1085,7 @@ ff664768bfe64e1a8cae4369dd4a2e1929362e29580735480290684e38c8f140
 ffa4846b581c1a50a01e7a12a6342ad2aaa442701a35ae56ef2f0e5d7888b22c
 ```
 
-- volume 在容器停止或删除的时候会继续存在，如需删除需要显示声明。
+- 
 
 ```shell
 $ docker rm -v <container_id>
@@ -1853,6 +1920,138 @@ sudo docker login --username=fengzhao1124@163.com registry.cn-hangzhou.aliyuncs.
 # 推到自己的命名空间
 docker push   registry.cn-hangzhou.aliyuncs.com/fengzhao/etcd:3.4.9-1
 ```
+
+
+
+
+
+## docker 日志最佳实践
+
+
+
+Docker 日志分为两类：
+
+- docker engine 的日志
+  - dockerd 守护进程一般是交由 systemd 来管理，所以 docker engine 的日志可以通过  journalctl -u docker 来查看
+
+- 容器内的日志
+  - 容器我们理解为一个普通的进程，进程就会有标准输入输出。
+
+
+
+
+
+docker logs container 可以查看一个容器的日志，准确来说，这个命令是将容器进程的标准输出和标准错误重定向到标准输出（即当前终端）
+
+
+
+在生产环境，如果应用的标准输出重定向到日志文件里，所以我们在使用 docker logs 一般收集不到太多重要的日志信息。
+
+当日志量比较大的时候，我们使用 docker logs 来查看日志，会对 docker daemon 造成比较大的压力，容器导致容器创建慢等一系列问题。
+
+
+
+### docker日志驱动
+
+
+
+```shell
+# docker daemon 一般会配置一个默认的日志驱动
+
+# 查看当前daemon的默认驱动
+docker  info | grep  "Logging Driver"
+
+
+docker inspect  -f '{{.HostConfig.LogConfig.Type}}'  containerID
+
+
+
+
+
+
+
+```
+
+
+
+#### local日志驱动
+
+`local` 日志驱动 记录从容器的 `STOUT/STDERR` 的输出，并写到宿主机的磁盘。
+
+默认情况下，local 日志驱动为每个容器保留 100MB 的日志信息，并启用自动压缩来保存。(经过测试，保留100MB 的日志是指没有经过压缩的日志)
+
+local 日志驱动的储存位置 `/var/lib/docker/containers/容器id/local-logs/container.log` 
+
+```json
+// /etc/docker/daemon.json
+
+{
+ 	"log-driver": "local",
+  	"log-opts": {
+    	"max-size": "10m",    // 切割之前日志的最大大小，可取值为(k,m,g)， 默认为20m
+        "max-file": "5",      // 可以存在的最大日志文件数。如果超过最大值，则会删除最旧的文件。**仅在max-size设置时有效。默认为5。
+        "compress": "enable", // 是否压缩，默认开启
+  	}
+}    
+```
+
+
+
+```shell
+#  运行一个后台容器 ，并设定日志驱动为local ，并运行命令 ping www.baidu.com
+
+docker run  -itd  --log-driver  local --name ping_test   alpine  ping www.baidu.com 
+
+# 查看容器日志驱动
+docker inspect  -f '{{.HostConfig.LogConfig.Type}}'  ping_test
+
+# 查看日志文件
+ls -al /var/lib/docker/containers/ping_test_container_id/local-logs/
+ 
+ 
+
+```
+
+
+
+#### json-file 驱动
+
+`json-file` 日志驱动 记录从容器的 `STOUT/STDERR` 的输出 ，用 JSON 的格式写到文件中，日志中不仅包含着 输出日志，还有时间戳和 输出格式。
+
+下面是一行 `ping www.baidu.com` 对应的 JSON 日志：
+
+```json
+{ 
+    "log":"64 bytes from 104.193.88.123: seq=678 ttl=55 time=10.308 ms\r\n",
+    "stream":"stdout",
+    "time":"2020-11-26T03:50:39.104632506Z"
+}
+```
+
+`json-file` 的 日志驱动支持以下选项:
+
+| 选项        | 描述                                                         | 示例值                                   |
+| :---------- | :----------------------------------------------------------- | :--------------------------------------- |
+| `max-size`  | 切割之前日志的最大大小。可取值单位为(k,m,g)， 默认为-1（表示无限制）。 | `--log-opt max-size=10m`                 |
+| `max-file`  | 可以存在的最大日志文件数。如果切割日志会创建超过阈值的文件数，则会删除最旧的文件。**仅在max-size设置时有效。**正整数。默认为1。 | `--log-opt max-file=3`                   |
+| `labels`    | 适用于启动Docker守护程序时。此守护程序接受的以逗号分隔的与日志记录相关的标签列表。 | `--log-opt labels=production_status,geo` |
+| `env`       | 适用于启动Docker守护程序时。此守护程序接受的以逗号分隔的与日志记录相关的环境变量列表。 | `--log-opt env=os,customer`              |
+| `env-regex` | 类似于并兼容`env`。用于匹配与日志记录相关的环境变量的正则表达式。 | `--log-opt env-regex=^(os|customer).`    |
+| `compress`  | 切割的日志是否进行压缩。默认是`disabled`。                   | `--log-opt compress=true`                |
+
+
+
+json-file 日志的路径位于 `/var/lib/docker/containers/container_id/container_id-json.log`。
+
+
+
+
+
+
+
+### 生产环境如何存储容器中的日志
+
+
 
 
 
