@@ -60,7 +60,9 @@ actions 是 GitHub Actions 的核心，简单来说，它其实就是一段可�
 # 工作流名称
 name: Docker Image CI
 
-# on设置触发工作流的事件：当有pull到master，pr到master，每隔十五分钟运行一次
+# on设置触发工作流的事件：当有pull到master，pr到master，每隔十五分钟运行一次。三个条件满足一个都会运行。
+
+# 事件列表 https://docs.github.com/cn/free-pro-team@latest/actions/reference/events-that-trigger-workflows
 on:
   push:
     branches: [ master ]
@@ -69,20 +71,135 @@ on:
   schedule:
 	- cron:  '*/15 * * * *' 
 
-# 工作流的作业
-jobs:
-  # 第一个job是构建
-  build:
-    name: build a test image 
-	
-    runs-on: ubuntu-latest
 
-    steps:
-    - uses: actions/checkout@v2
+jobs: # 工作流的作业
+  build:                       # 第一个job是build  
+    name: build a test image   # 指定job名称，构建测试任务
+    runs-on: ubuntu-latest     # 指定运行环境
+	
+    steps:                     # 作业包含一系列任务，用steps表示
+      - uses: actions/checkout@v2  # 复用官方actions，签出代码
+      with:  
+    
     - name: Build the Docker image
       run: docker build . --file Dockerfile --tag kms-server:$(date +%s)
+      
+  
+  second:
+  	
+  	name: build 
 
 ```
 
 
 
+
+
+
+
+
+
+
+
+## 自动分发issue
+
+https://github.com/pingcap/tidb/blob/master/.github/workflows/assign_project.yml
+
+
+
+
+
+
+
+
+
+
+
+```yaml
+# 自动分发issue
+name: Auto Assign Project Local
+
+# 当issues被打上标签即会触发
+on:
+  issues:
+    types: [labeled]
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  assign_one_project:
+    runs-on: ubuntu-latest
+    name: Assign to One Project
+    steps:
+    # 
+    - name: Run issues assignment to project SIG Runtime Kanban
+      uses: srggrs/assign-one-project-github-action@1.2.0
+      if: |
+        contains(github.event.issue.labels.*.name, 'component/coprocessor') ||
+        contains(github.event.issue.labels.*.name, 'sig/executor') ||
+        contains(github.event.issue.labels.*.name, 'component/expression')
+      with:
+        project: 'https://github.com/pingcap/tidb/projects/38'
+        column_name: 'Issue Backlog: Need Triage'
+    - name: Run issues assignment to project SIG Planner Kanban
+      uses: srggrs/assign-one-project-github-action@1.2.0
+      if: |
+        contains(github.event.issue.labels.*.name, 'sig/planner') ||
+        contains(github.event.issue.labels.*.name, 'component/statistics') ||
+        contains(github.event.issue.labels.*.name, 'component/bindinfo')
+      with:
+        project: 'https://github.com/pingcap/tidb/projects/39'
+        column_name: 'Issue Backlog: Need Triage'
+    - name: Run issues assignment to Feature Request Kanban
+      uses: srggrs/assign-one-project-github-action@1.2.0
+      if: |
+        contains(github.event.issue.labels.*.name, 'type/feature-request')
+      with:
+        project: 'https://github.com/pingcap/tidb/projects/41'
+        column_name: 'Need Triage'
+    - name: Run issues assignment to Robust test
+      uses: srggrs/assign-one-project-github-action@1.2.0
+      if: |
+        contains(github.event.issue.labels.*.name, 'component/test')
+      with:
+        project: 'https://github.com/pingcap/tidb/projects/32'
+        column_name: 'TODO/Help Wanted'
+    - name: Run issues assignment to project UT Coverage
+      uses: srggrs/assign-one-project-github-action@1.2.0
+      if: |
+        contains(github.event.issue.labels.*.name, 'type/UT-coverage')
+      with:
+        project: 'https://github.com/pingcap/tidb/projects/44'
+        column_name: 'To do'
+    - name: Run issues assignment to project SIG DDL Kanban
+      uses: srggrs/assign-one-project-github-action@1.2.0
+      if: |
+        contains(github.event.issue.labels.*.name, 'sig/DDL') ||
+        contains(github.event.issue.labels.*.name, 'component/binlog') ||
+        contains(github.event.issue.labels.*.name, 'component/charset') ||
+        contains(github.event.issue.labels.*.name, 'component/infoschema') ||
+        contains(github.event.issue.labels.*.name, 'component/parser')
+      with:
+        project: 'https://github.com/pingcap/tidb/projects/40'
+        column_name: 'Issue Backlog: Need Triage'
+```
+
+
+
+
+
+
+
+
+
+## 官方 Actions 
+
+
+
+
+
+### ctions/checkout
+
+
+
+https://github.com/actions/checkout
