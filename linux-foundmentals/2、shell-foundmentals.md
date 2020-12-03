@@ -705,3 +705,8 @@ Linux的管道主要包括两种：无名管道和有名管道。
 
 
 
+# Powershell教程
+
+
+
+https://www.cnblogs.com/lsgxeva/p/9309576.html
