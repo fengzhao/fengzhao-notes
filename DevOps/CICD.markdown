@@ -8,15 +8,13 @@
 
 
 
-持续集成的工作原理是将小的代码块推送到 Git 仓库中托管的应用程序代码库中。
-
-并且每次推送时，都要运行一系列脚本来构建、测试和验证代码更改，然后再将其合并到主分支中。
+持续集成的工作原理是将小的代码块推送到 Git 仓库中托管的应用程序代码库中。并且每次推送时，都要运行一系列脚本来构建、测试和验证代码更改，然后再将其合并到主分支中。
 
 
 
-持续交付和部署相当于更进一步的CI，可以在每次推送到仓库默认分支的同时将应用程序部署到生产环境。
+持续交付和部署相当于更进一步的 CI，可以在每次推送到仓库默认分支的同时将应用程序部署到生产环境。
 
-这些方法使得可以在开发周期的早期发现bugs和errors，从而确保部署到生产环境的所有代码都符合为应用程序建立的代码标准。
+这些方法使得可以在开发周期的早期发现 bugs 和 errors ，从而确保部署到生产环境的所有代码都符合为应用程序建立的代码标准。
 
 GitLab CI/CD 由一个名为 .gitlab-ci.yml 的文件进行配置，改文件位于仓库的根目录下。文件中指定的脚本由 GitLab Runner 执行。
 
@@ -54,8 +52,6 @@ GitLab CI/CD 由一个名为 .gitlab-ci.yml 的文件进行配置，改文件位
 
 
 
-
-
 为了使用GitLab CI/CD，你需要一个托管在GitLab上的应用程序代码库，并且在根目录中的 .gitlab-ci.yml 文件中指定构建、测试和部署的脚本。
 
 在这个文件中，你可以定义要运行的脚本，定义包含的依赖项，选择要按顺序运行的命令和要并行运行的命令，定义要在何处部署应用程序，以及指定是否 要自动运行脚本或手动触发脚本。 
@@ -65,6 +61,75 @@ GitLab CI/CD 由一个名为 .gitlab-ci.yml 的文件进行配置，改文件位
 一旦你已经添加了.gitlab-ci.yml到仓库中，GitLab将检测到该文件，并使用名为GitLab Runner的工具运行你的脚本。该工具的操作与终端类似。
 
 这些脚本被分组到jobs，它们共同组成一个pipeline。一个最简单的.gitlab-ci.yml文件可能是这样的：
+
+
+
+
+
+
+
+## gitlab-runner 安装
+
+.gitlab-ci.yml  是 gitlab 项目仓库中的文件，定义了一系列构建，测试，部署的脚本。
+
+
+
+GitLab-Runner 就是一个用来执行.gitlab-ci.yml 脚本的工具，是 gitlab 官方用 go 写的一个项目，一般运行在单独的服务器上（**注意，跟gitlab server不是一台机器**）。
+
+可以理解成，Runner 就像认真工作的工人，GitLab-CI 就是管理工人的中心，所有工人都要在 GitLab-CI 里面注册，并且表明自己是为哪个项目服务。当相应的项目发生变化时，GitLab-CI 就会通知相应的工人执行对应的脚本。
+
+
+
+```shell
+# gitlab runner 包管理安装
+
+# ubuntu
+curl -LJO https://gitlab-runner-downloads.s3.amazonaws.com/latest/deb/gitlab-runner_amd64.deb
+dpkg -i gitlab-runner_<arch>.deb
+
+# RHEL
+curl -LJO https://gitlab-runner-downloads.s3.amazonaws.com/latest/rpm/gitlab-runner_<arch>.rpm
+rpm -i gitlab-runner_<arch>.rpm
+
+
+
+
+# 二进制包
+https://docs.gitlab.com/runner/install/linux-manually.html
+
+
+
+# 注册服务
+
+
+#　配置文件
+/etc/gitlab-runner/config.toml　 # 以root身份运行服务时的配置文件
+~/.gitlab-runner/config.toml     # 以非root身份运行服务时的配置文件 
+./config.toml                    # 项目配置文件 
+
+```
+
+
+
+### runner 类型
+
+- [Shared runners](https://docs.gitlab.com/ee/ci/runners/#shared-runners)    全局 runner
+
+- [Group runners](https://docs.gitlab.com/ee/ci/runners/#group-runners)     可以用于某个group的项目
+
+- [Specific runners](https://docs.gitlab.com/ee/ci/runners/#specific-runners)   单独用于某个项目
+
+
+
+注册runner
+
+```shell
+
+
+sudo gitlab-runner register
+```
+
+
 
 
 
