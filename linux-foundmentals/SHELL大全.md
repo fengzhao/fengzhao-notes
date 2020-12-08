@@ -364,7 +364,93 @@ export PATH USER LOGNAME MAIL HOSTNAME HISTSIZE HISTCONTROL
 
 
 
+## 命令历史
 
+
+
+shell 有一个很有用的特性，那就是命令历史。
+
+当前登陆用户在终端进行操作时，该用户操作的历史命令会被记录在内存缓冲区中，使用 history 命令可以列出历史命令。
+
+当关闭终端会话或者会话退出时时，当前用户运行过的所有命令并写入当前用户的命令历史记录文件（~/.bash_history）。如果是 zsh，在记录在 ~/.zsh_history 文件中。
+
+
+
+**命令历史一般都有很重要的作用，用来复盘查看以前执行过的命令，其实就是操作记录。所以一般入侵者，入侵离开之前，最后一步就是清理命令历史。**
+
+
+
+```shell
+# history 命令被用于列出以前执行过的命令
+
+# 在 oh-my-zsh 中。~/.oh-my-zsh/lib/history.zsh 这个脚本定义了一个函数 omz_history 封装 history,也可以用来查看命令历史。
+
+
+```
+
+
+
+### 相关变量
+
+**BASH：相关的环境变量（ubuntu一般都在~/.bashrc中定义，centos一般都在/etc/profile中定义）**
+
+
+
+```shell
+# HISTSIZE：命令历史记录的最大条数。（内存缓冲区中），默认是1000
+# HISTFILE：命令历史文件存放路径。默认是 ~/.bash_history
+# HISTFILESIZE：命令历史文件记录的历史命令条数。默认是2000
+# HISTCONTROL：控制命令历史的记录方式。默认是ignorespace。如果想要让命令
+#   ignoredups  忽略重复（连续且完全相同）的命令。
+#   ignorespace 忽略以空白开头的命令，命令前面带空格
+#   ignoreboth  表示以上两者都生效。
+HISTTIMEFORMAT="%F %T"
+# 这个值定义命令历史格式，一般设置成如下%F %T，可以方便的查看命令执行时间 
+
+
+
+# 对于centos7，默认的命令历史命令参数都存在/etc/profile中，先查找相关参数的默认值
+
+
+[root@localhost ~]# egrep -R "HISTSIZE|HISTFILE|HISTFILESIZE|HISTCONTROL|HISTFORMAT" /etc/
+
+/etc/profile:HISTSIZE=1000
+/etc/profile:if [ "$HISTCONTROL" = "ignorespace" ] ; then
+/etc/profile:    export HISTCONTROL=ignoreboth
+/etc/profile:    export HISTCONTROL=ignoredups
+/etc/profile:export PATH USER LOGNAME MAIL HOSTNAME HISTSIZE HISTCONTROL
+/etc/sudoers:Defaults    env_keep =  "COLORS DISPLAY HOSTNAME HISTSIZE KDEDIR LS_COLORS"
+```
+
+
+
+
+
+**显示历史命令** **（bash和zsh通用）**
+
+
+
+history  ：显示全部历史命令
+
+history n ：显示最后n条历史命令
+
+history -c ：清空历史命令
+
+history -a : 手动追加会话缓冲区的命令至历史命令文件中。（即不退出当前会话）
+
+
+
+
+
+**快捷操作（bash和zsh通用）**
+
+
+
+!# : 调用命令历史中的第#条命令
+
+!string ： 调用命令历史中的最近一条中以string开头的命令。
+
+!! : 调用命令历史中上一条命令
 
 
 
