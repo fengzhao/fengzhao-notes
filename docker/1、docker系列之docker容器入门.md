@@ -465,7 +465,11 @@ docker load -i spring-boot-docker.tar
 
 通过 docker build 命令来从 Dockerfile 和下文中构建镜像，上下文一般就是 Dockerfile 文件所在的路径， 其中包含一系列制作镜像的所需的原文件，上下文可以在某个路径，或者是某个 URL （一般是git repo）中。上下文会被递归处理，所以路径下可以包含子文件夹。
 
-构建过程是 docker daemon 来执行的，第一件事就是把整个上下文传给 daemon 。在多数情况下，创建一个空文件夹来存放 Dockerfile 和构建镜像所需的文件。把这个文件夹作为上下文。可以在任何位置执行 docker build 构建镜像，通过 -f 选项来指定 Dockerfile 文件。
+构建过程是 docker daemon 来执行的，第一件事就是把整个上下文传给 daemon 。
+
+在多数情况下，创建一个空文件夹来存放 Dockerfile 和构建镜像所需的文件，把这个文件夹作为上下文。
+
+也可以在任何位置执行 docker build 构建镜像，通过 -f 选项来指定 Dockerfile 文件。
 
 ```shell
 $ docker build -f /path/to/a/Dockerfile 
