@@ -156,6 +156,8 @@ wget https://mirrors.tuna.tsinghua.edu.cn/gitlab-ce/debian/pool/buster/main/g/gi
 wget  https://repo.huaweicloud.com/java/jdk/8u181-b13/jdk-8u181-linux-x64.tar.gz
 rpm -ivh https://repo.huaweicloud.com/java/jdk/8u181-b13/jdk-8u181-linux-x64.rpm
 yum -y install git
+
+
 # rpm 安装jenkins
 sudo wget -O /etc/yum.repos.d/jenkins.repo  https://pkg.jenkins.io/redhat-stable/jenkins.repo
 sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
@@ -168,9 +170,12 @@ http://mirrors.jenkins.io/
 # 清华大学jenkins镜像源
 https://mirrors.tuna.tsinghua.edu.cn/jenkins/
 
+# tomcat
+wget https://mirrors.sonic.net/apache/tomcat/tomcat-9/v9.0.40/bin/apache-tomcat-9.0.40.tar.gz
 
 # jenkins-war包下载
 http://mirrors.jenkins.io/war-stable/latest/jenkins.war
+
 # rpm包下载
 http://mirrors.jenkins.io/redhat-stable/jenkins-2.235.3-1.1.noarch.rpm
 # 所以也可以下载rpm包后，rpm -ivh 去安装
@@ -181,6 +186,9 @@ http://mirrors.jenkins.io/redhat-stable/jenkins-2.235.3-1.1.noarch.rpm
 # /etc/sysconfig/jenkins       　　　　　　　配置文件
 # /var/lib/jenkins/        　　　　　　　　　默认的JENKINS_HOME目录
 #　/var/log/jenkins/jenkins.log    　　　　Jenkins日志文件
+
+
+
 
 
 
@@ -213,7 +221,7 @@ Role-Based 插件
 
 
 
-# Jenkins 构建 Maven 项目
+# Jenkins 构建项目
 
 
 
@@ -237,6 +245,17 @@ Role-Based 插件
 
 
 
+## 视图
+
+
+
+现在的编程中，公司往往将一个项目拆分成多个工程，前后端分离，由多个开发团队负责一个大项目的编写。
+
+这样在我们对项目进行维护的时候就要将不同的项目区分开，方便管理。
+
+在jenkins的主页面中，在所有的旁边，点击+号，就可以创建视图。
+
+在新建视图中，按图示填写自己的视图名称（选择自己的项目名，方便区分），选择列表视图，点击确定。
 
 
 
@@ -244,8 +263,11 @@ Role-Based 插件
 
 
 
+## 常用插件
 
 
+
+Role-based Authorization Strategy          https://www.cnblogs.com/netflix/p/12109278.html
 
 
 
