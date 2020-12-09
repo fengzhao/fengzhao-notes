@@ -213,6 +213,9 @@ wget https://mirrors.tuna.tsinghua.edu.cn/gitlab-ce/debian/pool/buster/main/g/gi
 # 部署 jenkins 
 
 ```shell
+# https://www.cnblogs.com/hellxz/p/install_jenkins.html
+
+
 # centos7 
 
 # 安装 jenkins
@@ -236,10 +239,13 @@ http://mirrors.jenkins.io/
 https://mirrors.tuna.tsinghua.edu.cn/jenkins/
 
 # tomcat
-wget https://mirrors.sonic.net/apache/tomcat/tomcat-9/v9.0.40/bin/apache-tomcat-9.0.40.tar.gz
+wget  https://mirrors.cnnic.cn/apache/tomcat/tomcat-9/v9.0.41/bin/apache-tomcat-9.0.41.tar.gz
 
 # jenkins-war包下载
-http://mirrors.jenkins.io/war-stable/latest/jenkins.war
+# wget http://mirrors.jenkins.io/war-stable/latest/jenkins.war
+wget https://mirrors.huaweicloud.com/jenkins/war/latest/jenkins.war
+# 中文社区
+# https://jenkins-zh.cn/tutorial/management/mirror/
 
 # rpm包下载
 http://mirrors.jenkins.io/redhat-stable/jenkins-2.235.3-1.1.noarch.rpm
@@ -278,6 +284,52 @@ Role-Based 插件
 
 
 # 凭证管理插件 Credentials Binding 插件
+```
+
+
+
+
+
+
+
+
+
+
+
+### docker 方式部署jenkins
+
+```shell
+
+mkdir -p /home/jenkins_root/{jenkins_data,jenkins_home}
+chown -R 1000:1000  /home/jenkins_root/jenkins_data 
+chown -R 1000:1000  /home/jenkins_root/jenkins_home
+
+
+docker pull ghcr.io/fengzhao-study-notes/blueocean:latest
+
+
+version: '2.4'
+services:
+  jkenkins:
+    image: "ghcr.io/fengzhao-study-notes/blueocean"
+    restart: always
+    privileged: true
+    ports:
+     - "8088:8080"
+    volumes:
+     - "/home/jenkins_root/jenkins_data:/var/jenkins_home"
+     - "/home/jenkins_root/jenkins_home:/home"
+     - "/var/run/docker.sock:/var/run/docker.sock"
+    network_mode: "host"
+    cpus: 1
+    mem_limit: 4g
+
+
+
+mkdir /data/jenkins_home
+
+
+
 ```
 
 
