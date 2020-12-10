@@ -1,0 +1,21 @@
+version: "2"
+services:
+  # redis容器
+  redis:
+    #容器名称
+    container_name: myredis
+    # 使用的镜像
+    image: redis:latest
+    #容 器的映射端口
+    ports:
+      - 6379:6379
+    command: redis-server /etc/conf/redis.conf
+    # 定义挂载点
+    volumes:
+      - ./data:/data
+      - ./conf:/etc/conf
+    #环境变量
+    privileged: true
+    environment:
+      - TZ=Asia/Shanghai
+      - LANG=en_US.UTF-8
