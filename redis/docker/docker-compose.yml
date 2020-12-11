@@ -3,9 +3,9 @@ services:
   # redis容器
   redis:
     #容器名称
-    container_name: myredis
+    container_name: { CONTAINER_NAME }
     # 使用的镜像
-    image: redis:latest
+    image: { IMAGETAG }
     #容 器的映射端口
     ports:
       - 6379:6379
