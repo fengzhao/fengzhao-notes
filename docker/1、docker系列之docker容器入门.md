@@ -942,9 +942,9 @@ docker-compose 是定义多个容器的编排工具。通过 yaml 文件来描�
 
 通过一个命令来管理一组应用中的容器。使用 docker-compose 的流程大致分为：
 
-- 编写 dockerfile 来定义环境
+- 编写 Dockerfile 来定义环境，即定义要构造的 docker 容器。
 - 在 docker-compose.yml 文件中来定义服务。
-- 使用docker-compose 命令来管理服务中容器。
+- 使用 docker-compose 命令来管理服务中容器。
 
 
 

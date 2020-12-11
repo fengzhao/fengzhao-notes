@@ -1,0 +1,9 @@
+version: "3.9"
+services:
+  web:
+    # 指定web这个service的镜像由当前目录下的Dockerfile构建而成
+    build: .
+    ports:
+      - "5000:5000"
+  redis:
+    image: "redis:alpine"
