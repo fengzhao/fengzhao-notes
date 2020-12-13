@@ -4,17 +4,62 @@
 
 SSH 是 Secure SHELL 的缩写，顾名思义，这是一种建立在应用层基础上的安全协议，是一种加密的[网络传输协议](https://zh.wikipedia.org/wiki/%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%8D%8F%E8%AE%AE)，可在不安全的网络中为网络服务提供安全的传输环境，专为 Linux 远程登陆和其他服务提供的安全协议。
 
-人们通常利用SSH来远程执行命令。
+人们通常利用SSH来远程登录到服务器上执行命令。
 
 OpenSSH 是一种 SSH 的开源实现。它是利用 OpenSSL  协议具体实现的开源软件，包括 ssh,ssh-copyid,ssh-keygen 等一系列套件，在 Linux 各大发行版基本上都已经预先安装好了。可以使用 ssh -V 命令来查看 OpenSSH 版本。
 
-在 Linux 中，sshd 是 OpenSSH SSH 得守护进程。用于在不可信网络上提供安全的连接通道。
+在 Linux 中，sshd 是 OpenSSH SSH 的守护进程。用于在不可信网络上提供安全的连接通道。
 
  sshd 守护进程通常由 root 用户启动，它监听来自客户端的连接，然后为每个连接派生一个子进程。
 
  子进程负责处理密钥交换、加密、认证、执行命令、数据交换等具体事务。
 
 本文只记录 ssh 基本组件的用法，关于 ssh-agent 和 ssh-add 等命令，这里没有记录。
+
+
+
+openssh 的认证方式：
+
+- 密码认证
+- 密钥认证（非对称加密）
+
+
+
+OpenSSL 
+
+OpenSSL 是用于传输层安全性（TLS）协议的健壮的，商业级，功能齐全的开源工具包，以前称为安全套接字层（SSL）协议。协议实现基于完整功能的通用密码库，该库也可以独立使用。
+
+OpenSSL 代码库的地址是 https://github.com/openssl/openssl 。
+
+
+
+用户可以从 [www.openssl.org/source](https://www.openssl.org/source) 或者 github 下载官方发行版的源代码压缩包 。OpenSSL项目不会以二进制形式分发工具包。
+
+但是，对于各种各样的操作系统，可以使用 OpenSSL 工具包的预编译版本。（各大 Linux 发行版基本上都有带预编译好的 OpenSSL）
+
+特别是在Linux和其他Unix操作系统上，通常建议与发行商或供应商提供的预编译共享库链接。**一般不建议在 Linux 上自行编译安装 OpenSSL**
+
+
+
+OpenSSL 工具包括：
+
+- **libssl** 是TLSv1.3（[RFC 8446](https://tools.ietf.org/html/rfc8446)）之前的所有TLS协议版本的实现。
+
+  我们平时在安装软件时，经常会安装这个依赖包，
+
+- **libcrypto** 一个功能全面的通用密码库。它构成了TLS实施的基础，但也可以独立使用。
+
+- **openssl** OpenSSL命令行工具，瑞士军刀，用于加密任务，测试和分析。它可以用于
+
+  - 关键参数的创建
+  - X.509证书，CSR和CRL的创建
+  - 消息摘要的计算
+  - 加密和解密
+  - SSL / TLS客户端和服务器测试
+  - 处理S / MIME签名或加密的邮件
+  - 和更多...
+
+作为一个基于密码学的安全开发包，OpenSSL 提供的功能相当强大和全面，囊括了主要的密码算法、常用的[密钥](https://baike.baidu.com/item/%E5%AF%86%E9%92%A5)和证书封装管理功能以及 SSL 协议，并提供了丰富的应用程序供测试或其它目的使用。
 
 ## ssh命令组件
 
@@ -38,7 +83,7 @@ $ ssh user@host -p port -i /path/private_key
 $ ssh --help
 ```
 
-#### 在远程终端执行命令
+#### 在远程主机上直接执行命令
 
 远程执行命令，ssh 可以直接在远程的目标主机上执行命令，而不用登陆上去执行，就好像在本地执行一样。
 
@@ -76,7 +121,6 @@ ssh-keygen 命令是用来生成一对新密钥对的。
 
 ssh-keygen -t rsa -b 2048  -C "comment" -f /path/keyname  
 
-
 # 清除ssh私钥中的phrase，交互式弹出让输入老密码，然后新密码置空，即可清除老密码
 ssh-keygen -f ~/.ssh/kc_id_rsa -p
  
@@ -112,7 +156,9 @@ $ scp user@host:/path/filename /var/www/local_dir
 
 ## OpenSSH 详解
 
-OpenSSH 也是一种 C/S 架构的模式，客户端和服务端分别是 ssh/sshd 。一般 Linux 启动后默认都会启动服务端的 sshd 服务，sshd 服务端默认端口一般是22，可以服务端配置文件修改。所以我们可以在某台 Linux 上以 ssh 客户端登陆到远程的 Linux 服务器上。命令大致如下：
+OpenSSH 也是一种 C/S 架构的模式，客户端和服务端分别是 ssh/sshd 。
+
+一般 Linux 启动后默认都会启动服务端的 sshd 服务，sshd 服务端默认端口一般是22，可以服务端配置文件修改。所以我们可以在某台 Linux 上以 ssh 客户端登陆到远程的 Linux 服务器上。命令大致如下：
 
 ```shell
 # 使用 root 用户，私钥验证 登陆远程的 192.1668.1.102（ssh默认是用22端口，可以省略）
