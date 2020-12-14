@@ -321,9 +321,11 @@ redis 127.0.0.1:6379> FLUSHALL
 
 ## 数据类型 
 
-redis 并不是简单的键值对存储服务器，它实际上是一个  ***数据结构服务器*** ，它支持多种类型的 value  , 在传统的键值存储中通常都是在 string 类型的 key 中存放 string 类型的 value 。
+redis 并不是简单的键值对存储服务器，它实际上是一个  ***数据结构服务器*** ，它支持多种类型的 value  。
 
-在 redis 中，value 并不限为 string 这样的简单数据类型，value 可以是 List , Set ，Hashes 这样更加复杂的数据结构：
+在传统的键值存储中通常都是在 string 类型的 key 中存放 string 类型的 value 。（即 key:value 都是字符串）
+
+在 redis 中，value 并不仅限为 string 这样的简单数据类型，value 可以是 List , Set ，Hashes 这样更加复杂的数据结构：
 
 - Binary-safe strings  
   - 
