@@ -20,6 +20,16 @@ OpenSSH 是一种 SSH 的开源实现。
 
  子进程负责处理密钥交换、加密、认证、执行命令、数据交换等具体事务。
 
+
+
+
+
+Windows 下的 ssh
+
+从 Win10 1809 和 Windows Server 2019 开始 Windows 开始支持 OpenSSH Server。
+
+https://www.cnblogs.com/sparkdev/p/10166061.html 
+
 本文只记录 ssh 基本组件的用法，关于 ssh-agent 和 ssh-add 等命令，这里没有记录。
 
 
