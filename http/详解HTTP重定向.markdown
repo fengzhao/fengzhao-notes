@@ -50,6 +50,15 @@ HTTP 协议提供了一种特殊形式的响应—— HTTP 重定向（HTTP redi
 
 
 
+| 编码  | 含义               | 处理方法                                                     | 典型应用场景                                             |
+| :---- | :----------------- | :----------------------------------------------------------- | :------------------------------------------------------- |
+| `301` | Moved Permanently  | [`GET`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Methods/GET) 方法不会发生变更，其他方法有可能会变更为 [`GET`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Methods/GET) 方法。[[1\]](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Redirections#attr1) | 网站重构。                                               |
+| `307` | Temporary Redirect | 方法和消息主体都不发生变化。                                 | 网站重构，用于非GET方法。(with non-GET links/operations) |
+
+
+
+
+
 
 
 ## 301 Moved Permanently
@@ -195,3 +204,9 @@ Strict-Transport-Security: max-age=360
 
 
 302表示旧地址A的资源还在（仍然可以访问），这个重定向只是临时地从旧地址A跳转到地址B，搜索引擎会抓取新的内容而保存旧的网址。
+
+
+
+
+
+## 307 重定向
