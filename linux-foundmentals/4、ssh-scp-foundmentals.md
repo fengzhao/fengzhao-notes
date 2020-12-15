@@ -2,11 +2,17 @@
 
 ## OpenSSH 概览
 
-SSH 是 Secure SHELL 的缩写，顾名思义，这是一种建立在应用层基础上的安全协议，是一种加密的[网络传输协议](https://zh.wikipedia.org/wiki/%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%8D%8F%E8%AE%AE)，可在不安全的网络中为网络服务提供安全的传输环境，专为 Linux 远程登陆和其他服务提供的安全协议。
+SSH 是 Secure SHELL 的缩写，顾名思义，这是一种建立在应用层基础上的安全协议，是一种加密的[网络传输协议](https://zh.wikipedia.org/wiki/%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%8D%8F%E8%AE%AE)。
 
-人们通常利用SSH来远程登录到服务器上执行命令。
+可在不安全的网络中为网络服务提供安全的传输环境（即端到端加密，即使流量被劫持，也无法解密），专为 Linux 远程登陆和其他服务提供的安全协议。
 
-OpenSSH 是一种 SSH 的开源实现。它是利用 OpenSSL  协议具体实现的开源软件，包括 ssh,ssh-copyid,ssh-keygen 等一系列套件，在 Linux 各大发行版基本上都已经预先安装好了。可以使用 ssh -V 命令来查看 OpenSSH 版本。
+人们通常利用 SSH 来远程登录到服务器上执行命令。（类似 Windows 上的 rdb 协议）
+
+OpenSSH 是一种 SSH 的开源实现。
+
+它是利用 OpenSSL  协议具体实现的开源软件，包括 ssh,ssh-copyid,ssh-keygen 等一系列套件，在 Linux 各大发行版基本上都已经预先安装好了。
+
+可以使用 ssh -V 命令来查看 OpenSSH 版本。
 
 在 Linux 中，sshd 是 OpenSSH SSH 的守护进程。用于在不可信网络上提供安全的连接通道。
 
@@ -25,9 +31,11 @@ openssh 的认证方式：
 
 
 
-OpenSSL 
+**OpenSSL** 
 
-OpenSSL 是用于传输层安全性（TLS）协议的健壮的，商业级，功能齐全的开源工具包，以前称为安全套接字层（SSL）协议。协议实现基于完整功能的通用密码库，该库也可以独立使用。
+OpenSSL 是用于传输层安全性（TLS）协议的健壮的，商业级，功能齐全的开源工具包，因 **安全套接字层（SSL）协议** 而闻名。
+
+这个协议的实现是基于完整功能的通用密码库，该库也可以独立使用。
 
 OpenSSL 代码库的地址是 https://github.com/openssl/openssl 。
 
@@ -39,13 +47,17 @@ OpenSSL 代码库的地址是 https://github.com/openssl/openssl 。
 
 特别是在Linux和其他Unix操作系统上，通常建议与发行商或供应商提供的预编译共享库链接。**一般不建议在 Linux 上自行编译安装 OpenSSL**
 
+**这是一个操作系统很底层的加密库，很多应用层的软件都引用了它（比如nginx,python等），所以一般不建议在生产环境直接编译。**
+
+
+
 
 
 OpenSSL 工具包括：
 
 - **libssl** 是TLSv1.3（[RFC 8446](https://tools.ietf.org/html/rfc8446)）之前的所有TLS协议版本的实现。
 
-  我们平时在安装软件时，经常会安装这个依赖包，
+  我们平时在安装软件时，经常会安装这个依赖包，yum -y install openssl-dev openssl 
 
 - **libcrypto** 一个功能全面的通用密码库。它构成了TLS实施的基础，但也可以独立使用。
 
