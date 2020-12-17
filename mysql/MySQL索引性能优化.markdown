@@ -763,3 +763,10 @@ SQL 优化的一条最基本的原则就是，当真正出现性能问题时或�
 - on 连接的字段，或者 where 条件的字段没有索引列，或者根本不带 where 条件。
 - 
 
+
+
+
+
+# MySQL优化准则
+
+https://github.com/kekobin/blog/issues/87
