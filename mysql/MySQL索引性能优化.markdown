@@ -745,7 +745,21 @@ SET [GLOBAL|SESSION] optimizer_switch='command[,command]...';
 
 
 
+# 尽量避免全表扫描
+
+https://cloud.tencent.com/developer/article/1404687
+
+http://zhongmingmao.me/2019/03/08/mysql-full-table-scan/
+
+在 expain 查看一个 SQL 的执行计划时，如果 type 字段是 ALL ，则会进行全表扫描。
+
+SQL 优化的一条最基本的原则就是，当真正出现性能问题时或者影响到业务时，才考虑优化。
 
 
 
+全表扫描的情况：
+
+- 表足够小，数据量足够少，全表扫描的速度甚至比索引查找还要快。通常是 10 行之内的表。
+- on 连接的字段，或者 where 条件的字段没有索引列，或者根本不带 where 条件。
+- 
 
