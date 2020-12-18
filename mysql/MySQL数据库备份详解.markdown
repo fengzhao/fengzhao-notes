@@ -60,7 +60,7 @@ mysql备份类型：逻辑备份和物理备份，全备份和增量备份等等
 
 逻辑备份可以使用  mysqldump 或 select ... into outfile  语句。
 
-
+然后使用 mysqlimport 或 load data 等语句来恢复数据。
 
 ```shell
 # 优点： 恢复速度非常快，比insert的插入速度快很多。
