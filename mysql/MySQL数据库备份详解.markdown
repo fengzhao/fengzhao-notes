@@ -62,6 +62,36 @@ mysql备份类型：逻辑备份和物理备份，全备份和增量备份等等
 
 
 
+```shell
+# 优点： 恢复速度非常快，比insert的插入速度快很多。
+# 缺点：只能备份表数据，并不能包含表结构；如果表被drop，是无法恢复数据的。
+
+# select into outfile 导出表
+select col1， col2 from table-name into outfile  '/path/备份文件名称'
+// 将tt表数据备份到tmp目录下的tt.sql文件
+select * from tt into outfile '/tmp/tt.sql
+// 如果tt.sql文件存在，会报错文件以及存在
+
+
+LOAD DATA INFILE '/path/备份文件' into table database.tt
+// 将tmp下的tt.sql文件恢复到tt表
+load data infile '/tmp/tt.sql' into table db.tt
+
+
+4）load data与insert速度对比
+# 以插入10万条数据为例，load data需要大概1.4s，insert大概需要12.2s，大概是insert的12倍。
+```
+
+
+
+
+
+
+
+
+
+
+
 ### 热备份 VS 冷备份
 
 热备就是不停机备份，备份期间，数据库服务并不会关闭。整个实例还可以对外提供服务。
