@@ -102,5 +102,17 @@ load data infile '/tmp/tt.sql' into table db.tt
 
 
 
+### 快照备份
+
+
+
+### 全量备份 VS 增量备份
+
+
+
+
+
+
+
 
 
