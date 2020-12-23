@@ -36,7 +36,7 @@ configure arguments: --prefix=/usr/share/nginx --sbin-path=/usr/sbin/nginx --mod
 
 ```nginx
 server {
-    # 443端口，SSL协议，启用http2，也可以用非443端口
+    # 443端口，SSL协议，启用http2
     listen       443 ssl http2;
     server_name  www.example.com;
 
