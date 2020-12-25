@@ -1,8 +1,14 @@
 # SHELL脚本学习笔记
 
-Shell 是 Linux 下的命令交互程序，其实就是一个命令解释器。它用来接收用户输入的指令，传递给内核进行执行。所以它可以被理解为内核外面的一层壳，用户通过它来与内核交互。它虽然不是 Unix/Linux 系统内核的一部分，但它调用了系统核心的大部分功能来执行程序、建立文件并以并行的方式协调各个程序的运行。因此，对于用户来说，shell 是最重要的实用程序，深入了解和熟练掌握 shell 的基本特性及其使用方法，是用好 Unix/Linux 系统的关键。
+Shell 是 Linux 下的命令交互程序，其实就是一个命令解释器。
 
-可以说，shell使用的熟练程度反映了用户对 Unix/Linux 使用的熟练程度。
+它用来接收用户输入的指令，传递给内核进行执行。所以它可以被理解为内核外面的一层壳，用户通过它来与内核交互。
+
+它虽然不是 Unix/Linux 系统内核的一部分，但它调用了系统核心的大部分功能来执行程序、建立文件并以并行的方式协调各个程序的运行。
+
+因此，对于用户来说，shell 是最重要的实用程序，深入了解和熟练掌握 shell 的基本特性及其使用方法，是用好 Unix/Linux 系统的关键。
+
+可以说，shell 使用的熟练程度反映了用户对 Unix/Linux 使用的熟练程度。
 
 ## 1、Linux 命令和 SHELL 基础
 
@@ -41,13 +47,21 @@ find: /usr/bin/find
 
 ### 1.2、几种常见的 Shell
 
- Linux 发行版自带的标准 Shell 都是 Bash shell，Linux 的默认命令行就是 Bash，我们的最多的也是这个。是 BourneAgain Shell 的缩写，内部命令一共有 40 个。一般日常使用 bash 基本上都够了，进阶可以试试 zsh。
+ Linux 发行版自带的标准 Shell 都是 Bash shell，Linux 的默认命令行就是 Bash，我们的最多的也是这个。
+
+是 BourneAgain Shell 的缩写，内部命令一共有 40 个。一般日常使用 bash 基本上都够了，进阶可以试试 zsh。
 
  另一个强大的 Shell 就是 zsh，它比 bash 更强大，但是也更复杂，配置起来比较麻烦。所以有个 [on-my-zsh](https://github.com/robbyrussell/oh-my-zsh/)，它大大简化了 zsh 的配置，一般通过包管理器安装 zsh，然后通过 git 安装 on-my-zsh：
 ```shell
 $ git clone git://github.com/robbyrussell/oh-my-zsh.git ~/.oh-my-zsh
 $ cp ~/.oh-my-zsh/templates/zshrc.zsh-template ~/.zshrc
 ```
+
+Shell脚本和编程语言很相似，也有变量和流程控制语句，但Shell脚本是解释执行的，不需要编译，Shell程序从脚本中一行一行读取并执行这些命令，相当于一个用户把脚本中的命令一行一行敲到Shell提示符下执行。
+
+Unix/Linux上常见的Shell脚本解释器有 bash、sh、csh、ksh、dash  等，习惯上把它们称作一种Shell。
+
+
 
 ### 1.3、查看操作系统的 Shell 
 
@@ -647,7 +661,7 @@ fengzhao@fengzhao-pc:~$
 
 在 Linux 中，管道符 | 是一个经常用的命令，管道的本质实际上就是 Linux 里面的进程间通讯。
 
-**Linux 中管道符的作用是把上一个命令的标准输出做为下一个命令的标准输入**
+**Linux 中管道符的作用是把上一个命令的标准输出做为下一个命令的标准输入**。
 
 ------
 
@@ -657,7 +671,7 @@ fengzhao@fengzhao-pc:~$
 
 命令组
 
-比如，我想将多个命令的标准输入合并到一个流后再用管道传给下一个命令
+比如，我想将多个命令的标准输入合并到一个流后再用管道传给下一个命令。
 
 可以使用命令组的方式进行：
 
@@ -690,6 +704,16 @@ Linux的管道主要包括两种：无名管道和有名管道。
 
 
 <https://www.cnblogs.com/electronic/p/10939995.html>
+
+
+
+### xargs命令
+
+
+
+
+
+
 
 
 
