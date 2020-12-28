@@ -8,7 +8,9 @@
 
 
 
-持续集成的工作原理是将小的代码块推送到 Git 仓库中托管的应用程序代码库中。并且每次推送时，都要运行一系列脚本来构建、测试和验证代码更改，然后再将其合并到主分支中。
+持续集成的工作原理是将小的代码块推送到 Git 仓库中托管的应用程序代码库中。
+
+并且每次推送时，都要运行一系列脚本来构建、测试和验证代码更改，然后再将其合并到主分支中。
 
 
 
@@ -74,29 +76,42 @@ GitLab CI/CD 由一个名为 .gitlab-ci.yml 的文件进行配置，改文件位
 
 
 
-GitLab-Runner 就是一个用来执行.gitlab-ci.yml 脚本的工具，是 gitlab 官方用 go 写的一个项目，一般运行在单独的服务器上（**注意，跟gitlab server不是一台机器**）。
+GitLab-Runner 就是一个用来执行.gitlab-ci.yml 脚本的工具，是 gitlab 官方用 go 写的一个项目。
 
-可以理解成，Runner 就像认真工作的工人，GitLab-CI 就是管理工人的中心，所有工人都要在 GitLab-CI 里面注册，并且表明自己是为哪个项目服务。当相应的项目发生变化时，GitLab-CI 就会通知相应的工人执行对应的脚本。
+一般运行在单独的CICD专用的服务器上（**注意，跟gitlab server不是一台机器**）。
+
+可以理解成，Runner 就像认真工作的工人，GitLab-CI 就是管理工人的中心，所有工人都要在 GitLab-CI 里面注册，并且表明自己是为哪个项目服务。
+
+当相应的项目发生变化时，GitLab-CI 就会通知相应的工人执行对应的脚本。
 
 
 
 ```shell
-# gitlab runner 包管理安装
+# gitlab runner 安装
+
+# 确定runner跟gitlab-server的版本号相同
+ cat /opt/gitlab/embedded/service/gitlab-rails/VERSION
 
 # ubuntu
 curl -LJO https://gitlab-runner-downloads.s3.amazonaws.com/latest/deb/gitlab-runner_amd64.deb
-dpkg -i gitlab-runner_<arch>.deb
+dpkg -i itlab-runner_amd64.deb
 
 # RHEL
 curl -LJO https://gitlab-runner-downloads.s3.amazonaws.com/latest/rpm/gitlab-runner_<arch>.rpm
 rpm -i gitlab-runner_<arch>.rpm
 
 
+# 二进制安装（Linux x86-64） 
+# https://docs.gitlab.com/runner/install/linux-manually.html
 
 
-# 二进制包
-https://docs.gitlab.com/runner/install/linux-manually.html
+sudo curl -L --output /usr/local/bin/gitlab-runner \
+	"https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-amd64"
 
+sudo chmod +x /usr/local/bin/gitlab-runner
+sudo useradd --comment 'GitLab Runner' --create-home gitlab-runner --shell /bin/bash
+sudo gitlab-runner install --user=gitlab-runner --working-directory=/home/gitlab-runner
+sudo gitlab-runner start
 
 
 # 注册服务
@@ -111,14 +126,6 @@ https://docs.gitlab.com/runner/install/linux-manually.html
 
 
 
-### runner 类型
-
-- [Shared runners](https://docs.gitlab.com/ee/ci/runners/#shared-runners)    全局 runner
-
-- [Group runners](https://docs.gitlab.com/ee/ci/runners/#group-runners)     可以用于某个group的项目
-
-- [Specific runners](https://docs.gitlab.com/ee/ci/runners/#specific-runners)   单独用于某个项目
-
 
 
 注册runner
@@ -128,6 +135,34 @@ https://docs.gitlab.com/runner/install/linux-manually.html
 
 sudo gitlab-runner register
 ```
+
+
+
+
+
+
+
+
+
+## runner 配置说明
+
+在 gitlab CICD 中
+
+
+
+
+
+
+
+### runner 类型
+
+- [Shared runners](https://docs.gitlab.com/ee/ci/runners/#shared-runners)    全局 runner ，对于整个 gitlab 实例里面的每个组和项目都适用
+
+- [Group runners](https://docs.gitlab.com/ee/ci/runners/#group-runners)     可以用于某个 group 里面的项目
+
+- [Specific runners](https://docs.gitlab.com/ee/ci/runners/#specific-runners)   单独用于某个项目
+
+
 
 
 
