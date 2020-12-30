@@ -22,6 +22,8 @@ https://docs.microsoft.com/zh-cn/previous-versions/office/
 
 https://hub.docker.com/r/luodaoyi/kms-server
 
+https://www.kms.pub
+
 
 > 刻录工具
 
