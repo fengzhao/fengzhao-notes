@@ -1,0 +1,65 @@
+# 概述
+
+
+
+
+
+MySQL 支持几种类别的 [SQL](https://dev.mysql.com/doc/refman/8.0/en/glossary.html#glos_sql) 数据类型：数值类型、"日期和时间"类型、字符串（字符和字节）类型、空间类型和 [JSON](https://dev.mysql.com/doc/refman/8.0/en/json.html) 数据类型。
+
+本章阐述了每个类别所含类型的属性，以及总结了数据类型的存储要求。
+
+数据类型的描述使用了以下约定：
+
+- 对于整型（integer），`M` 表示最大的显示宽度（display width）；
+- 对于浮点型（floating-point）和定点型（fixed-point）类型，`M` 表示可被存储数字的总个数（the precision）；
+- 对于字符串类型，`M` 是最大长度。另外，`M` 的最大允许值取决于具体的数据类型。
+- `D` 应用于浮点型和定点型，它表示小数点后可存在多少个数字（the scale）。可能的最大值为 30，但不应大于 `M`-2。
+- `fsp` 应用于 TIME、DATETIME 和 TIMESTAMP 类型，它表示小数的精度（即毫秒、微秒），即小数点后数字的个数。`fsp` 的取值范围为 [0, 6]，其中 0 表示没有小数。若缺省（即不传递该参数），默认精度为 0（与 SQL 标准的默认值 6 不同，主要为了兼容 MySQL 旧版本）。
+- 方括号（[]）表示类型定义的可选部分。
+
+
+
+
+
+## 数值类型
+
+MySQL 支持 SQL 标准中所有数值数据类型。
+
+其中包括 **精确数值类型**（INTEGER、SMALLINT、DECIMAL 和 NUMERIC），也包括 **近似数值类型**（FLOAT、REAL 和 DOUBLE PRECISION）。
+
+**关键字 INT 是 INTEGER 的代名词，关键字 DEC 和 FIXED 是 DECIMAL 的代名词。**
+
+MySQL 将 DOUBLE 视为 DOUBLE PRECISION 的代名词（一种非标准扩展）。
+
+除非启用 SQL 的 [REAL_AS_FLOAT](https://dev.mysql.com/doc/refman/8.0/en/sql-mode.html#sqlmode_real_as_float) 模式，否则 MySQL 也把 REAL 视为 DOUBLE PRECISION 的代名词（一种非标准变体）。
+
+
+
+
+
+### 数值类型的语法
+
+
+
+- BIT[(M)]
+  bit 值类型。`M` 表示值含有 bit 的数量，取值范围为 [1, 64]，默认值为 1（`M `缺省时）。
+
+
+
+- INTEGER[(M)] [UNSIGNED] [ZEROFILL]
+  INT 的代名词。
+
+- INT[(M)] [UNSIGNED] [ZEROFILL]
+  常规尺寸的整型。有符号的取值范围是 [-2147483648, 2147483647]，无符号的取值范围是 [0, 4294967295]。
+- MEDIUMINT[(M)] [UNSIGNED] [ZEROFILL]
+  中整型。有符号的取值范围是 [-8388608, 8388607]，无符号的取值范围是 [0, 16777215]。
+- SMALLINT[(M)] [UNSIGNED] [ZEROFILL]
+  小整型。有符号的取值范围是 [-32768, 32767]，无符号的取值范围是 [0, 65535]。
+- TINYINT[(M)] [UNSIGNED] [ZEROFILL]
+  微小整型。有符号的取值范围是 [-128, 127]，无符号的取值范围是 [0, 255]。
+- 
+
+
+
+
+
