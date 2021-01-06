@@ -1488,6 +1488,68 @@ HTTP 2.0 新增的一个强大的新功能，就是服务器可以对一个客�
 
 
 
+# cookie和session
+
+HTTP Cookie（也叫 Web Cookie 或浏览器 Cookie）是服务器发送到用户浏览器并保存在本地的一小块数据。
+
+它会在浏览器下次向同一服务器再发起请求时被携带并发送到服务器上。
+
+（试想，如果没有 cookie，如果你进入一个购物网站并且尚未登陆，添加商品到购物车后，然后刷新页面，购物车就被清空。那会是多么麻烦）
+
+通常，它用于告知服务端两个请求是否来自同一浏览器，如保持用户的登录状态。Cookie 使基于[无状态](https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview#HTTP_is_stateless_but_not_sessionless)的HTTP协议记录稳定的状态信息成为了可能。
+
+
+
+Cookie 曾一度用于客户端数据的存储，因当时并没有其它合适的存储办法而作为唯一的存储手段，但现在随着现代浏览器开始支持各种各样的存储方式，Cookie 渐渐被淘汰。
+
+由于服务器指定 Cookie 后，浏览器的每次请求都会携带 Cookie 数据，会带来额外的性能开销（尤其是在移动环境下）。
+
+新的浏览器API已经允许开发者直接将数据存储到本地，如使用 [Web storage API](https://developer.mozilla.org/zh-CN/docs/Web/API/Web_Storage_API) （本地存储和会话存储）或 [IndexedDB](https://developer.mozilla.org/zh-CN/docs/Web/API/IndexedDB_API) 。
+
+
+
+
+
+### cookie的过程
+
+当服务器收到 HTTP 请求时，服务器可以在响应头里面添加一个 [`Set-Cookie`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Set-Cookie) 头部。
+
+浏览器收到响应后通常会保存下 Cookie，之后对该服务器每一次请求中都通过 [`Cookie`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Cookie) 请求头部将 Cookie 信息发送给服务器。
+
+另外，Cookie 的过期时间、域、路径、有效期、适用站点都可以根据需要来指定。
+
+```shell
+# 服务器返回的浏览器的响应头中添加这个头部，设置cookie
+Set-Cookie: yummy_cookie=choco; tasty_cookie=strawberry
+
+
+
+# 接下来浏览器对服务器的请求报文中都会携带这些cookie
+GET /sample_page.html HTTP/1.1
+Host: www.example.org
+Cookie: yummy_cookie=choco; tasty_cookie=strawberry
+```
+
+
+
+
+
+```javascript
+//nodejs的demo项目设置cookie
+var http = require('http');
+var server = http.createServer(function(request, response)
+{
+    
+    response.setHeader('X-Foo', 'bar');
+    response.setHeader('Set-Cookie', ['type=ninja', 'language=javascript']); 
+    
+    response.end("Hello fengzhao\n");
+});
+
+server.listen(3000);
+
+```
+
 
 
 
