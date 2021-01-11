@@ -86,7 +86,7 @@ mysql备份类型：逻辑备份和物理备份，全备份和增量备份等等
 然后使用 mysqlimport 或 load data 等语句来恢复数据。
 
 ```shell
-# 优点： 恢复速度非常快，比insert的插入速度快很多。
+# 优点：恢复速度非常快，比insert的插入速度快很多，根据官网文档，说是快20倍。
 # 缺点：只能备份表数据，并不能包含表结构；如果表被drop，是无法恢复数据的。
 
 # select into outfile 导出表
@@ -113,6 +113,11 @@ load data infile '/tmp/tt.sql' into table db.tt
 
 在很多场景，我们需要临时快速导入大量数据到某个新数据库。
 
+可以使用 
+
+
+
+load data 的速度为什么会比 insert 语句快？
 
 
 
@@ -122,6 +127,32 @@ load data infile '/tmp/tt.sql' into table db.tt
 
 
 
+
+
+### MySQL 插入语句优化
+
+为了加速 insert , 一般把多个小的插入，组合到一个大的插入语句，即批量插入。
+
+这样可以只建立一次连接，一次传输很多行数据。延迟索引更新。
+
+
+
+
+
+
+
+插入语句的时间开销，影响的比例大致如下：
+
+- Connecting: (3)
+- Sending query to server: (2)
+- Parsing query: (2)
+- Inserting row: (1 × size of row)
+- Inserting indexes: (1 × number of indexes)
+- Closing: (1)
+
+
+
+打开表的开销，基本上是一次性开销。
 
 
 
