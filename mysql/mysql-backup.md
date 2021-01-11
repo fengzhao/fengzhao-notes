@@ -57,6 +57,90 @@ mysql备份类型：逻辑备份和物理备份，全备份和增量备份等等
 
 
 
+### 逻辑备份
+
+逻辑备份保存了代表数据库逻辑结构（建库建表语句）和内容（插入语句）。这种备份适合小型数据库。
+
+逻辑备份有如下特点：
+
+​    1、备份是通过查询mysql服务器来获取表结构和表数据来完成的。
+
+​    2、比物理备份慢一点，因为需要访问数据库获取数据信息转换成逻辑格式。如果数据在客户端写入，那么服务端必须把它送到 backup 程序中。
+
+​    3、输出比物理备份大，特别是保存成文件格式。
+
+​    4、备份和恢复的颗粒可以从服务层（所有的库）和数据库层（某个库中的表），与引擎无关。
+
+​    5、不包括日志文件和配置文件的备份。
+
+​    6、备份文件以逻辑格式存储，机器独立，并且高可用。
+
+​    7、服务可以不停，保存运行。
+
+对于 InnoDB 的表，可以实现在线备份而且不需要对表加锁，通过在 mysqldump 上添加 single-transaction 参数。
+
+
+
+逻辑备份可以使用  mysqldump 或 select ... into outfile  语句。
+
+然后使用 mysqlimport 或 load data 等语句来恢复数据。
+
+```shell
+# 优点： 恢复速度非常快，比insert的插入速度快很多。
+# 缺点：只能备份表数据，并不能包含表结构；如果表被drop，是无法恢复数据的。
+
+# select into outfile 导出表
+select col1， col2 from table-name into outfile  '/path/备份文件名称'
+// 将tt表数据备份到tmp目录下的tt.sql文件
+select * from tt into outfile '/tmp/tt.sql
+// 如果tt.sql文件存在，会报错文件以及存在
+
+
+LOAD DATA INFILE '/path/备份文件' into table database.tt
+// 将tmp下的tt.sql文件恢复到tt表
+load data infile '/tmp/tt.sql' into table db.tt
+
+
+# load data与insert速度对比
+# 以插入10万条数据为例，load data需要大概1.4s，insert大概需要12.2s，大概是insert的12倍。
+```
+
+
+
+
+
+### MySQL 快速导入数据
+
+在很多场景，我们需要临时快速导入大量数据到某个新数据库。
+
+
+
+
+
+
+
+
+
+
+
+
+
+http://mysql.taobao.org/monthly/2020/08/03/
+
+
+
+
+
+
+
+### 热备份 VS 冷备份
+
+热备就是不停机备份，备份期间，数据库服务并不会关闭。整个实例还可以对外提供服务。
+
+冷备就是停库备份，备份期间，数据库服务关闭，直接拷贝文件和数据目录的方式进行备份。
+
+
+
 ### 2、备份内容和备份工具
 
 需要备份的内容：文件、二进制日志、事务日志、配置文件、操作系统上和 MySQL 相关的配置（如 sudo，定时任务）。
@@ -124,9 +208,13 @@ mysqldump 有很多选项，可以配置文件或者命令行中指定。
 
 #### DDL 选项
 
-mysqldump 其实是把数据库中的数据对象转储为 sql 文件。这其中就包括很多 DDL 语句，
+mysqldump 其实是把数据库中的数据对象转储为 sql 文件。这其中就包括很多 DDL 语句。
 
-- --add-drop-database  在每个 CREATE DATABASE 都带 DROP DATABASE
+
+
+标准的建库语句，use语句，建表语句，插入语句。
+
+- --add-drop-database  在每个 CREATE DATABASE 之前都带 DROP DATABASE
 - --add-drop-table 在每个 CREATE TABLE 都带 DROP TABLE
 
 #### 性能选项
