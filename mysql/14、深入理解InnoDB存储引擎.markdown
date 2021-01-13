@@ -229,6 +229,12 @@ https://blog.csdn.net/qq_35246620/article/details/79345359
 
 
 
+
+
+
+
+
+
 ### 二进制日志 binlog
 
 
