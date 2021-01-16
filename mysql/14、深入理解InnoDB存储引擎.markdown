@@ -145,7 +145,7 @@ innodb_buffer_pool_chunk_size=128M # 默认内存块是128M，可以以1MB为单
 
 在 MySQL 里，如果每一次的更新操作都需要写进磁盘，然后磁盘也要找到对应的那条记录，然后再更新，整个过程IO成本、查找成本都很高。
 
-**所以有一种 WAL 技术，全称是 Write-Ahead Logging，它的关键点就是先写日志，再写磁盘。（日志先行）**
+**所以有一种技术叫 WAL ，全称是 Write-Ahead Logging，它的关键点就是先写日志，再写磁盘。（日志先行）**
 
 具体来说，当有一条记录需要更新的时候，InnoDB 引擎就会先把记录写到 redo log （磁盘中的物理文件）里面，并更新内存，这个时候更新就算完成了。
 
@@ -190,7 +190,7 @@ redo-log 默认是在 datadir 目录下，名为 `ib_logfile1` 和 `ib_logfile2`
 # 注意这个目录要提前创建好，并设置好正确的权限
 innodb_log_group_home_dir=/data/mysql_redo_log/
 
-# 单个redolog文件的大小，默认是48MB，最大值为512G，注意最大值指的所有redo log文件之和
+# 单个redolog文件的大小，默认是48MB，最大值为512G，注意最大值指的所有redo-log文件之和
 # redo-log应该尽量设置的足够大，
 innodb_log_file_size=48MB
 
@@ -202,6 +202,11 @@ innodb_log_files_in_group=2  # 默认值是2
 # 然后根据 innodb_flush_log_at_trx_commit 参数的设置，再把日志从buffer中flush到磁盘
 # innodb_log_buffer_size是会话级的，所有整个redolog buffer占用的空间应该是innodb_log_buffer_size * connections 
 innodb_log_buffer_size=16M  
+
+
+
+## 修改redo_log文件大小必须要先关闭实例后再修改。
+
 
 
 innodb_flush_log_at_trx_commit：
@@ -221,9 +226,84 @@ innodb_page_size=16KB
 
 
 
+#### redolog 动态开关
+
+在 MySQL 8.0.21 新版本发布中，支持了一个新特性**Redo Logging动态开关**。
+
+借助这个功能，在新实例导数据的场景下，事务处理可以跳过记录 redolog 和 doublewrite buffer，从而加快数据的导入速度。
+
+**同时，付出的代价是短时间牺牲了数据库的ACID保障。所以主要使用场景就是向一个新实例导入数据。**
+
+
+
+**注意事项**
+
+- 该特性仅用于新实例导数据场景，不可用于线上的生产环境；
+- Redo logging关闭状态下，支持正常流程的关闭和重启实例；但在异常宕机情况下，可能会导致丢数据和页面损坏；Redo logging关闭后异常宕机的实例需要废弃重建，直接重启会有如下报错：[ERROR] [MY-013578] [InnoDB] Server was killed when Innodb Redo logging was disabled. Data files could be corrupt. You can try to restart the database with innodb_force_recovery=6.
+- Redo logging 关闭状态下，不支持 cloning operations 和 redo log archiving 这两个功能；
+- 执行过程中不支持其他并发的ALTER INSTANCE操作；
+
+
+
+
+
+**新增内容**
+
+- SQL语法`ALTER INSTANCE {ENABLE | DISABLE} INNODB REDO_LOG`。
+- INNODB_REDO_LOG_ENABLE 权限，允许执行Redo Logging动态开关的操作。
+- Innodb_redo_log_enabled的status，用于显示当前Redo Logging开关状态。
+
+
+
+**用法**
+
+```sql
+--先赋权
+GRANT INNODB_REDO_LOG_ENABLE ON *.* to 'data_load_admin';
+--然后关闭redo_log
+ALTER INSTANCE DISABLE INNODB REDO_LOG;
+--确认是否关闭成功
+SHOW GLOBAL STATUS LIKE 'Innodb_redo_log_enabled';
+
+--开始往新实例导入数据
+
+--重新开启redo_log
+ALTER INSTANCE ENABLE INNODB REDO_LOG;
+--确认是否开启成功
+SHOW GLOBAL STATUS LIKE 'Innodb_redo_log_enabled';
+```
+
+
+
+
+
+
+
+#### redolog 归档
+
+热备的原理都是要备份redolog，由于redolog是循环写的。
+
+**如果备份期间还是有大量的事务写入，备份速度跟不上redo log生成的速度，结果导致redo log被覆盖了，然后备份就无法保证一致性**。
+
+就会导致备份失败。
+
+在 MySQL 8.017 中引入了 redolog 归档功能。即写 redolog 的时候，
+
+
+
+想要启用redo log归档功能，只需设置**innodb_redo_log_archive_dirs**选项即可，该选项可支持在线动态修改，例如：
+
+
+
 https://blog.csdn.net/qq_35246620/article/details/79345359
 
 ### 回滚日志undolog
+
+
+
+
+
+
 
 
 

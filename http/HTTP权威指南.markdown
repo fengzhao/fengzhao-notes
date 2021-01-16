@@ -513,6 +513,20 @@ TCP 设计中也考虑到这一点，使用了一些算法来检测网络拥塞�
 
 
 
+### HTTP Pipelining 
+
+HTTP/1.1 存在一个问题，单个 TCP 连接在同一时刻只能处理一个请求。
+
+意思是说：两个请求的生命周期不能重叠，任意两个 HTTP 请求从开始到结束的时间在同一个 TCP 连接里不能重叠。
+
+
+
+ 一个支持持久连接的客户端可以在一个TCP连接中发送多个请求（不需要等待任意请求的响应）。收到请求的服务器必须按照请求收到的顺序发送响应。
+
+
+
+
+
 
 
 ### 持久连接（TCP长连接）
@@ -1529,6 +1543,36 @@ GET /sample_page.html HTTP/1.1
 Host: www.example.org
 Cookie: yummy_cookie=choco; tasty_cookie=strawberry
 ```
+
+
+
+### cookie的生命周期
+
+Cookie 的生命周期可以通过两种方式定义：
+
+- 会话期 Cookie 是最简单的 Cookie：浏览器关闭之后它会被自动删除，也就是说它仅在会话期内有效。会话期Cookie不需要指定过期时间（`Expires`）或者有效期（`Max-Age`）。需要注意的是，有些浏览器提供了会话恢复功能，这种情况下即使关闭了浏览器，会话期Cookie 也会被保留下来，就好像浏览器从来没有关闭一样，这会导致 Cookie 的生命周期无限期延长。
+
+- 持久性 Cookie 的生命周期取决于过期时间（`Expires`）或有效期（`Max-Age`）指定的一段时间。
+
+  例如：
+
+  ```shell
+  Set-Cookie: id=a3fWa; Expires=Wed, 21 Oct 2015 07:28:00 GMT;
+  ```
+
+> **提示：**当Cookie的过期时间被设定时，设定的日期和时间只与客户端相关，而不是服务端。
+
+
+
+如果您的站点对用户进行身份验证，则每当用户进行身份验证时，它都应重新生成并重新发送会话 Cookie，甚至是已经存在的会话 Cookie。
+
+此技术有助于防止[会话固定攻击（session fixation attacks）](https://wiki.developer.mozilla.org/en-US/docs/Web/Security/Types_of_attacks#Session_fixation)，在该攻击中第三方可以重用用户的会话。
+
+
+
+### cookie的作用域
+
+`Domain` 和 `Path` 标识定义了Cookie的作用域：即允许 Cookie 应该发送给哪些 URL。
 
 
 
