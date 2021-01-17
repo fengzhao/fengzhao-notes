@@ -1510,7 +1510,9 @@ HTTP Cookie（也叫 Web Cookie 或浏览器 Cookie）是服务器发送到用�
 
 （试想，如果没有 cookie，如果你进入一个购物网站并且尚未登陆，添加商品到购物车后，然后刷新页面，购物车就被清空。那会是多么麻烦）
 
-通常，它用于告知服务端两个请求是否来自同一浏览器，如保持用户的登录状态。Cookie 使基于[无状态](https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview#HTTP_is_stateless_but_not_sessionless)的HTTP协议记录稳定的状态信息成为了可能。
+通常，它用于告知服务端两个请求是否来自同一浏览器，如保持用户的登录状态。
+
+Cookie 使基于[无状态](https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview#HTTP_is_stateless_but_not_sessionless)的HTTP协议记录稳定的状态信息成为了可能。
 
 
 
@@ -1593,6 +1595,67 @@ var server = http.createServer(function(request, response)
 server.listen(3000);
 
 ```
+
+
+
+# 认证
+
+
+
+
+
+### HTTP 基本认证
+
+
+
+- 客户端请求资源
+- 服务端返回 401 ，响应头中包含 www-Authorization 首部，质询用户认证
+- 客户端提供账号密码，账号密码拼接后经过base64编码然后包含在 Authorization 头部提交给服务端
+- 服务端解码并验证，然后返回资源。
+
+
+
+
+
+
+
+#### base64编码
+
+
+
+我们发现字符串“Man”的Base64编码是“TWFu”，那么这是怎么转换过来的呢？
+
+不急，我们一个一个字符来分析：
+
+字符"M"对应的ASCII编码是77，二进制形式即 01001101；
+
+字符“a”对应的ASCII编码是97，二进制表现形式为 01100001；
+
+字符“n”对应的ASCII编码为110，二进制形式为：01101110。
+
+
+
+这三个字符的二进制位组合在一起就变成了一个24位的字符串“010011010110000101101110”。
+
+
+
+接下来，我们从左至右，每次抽取6位作为1组（因为6位一共有2^6=64种不同的组合），因此每一组的6位又代表一个数字（0~63），接下来，我们查看索引表，找到这个数字对应的字符，就是我们最后的结果，是不是很简单呢？
+
+https://blog.csdn.net/doujinlong1/article/details/86579369
+
+https://www.cnblogs.com/ranyonsue/p/8615824.html
+
+
+
+
+
+
+
+### 摘要认证
+
+
+
+
 
 
 
