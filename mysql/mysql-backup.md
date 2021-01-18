@@ -264,6 +264,8 @@ mysqldump 其实是把数据库中的数据对象转储为 sql 文件。这其�
 
 
 
+
+
 ## MySQL8.0热备
 
 MySQL8 数据库热备份规范
@@ -273,6 +275,8 @@ MySQL8 数据库热备份规范
 xtrabackup8 仅支持 MySQL8 及以上 ，支持 MySQL8.0.20 ，不支持低版本MySQL。MySQL5.7要用 5.7 版的xtrabackup 。
 
 备份软件版本： xtrabackup version 8.0.13
+
+
 
 https://www.percona.com/doc/percona-xtrabackup/8.0/release-notes.html
 
