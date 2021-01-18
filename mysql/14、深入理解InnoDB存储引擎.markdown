@@ -297,6 +297,10 @@ SHOW GLOBAL STATUS LIKE 'Innodb_redo_log_enabled';
 
 https://blog.csdn.net/qq_35246620/article/details/79345359
 
+
+
+
+
 ### 回滚日志undolog
 
 
