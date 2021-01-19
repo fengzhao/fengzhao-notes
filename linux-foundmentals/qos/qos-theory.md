@@ -48,3 +48,50 @@ Diff-Serv是一个多服务模型，它可以满足不同的QoS需求。与Int-S
 
 它由 RFC2475 定义，在区分服务中，根据服务要求对不同业务的数据进行分类，对报文按类进行优先级标记，然后有差别地提供服务。
 
+
+
+
+
+
+
+# Linux iproute2
+
+
+
+iproute2 是 Linux 用户空间下的一个网络工具集，它主要包含网络控制和流量管理等功能。包括：路由，网络接口，隧道，流量控制，网络相关的驱动。
+
+
+
+iproute2 是linux下管理控制TCP/IP网络和流量控制的新一代工具包，旨在替代老派的工具链net-tools。即大家比较熟悉的 ifconfig，arp，route，netstat 等命令。
+
+net-tools通过procfs(/proc)和 ioctl 系统调用去访问和改变内核网络配置，而 iproute2 则通过netlink套接字接口与内核通讯。
+
+抛开性能而言，net-tools 的用法给人的感觉是比较乱，而iproute2的用户接口相对net-tools来说相对来说，更加直观。
+
+比如，各种网络资源（如link、IP地址、路由和隧道等）均使用合适的对象抽象去定义，使得用户可使用一致的语法去管理不同的对象.
+
+
+
+iproute2 是一个基于 GPLv2 协议开源的项目。它的开发跟 Linux 内核中的网络组件的开发紧密相关。
+
+2013年12月，它主要由 Stephen Hemminger and David Ahern 来维护。它的创始人现在在负责 Linux 内核的 QoS 。
+
+iproute2 工具集包含如下命令：
+
+- arpd                    
+- bridge
+- ctstat
+- devlink
+- ip
+- lnstat
+- nstat 
+- rdma
+- routef
+- routel
+- rtacct
+- rtmon
+- rtstat
+- ss
+- tc 
+- tipc 
+

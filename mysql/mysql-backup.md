@@ -250,7 +250,9 @@ mysqldump 其实是把数据库中的数据对象转储为 sql 文件。这其�
 
 #### 性能选项
 
-下面这些选项与数据还原操作性能有关，对于大数据集，还原数据（执行dump_file文件中的 insert 语句）是最耗费时间。对于还原时间的考虑，需要在备份之前就要计划和测试。
+下面这些选项与数据还原操作性能有关，对于大数据集，还原数据（执行dump_file文件中的 insert 语句）是最耗费时间。
+
+对于还原时间的考虑，需要在备份之前就要计划和测试。
 
 
 
@@ -259,6 +261,8 @@ mysqldump 其实是把数据库中的数据对象转储为 sql 文件。这其�
 
 
 # MySQL 热备
+
+
 
 
 
@@ -271,6 +275,8 @@ MySQL8 数据库热备份规范
 xtrabackup8 仅支持 MySQL8 及以上 ，支持 MySQL8.0.20 ，不支持低版本MySQL。MySQL5.7要用 5.7 版的xtrabackup 。
 
 备份软件版本： xtrabackup version 8.0.13
+
+
 
 https://www.percona.com/doc/percona-xtrabackup/8.0/release-notes.html
 
@@ -450,4 +456,18 @@ xtrabackup --backup --tables-file file.txt --datadir=/var/lib/mysql --target-dir
 # 准备一个部分备份
 xtrabackup --prepare --export --target-dir=/path/to/partial/backup
 ```
+
+
+
+
+
+
+
+# 远程备份
+
+
+
+
+
+
 

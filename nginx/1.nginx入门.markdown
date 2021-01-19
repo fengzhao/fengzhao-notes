@@ -44,7 +44,7 @@ Nginx 有一个 master 进程和若干个 worker 进程，master 进程是用来
 
 
 
-## Nginx 的版本
+## Nginx 及其周边
 
 介绍完 Nginx 的背景，我们就该说说 Nginx 的版本了。目前 Nginx 有三个主要的产品：
 
@@ -52,7 +52,28 @@ Nginx 有一个 master 进程和若干个 worker 进程，master 进程是用来
 - 阿里巴巴的 Tengine。Tengine 是由淘宝网发起的 Web 服务器项目，目前已经开源。
 - OpenResty。OpenResty 通过 Lua 对 Nginx 进行扩展，使得扩展 Nginx 模块变得异常轻松
 
-针对我们日常学习来说，选择官方开源版的 Nginx 以及 OpenResty 就可以了。
+针对我们日常工作学习来说，选择官方开源版的 Nginx 或者 OpenResty 就可以了。
+
+
+
+
+
+### Nginx 版本策略
+
+------
+
+在 Nginx 中，有两种分支，分别是 mainline 和 stable。
+
+-  Mainline 相当于开发分支，更新比较活跃，包含引入一些新的功能或者bug修复，版本号的第二个数字如果是基数，那就是 Mainline 版本，比如 1.17.0。
+- Stable 分支很容易理解，就是相对稳定的版本，除非有重大Bug，否则在它的生命周期内不会更新，版本号的第二个数字如果是偶数，那就是 Mainline 版本，比如 1.16.0。
+
+
+
+stable 版本代表功能多少和更新频率，和软件质量没有太大的关系（当然任何软件都会有Bug）。
+
+在每年4月份会发布一次，它的生命周期是一年，在这段时间内，一般情况不会更新版本号（除非有重大Bug）。
+
+https://www.cnblogs.com/91donkey/p/11639355.html
 
 
 
@@ -71,6 +92,8 @@ Nginx 有一个 master 进程和若干个 worker 进程，master 进程是用来
 ------
 
 ```shell
+# https://www.nginx.com/resources/wiki/start/topics/tutorials/install/
+
 # 配置yum源：/etc/yum.repos.d/nginx.repo 
 
 # CentOS
@@ -84,9 +107,14 @@ baseurl=https://nginx.org/packages/centos/7/x86_64/
 baseurl=https://nginx.org/packages/rhel/7/x86_64/
 # 系统:RHEL8 架构:x86_64
 # baseurl=https://nginx.org/packages/rhel/7/x86_64/
-
 gpgcheck=0
 enabled=1
+
+
+
+
+
+
 
 
 ```
@@ -94,8 +122,6 @@ enabled=1
 
 
 ### 编译安装Nginx
-
-
 
 在 <http://nginx.org/en/download.html> 里面可以直接下载 Nginx 源代码。包含以下目录：
 
@@ -167,13 +193,11 @@ make && make install
 
 
 
-
-
 **配置 Vim**
 
 如果 Vim 没有开启语法高亮的话，最好开启一下
 
-```
+```shell
 cp -r contrib/vim/* ~/.vim
 # mac 下需要在家目录下新建 .vimrc 文件并配置
 syntax on

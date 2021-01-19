@@ -34,6 +34,8 @@ mysql> FLUSH PRIVILEGES;
 -- 建用户
 CREATE USER 'dba'@'%' IDENTIFIED WITH 'mysql_native_password' by 'admin@123' ;
 
+CREATE USER 'security_test '@'%' IDENTIFIED WITH 'mysql_native_password' by 'YRtSNlqs%5QN' ;
+
 -- 赋超级权限
 GRANT ALL PRIVILEGES ON *.* TO 'dba'@'%';
  
