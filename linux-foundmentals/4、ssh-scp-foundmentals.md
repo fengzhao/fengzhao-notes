@@ -47,7 +47,7 @@ OpenSSL 是用于传输层安全性（TLS）协议的健壮的，商业级，功
 
 这个协议的实现是基于完整功能的通用密码库，该库也可以独立使用。
 
-OpenSSL 代码库的地址是 https://github.com/openssl/openssl 。
+OpenSSL 代码库的地址是 https://github.com/openssl/openssl 
 
 
 
