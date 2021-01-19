@@ -105,6 +105,29 @@ innodb_buffer_pool_chunk_size=128M # 默认内存块是128M，可以以1MB为单
 
 
 
+在生产中，重启MySQL后，会发现一段时间内SQL性能变差，然后最终恢复到原有性能。
+
+这是因为MySQL经常操作的热点数据都已经缓存到 InnoDB Buffer Pool 中。
+
+重启后。需要将热点数据从磁盘中逐渐缓存到 InnoDB Buffer Pool 中，从磁盘读取数据自然没有从内存读取数据快。
+
+
+
+MySQL重启后，将热点数据从磁盘逐渐缓存到 InnoDB Buffer Pool 的过程称为预热（warmup）。
+
+让应用系统自身慢慢通过SQL给 InnoDB Buffer Pool 预热成本很高，如果遇到高峰期极有可能带来一场性能灾难，业务卡顿不能顺利运营。
+
+
+
+为了避免这种情况发生，MySQL 5.6 引入了数据预热机制：
+
+- innodb_buffer_pool_dump_at_shutdown 
+-  innodb_buffer_pool_load_at_startup 
+
+这两个参数控制了预热，不过默认都是关闭的，需要开启。MySQL 5.7则是默认开启。
+
+
+
 ## 刷脏
 
 **脏页**
