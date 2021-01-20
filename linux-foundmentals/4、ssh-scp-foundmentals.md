@@ -709,3 +709,16 @@ MACs umac-128-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@op
 
 
 https://www.cnblogs.com/canyezhizi/p/13537495.html
+
+
+
+
+
+
+
+# openssh 编译升级
+
+
+
+
+
