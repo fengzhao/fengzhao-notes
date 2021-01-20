@@ -1,5 +1,9 @@
 # HTTP简介
 
+HTTP概述
+
+https://www.cnblogs.com/huansky/p/13124807.html
+
 
 
 HTTP（HyperText Transfer Protocol）即超文本传输协议，是一种详细规定了浏览器和万维网服务器之间互相通信的规则，它是万维网交换信息的基础。
