@@ -176,7 +176,7 @@ $ systemctl status docker  #查看状态
 
 #### 服务端配置
 
-docker 守护进程的配置，有两种方式指定：
+dockerd 守护进程的配置，有两种方式指定：
 
 - 通过在 dockerd 命令后面指定启动参数。
 - 通过 dockerd  --config-file  来指定一个json 格式的配置文件 （默认在/etc/docker/daemon.json）
@@ -205,7 +205,7 @@ dockerd --debug \
   --host tcp://192.168.59.3:2376
 ```
 
-具体的配置选项可以参考 [dockerd reference doc](https://docs.docker.com/engine/reference/commandline/dockerd/) 或者使用 dockerd --help来查看。
+具体的配置选项可以参考 [dockerd reference doc](https://docs.docker.com/engine/reference/commandline/dockerd/) 或者使用 dockerd --help 来查看。
 
 在 Linux 中，一般使用包管理器安装 docker , 默认的 dockerd 守护进程是通过 systemd 管理的。
 
@@ -329,7 +329,9 @@ curl --unix-socket /var/run/docker.sock -X POST /containers/{id}/start
 
 #### docker 命令
 
-docker 命令主要是用来向服务端守护进程发送控制指令，来进行构建镜像，启动容器等一些列操作。它包括一系列子命令。每个子命令都有其单独的选项，查看 docker --help 来看命令概述，通过 docker COMMAND --help 来看子命令详细用法。
+docker 命令主要是用来向服务端守护进程发送控制指令，来进行构建镜像，启动容器等一些列操作。
+
+它包括一系列子命令。每个子命令都有其单独的选项，查看 docker --help 来看命令概述，通过 docker COMMAND --help 来看子命令详细用法。
 
 下面是一些常见的 docker 命令：
 
@@ -770,13 +772,15 @@ docker 网络子系统
 
 这是 docker 默认的网络驱动设置，大多数情况下都可以用这种方式来使用 docker 的网络。
 
-在网络术语中，桥接是工作在链路层的，它在网络段之间转发流量。网桥可以是运行在主机内核中的硬件设备或软件设备。在 docker 中，可以让所有的容器连接到 docker 网桥中。
+在网络术语中，桥接是工作在链路层的，它在网络段之间转发流量。
+
+网桥可以是运行在主机内核中的硬件设备或软件设备。在 docker 中，可以让所有的容器连接到 docker 网桥中。
 
 可以理解为一个子网，然后使用 NAT 技术通过宿主机与外界通讯。
 
 当 Docker 启动后，会自动创建一个默认的网桥 docker0 ，其IP地址默认为 172.17.0.1/16 。新启动的容器默认会加入到其中。
 
-在宿主机中，使用 ip addr 看到多了一块docker0 的网卡。有了这样一块网卡，宿主机也会在内核路由表上添加一条到达相应网络的静态路由。
+在宿主机中，使用 ip addr 看到多了一块 docker0 的网卡。有了这样一块网卡，宿主机也会在内核路由表上添加一条到达相应网络的静态路由。
 
 可以使用 ip route 命令看到这个路由。
 
