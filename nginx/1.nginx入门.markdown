@@ -577,3 +577,23 @@ Default server_name_in_redirect off;
 Context http, server, location
 ```
 
+
+
+
+
+
+
+
+
+# Nginx 安全配置规范
+
+
+
+
+
+## 隐藏版本号
+
+
+
+
+
