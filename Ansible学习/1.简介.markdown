@@ -1,0 +1,667 @@
+
+
+
+
+
+
+## Ansible 简介
+
+Ansible是一个配置管理系统 configuration management system， python 语言是运维人员必须会的语言。
+
+ansible 是一个基于 python 开发的（集合了众多运维工具 puppet、cfengine、chef、func、fabric 的优点）自动化运维工具。
+
+其功能实现基于ssh远程连接服务, ansible 可以实现批量系统配置，批量软件部署，批量文件拷贝，批量运行命令等功能, 除了ansible之外，还有saltstack 等批量管理软件.
+
+
+
+ansible可以帮助运维人员完成一些批量任务，或者完成一些需要经常重复的工作：
+
+- 同时在 100 台服务器上安装 nginx 服务，并在安装后启动服务。
+
+- 将某个文件一次性拷贝到 100 台服务器上。
+
+比如：每当有新服务器加入工作环境时，运维人员都要为新服务器部署某个服务，也就是说运维人员需要经常重复的完成相同的工作。
+
+这些场景中运维人员都可以使用到 ansible
+
+
+
+## Ansible 特性
+
+- 基于 python 语言
+
+- 模块化：调用特定模块，通过大量的python模块来实现批量管理。
+
+- 不需要安装客户端，SSH相当于ansible客户端。
+
+- 支持 playbook 编排任务，可根据需要一次执行完剧本中的所有任务或某些任务;
+
+- 支持自定义模块
+
+- 幂等性：一个任务执行1遍和执行n遍效果一样，不因重复执行带来意外情况
+
+- yaml 格式，编排任务，支持丰富的数据结构
+- 较强大的多层解决方案
+
+
+
+
+
+
+
+
+
+## Ansible 的架构
+
+![](<https://image-static.segmentfault.com/165/265/1652655040-5e01a60346b7e_articlex>)
+
+
+
+
+
+
+
+![](assets/architecture.png)
+
+
+
+## Ansible 的工作原理
+
+
+
+
+
+
+
+## Ansible的组成部分
+
+ansible palybooks
+
+
+
+
+
+## Ansible 的安装
+
+在主控节点上安装 ansible ，默认使用 ssh 与管理的节点通讯。
+
+
+
+> ### 环境要求
+>
+> #### 管理节点
+>
+> 目前，只要机器上安装了 Python 2（版本2.6或2.7）或Python 3（版本3.5及更高版本）都可以运行Ansible (windows系统不可以做管理主机) 
+>
+> 管理主机的系统可以是 Red Hat, Debian, CentOS, macOS, BSD的各种版本。
+>
+> #### 被控节点
+>
+> 
+
+
+
+
+
+
+
+
+
+```shell
+# 修改机器上的python链接，指向python3版本的二进制文件
+ln -snf  /usr/bin/python3.6 /usr/bin/python
+```
+
+### 主控节点要求
+
+```shell
+# Fedora
+$ sudo dnf install ansible
+# RHEL/CentOS
+$ yum install -y epel-release
+$ sudo yum install ansible
+# 制作自己的rpm包
+$ git clone https://github.com/ansible/ansible.git
+$ cd ./ansible
+$ make rpm
+$ sudo rpm -Uvh ./rpm-build/ansible-*.noarch.rpm
+
+
+# ubutnu
+
+$ sudo apt update
+$ sudo apt install software-properties-common
+$ sudo apt-add-repository --yes --update ppa:ansible/ansible
+$ sudo apt install ansible
+
+# debian
+# 添加源到/etc/apt/sources.list
+deb http://ppa.launchpad.net/ansible/ansible/ubuntu trusty main
+$ sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 93C4A3FD7BB9C367
+$ sudo apt update
+$ sudo apt install ansible
+
+
+
+
+
+# 安装完成，查看ansible版本
+
+ansible --version
+
+#　主机清单文件
+# 把需要被控机都添加到主控机的主机清单文件中
+vim  /etc/ansible/hosts
+
+#　主机清单分组
+[webservers]
+192.168.2.10[1-3]
+192.168.2.15[8-12]
+```
+
+
+
+sshpass分发密钥
+
+ansible是基于ssh进行控制的，一般是配置免密登陆，要想用 ansible 管理多台主机，先要把主控机的公钥分发到各个被控机上，
+
+```shell
+#　在主控机上安装sshpass 
+yum install sshpass -y
+
+#　在主控机上生成密钥对
+ssh-keygen -t rsa -b 2048  -C "fengzhao11124@163.com" -P ""
+
+# 分发密钥到远程主机
+sshpass -p "ssh登录密码" ssh-copy-id -i /root/.ssh/id_dsa.pub -o StrictHostKeyChecking=no root@123.56.221.190  
+```
+
+
+
+批量分发密钥到多个远程被控主机
+
+```shell
+#!/bin/bash
+#    create key pair
+rm -fr /root/.ssh/id_dsa*
+ssh-keygen -t dsa -f /root/.ssh/id_dsa -P "" -q
+# fenfa key file
+for ip in 31 41
+do
+echo "=======Batch the file to the host 172.16.1.$ip=========="    
+sshpass -p123456 ssh-copy-id -i /root/.ssh/id_dsa.pub "-o StrictHostKeyChecking=no root@172.16.1.$ip"
+echo -e "##########################END##########################\n"
+done
+```
+
+
+
+
+
+
+
+## 相关文件
+
+在Linux中，基本上 99% 的软件都会有一个配置文件，而这些配置文件中配置了这些软件的运行方式等一些属性。
+
+同时，根据存放位置的不同，同一个软件，同样的配置文件的使用优先级也是不一样的。
+
+在Ansible中，它的配置文件是一个名为`ansible.cfg`的配置文件，ansible.cfg配置文件是以ini格式存储配置数据的。
+
+但是ansible.cfg配置文件可以存放在不同的目录，但只有一个可用，在运行Ansible命令时，Ansible将会按照预先设定的顺序查找配置文件，检查到哪个就用哪个。
+
+Ansible预先设定的优先级顺序如下：
+
+- `ANSIBLE_CFG`：首先，Ansible命令会先检查环境变量，及这个环境变量将指向的配置文件；
+- `./ansible.cfg`：其次，将会检查当前目录下的ansible.cfg配置文件；
+- `~/.ansible.cfg`：再次，将会检查当前用户home目录下的`.ansible.cfg`配置文件；
+- `/etc/ansible/ansible.cfg`：最后，将会检查在安装Ansible时自动生产的配置文件。
+
+
+
+几乎所有的配置项都可以通过Ansible的playbook或环境变量来重新赋值，所以当你怎么都不知道这个变量在哪里定义的时候，不妨去看看[环境变量](https://www.jellythink.com/archives/128)里看看。
+
+根据我这么多年的运维经验来说，我建议使用`~/.ansible.cfg`作为配置文件使用，这样就可以实现每个用户都有自己独自的配置文件，不污染其它用户正常使用Ansible，同时也方便进行选项配置：
+
+
+
+到目前为止，我还没有见到一个配置项超级少，配置超级简单的配置文件；同样的，Ansible的配置文件也不简单，配置项超级多；
+
+但是，二八法则同样也适用于这些配置文件，20%的配置项决定了80%的功能，只有那20%的配置项是我们需要去关心的。
+
+| 配置项                  | 说明                                                         | 默认值                 |
+| ----------------------- | ------------------------------------------------------------ | ---------------------- |
+| inventory               | ansible inventory文件路径                                    | /etc/ansible/hosts     |
+| library                 | ansible模块文件路径                                          | /usr/share/my_modules/ |
+| remote_tmp              | ansible远程主机脚本临时存放目录                              | ~/.ansible/tmp         |
+| local_tmp               | ansible管理节点脚本临时存放目录                              | ~/.ansible/tmp         |
+| forks                   | ansible执行并发数                                            | 5                      |
+| poll_interval           | ansible异步任务查询间隔                                      | 15                     |
+| sudo_user               | ansible sudo用户                                             | root                   |
+| ask_sudo_pass           | 运行ansible是否提示输入sudo密码                              | True                   |
+| ask_pass                | 运行ansible是否提示输入密码                                  | True                   |
+| transport               | ansible远程传输模式                                          | smart                  |
+| remote_port             | 远程主机SSH端口                                              | 22                     |
+| module_lang             | ansible模块运行默认语言环境                                  | C                      |
+| gathering               | facts信息收集开关定义                                        | smart                  |
+| roles_path              | ansible role存放路径                                         | /etc/ansible/roles     |
+| timeout                 | ansible SSH连接超时时间                                      | 10                     |
+| remote_user             | ansible远程认证用户                                          | root                   |
+| log_path                | ansible日志记录文件                                          | /var/log/ansible.log   |
+| module_name             | ansible默认执行模块                                          | command                |
+| executable              | ansible命令执行shell                                         | /bin/sh                |
+| hash_behaviour          | ansible主机变量重复处理方式                                  | replace                |
+| private_role_vars       | 默认情况下，角色中的变量将在全局变量范围中可见。 为了防止这种情况，可以启用以下选项，只有tasks的任务和handlers得任务可以看到角色变量 | yes                    |
+| vault_password_file     | 指定vault密码文件路径                                        | 无                     |
+| ansible_managed         | 定义的一个Jinja2变量，可以插入到Ansible配置模版系统生成的文件中 | Ansible managed        |
+| display_skipped_hosts   | 开启显示跳过的主机                                           | True                   |
+| error_on_undefined_vars | 开启错误，或者没有定义的变量                                 | False                  |
+| action_plugins          | ansible action插件路径                                       | 无                     |
+| cache_plugins           | ansible cache插件路径                                        | 无                     |
+| callback_plugins        | ansible callback插件路径                                     | 无                     |
+| connection_plugins      | ansible connection插件路径                                   | 无                     |
+| lookup_plugins          | ansible lookup插件路径                                       | 无                     |
+| inventory_plugins       | ansible inventory插件路径                                    | 无                     |
+| vars_plugins            | ansible vars插件路径                                         | 无                     |
+| filter_plugins          | ansible filter插件路径                                       | 无                     |
+| terminal_plugins        | ansible terminal插件路径                                     | 无                     |
+| strategy_plugins        | ansible strategy插件路径                                     | 无                     |
+| fact_caching            | 定义ansible facts缓存方式                                    | memory                 |
+| fact_caching_connection | 定义ansible facts缓存路径                                    | 无                     |
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/etc/ansible/hosts  主机清单
+
+/etc/ansible/roles 存放角色的目录
+
+
+
+　
+
+
+
+
+
+
+
+
+
+## 主机清单
+
+Ansible 可同时操作属于一个组的多台主机，组和主机之间的关系通过 `inventory` 文件配置。
+
+默认的文件路径为 `/etc/ansible/hosts`，执行命令的时候使用 `-i` 参数即可指定主机清单。
+
+```ini
+vim  /etc/ansible/hosts
+
+# 前两行我们定义了两个单独的主机，对于单个主机，我们可以针对单个主机进行配置，包括变量等；
+192.168.1.2
+192.168.1.4	
+
+# 主机清单分组，可以针对一系列主机分组，批量控制，分组也是支持嵌套的。
+[webservers]
+192.168.2.10[1-3]
+host1  # 定义主机名称, 且已经与控制节点ssh互信
+host2:5522  # 指定连接主机和端口号
+localhost ansible_connection=local  # ansible_connection可以定义连接类型, local是在本地执行
+host3 http_port=80 maxRequestsPerChild=808  # 定义主机变量, 除了ansible定义的特殊名称外，其他的都是主机变量
+host4 ansible_host=192.168.1.50 ansible_port=2222 ansible_user=root ansible_password=12345 # 指定别名，定义主机ssh连接信息
+www[1:50].example.com # 定义 1-50范围内的主机
+www-[a:f].example.com # 定义 a-f 范围内内的主机
+
+
+[dbservers]
+three.example.com  ansible_python_interpreter=/usr/local/bin/python3  # 定义python可执行文件路径来执行ansible，这个是指定被控节点的。
+192.168.77.123  ansible_ruby_interpreter=/usr/bin/ruby.1.9.3  # 定义ruby执行文件
+
+
+
+```
+
+
+
+## 基本用法
+
+
+
+ansible 命令的执行过程
+
+
+
+```shell
+# ansbile帮助手册
+ansible-doc 
+# 查看ansible copy模块的帮助手册
+ansible-doc copy
+
+
+ansible 
+
+# 查看模块帮助
+ansible copy -h
+```
+
+
+
+
+
+ansible  主机清单  -m 模块名  -a  "命令行" 
+
+
+
+
+
+## 常用模块
+
+
+
+### ping
+
+`ping`是测试远程节点的SSH连接是否就绪的常用模块，但是它并不像Linux命令那样简单地ping一下远程节点，
+
+而是先检查能否通过SSH登陆远程节点，再检查其Python版本能否满足要求，如果都满足则会返回pong，表示成功。使用方式如下：
+
+```shell
+ansible web -m ping
+
+192.168.1.2 | SUCCESS => {
+    "changed": false,
+    "ping": "pong"
+}
+192.168.1.4 | SUCCESS => {
+    "changed": false,
+    "ping": "pong"
+}
+
+```
+
+
+
+### debug
+
+打印输出信息，类似Linux上的echo命令。在后续的学习过程中，我们会经常用这个命令来调试我们写的playbook。
+
+对于`debug`模块有两种用法。下面就对这两种用法都进行详细的总结。
+
+- 
+
+### command
+
+- command 在远程主机执行命令，默认模块，可忽略 -m 选项
+
+  ```shell
+  #　在远程主机组中执行命令
+  ansible webservers  -m command -a "systemctl restart mysqld"  
+  #　查看远程主机组中的selinux状态
+  ansible webservers  -m command -a 　'getenforce'
+  
+  ansible  webservers  -m command -a 'echo $SHELL'   //执行不成功，
+  ```
+
+### shell
+
+- shell 模块，与command模块类似，用于在远程主机执行命令，
+
+```shell
+
+
+
+```
+
+### hostname
+
+hostname 用于批量设置主机
+
+### script
+
+
+
+### copy
+
+copy 模块，文件传输模块
+
+从当前的机器上复制静态文件到远程节点上，并且设置合理的文件权限。`copy`模块在复制文件的时候，会先比较一下文件的checksum，如果相同则不会复制，返回状态为OK；
+
+如果不同才会复制，返回状态为changed。
+
+
+
+```shell
+#　将主控机上的文件，传到远程webserver主机组中。
+ansible webservers -m copy -a 'src=/root/demo dest=/root/　backup=yes　onwer=root' 
+
+#　查看远程主机组中的文件
+ansible webservers -m shell -a 'ls -l /root/demo'
+
+
+
+#　playbook一般是这种写法，backup备份源文件
+---
+
+- hosts: server1
+  tasks:
+    - name: copyDemo
+      copy:
+        src: /home/jelly/nameList.txt 
+        dest: /home/test1/nameList.txt
+        backup: yes
+```
+
+### fetch
+
+- fetch 模块，与copy相反，把远程被控机的文件，抓取到主控机中。
+
+```shell
+ansible all -m fetch -a 'src=/'
+```
+
+### file
+
+- file 模块，在远程被控机上执行文件管理命令
+
+```shell
+# 在远程主机创建目录
+ansible  all -m file -a 'name=/data/demo state=directory'
+
+
+
+# 
+---
+
+- hosts: server1
+  tasks:
+  - name: Modify Mode
+    file:
+      path: /home/test1/http.conf
+      mode: 0777
+```
+
+### cron
+
+- cron 模块，在远程主机添加定时任务
+
+```shell
+#　在所有远程主机上创建一个计划任务，每周日，一，三，五执行的每分钟都执行一次告警
+ansible all -m cron -a 'minute=* weekday=0,1,3,5 job="/usr/bin/wall FBI warning" name=warning'
+# 禁用上面创建的定时任务
+ansible all -m cron -a 'disabled=true job="/usr/bin/wall FBI warning" name=waring'
+
+# 删除定时任务
+ansible all -m cron -a 'state=absent job="/usr/bin/wall FBI warning" name=waring'
+```
+
+### yum
+
+- yum模块，在远程主机用 yum 安装软件
+
+```shell
+ansible all -m yum -a ''
+```
+
+### user
+
+- user 模块，
+
+
+
+
+
+## ansible系列命令
+
+ansible-galaxy
+
+
+
+
+
+## playbook
+
+playbook其实就是把一系列 ansible 模块组织编排在成一个剧本，然后在用 ansible 分发多台主机上执行
+
+
+
+ansible使用yaml文件来做为配置文件。
+
+
+
+### YAML语言
+
+YAML语言的设计参考了JSON，XML和SDL等语言。YAML 强调以**数据为中心**，简洁易读，编写简单。
+
+YAML全称是”YAML Ain’t a Markup Language”（YAML不是一种置标语言）的递归缩写。 在开发的这种语言时，YAML 的意思其实是：”Yet Another Markup Language”（仍是一种置标语言）。
+
+
+
+**语法特点**
+
+- 大小写敏感
+- 通过缩进表示层级关系
+- **禁止使用tab缩进，只能使用空格键** （个人感觉这条最重要）
+- 缩进的空格数目不重要，只要相同层级左对齐即可
+- 使用#表示注释
+
+
+
+**支持的数据结构**
+
+- 对象：键值对的集合，又称为映射（mapping）/ 哈希（hashes） / 字典（dictionary）
+- 数组：一组按次序排列的值，又称为序列（sequence） / 列表（list）
+- 纯量（scalars）：单个的、不可再分的值
+
+
+
+
+
+playbooks 实例
+
+
+
+假设，我们要在远程多台 Linux 主机上部署 httpd 网站，并配置开机自启，可以把一系列
+
+
+
+```yaml
+# /data/play-book.yaml
+
+---
+
+- hosts:
+  remote_user: root
+  
+  tasks:
+    - name: crate new file 
+      file: name=/data/newfile sate=touch
+    - name: create new user
+      user: name=test2 sytstem=yes shell=/sbin/nologin
+    - name: install package
+      yum: name=httpd
+    - name: copy html
+      copy: src=/var/www/html/index.html  dest=/var/www/html/
+    - name: start service
+      service: 	name=httpd state=started enabled=yes
+```
+
+**检查 playbook 文件是否正确**
+
+ansible-playbook  -C  /data/play-book.yaml
+
+
+
+## playbook 核心元素
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Ansible实战
+
+Ansible  默认只会创建 5 个进程并发执行任务，所以一次任务只能同时控制 5 台机器执行。
+
+如果有大量的机器需要控制，例如 20 台，Ansible 执行一个任务时会先在其中 5 台上执行，执行成功后再执行下一批 5 台，直到全部机器执行完毕。
+
+使用 -f 选项可以指定进程数，指定的进程数量多一些，不仅会实现全并发，对异步的轮询 poll 也会有正面影响。
+
+Ansible 默认是 **同步阻塞模式**，它会等待所有的机器都执行完毕才会在前台返回结果。
+
+
+
+
+
+
+
+### 安装 docker
+
+
+
+
+
+
+

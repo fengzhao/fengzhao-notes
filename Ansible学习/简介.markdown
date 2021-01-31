@@ -1,0 +1,36 @@
+ssh是一个协议，OpenSSH是其中一个开源实现，paramiko是Python的一个库，实现了SSHv2协议(底层使用cryptography)。
+
+
+
+有了Paramiko以后，我们就可以在Python代码中直接使用SSH协议对远程服务器执行操作，而不是通过ssh命令对远程服务器进行操作。
+
+
+
+由于paramiko属于第三方库，所以需要使用如下命令先行安装
+
+```shell
+pip3 install paramiko
+```
+
+
+
+简单实现远程SSH运行命令示例
+
+```shell
+import paramiko
+
+hostname = '192.168.1.5'
+username = 'root'
+password = '123123'
+paramiko.util.log_to_file('syslogin.log')     #发送paramiko日志到syslogin.log文件
+
+ssh = paramiko.SSHClient()          #创建一个SSH客户端client对象
+ssh.load_system_host_keys()         #获取客户端host_keys,默认~/.ssh/known_hosts,非默认路径需指定ssh.load_system_host_keys(/xxx/xxx) 
+ssh.connect(hostname=hostname,username=username,password=password)    #创建SSH连接
+stdin,stdout,stderr = ssh.exec_command('free -h')      #调用远程执行命令方法exec_command()
+print(stdout.read().decode('utf-8'))        #打印命令执行结果，得到Python列表形式，可以使用stdout_readlines()
+ssh.close()
+```
+
+
+
