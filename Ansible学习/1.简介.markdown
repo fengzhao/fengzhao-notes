@@ -455,6 +455,9 @@ copy 模块，文件传输模块
 ```shell
 #　将主控机上的文件，传到远程webserver主机组中。
 ansible webservers -m copy -a 'src=/root/demo dest=/root/　backup=yes　onwer=root' 
+ansible aliyun  -m copy -a 'src=/root/init_user.sh dest=/root/　backup=yes　onwer=root' 
+
+ansible aliyun  -m copy -a 'src=/root/1.sh dest=/root/　' 
 
 #　查看远程主机组中的文件
 ansible webservers -m shell -a 'ls -l /root/demo'
@@ -527,6 +530,12 @@ ansible all -m yum -a ''
 ### user
 
 - user 模块，
+
+
+
+### absent
+
+
 
 
 
