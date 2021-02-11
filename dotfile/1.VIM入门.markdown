@@ -35,14 +35,24 @@ Linux 系统一般自带 vim 。 但是其版本可能太旧了，一般使用 v
 ```shell
 $ git clone  https://github.com/vim/vim.git
 $ cd vim/src 
+$ ./configure --with-features=huge --enable-python3interp  
 $ make 
 $ sudo make install 
-
-
 
 $ sudo apt-get update 
 $ sudo apt-get install vim-gtk 
 ```
+
+
+
+mac
+
+```shell
+$ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+```
+
+
 
 
 
