@@ -64,6 +64,18 @@ vim 从一个名为 .vimrc 的文件中读取配置信息。vim 安装好后就�
 
 
 
+### 主题配色
+
+vim8 自带如下主题配色：
+
+blue、darkmode、default、delek、desert、
+
+
+### 光标移动
+
+vim 中使用 h,j,k,l 表示左下上右
+
+
 
 
 
