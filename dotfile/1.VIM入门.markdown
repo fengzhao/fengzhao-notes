@@ -54,7 +54,11 @@ $ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/
 
 
 
+## 配置
 
+vim 从一个名为 .vimrc 的文件中读取配置信息。vim 安装好后就可以使用。
+
+在 Linux 和 macOS 中，配置文件一般位于 ~/.vimrc 这个用户家目录中。
 
 
 
