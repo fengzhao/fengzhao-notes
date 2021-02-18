@@ -1,0 +1,133 @@
+## 模式界面
+
+
+
+如果读者曾经编辑过文本，很可能已经非常熟悉无模式（modeless）界面了。
+
+因为这是现代主流文本编辑器的默认选项，大多数人也是通过它来学习文本处理的。
+
+"无模式"指的是每个界面
+
+
+
+模式界面，根本上下文的不同，每个行为可能对应于不同的操作。
+
+现代常见的模式界面应用设备为智能手机。每当打开一个不同的应用或菜单时，在屏幕上单击就会执行不同的功能。
+
+对于文本编辑器，即在不同的上下文，单击一个按钮会产生不同的行为结果。
+
+
+
+使用 vim 就好像是与编辑器进行对话，通过命令 d3w[刚好是delete 3 word 的英文缩写] 可以删除后面三个单词
+
+编辑速度快并不是 vim 的卖点。vim 让用户置身于文本处理的流程中。不需要为找鼠标而打乱节奏。
+
+
+
+
+
+## 安装
+
+
+
+Linux 系统一般自带 vim 。 但是其版本可能太旧了，一般使用 vim8 
+
+```shell
+$ git clone  https://github.com/vim/vim.git
+$ cd vim/src 
+$ ./configure --with-features=huge --enable-python3interp  
+$ make 
+$ sudo make install 
+
+$ sudo apt-get update 
+$ sudo apt-get install vim-gtk 
+```
+
+
+
+mac
+
+```shell
+$ /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+```
+
+
+
+## 配置
+
+vim 从一个名为 .vimrc 的文件中读取配置信息。vim 安装好后就可以使用。
+
+在 Linux 和 macOS 中，配置文件一般位于 ~/.vimrc 这个用户家目录中。
+
+
+
+
+
+### 主题配色
+
+vim8 自带如下主题配色：
+
+blue、darkmode、default、delek、desert、
+
+
+### 光标移动
+
+vim 中使用 h,j,k,l 表示左下上右
+
+
+
+
+
+
+
+
+
+很多时候，需要对一部分文字进行替换，实现这个功能的方式是修改命令c。
+
+通过**修改命令**读者可以在删除一部分文字后立刻进入插入模式。修改命令是一个复合命令，即它后面必须指定其他命令，用于告诉vim修改哪一部分。
+
+
+
+
+
+
+
+## 持久性撤销
+
+
+
+
+
+持久性撒消（persistent undo），会将撒消树保存到撤销文件中。有点像版本控制。
+
+因而即使被编辑文件被关闭再打开多次，也可以撤销过去进行的所有修改（当然不能超过[undolevel](https://link.zhihu.com/?target=http%3A//vimdoc.sourceforge.net/htmldoc/options.html%23'undolevels')的限制）。
+
+
+
+
+
+默认情况下，Vim并没有启用持久性撤销。使用以下命令，可以启用持久性撤销：
+
+```shell
+set undofile 
+```
+
+Vim将为正在编辑的文件，分别创建独立的撤销文件，用以保存支持撤销操作的信息。
+
+
+
+撤销文件通常保存在文件本身所在的目录里。使用以下命令，可以将撤销文件集中保存到指定的目录：
+
+```shell
+set undodir=$HOME/.vim/undodir
+# 请注意，需要确保您指定的目录已经存在。
+# 生成的撤销文件，将以所编辑文件的完整名称命名。其中包括了完整的路径名，其中“/”将以“%”代替：
+# vim只会创建撒消文件，而永远不会去删除它们；如果你更改了文件名称，那么旧文件名所对应的撤销文件也不会被自动删除。
+# 建议，将撤销文件存储到指定目录（比如temp临时目录），并定期进行手动清理。
+
+# 使用:earlier {N}f 和 :later {N}f 命令，可以根据写入次数进行撤销。
+# 例如以下用命令，可以恢复到上次写入时的文本状态：
+# :earlier 1f
+```
+
