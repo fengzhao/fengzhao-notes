@@ -374,11 +374,17 @@ export PATH USER LOGNAME MAIL HOSTNAME HISTSIZE HISTCONTROL
 
 
 
-shell 有一个很有用的特性，那就是命令历史。
+bash shell 有一个很有用的特性，那就是命令历史。
 
 当前登陆用户在终端进行操作时，该用户操作的历史命令会被记录在内存缓冲区中，使用 history 命令可以列出历史命令。
 
-当关闭终端会话或者会话退出时时，当前用户运行过的所有命令并写入当前用户的命令历史记录文件（~/.bash_history）。如果是 zsh，在记录在 ~/.zsh_history 文件中。
+当关闭终端会话或者会话退出时时，当前用户运行过的所有命令并写入当前用户的命令历史记录文件（~/.bash_history）。
+
+如果是 zsh，在记录在 ~/.zsh_history 文件中。
+
+
+
+
 
 
 
@@ -391,12 +397,20 @@ shell 有一个很有用的特性，那就是命令历史。
 
 # 在 oh-my-zsh 中。~/.oh-my-zsh/lib/history.zsh 这个脚本定义了一个函数 omz_history 封装 history,也可以用来查看命令历史。
 
+# 1．可以按一下上＼下方向键，命令行就会显示相对于当前命令的上一条或下一条历史记录．
+
+# 2．和方向键相同功能的就是组合键Ctrl+ p （前面执行过的命令）,Ctrl +n（后面执行过的命令）．
+
+# 3．上面两个都是相对于当前命令查询上一条或者下一条命令的历史记录．如果搜索命令历史记录，
+
+# 就用 Ctrl+ r 组合键进入历史记录搜寻状态，然后，键盘每按一个字母，当前命令行就会搜索出命令历史记录．
+
 
 ```
 
 
 
-### 相关变量
+### 命令历史的相关变量
 
 **BASH：相关的环境变量（ubuntu一般都在~/.bashrc中定义，centos一般都在/etc/profile中定义）**
 
@@ -434,13 +448,11 @@ HISTTIMEFORMAT="%F %T"
 
 **显示历史命令** **（bash和zsh通用）**
 
-
-
 history  ：显示全部历史命令
 
 history n ：显示最后n条历史命令
 
-history -c ：清空历史命令
+history -c ：清空历史命令（清空当前所有的命令历史）
 
 history -a : 手动追加会话缓冲区的命令至历史命令文件中。（即不退出当前会话）
 
@@ -450,13 +462,50 @@ history -a : 手动追加会话缓冲区的命令至历史命令文件中。（�
 
 **快捷操作（bash和zsh通用）**
 
-
-
 !# : 调用命令历史中的第#条命令
 
 !string ： 调用命令历史中的最近一条中以string开头的命令。
 
 !! : 调用命令历史中上一条命令
+
+
+
+### 命令历史清理
+
+有时，我们使用敏感信息运行bash命令。 例如，运行一个shell脚本并传递密码作为命令行参数。 在这种情况下，出于安全原因，最好清除bash历史记录。
+
+如果要完全删除bash历史记录，可以运行`history -c`命令。
+
+
+
+如果要从bash历史记录中删除特定条目，请使用`history -d offset`命令。 偏移量是`history`命令输出的行号。
+
+```shell
+
+[root@li1176-230 ~]# ls -1 | wc -l
+3
+[root@li1176-230 ~]# history
+    1  history
+    2  ls
+    3  cd
+    4  ls -1 | wc -l
+    5  history
+[root@li1176-230 ~]# history -d 4
+[root@li1176-230 ~]# history
+    1  history
+    2  ls
+    3  cd
+    4  history
+    5  history -d 4
+    6  history
+[root@li1176-230 ~]#
+```
+
+
+
+
+
+
 
 
 
