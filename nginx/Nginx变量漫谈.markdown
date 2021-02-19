@@ -19,7 +19,7 @@ Nginx 的配置文件使用的就是一门微型的编程语言，许多真实�
 比如我们的 `nginx.conf` 文件中有下面这一行配置：
 
 ```nginx
-# 使用标准 ngx_rewrite 模块的 set 配置指令对变量 $a 进行了赋值操作。
+# 使用标准ngx_rewrite模块中的set配置指令对变量 $a 进行了赋值操作。
 set $a "hello world";
 ```
 
@@ -54,7 +54,7 @@ Nginx 变量名前面有一个 $ 符号，这是记法上的要求。**所有的
 
 ```
 
-nginx echo 模块（这是一个第三方的nginx模块）  https://github.com/openresty/echo-nginx-module#readme
+nginx echo 模块（这是一个第三方的nginx模块，如果是nginx，需要重新[编译安装](https://blog.csdn.net/jeikerxiao/article/details/106763068)，openresty已经编译进去了）  https://github.com/openresty/echo-nginx-module#readme
 
 ```shell
 # 使用curl访问这个地址，响应体返回nginx配置文件中声明的变量值
