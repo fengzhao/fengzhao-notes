@@ -183,9 +183,16 @@ daemon:x:2:2:daemon:/sbin:/sbin/nologin
 
 当我们使用终端登录一台主机时，主机会为我们启动一个 Shell，由于是登录以后启动的，所以是 login Shell。
 
-
-
 其他情况的 Shell 就是 non-login 的，比如我登录以后，输入 `bash` 再启动一个 Shell，那么这个 Shell 就是 non-login 的。
+
+```shell
+# 举个简单的例子，我们在windows中使用终端工具ssh远程到一个Linux后，通常输入exit，会断开当前ssh连接。
+# 如果我们连上去后，多输入几次bash，即多启动几个shell，然后每次输入exit其实是退出当前shell而已，并没有很快断开ssh连接
+```
+
+login Shell 会初始化一些针对整个登录会话的任务。
+
+比如说，我希望我每次登录主机，就自动发一封邮件出去，那么这个任务就可以在 login Shell 的启动文件中完成。
 
 
 
@@ -279,7 +286,9 @@ root@vpsServer:~#
 
 ### 变量
 
-变量是暂时存储数据的地方及标记，所存储的数据位于内存空间中，通过正确的调用内存中变量的名字可以取出其变量值，使用 **$VARIABLES** 或 **${VARIABLES}** 来引用变量。应用程序运行时通过读取环境变量
+变量是暂时存储数据的地方及标记，所存储的数据位于内存空间中，通过正确的调用内存中变量的名字可以取出其变量值。
+
+使用 **$VARIABLES** 或 **${VARIABLES}** 来引用变量。应用程序运行时通过读取环境变量
 
 ```shell
 # 声明变量 NAME='VALUE'，变量名大写，变量值用引号括起来,防止值中有空格
@@ -307,9 +316,7 @@ root@vpsServer:~#
 
 #### 环境变量
 
-环境变量一般是值用 export 命令导出的变量，主要目的是用于控制计算机内所有程序的运行行为，比如：定义 shell 的运行环境，
-
-
+环境变量一般是值用 export 命令导出的变量，主要目的是用于控制计算机内所有程序的运行行为，比如：定义 shell 的运行环境等等。
 
 ```shell
 # 在命令行中定义一个环境变量，这种设置的变量不会持久化，只能在当前shell中有效，退出即失效。
@@ -342,10 +349,6 @@ PATH=$PATH:$HOME/.local/bin:$HOME/bin
 mesg n || true
 
 ```
-
-
-
-
 
 
 
@@ -415,6 +418,16 @@ export PATH USER LOGNAME MAIL HOSTNAME HISTSIZE HISTCONTROL
 # You could check uidgid reservation validity in
 
 ```
+
+
+
+
+
+#### bash 环境变量
+
+
+
+
 
 
 
@@ -885,7 +898,10 @@ $ chsh -s /bin/zsh  # 修改当前用户的 shell
   比如，非常流行的直接运行网络上的脚本。
 
   ```shell
+  # daocloud的设置镜像加速的脚本
   curl -sSL https://get.daocloud.io/daotools/set_mirror.sh | sh -s http://f1361db2.m.daocloud.io
+  # rust官方推荐的安装脚本
+  curl https://sh.rustup.rs -sSf | sh -s -- --help
   
   # sh -s 用于从标准输入中读取命令，命令在子shell中执行
   # 当sh -s 后面跟的参数,从第一个非 - 开头的参数，就被赋值为子shell的$1,$2,$3....
@@ -899,7 +915,7 @@ source 的意思是读入或加载指定的 shell 脚本文件，然后依次执
 
 当在脚本中调用其他脚本时，通常使用 source 命令，因为这样子脚本是在父脚本的进程中执行的（其他方式都会启动新的进程执行脚本）
 
-因此，使用 source 这种方式可以将子脚本中的变量值或函数等返回值传递到当前父脚本中使用。这是与其他方式最重要的区别。
+**因此，使用 source 这种方式可以将子脚本中的变量值或函数等返回值传递到当前父脚本中使用。这是与其他方式最重要的区别。**
 
 所以我们在 /etc/profile 中声明一些环境变量时，想立马生效，就直接 source /etc/profile ，这样就对当前会话生效，而不需要重新登陆。
 
