@@ -86,7 +86,9 @@ rename 's/\.tpl$/\.blade.php/' ./**/*.tpl
 
 ### SHELL
 
-Shell 是 Linux 下的命令交互程序，其实就是一个命令解释器。它用来接收用户输入的指令，传递给内核执行。所以它可以被理解为内核外面的一层壳，用户通过它来与内核交互。
+Shell 是 Linux 下的命令交互程序，其实就是一个命令解释器。它用来接收用户输入的指令，传递给内核执行。
+
+所以它可以被理解为内核外面的一层壳，用户通过它来与内核交互。
 
 它虽然不是 Unix/Linux 系统内核的一部分，但它调用了系统核心的大部分功能来执行程序、建立文件并以并行的方式协调各个程序的运行。
 
@@ -103,6 +105,7 @@ Linux 的 Shell 种类众多，常见的有：
 - **Bourne Again Shell（/bin/bash）**
 
   - **Linux 默认的 shell 它是 Bourne Shell 的扩展。 与 Bourne Shell 完全兼容，并且在 Bourne Shell 的基础上增加了很多特性，可以提供命令补全，命令编辑和命令历史等功能。**
+  - **基本上现在各大Linux发行版都是使用 bash 做为默认 shell**
 
   
 
@@ -122,18 +125,40 @@ Linux 的 Shell 种类众多，常见的有：
 
 我们可以通过 /etc/shells 文件来査询 Linux 支持的 Shell。命令如下：
 
-```
+```shell
 $ cat /etc/shells
 /bin/sh
 /bin/bash
 /sbin/nologin
 /bin/tcsh
 /bin/csh
+
+
+# 查看bash版本
+
+# CentOS Linux release 7.6.1810
+$ bash --version
+GNU bash, version 4.2.46(2)-release (x86_64-redhat-linux-gnu)
+Copyright (C) 2011 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+
+This is free software; you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+# Ubuntu 20.04.1 LTS
+$ bash --version
+GNU bash, version 5.0.17(1)-release (x86_64-pc-linux-gnu)
+Copyright (C) 2019 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+
+This is free software; you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
 ```
 
-用户信息文件 /etc/passwd 的最后一列就是这个用户的登录 Shell。命令如下：
+**用户信息文件** /etc/passwd 的最后一列就是这个用户的登录 Shell。命令如下：
 
-```
+```shell
 $ cat /etc/passwd
 root:x:0:0:root:/root:/bin/bash
 bin:x: 1:1 :bin:/bin:/sbin/nologin
@@ -147,27 +172,51 @@ daemon:x:2:2:daemon:/sbin:/sbin/nologin
 
 
 
+#### shell 的类型和场景
+
+由于使用场景的不同，Shell 被分为两个类型：
+
+- `login` / `non-login`
+- `interactive` / `non-interactive`
+
+这两个类型影响的是 **Shell 的启动文件 (startup files)**。
+
+当我们使用终端登录一台主机时，主机会为我们启动一个 Shell，由于是登录以后启动的，所以是 login Shell。
+
+
+
+其他情况的 Shell 就是 non-login 的，比如我登录以后，输入 `bash` 再启动一个 Shell，那么这个 Shell 就是 non-login 的。
+
+
+
 ### 命令
 
-Linux 命令分为两种类型：一类是 shell 内建命令；一类是应用程序命令。应用程序命令，一般都会有相应的二进制可执行文件，通常存在 /bin , /usr/sbin/ , /usr/bin 等目录中。shell 通过读取 $PATH 这个环境变量来查找应用程序执行路径。
+Linux 命令分为两种类型：
+
+- 一类是 shell 内建命令（[Shell Builtin Commands](https://www.gnu.org/software/bash/manual/html_node/Shell-Builtin-Commands.html)）；
+- 一类是应用程序命令。
+
+
+
+应用程序命令，一般都会有相应的二进制可执行文件，通常存在 /bin , /usr/sbin/ , /usr/bin 等目录中。
+
+shell 通过读取 $PATH 这个环境变量来查找应用程序执行路径。
 
 通过 **type** 命令来查看命令是 shell 内建命令，还是二进制程序（如果是二进制可执行文件，还能打印出所在路径）。
 
 
   ```shell
-[root@fengzhao ~]# type ls
+$ type ls
 ls is aliased to `ls --color=auto'
-[root@fengzhao ~]# type pwd
+$ type pwd
 pwd is a shell builtin
-[root@fengzhao ~]# type w
+$ type w
 w is /usr/bin/w
-[root@fengzhao ~]# type find
+$ type find
 find is /usr/bin/find
   ```
 
 通过 **whereis** 命令来查看二进制文件的存放路径。
-
-
 
 - 交互式（Interactive）：解释执行用户的命令，用户输入一条命令，Shell就解释执行一条。
 - 批处理（Batch）：用户事先写一个 Shell 脚本(Script)，其中有很多条命令，让Shell一次把这些命令执行完。
@@ -244,8 +293,6 @@ root@vpsServer:~#
 
 
 
-
-
 根据变量的作用范围，变量的类型可以分为两类：环境变量（全局变量）和普通变量（局部变量）。
 
 - 环境变量：可以在创建它们的 shell 及其派生出来的任意子进程 shell 中使用，环境变量又分为用户自定义环境变量和 bash 内置环境变量。
@@ -265,8 +312,9 @@ root@vpsServer:~#
 
 
 ```shell
-# 在命令行中定义一个环境变量，这种变量不持久化，只能在当前shell中有效，退出即失效。
+# 在命令行中定义一个环境变量，这种设置的变量不会持久化，只能在当前shell中有效，退出即失效。
 export VIRABLES='value'
+
 # 将变量定义在 ~/.bashrc 文件中，每一个 non-login interactive shell 在启动时都会首先读入这个配置文件中的变量
 # 将变量定义在 ~/.profile 文件中，每一个login shell 在登录时会读入 ~/.profile（一般在此文件中包含 .bashrc 文件）
 
@@ -513,12 +561,6 @@ history -a : 手动追加会话缓冲区的命令至历史命令文件中。（�
 
 
 
-
-
-
-
-
-
 #### SHELL脚本的执行
 
 当 SHELL 以非交互式的方式执行时，它会先查找环境变量 ENV ，是
@@ -723,7 +765,7 @@ ass_array[index2]=value2
 
 
 
-
+## shell 自动补全
 
 
 
