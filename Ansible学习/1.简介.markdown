@@ -6,13 +6,13 @@
 
 ## Ansible 简介
 
-Ansible是一个配置管理系统 configuration management system， python 语言是运维人员必须会的语言。
+Ansible是一个配置管理系统 configuration management system， 用 python 语言编写。
 
 ansible 是一个基于 python 开发的（集合了众多运维工具 puppet 、cfengine 、chef 、func 、fabric 的优点）自动化运维工具。
 
-其功能实现基于ssh远程连接服务, ansible 可以实现批量系统配置，批量软件部署，批量文件拷贝，批量运行命令等功能。
+其功能实现基于ssh远程连接服务，ansible 可以实现批量系统配置，批量软件部署，批量文件拷贝，批量运行命令等功能。
 
-除了ansible之外，还有 saltstack 等批量管理软件.
+除了ansible之外，还有 saltstack 等批量管理软件。
 
 
 
