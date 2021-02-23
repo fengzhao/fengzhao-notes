@@ -1,18 +1,26 @@
-
-
-
-
-
-
 ## Ansible 简介
 
-Ansible是一个配置管理系统 configuration management system， 用 python 语言编写。
 
-ansible 是一个基于 python 开发的（集合了众多运维工具 puppet 、cfengine 、chef 、func 、fabric 的优点）自动化运维工具。
+
+Ansible 是2012年推出的一种通用的开源自动化工具，可用于配置管理或工作流程自动化。基于 python 开发的自动化运维工具。
+
+配置管理是一种" **基础架构代码** "实践，它将事物编码，例如应该在系统上安装什么包和版本，或者应该运行什么守护进程。
+
+工作流自动化可能是从配置基础架构到部署软件的任何事情。Ansible 在2015年时被 Redhat 公司收购。
+
+它是一个（集合了众多运维工具 puppet 、cfengine 、chef 、func 、fabric 的优点）自动化运维工具。
 
 其功能实现基于ssh远程连接服务，ansible 可以实现批量系统配置，批量软件部署，批量文件拷贝，批量运行命令等功能。
 
 除了ansible之外，还有 saltstack 等批量管理软件。
+
+ansible 的地址是 https://github.com/ansible/ansible
+
+官网地址是  https://www.ansible.com/
+
+
+
+
 
 
 
@@ -27,6 +35,20 @@ ansible可以帮助运维人员完成一些批量任务，或者完成一些需�
 这些场景中运维人员都可以使用到 ansible 。
 
 
+
+
+
+## Ansible 设计哲学
+
+- Have a dead-simple setup process with a minimal learning curve.
+- Manage machines very quickly and in parallel.
+- Avoid custom-agents and additional open ports, be agentless by leveraging the existing SSH daemon.
+- Describe infrastructure in a language that is both machine and human friendly.
+- Focus on security and easy auditability/review/rewriting of content.
+- Manage new remote machines instantly, without bootstrapping any software.
+- Allow module development in any dynamic language, not just Python.
+- Be usable as non-root.
+- Be the easiest IT automation system to use, ever.
 
 ## Ansible 特性
 
@@ -44,10 +66,6 @@ ansible可以帮助运维人员完成一些批量任务，或者完成一些需�
 
 - yaml 格式，编排任务，支持丰富的数据结构。
 - 较强大的多层解决方案。
-
-
-
-
 
 
 
@@ -117,9 +135,11 @@ ln -snf  /usr/bin/python3.6 /usr/bin/python
 ### 主控节点要求
 
 ```shell
-# Fedora
+# Fedora or centos8 
 $ sudo dnf install ansible
-# RHEL/CentOS
+
+
+# RHEL/CentOS 包管理器安装ansible
 $ yum install -y epel-release
 $ sudo yum install ansible
 # 制作自己的rpm包
@@ -163,19 +183,19 @@ vim  /etc/ansible/hosts
 
 
 
-sshpass分发密钥
+sshpass 分发密钥
 
-ansible是基于ssh进行控制的，一般是配置免密登陆，要想用 ansible 管理多台主机，先要把主控机的公钥分发到各个被控机上，
+由于 ansible是基于 ssh 进行控制的，一般是配置免密登陆，要想用 ansible 管理多台主机，先要把主控机的公钥分发到各个被控机上。
 
 ```shell
 #　在主控机上安装sshpass 
 yum install sshpass -y
 
-#　在主控机上生成密钥对
+#　在主控机上生成密钥对:  /root/.ssh/id_rsa.pub 和  /root/.ssh/id_rsa.pub
 ssh-keygen -t rsa -b 2048  -C "fengzhao11124@163.com" -P ""
 
 # 分发密钥到远程主机
-sshpass -p "ssh登录密码" ssh-copy-id -i /root/.ssh/id_dsa.pub -o StrictHostKeyChecking=no root@123.56.221.190  
+sshpass -p "ssh登录密码" ssh-copy-id -i /root/.ssh/id_rsa.pub -o StrictHostKeyChecking=no root@123.56.221.190  
 ```
 
 
@@ -187,7 +207,7 @@ sshpass -p "ssh登录密码" ssh-copy-id -i /root/.ssh/id_dsa.pub -o StrictHostK
 #    create key pair
 rm -fr /root/.ssh/id_dsa*
 ssh-keygen -t dsa -f /root/.ssh/id_dsa -P "" -q
-# fenfa key file
+# 分发 key file
 for ip in 31 41
 do
 echo "=======Batch the file to the host 172.16.1.$ip=========="    
