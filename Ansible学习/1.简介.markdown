@@ -437,9 +437,14 @@ ansible web -m ping
 
   ```shell
   #　在远程主机组中执行命令
+  
+  
   ansible webservers  -m command -a "systemctl restart mysqld"  
   #　查看远程主机组中的selinux状态
   ansible webservers  -m command -a 　'getenforce'
+  # 查看远程主机组的开机时间
+  ansible webservers -m command -a 'uptime'
+  
   
   ansible  webservers  -m command -a 'echo $SHELL'   //执行不成功，
   ```
@@ -689,6 +694,10 @@ Ansible 默认是 **同步阻塞模式**，它会等待所有的机器都执行�
 
 
 ### 安装 docker
+
+
+
+### 批量文件分发
 
 
 
