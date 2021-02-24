@@ -737,6 +737,8 @@ select * FROM test where last_name like '张%' and age=10 ;
 
 
 
+# 优化器提示（Optimizer Hints）
+
 
 
 # 索引提示(index hint)
@@ -747,7 +749,7 @@ MySQL 可以使用索引提示（Index Hints）， 用于告诉**查询优化器
 
 索引提示只能用于 select 和 update 语句中。MySQL 共有三种索引提示，分别是：USE INDEX、IGNORE INDEX和FORCE INDEX。
 
-- use index：use index告诉MySql用列表中的其中一个索引去做本次查询
+- use index(index_list)  告诉MySQL用索引列表中的其中一个索引去做本次查询
 
   - ```sql
     -- 强制使用这两个索引去进行查找
@@ -867,17 +869,28 @@ https://github.com/Snailclimb/JavaGuide/blob/master/docs/database/MySQL%E9%AB%98
 
 
 
+# 性能优化概述
+
+数据库性能优化在数据库层面有很多因素，例如，表，查询语句，数据库配置等。
+
+数据库操作最终是作用在硬件层面的CPU和磁盘的IO操作上。所以要尽可能让开销足够小。
 
 
 
 
 
+## 数据库层面的优化
 
 
 
+- 表结构设计是否合理？是否满足三范式？范式和反范式的设计？https://www.zhihu.com/question/19900437
+  - 字段的数据类型是否合适？
+  - 经常更新的应用应该设计为多个表，很少列。数据分析的应该设计为大宽表。
+- 索引设计是否合理？
 
+- 是否选用合适的存储引擎？
 
-
+- 表是否有正确的row格式？
 
 ## 顺序索引
 
