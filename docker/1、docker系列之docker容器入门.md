@@ -1976,6 +1976,9 @@ docker logs container 可以查看一个容器的日志，准确来说，这个�
 
 # 查看当前daemon的默认日志驱动
 docker  info | grep  "Logging Driver"
+docker info --format '{{.LoggingDriver}}'
+
+
 # 查看容器的日志驱动
 docker inspect  -f '{{.HostConfig.LogConfig.Type}}'  containerID
 
@@ -2017,7 +2020,8 @@ docker inspect  -f '{{.HostConfig.LogConfig.Type}}'  ping_test
 
 # 查看日志文件
 ls -al /var/lib/docker/containers/ping_test_container_id/local-logs/
- 
+
+ls -al /var/lib/docker/containers/1e2c5f0a157d/local-logs/
  
 
 ```
