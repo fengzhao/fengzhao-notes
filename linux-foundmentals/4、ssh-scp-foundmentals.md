@@ -2,15 +2,25 @@
 
 ## OpenSSH 概览
 
-SSH 是 Secure SHELL 的缩写，顾名思义，这是一种建立在应用层基础上的安全协议，是一种加密的[网络传输协议](https://zh.wikipedia.org/wiki/%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%8D%8F%E8%AE%AE)。
+**SSH 是 Secure SHELL 的缩写，顾名思义，这是一种建立在应用层基础上的安全协议，是一种加密的[网络传输协议](https://zh.wikipedia.org/wiki/%E7%BD%91%E7%BB%9C%E4%BC%A0%E8%BE%93%E5%8D%8F%E8%AE%AE)。**
 
 可在不安全的网络中为网络服务提供安全的传输环境（即端到端加密，即使流量被劫持，也无法解密），专为 Linux 远程登陆和其他服务提供的安全协议。
 
+SSH 是目前较可靠，专为远程登录会话和其他网络服务提供安全性的协议。利用 SSH 协议可以有效防止远程管理过程中的信息泄露问题。
+
+通过 SSH 可以对所有传输的数据进行加密，也能够防止 DNS 欺骗和 IP 欺骗。
+
 人们通常利用 SSH 来远程登录到服务器上执行命令。（类似 Windows 上的 rdb 协议）
 
-OpenSSH 是一种 SSH 的开源实现。
 
-它是利用 OpenSSL  协议具体实现的开源软件，包括 ssh,ssh-copyid,ssh-keygen 等一系列套件，在 Linux 各大发行版基本上都已经预先安装好了。
+
+**平时大家经常所讲的 SSH ，其实是 OpenSSH 。它是基于 SSH 协议的开源实现 ，基于 SSH 协议实现的工具中 OpenSSH 最为出名。**
+
+在嵌入式服务器中，用户通过远程主机通过`OpenSSH`连接服务器。在`Linux`下基于tty运行login程序供client程序连接。
+
+
+
+openssh 是利用 OpenSSL  协议具体实现的开源软件，包括 ssh,ssh-copyid,ssh-keygen 等一系列套件，在 Linux 各大发行版基本上都已经预先安装好了。
 
 可以使用 ssh -V 命令来查看 OpenSSH 版本。
 
@@ -24,11 +34,15 @@ OpenSSH 是一种 SSH 的开源实现。
 
 
 
-Windows 下的 ssh
+## Windows 下的 ssh
 
 从 Win10 1809 和 Windows Server 2019 开始 Windows 开始支持 OpenSSH Server。
 
 https://www.cnblogs.com/sparkdev/p/10166061.html 
+
+所以我们在 windows 10 上基本也可以不用安装什么 xshell ，只要安装 terminal 就可以 ssh 到远程服务器了。
+
+
 
 本文只记录 ssh 基本组件的用法，关于 ssh-agent 和 ssh-add 等命令，这里没有记录。
 
