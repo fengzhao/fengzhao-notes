@@ -416,7 +416,7 @@ docker tag 一般用于给镜像打标签，用于区分设置镜像的版本号
 
 - 镜像仓库（Registry）                         					                        
 
-  Docker 的镜像存储中心通常被称为 `Registry`。目前有 docker hub 和 阿里云镜像仓库                     
+  Docker 的镜像存储中心通常被称为 `Registry`。目前有 docker hub 和 阿里云镜像仓库，github packages                     
 
   当您需要获取您自己的私有镜像的时候，首先需要登录 `Registry`，然后拉取镜像。
 
@@ -445,7 +445,7 @@ docker tag 一般用于给镜像打标签，用于区分设置镜像的版本号
 docker image COMMAND 是镜像管理的基本命令，可以通过帮助命令，逐层查看其所有的子命令。下面仅列举一些常用的 docker 镜像管理命令：
 
 ```shell
-$ docker pull  Registry/Users/Repository/Tag # 从registry上拉取镜像，私有的可能需要docker login认证
+$ docker pull  Registry/Users/Repository/Tag # 从registry上拉取镜像，私有repo的可能需要docker login认证
 # 列出所有镜像
 $ docker image ls
 # 删除这个id的镜像，参数可以是id，也可以是repoistry+tag，
