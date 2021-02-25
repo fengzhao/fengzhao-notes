@@ -211,6 +211,41 @@ $ ssh root@192.168.1.102  -p 22
 ssh 的配置文件一般在 ~/.ssh 目录中，由于安全原因，该目录的权限一般要设置为 700 。
 
 ```shell
+# 查看ssh有哪些包
+$ rpm -qa | grep -i ssh
+openssh-clients-7.4p1-16.el7.x86_64
+libssh2-1.4.3-12.el7_6.2.x86_64
+openssh-7.4p1-16.el7.x86_64
+openssh-server-7.4p1-16.el7.x86_64
+
+# 查看openssh-client安装了哪些包
+$ rpm -ql openssh-clients
+
+/etc/ssh/ssh_config
+/usr/bin/scp
+/usr/bin/sftp
+/usr/bin/slogin
+/usr/bin/ssh
+/usr/bin/ssh-add
+/usr/bin/ssh-agent
+/usr/bin/ssh-copy-id
+/usr/bin/ssh-keyscan
+/usr/lib64/fipscheck/ssh.hmac
+/usr/libexec/openssh/ssh-pkcs11-helper
+/usr/share/man/man1/scp.1.gz
+/usr/share/man/man1/sftp.1.gz
+/usr/share/man/man1/slogin.1.gz
+/usr/share/man/man1/ssh-add.1.gz
+/usr/share/man/man1/ssh-agent.1.gz
+/usr/share/man/man1/ssh-copy-id.1.gz
+/usr/share/man/man1/ssh-keyscan.1.gz
+/usr/share/man/man1/ssh.1.gz
+/usr/share/man/man5/ssh_config.5.gz
+/usr/share/man/man8/ssh-pkcs11-helper.8.gz
+
+
+
+
 # ssh客户端全局配置文件，所有用户公用的配置文件。
 /etc/ssh/ssh_config
 # ssh客户端用户配置文件，针对某个用户的具体配置文件，可以覆盖全局配置文件
