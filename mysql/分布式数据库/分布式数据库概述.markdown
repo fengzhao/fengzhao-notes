@@ -1,0 +1,39 @@
+
+
+# 常见的分布式数据库流派
+
+
+
+分布式数据库的发展历程，我按照年代进行了分类，到目前为止分成了四代。
+
+第一代是基于简单的分库分表或者中间件来做 Data Sharding 和 水平扩展。
+
+第二代系统是以 Cassandra、HBase 或者 MongoDB 为代表的 NoSQL 数据库，一般多为互联网公司在使用，拥有很好的水平扩展能力。
+
+第三代系统我个人认为是以 Google Spanner 和 AWS Aurora 为代表的新一代云数据库，他们的特点是融合了 SQL 和 NoSQL 的扩展能力，对业务层暴露了 SQL 的接口，在使用上可以做到水平的扩展。
+
+https://www.cnblogs.com/Robin5/p/11742266.html
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 第三代分布式数据库 NewSQL
+
+
+
+
+
+### Shared Nothing 流派
