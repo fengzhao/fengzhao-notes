@@ -336,3 +336,104 @@ connect_timeout=2
 
 
 
+## mysqlbinlog命令
+
+
+
+
+
+mysqlbinlog是 [MySQL](https://cloud.tencent.com/product/cdb) 中用来处理binlog的工具
+
+MySQL 的 binlog 包含一些 event ，
+
+
+
+MySQL 事件类型
+
+```shell
+enum Log_event_type { 
+  UNKNOWN_EVENT= 0, 
+  START_EVENT_V3= 1, 
+  QUERY_EVENT= 2, 
+  STOP_EVENT= 3, 
+  ROTATE_EVENT= 4, 
+  INTVAR_EVENT= 5, 
+  LOAD_EVENT= 6, 
+  SLAVE_EVENT= 7, 
+  CREATE_FILE_EVENT= 8, 
+  APPEND_BLOCK_EVENT= 9, 
+  EXEC_LOAD_EVENT= 10, 
+  DELETE_FILE_EVENT= 11, 
+  NEW_LOAD_EVENT= 12, 
+  RAND_EVENT= 13, 
+  USER_VAR_EVENT= 14, 
+  FORMAT_DESCRIPTION_EVENT= 15, 
+  XID_EVENT= 16, 
+  BEGIN_LOAD_QUERY_EVENT= 17, 
+  EXECUTE_LOAD_QUERY_EVENT= 18, 
+  TABLE_MAP_EVENT = 19, 
+  PRE_GA_WRITE_ROWS_EVENT = 20, 
+  PRE_GA_UPDATE_ROWS_EVENT = 21, 
+  PRE_GA_DELETE_ROWS_EVENT = 22, 
+  WRITE_ROWS_EVENT = 23, 
+  UPDATE_ROWS_EVENT = 24, 
+  DELETE_ROWS_EVENT = 25, 
+  INCIDENT_EVENT= 26, 
+  HEARTBEAT_LOG_EVENT= 27, 
+  IGNORABLE_LOG_EVENT= 28,
+  ROWS_QUERY_LOG_EVENT= 29,
+  WRITE_ROWS_EVENT = 30,
+  UPDATE_ROWS_EVENT = 31,
+  DELETE_ROWS_EVENT = 32,
+  GTID_LOG_EVENT= 33,
+  ANONYMOUS_GTID_LOG_EVENT= 34,
+  PREVIOUS_GTIDS_LOG_EVENT= 35, 
+  ENUM_END_EVENT 
+  /* end marker */ 
+};
+```
+
+
+
+
+
+
+
+### 试验环境
+
+
+
+- MySQL 8.0.23
+- Ubuntu 20.04.1 LTS
+- binlog模式采用row模式
+
+
+
+重置binlog
+
+```shell
+SQL>reset master;
+
+SQL>show master status;
+
+
+SQL>create database test;
+SQL>use test;
+
+SQL> CREATE TABLE `innodb_table` (
+        `id` int(11) NOT NULL AUTO_INCREMENT,
+        `name` varchar(20) NOT NULL,
+        `age` tinyint(3) NOT NULL,
+        PRIMARY KEY (`id`)
+    ) ENGINE=innodb DEFAULT CHARSET=utf8 AUTO_INCREMENT=1;
+    
+    
+INSERT INTO `innodb_table`(`name`,`age`) VALUES( 'insert1', CEIL(RAND() * 110) );
+INSERT INTO `innodb_table`(`name`,`age`) VALUES( 'insert2', CEIL(RAND() * 110) );
+INSERT INTO `innodb_table`(`name`,`age`) VALUES( 'insert3', CEIL(RAND() * 110) );   
+```
+
+
+
+
+
