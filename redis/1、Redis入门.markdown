@@ -1731,6 +1731,10 @@ redis-cli --cluster reshard 127.0.0.1:7000
 
 
 
+### redis-cli cluster 命令
+
+https://www.cnblogs.com/zhoujinyi/p/11606935.html
+
 
 
 ### redis-cluster 规范
