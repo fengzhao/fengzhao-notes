@@ -84,6 +84,10 @@ sudo scl enable devtoolset-9 bash
 # 长期有效
 sudo echo "source /opt/rh/devtoolset-9/enable" >>/etc/profile
 
+# ubuntu
+$ sudo apt-get install libxml2  pkg-config  libxml2-dev libsqlite3-dev tcl tk
+
+
 # 下载源代码包
 git clone -b 6.0 https://github.com/redis/redis.git  /usr/local/src/redis/
 wget http://download.redis.io/releases/redis-6.0.5.tar.gz  -O  /usr/local/src/redis-6.0.5.tar.gz
@@ -2134,6 +2138,8 @@ https://v2ex.com/t/696387
 
 # 缓存雪崩
 
+什么叫缓存雪崩？
+
 如果所有的 `Key` 失效时间都是12小时，中午12点刷新的，我零点有个秒杀活动大量用户涌入，假设当时每秒 6000 个请求，本来缓存在可以扛住每秒 5000 个请求，但是缓存当时所有的Key都失效了。
 
 此时 1 秒 6000 个请求全部落数据库，数据库必然扛不住，它会报一下警，真实情况可能DBA都没反应过来就直接挂了。
@@ -2152,7 +2158,7 @@ https://v2ex.com/t/696387
 
 **同一时间大面积失效，那一瞬间 Redis 跟没有一样，那这个数量级别的请求直接打到数据库几乎是灾难性的，你想想如果打挂的是一个用户服务的库，那其他依赖他的库所有的接口几乎都会报错。**
 
-**如果没做熔断等策略基本上就是瞬间挂一片的节奏，你怎么重启用户都会把你打挂，等你能重启的时候，用户早就睡觉去了，并且对你的产品失去了信心，什么垃圾产品。**
+**如果没做熔断限流等策略基本上就是瞬间挂一片的节奏，你怎么重启用户都会把你打挂，等你能重启的时候，用户早就睡觉去了，并且对你的产品失去了信心，什么垃圾产品。**
 
 
 
