@@ -184,7 +184,7 @@ select * from test where id = 1 for update;
 
 ```
 
-
+## 死锁
 
 ### **意向锁**
 
