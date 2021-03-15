@@ -94,7 +94,7 @@ GitLab-Runner 就是一个用来执行.gitlab-ci.yml 脚本的工具，是 gitla
 
 # ubuntu
 curl -LJO https://gitlab-runner-downloads.s3.amazonaws.com/latest/deb/gitlab-runner_amd64.deb
-dpkg -i itlab-runner_amd64.deb
+dpkg -i gitlab-runner_amd64.deb
 
 # RHEL
 curl -LJO https://gitlab-runner-downloads.s3.amazonaws.com/latest/rpm/gitlab-runner_<arch>.rpm
