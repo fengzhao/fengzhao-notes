@@ -184,7 +184,7 @@ select * from test where id = 1 for update;
 
 ```
 
-## 死锁
+
 
 ### **意向锁**
 
@@ -540,3 +540,8 @@ https://zhuanlan.zhihu.com/p/115277009
 
 
 
+## 死锁
+
+
+
+https://github.com/asdbex1078/MySQL/
