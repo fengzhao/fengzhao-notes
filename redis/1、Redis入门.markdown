@@ -90,6 +90,7 @@ $ sudo apt-get install libxml2  pkg-config  libxml2-dev libsqlite3-dev tcl tk
 
 # 下载源代码包
 git clone -b 6.0 https://github.com/redis/redis.git  /usr/local/src/redis/
+wget https://onedrive.fengzhao.ml/%E8%BD%AF%E4%BB%B6%E5%8C%85/%E6%95%B0%E6%8D%AE%E5%BA%93/redis/redis-6.0.6.tar.gz
 wget http://download.redis.io/releases/redis-6.0.5.tar.gz  -O  /usr/local/src/redis-6.0.5.tar.gz
 
 
