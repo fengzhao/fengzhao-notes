@@ -966,9 +966,9 @@ fengzhao@fengzhao-pc:~$ echo $VIRABLES3
 value3
 fengzhao@fengzhao-pc:~$
 
-# 把命令的结果赋值给某个变量，使用 VIRABLES=$(pwd) 和 VIRABLES=`pwd` 两种方式
-fengzhao@fengzhao-pc:~$ DIRPATH=$(pwd)
-fengzhao@fengzhao-pc:~$ echo $CURRENTPATH
+# 把命令的结果赋值给某个变量，使用 VIRABLES="$(pwd)" 和 VIRABLES=`pwd` 两种方式
+fengzhao@fengzhao-pc:~$ DIRPATH="$(pwd)"
+fengzhao@fengzhao-pc:~$ echo $DIRPATH
 /home/fengzhao
 fengzhao@fengzhao-pc:~$
 fengzhao@fengzhao-pc:~$ BASEPATH=`basename /home/fengzhao`

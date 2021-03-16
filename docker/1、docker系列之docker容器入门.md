@@ -545,6 +545,36 @@ CMD ["/usr/lib/postgresql/9.3/bin/postgres", "-D", "/var/lib/postgresql/9.3/main
 
 
 
+#### Dockerfile安全
+
+
+
+https://blog.csdn.net/boling_cavalry/article/details/93380447
+
+docker容器中运行的进程，如果以root身份运行的会有安全隐患，该进程拥有容器内的全部权限，更可怕的是如果有数据卷映射到宿主机，那么通过该容器就能操作宿主机的文件夹了，一旦该容器的进程有漏洞被外部利用后果是很严重的。
+
+因此，容器内使用非root账号运行进程才是安全的方式，这也是我们在制作镜像时要注意的地方。
+
+
+
+既然不能用root账号，那就要创建其他账号来运行进程了，以redis官方镜像的Dockerfile为例，来看看如何创建账号。
+
+https://github.com/docker-library/redis/blob/master/6.2/Dockerfile
+
+
+
+可见redis官方镜像使用 groupadd 和 useradd 创建了名为 redis 的组合账号，接下来就是用 redis 账号来启动服务了，理论上应该是以下套路：
+
+用 USER redis 将账号切换到 redis ；
+在 docker-entrypoint.sh 执行的时候已经是 redis 身份了，如果遇到权限问题，例如一些文件只有 root 账号有读、写、执行权限，用 sudo xxx 命令来执行即可；
+但事实并非如此！
+在 Dockerfile 脚本中未发现 USER redis 命令，这意味着执行 docker-entrypoint.sh 文件的身份是 root；
+其次，在 docker-entrypoint.sh 中没有发现 su - redis 命令，也没有 sudo 命令；
+
+这是怎么回事呢？难道容器内的 redis 服务是用 root 账号启动的？
+
+
+
 #### Dockerfile 中的指令
 
 
