@@ -1615,11 +1615,13 @@ shell脚本有三种执行方式：
 
 
 
+# FZF
 
 
 
+fzf 是一个通用的命令行模糊搜索工具，用 golang 编写，大家的评价都是目前最快的 fuzzy finder，配合 [ag](https://einverne.github.io/post/2019/04/the-silver-searcher.html) 的使用，依靠模糊的关键词，可以快速定位文件。
 
-
+配合一些脚本，可以完全颠覆以前使用命令行的工作方式。
 
 
 
@@ -1653,4 +1655,3 @@ https://blog.csdn.net/hudashi/article/details/82464995
 
 https://www.cnblogs.com/lsgxeva/p/9309576.html
 
-1

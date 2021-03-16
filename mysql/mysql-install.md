@@ -396,3 +396,163 @@ $ sudo service mysqld status
 
 
 
+```shell
+# 8.0.20
+wget https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-8.0.20-linux-glibc2.12-x86_64.tar.xz
+
+# 8.0.18
+wget https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-8.0.18-linux-glibc2.12-x86_64.tar.xz
+
+# 5.7.40 
+wget https://dev.mysql.com/get/Downloads/MySQL-5.7/mysql-5.7.40-linux-glibc2.12-x86_64.tar.xz
+wget https://dev.mysql.com/get/Downloads/MySQL-5.7/mysql-5.7.26-linux-glibc2.12-x86_64.tar.gz
+
+
+```
+
+
+
+
+
+## 升级须知
+
+- MySQL 不支持跨版本升级，即 MySQL5.6 不能直接升级到 MySQL8.0 。
+
+- 一般建议先升级到次版本号的最新版。然后再进行大版本号的升级。
+- 升级之前，先要安全的关闭 MySQL，把数据刷回磁盘，并且做好一次数据备份，再进行升级。
+
+
+
+
+
+### 5.7 升级到 8.0.22
+
+
+
+1、准备 8.0.20 版本的二进制文件
+
+```shell
+cd /usr/src/
+wget https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-8.0.20-linux-glibc2.12-x86_64.tar.xz
+tar -Jxvf mysql-8.0.20-linux-glibc2.12-x86_64.tar.xz
+mv mysql-8.0.20-linux-glibc2.12-x86_64  mysql-8.0.20
+```
+
+
+
+2、备份一份数据目录
+
+```shell
+# 查看basedir
+ mysql -u root -pQH@123456 -S /data/mysql/mysql.sock  --execute="show VARIABLES like 'basedir'"
+ +---------------+-------------------+
+| Variable_name | Value             |
++---------------+-------------------+
+| basedir       | /usr/local/mysql/ |
++---------------+-------------------+
+
+# 查看datadir
+ mysql -u root -pQH@123456 -S /data/mysql/mysql.sock  --execute="show VARIABLES like 'datadir'"
++---------------+-------------------+
+| Variable_name | Value             |
++---------------+-------------------+
+| datadir       | /data/mysql/data/ |
++---------------+-------------------+
+
+# 关闭当前正在运行的MySQ
+ mysql -u root -pQH@123456 -S /data/mysql/mysql.sock  --execute="SET GLOBAL innodb_fast_shutdown=0" 
+ 
+ mysqladmin -u root -pQH@123456 -S /data/mysql/mysql.sock shutdown
+
+# 备份一份数据目录,数据量如果大的话，就开tmux备份
+mkdir -p /data/bak20200520
+cp -ar /data/mysql/data/  /data/bak20200520/
+
+# 可以用打成 tar.xz 文件夹
+
+tar -Jcf bak20200520.tar.xz  /data/mysql/data/
+```
+
+
+
+4、替换 MySQL 安装目录的版本
+
+```
+mv  /usr/local/mysql/  /usr/local/mysql-8.0.18 
+
+cp -r /usr/src/mysql-8.0.20/   /usr/local/
+
+mv /usr/local/mysql-8.0.20  /usr/local/mysql
+
+```
+
+
+
+5、用高版本的 MySQL 启动
+
+```shell
+systemctl start mysql
+
+# 检查所有表是否与当前版本兼容，并更新系统库
+mysql_upgrade -uroot -pQH@123456 -S /data/mysql/mysql.sock
+
+# 检查这个过程的输出，如果没有报错，一般都是升级成功。
+```
+
+
+
+6、重新启动 MySQL
+
+```shell
+systemctl start mysql
+```
+
+
+
+## 升级注意事项
+
+
+
+### MySQL group by 隐式排序
+
+**从 5.7 升级到 8.0 的注意事项**
+
+在 MySQL5.7 中，group by 子句会隐式排序。
+
+默认情况下 GROUP BY 会隐式排序（即 group by id 后面没有 asc 和 desc 关键字）。但是 group by 自己会排序
+
+- 不推荐 **GROUP BY隐式排序（group by id）**  或**GROUP BY显式排序( group by id desc)**。
+
+- 要生成给定的排序 ORDER，请提供ORDER BY子句。`group by id order by id `
+
+```sql
+ CREATE TABLE t (id INTEGER,  cnt INTEGER);
+ 
+INSERT INTO t VALUES (4,1),(3,2),(1,4),(2,2),(1,1),(1,5),(2,6),(2,1),(1,3),(3,4),(4,5),(3,6);
+
+-- 在MySQL5.7中，下面这三条sql看起来执行的效果是一样的
+
+-- 推荐，5.7和8.0效果一致
+select id, SUM(cnt) from t group by id order by id; 
+-- 不推荐  --8.0中不会排序
+select id, SUM(cnt) from t group by id ; 
+-- 不推荐  --8.0中直接报错
+select id, SUM(cnt) from t group by id  asc; 
+
++------+----------+
+| id   | SUM(cnt) |
++------+----------+
+|    1 |       13 |
+|    2 |        9 |
+|    3 |       12 |
+|    4 |        6 |
++------+----------+
+4 rows in set (0.00 sec)
+
+-- 从 MySQL8.0 开始，不支持 GROUP BY隐式排序 和 GROUP BY显式排序
+```
+
+
+
+ 
+
