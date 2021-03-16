@@ -425,6 +425,31 @@ Role-based Authorization Strategy          https://www.cnblogs.com/netflix/p/121
 
 
 
+
+
+# Jenkins && Gitlab 集成
+
+
+
+我们学习了`Jenkins`的搭建和插件+流水线的基本使用方法，`Jenkins`极大地提升了部署效率。
+最近想学习一下如何集成`GitLab webhook`，实现进一步解放双手，目标：
+
+- 推送（`git push`）触发构建
+- 推送到指定分支触发构建
+- 根据`commit`的文件，结合`mvn -pl`指令，实现部分增量构建，并记录`commit`信息
+
+推送事件也可以换成`Tag push events`、`Merge request events`等其他触发条件，根据需要自由选择。
+
+
+
+**基础实现**
+
+使用`Gitlab Hook Plugin`，并在 Jenkins 和 GitLab 中分别配置。在Jenkins 插件管理中搜索并安装插件：
+
+
+
+
+
 # Drone CI 工具
 
 
