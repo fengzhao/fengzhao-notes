@@ -330,9 +330,9 @@ mysql> explain select * from slowtech.t1 order by c1,c2 desc;
 
 **从 5.7 升级到 8.0 的注意事项**
 
-在 MySQL5.7 中，group by 子句会隐式排序
+在 MySQL5.7 中，group by 子句会隐式排序。
 
-默认情况下 GROUP BY 会隐式排序(即，group by id 后面没有 asc 和 desc 关键字)。但是 group by 自己会排序
+默认情况下 GROUP BY 会隐式排序（即 group by id 后面没有 asc 和 desc 关键字）。但是 group by 自己会排序
 
 - 不推荐 **GROUP BY隐式排序（group by id）**  或**GROUP BY显式排序( group by id desc)**。
 
