@@ -38,6 +38,8 @@
 > 参考
 >
 > https://zhuanlan.zhihu.com/p/52362950
+>
+> https://spike.dev/2020/10/26/deep-dive-into-cdn-%e6%b7%b1%e5%ba%a6%e5%89%96%e6%9e%90-cdn-%e7%b3%bb%e7%bb%9f/
 
 
 
