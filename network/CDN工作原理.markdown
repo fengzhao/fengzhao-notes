@@ -20,16 +20,16 @@
 
 当用户访问网站时，利用全局负载技术，将用户的访问指向距离最近的缓存服务器上，由缓存服务器响应用户请求。（有点像电商的本地仓吧？）
 
+由于 `CDN` 跟互联网骨干网的相关性很大，背后涉及到的网络技术和资源较为复杂，大部分公司都没能力自建`CDN`。
 
 
-由于 `CDN` 跟互联网骨干网的相关性很大，背后涉及到的网络技术和资源较为复杂，大部分公司都没`CDN`。都只能采购一些云计算公司的产品。
 
-
+都只能采购一些云计算公司的产品。
 
 比较著名的 CDN 厂商有：
 
--  阿里云、腾讯云（知乎就用了腾讯CDN）、七牛云（）
-- AWS、cloudflare、akamai（飞书就用了这家的）
+-  阿里云、腾讯云（知乎就用了腾讯CDN）、七牛云、又拍云等
+- AWS、cloudflare、akamai（飞书就用了这家）
 
 
 
@@ -113,7 +113,11 @@ https://www.cloudflare.com/zh-cn/learning/cdn/glossary/anycast-network/
 
 
 
-比如，知乎在国内
+比如，知乎域名是 www.zhihu.com 实际上就是一个 cdn 加速域名。
+
+
+
+这个域名会添加很多 cname 记录，
 
 
 
@@ -129,3 +133,12 @@ https://www.cloudflare.com/zh-cn/learning/cdn/glossary/anycast-network/
 
 
 
+
+
+
+
+
+
+## 静态资源 vs 动态资源
+
+> 

@@ -176,6 +176,22 @@ Windows Terminal 配置文件主要分为：
 
 
 
+## 安装 powerline 字体
+
+
+
+```shell
+$ git clone https://github.com/powerline/fonts.git 
+$ ./fonts/install.sh
+
+```
+
+
+
+
+
+
+
 
 
 
