@@ -3,7 +3,7 @@
 
 
 - Continuous Integration (CI)       持续集成
-- Continuous Delivery (CD)          持续交付
+- Continuous Delivery (CD)           持续交付
 - Continuous Deployment (CD)   持续部署
 
 
