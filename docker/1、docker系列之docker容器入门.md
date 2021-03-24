@@ -1060,6 +1060,36 @@ docker-compose up -d --scale redis=2
 
 
 
+
+
+
+
+
+
+
+
+
+
+```yaml
+version: '3'
+services:
+# 定义服务web
+  web:
+    # 
+    build: .
+    ports:
+     - "5000:5000"
+
+  redis:
+    image: "redis:alpine"
+```
+
+
+
+
+
+
+
 ## Docker 高级实践
 
 <https://michaelyou.github.io/2017/09/07/%E6%B5%99%E6%B1%9F%E5%A4%A7%E5%AD%A6SEL%E5%AE%9E%E9%AA%8C%E5%AE%A4docker%E7%B3%BB%E5%88%97%E6%96%87%E7%AB%A0%E7%9B%AE%E5%BD%95/>
