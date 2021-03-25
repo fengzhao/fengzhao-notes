@@ -90,7 +90,7 @@ innodb_buffer_pool_instances=1
 innodb_buffer_pool_size=134217728
 # 缓冲池配置时的基本单位，以块的形式配置，指明块大小。
 # innodb_buffer_pool_size=innodb_buffer_pool_chunk_size * innodb_buffer_pool_instances * n 
-innodb_buffer_pool_chunk_size=128M # 默认内存块是128M，可以以1MB为单位(1048576 字节)增加或减少
+innodb_buffer_pool_chunk_size=128M # 默认内存块是128M，可以以1MB为单位(1048576字节)增加或减少
 
 
 ```
