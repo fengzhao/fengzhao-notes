@@ -602,6 +602,20 @@ Context http, server, location
 
 
 
+
+
+# Nginx热升级
+
+
+
+https://blog.csdn.net/gexiaoyizhimei/article/details/101650717
+
+https://www.cnblogs.com/wupeixuan/p/12074007.html
+
+
+
+
+
 # Nginx 安全配置规范
 
 
