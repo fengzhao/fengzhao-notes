@@ -201,6 +201,11 @@ make && make install
 
 
 
+
+# ubuntu
+
+sudo apt-get install gcc make libpcre3 libpcre3-dev   zlib1g-dev openssl libssl-dev 
+
 ```
 
 
