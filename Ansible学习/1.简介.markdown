@@ -14,7 +14,11 @@ Ansible 是2012年推出的一种通用的开源自动化工具，可用于配�
 
 除了ansible之外，还有 saltstack 等批量管理软件。
 
-ansible 的地址是 https://github.com/ansible/ansible
+ansible 的主代码库地址是 https://github.com/ansible/ansible
+
+ansible 核心模块  https://github.com/ansible/ansible/tree/devel/lib/ansible/modules
+
+
 
 官网地址是  https://www.ansible.com/
 
@@ -33,6 +37,16 @@ ansible可以帮助运维人员完成一些批量任务，或者完成一些需�
 比如：每当有新服务器加入工作环境时，运维人员都要为新服务器部署某个服务，也就是说运维人员需要经常重复的完成相同的工作。
 
 这些场景中运维人员都可以使用到 ansible 。
+
+
+
+我们现在部署应用时需要把不同的服务组合起来。这些服务运行在一组分布式计算资源上。并使用不同的网络协议相互通信。
+
+一个 web 应用一般由 web 服务、应用服务、内存缓存系统、任务队列、消息队列、SQL数据库、NoSQL数据库及负载均衡几部分组成。
+
+我们还得保持适当的冗余，这样当出现问题时，可以平滑地处理这些异常。
+
+
 
 
 
