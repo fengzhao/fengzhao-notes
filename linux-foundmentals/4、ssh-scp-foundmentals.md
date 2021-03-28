@@ -63,8 +63,6 @@ OpenSSL 是用于传输层安全性（TLS）协议的健壮的，商业级，功
 
 OpenSSL 代码库的地址是 https://github.com/openssl/openssl 
 
-
-
 用户可以从 [www.openssl.org/source](https://www.openssl.org/source) 或者 github 下载官方发行版的源代码压缩包 。OpenSSL项目不会以二进制形式分发工具包。
 
 但是，对于各种各样的操作系统，可以使用 OpenSSL 工具包的预编译版本。（各大 Linux 发行版基本上都有带预编译好的 OpenSSL）
@@ -96,6 +94,14 @@ OpenSSL 工具包括：
   - 和更多...
 
 作为一个基于密码学的安全开发包，OpenSSL 提供的功能相当强大和全面，囊括了主要的密码算法、常用的[密钥](https://baike.baidu.com/item/%E5%AF%86%E9%92%A5)和证书封装管理功能以及 SSL 协议，并提供了丰富的应用程序供测试或其它目的使用。
+
+https://blog.csdn.net/naioonai/article/details/80984032
+
+
+
+
+
+
 
 ## ssh命令组件
 
@@ -791,3 +797,12 @@ https://www.cnblogs.com/canyezhizi/p/13537495.html
 
 
 
+
+
+
+
+
+
+
+
+https://blog.csdn.net/weixin_41305441/article/details/107108429
