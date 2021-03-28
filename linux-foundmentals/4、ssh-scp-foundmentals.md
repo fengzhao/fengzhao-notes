@@ -806,3 +806,76 @@ https://www.cnblogs.com/canyezhizi/p/13537495.html
 
 
 https://blog.csdn.net/weixin_41305441/article/details/107108429
+
+
+
+
+
+
+
+
+
+# ssh 连接速度
+
+
+
+How to Check the Speed of Your ssh Connection
+
+
+
+https://webleit.info/how-to-check-the-speed-of-your-ssh-connection/
+
+
+
+Have you ever wondered what is the speed of your ssh connection ？
+
+For example you are connected to a server in Dubai but you live in London and now you want to know what is the speed if you need to scp something. 
+
+Well the solution to this problem is called PV.
+
+
+
+PV is a terminal-based (command-line based) tool in Linux that allows the **monitoring of data** being sent through pipe. The full form of PV command is **Pipe Viewer**. PV helps the user by giving him a visual display of the following：
+
+- Time Elapsed
+- Completed Progress (percentage bar)
+- Current data transfer speed (also referred to as throughput rate)
+- Data Transferred
+- ETA (Estimated Time) (Remaining time)
+
+
+
+pv命令是Pipe Viewer 的简称，由Andrew Wood 开发。意思是通过管道显示数据处理进度的信息。
+
+这些信息包括已经耗费的时间，完成的百分比(通过进度条显示)，当前的速度，全部传输的数据，以及估计剩余的时间。
+
+
+
+显示与操作有关的有用信息，包括已经传输了的数据量，花费的时间，传输速率，进度条，进度的百分比，以及剩余的时间
+
+
+
+https://www.linuxcool.com/pv
+
+
+
+```shell
+apt install pv
+
+
+yes | pv | ssh remote_host "cat >/dev/null"
+
+166MiB 0:01:01 [2.52MiB/s] [   <=>
+
+```
+
+
+
+
+
+
+
+
+
+
+
