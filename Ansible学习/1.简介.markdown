@@ -242,14 +242,14 @@ done
 
 同时，根据存放位置的不同，同一个软件，同样的配置文件的使用优先级也是不一样的。
 
-在Ansible中，它的配置文件是一个名为`ansible.cfg`的配置文件，ansible.cfg配置文件是以ini格式存储配置数据的。
+在Ansible中，它的配置文件是一个名为`ansible.cfg`的配置文件，ansible.cfg 配置文件是以 ini 格式存储配置数据的。
 
 但是ansible.cfg配置文件可以存放在不同的目录，但只有一个可用，在运行Ansible命令时，Ansible将会按照预先设定的顺序查找配置文件，检查到哪个就用哪个。
 
 Ansible预先设定的优先级顺序如下：
 
 - `ANSIBLE_CFG`：首先，Ansible命令会先检查环境变量，及这个环境变量将指向的配置文件；
-- `./ansible.cfg`：其次，将会检查当前目录下的ansible.cfg配置文件；
+- `./ansible.cfg`：其次，将会检查当前目录下的ansible.cfg配置文件；（最佳做法）
 - `~/.ansible.cfg`：再次，将会检查当前用户home目录下的`.ansible.cfg`配置文件；
 - `/etc/ansible/ansible.cfg`：最后，将会检查在安装Ansible时自动生产的配置文件。
 
@@ -258,6 +258,8 @@ Ansible预先设定的优先级顺序如下：
 几乎所有的配置项都可以通过Ansible的playbook或环境变量来重新赋值，所以当你怎么都不知道这个变量在哪里定义的时候，不妨去看看[环境变量](https://www.jellythink.com/archives/128)里看看。
 
 根据我这么多年的运维经验来说，我建议使用`~/.ansible.cfg`作为配置文件使用，这样就可以实现每个用户都有自己独自的配置文件，不污染其它用户正常使用Ansible，同时也方便进行选项配置：
+
+最佳做法是把 ansible.cfg 文件和 playbook 一起放到当前目录，使用 git 来一起托管 playbook 文件。
 
 
 
@@ -313,15 +315,26 @@ Ansible预先设定的优先级顺序如下：
 
 
 
+```toml
+# 一个简单的 ansible.cfg 文件
+
+
+[defaults]
+# ansible使用/etc/ansible/hosts作为inventory文件的默认位置。
+# 一般我们不这么用。我们都会将主机文件和playbook文件一起进行版本管理
+hostfile = hosts
+remote_user=ubuntu
+private_key_file = ~/.ssh/vultr
+host_key_checking = false
 
 
 
+# hosts文件
+[webservers]
+tencent.fengzhao.me
 
 
-
-
-
-
+```
 
 
 
@@ -399,6 +412,9 @@ ansible
 
 # 查看模块帮助
 ansible copy -h
+
+
+ansible  主机清单  -m 模块名  -a  "命令行" 
 ```
 
 
@@ -600,7 +616,7 @@ ansible使用yaml文件来做为配置文件。
 
 ### YAML语言
 
-YAML语言的设计参考了JSON，XML和SDL等语言。YAML 强调以**数据为中心**，简洁易读，编写简单。
+YAML语言的设计参考了 JSON，XML和SDL等语言。YAML 强调以**数据为中心**，简洁易读，编写简单。
 
 YAML全称是”YAML Ain’t a Markup Language”（YAML不是一种置标语言）的递归缩写。 在开发的这种语言时，YAML 的意思其实是：”Yet Another Markup Language”（仍是一种置标语言）。
 
@@ -658,6 +674,22 @@ playbooks 实例
 **检查 playbook 文件是否正确**
 
 ansible-playbook  -C  /data/play-book.yaml
+
+
+
+```shell
+
+
+
+
+
+```
+
+
+
+
+
+
 
 
 
