@@ -40,7 +40,21 @@ openssh 是利用 OpenSSL  协议具体实现的开源软件，包括 ssh,ssh-co
 
 https://www.cnblogs.com/sparkdev/p/10166061.html 
 
-所以我们在 windows 10 上基本也可以不用安装什么 xshell ，只要安装 terminal 就可以 ssh 到远程服务器了。
+所以我们在 windows 10 上基本也可以不用安装什么 xshell ，只要 cmd 或 terminal 就可以 ssh 到远程服务器了。
+
+
+
+OpenSSH 客户端程序默认已经被系统安装好了，打开 设置->应用->可选功能 面板就可以看到：
+
+也可以添加功能，安装 openssh server，安装好后，在服务中启动 openssh server 就可以让 windows 被 ssh 远程连接。
+
+Windows 系统中 OpenSSH 的安装目录为 C:\Windows\System32\OpenSSH，不管是客户端程序还是服务器端程序都这这个目录中：
+
+OpenSSH 服务器端程序的默认配置文件 sshd_config_default 也在这个目录中。这个目录会被添加到 PATH 环境变量中：
+
+
+
+
 
 
 
