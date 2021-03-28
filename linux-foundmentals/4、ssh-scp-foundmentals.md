@@ -795,7 +795,7 @@ MACs umac-128-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@op
 
 
 
-
+https://github.com/cpandya2909/CVE-2020-15778/
 
 https://www.cnblogs.com/canyezhizi/p/13537495.html
 
