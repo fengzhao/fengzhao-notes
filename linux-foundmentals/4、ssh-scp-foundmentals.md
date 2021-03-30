@@ -40,7 +40,21 @@ openssh 是利用 OpenSSL  协议具体实现的开源软件，包括 ssh,ssh-co
 
 https://www.cnblogs.com/sparkdev/p/10166061.html 
 
-所以我们在 windows 10 上基本也可以不用安装什么 xshell ，只要安装 terminal 就可以 ssh 到远程服务器了。
+所以我们在 windows 10 上基本也可以不用安装什么 xshell ，只要 cmd 或 terminal 就可以 ssh 到远程服务器了。
+
+
+
+OpenSSH 客户端程序默认已经被系统安装好了，打开 设置->应用->可选功能 面板就可以看到：
+
+也可以添加功能，安装 openssh server，安装好后，在服务中启动 openssh server 就可以让 windows 被 ssh 远程连接。
+
+Windows 系统中 OpenSSH 的安装目录为 C:\Windows\System32\OpenSSH，不管是客户端程序还是服务器端程序都这这个目录中：
+
+OpenSSH 服务器端程序的默认配置文件 sshd_config_default 也在这个目录中。这个目录会被添加到 PATH 环境变量中：
+
+
+
+
 
 
 
@@ -62,8 +76,6 @@ OpenSSL 是用于传输层安全性（TLS）协议的健壮的，商业级，功
 这个协议的实现是基于完整功能的通用密码库，该库也可以独立使用。
 
 OpenSSL 代码库的地址是 https://github.com/openssl/openssl 
-
-
 
 用户可以从 [www.openssl.org/source](https://www.openssl.org/source) 或者 github 下载官方发行版的源代码压缩包 。OpenSSL项目不会以二进制形式分发工具包。
 
@@ -96,6 +108,14 @@ OpenSSL 工具包括：
   - 和更多...
 
 作为一个基于密码学的安全开发包，OpenSSL 提供的功能相当强大和全面，囊括了主要的密码算法、常用的[密钥](https://baike.baidu.com/item/%E5%AF%86%E9%92%A5)和证书封装管理功能以及 SSL 协议，并提供了丰富的应用程序供测试或其它目的使用。
+
+https://blog.csdn.net/naioonai/article/details/80984032
+
+
+
+
+
+
 
 ## ssh命令组件
 
@@ -775,7 +795,7 @@ MACs umac-128-etm@openssh.com,hmac-sha2-256-etm@openssh.com,hmac-sha2-512-etm@op
 
 
 
-
+https://github.com/cpandya2909/CVE-2020-15778/
 
 https://www.cnblogs.com/canyezhizi/p/13537495.html
 
@@ -797,11 +817,72 @@ https://www.cnblogs.com/canyezhizi/p/13537495.html
 
 
 
+<<<<<<< HEAD
 # ssh-deny
+=======
+
+
+https://blog.csdn.net/weixin_41305441/article/details/107108429
 
 
 
 
 
 
+
+
+
+# ssh 连接速度
+
+
+
+How to Check the Speed of Your ssh Connection
+
+
+
+https://webleit.info/how-to-check-the-speed-of-your-ssh-connection/
+
+
+
+Have you ever wondered what is the speed of your ssh connection ？
+
+For example you are connected to a server in Dubai but you live in London and now you want to know what is the speed if you need to scp something. 
+
+Well the solution to this problem is called PV.
+
+
+
+PV is a terminal-based (command-line based) tool in Linux that allows the **monitoring of data** being sent through pipe. The full form of PV command is **Pipe Viewer**. PV helps the user by giving him a visual display of the following：
+
+- Time Elapsed
+- Completed Progress (percentage bar)
+- Current data transfer speed (also referred to as throughput rate)
+- Data Transferred
+- ETA (Estimated Time) (Remaining time)
+
+
+
+pv命令是Pipe Viewer 的简称，由Andrew Wood 开发。意思是通过管道显示数据处理进度的信息。
+
+这些信息包括已经耗费的时间，完成的百分比(通过进度条显示)，当前的速度，全部传输的数据，以及估计剩余的时间。
+
+
+
+显示与操作有关的有用信息，包括已经传输了的数据量，花费的时间，传输速率，进度条，进度的百分比，以及剩余的时间
+
+
+
+https://www.linuxcool.com/pv
+
+
+
+```shell
+apt install pv
+
+
+yes | pv | ssh remote_host "cat >/dev/null"
+
+166MiB 0:01:01 [2.52MiB/s] [   <=>
+
+```
 
