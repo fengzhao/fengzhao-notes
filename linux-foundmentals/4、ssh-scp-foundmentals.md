@@ -139,9 +139,44 @@ $ ssh user@host -p port -i /path/private_key
 $ ssh --help
 ```
 
+
+
+#### SSH命令格式
+
+```shell
+usage: ssh [-1246AaCfgKkMNnqsTtVvXxYy] [-b bind_address] [-c cipher_spec]  
+           [-D [bind_address:]port] [-e escape_char] [-F configfile]  
+           [-I pkcs11] [-i identity_file]  
+           [-L [bind_address:]port:host:hostport]  
+           [-l login_name] [-m mac_spec] [-O ctl_cmd] [-o option] [-p port]  
+           [-R [bind_address:]port:host:hostport] [-S ctl_path]  
+           [-W host:port] [-w local_tun[:remote_tun]]  
+           [user@]hostname [command] 
+```
+
+#### 主要参数说明
+
+```shell
+-l 指定登入用户
+-p 设置端口号
+-f 后台运行，并推荐加上 -n 参数
+-n 将标准输入重定向到 /dev/null，防止读取标准输入。如果在后台运行ssh的话（-f选项），就需要这个选项。
+-N 不执行远程命令，只做端口转发
+-q 安静模式，忽略一切对话和错误提示
+-T 禁用伪终端配置
+-t （tty）为远程系统上的ssh进程分配一个伪tty（终端）。如果没有使用这个选项，当你在远程系统上运行某条命令的时候，ssh不会为该进程分配tty（终端）。相反，ssh将会把远端进程的标准输入和标准输出附加到ssh会话上去，这通常就是你所希望的（但并非总是如此）。这个选项将强制ssh在远端系统上分配tty，这样那些需要tty的程序就能够正常运行。
+-v verbose）显示与连接和传送有关的调试信息。如果命令运行不太正常的话，这个选项就会非常有用。
+```
+
+
+
+
+
+
+
 #### 在远程主机上直接执行命令
 
-远程执行命令，ssh 可以直接在远程的目标主机上执行命令，而不用登陆上去执行，就好像在本地执行一样。
+远程执行命令，ssh 可以直接在远程的目标主机上执行命令，而不用登陆上去后再来执行，就好像在本地执行一样。
 
 例如下面这条命令，命令就直接在远程终端执行了，也直接返回到本地了。
 
@@ -164,6 +199,85 @@ tmpfs                    9.4G     0  9.4G   0% /run/user/0
 root@fengzhao-work:~#
 
 ```
+
+
+
+如果是简单执行几个命令，则：
+
+```shell
+ssh user@remoteNode "cd /home ; ls"
+
+```
+
+　基本能完成常用的对于远程节点的管理了，几个注意的点：
+
+1. 双引号，必须有。如果不加双引号，第二个ls命令在本地执行
+2. 分号，两个命令之间用分号隔开
+
+
+
+对于脚本的方式：
+
+
+
+有些远程执行的命令内容较多，单一命令无法完成，考虑脚本方式实现：
+
+```shell
+#!/bin/bash
+ssh user@remoteNode > /dev/null 2>&1  << remotessh    
+cd /home
+touch abcdefg.txt
+# 执行一大堆命令
+exit
+remotessh    
+echo done!
+
+# 　远程执行的内容在 "<< remotessh " 至 "remotessh " 之间，在远程机器上的操作就位于其中，注意的点：
+# << remotessh，ssh后直到遇到remotessh这样的内容结束，remotessh可以随便修改成其他形式。
+# 重定向目的在于不显示远程的输出了
+# 在结束前，加exit退出远程节点
+```
+
+
+
+#### ssh的-t参数
+
+```shell
+-t      Force pseudo-tty allocation.  This can be used to execute arbitrary screen-based programs on a remote machine, which can be very useful, e.g. when implementing menu services.  Multiple -t options force tty allocation, even if ssh has no local tty.  
+
+```
+
+中文翻译一下：就是可以提供一个远程服务器的虚拟tty终端，加上这个参数我们就可以在远程服务器的虚拟终端上输入自己的提权密码了，非常安全。
+
+命令格式
+
+```shell
+ssh -t -p $port $user@$ip  'cmd'  
+```
+
+```shell
+#!/bin/bash  
+  
+#变量定义  
+ip_array=("192.168.1.1" "192.168.1.2" "192.168.1.3")  
+user="test1"  
+remote_cmd="/home/test/1.sh"  
+  
+#本地通过ssh执行远程服务器的脚本  
+for ip in ${ip_array[*]}  
+do  
+    if [ $ip = "192.168.1.1" ]; then  
+        port="7777"  
+    else  
+        port="22"  
+    fi  
+    ssh -t -p $port $user@$ip "remote_cmd"  
+done 
+```
+
+
+
+
 
 
 
