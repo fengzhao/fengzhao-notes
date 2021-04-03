@@ -618,7 +618,9 @@ ansible使用yaml文件来做为配置文件。
 
 YAML语言的设计参考了 JSON，XML和SDL等语言。YAML 强调以**数据为中心**，简洁易读，编写简单。
 
-YAML全称是”YAML Ain’t a Markup Language”（YAML不是一种置标语言）的递归缩写。 在开发的这种语言时，YAML 的意思其实是：”Yet Another Markup Language”（仍是一种置标语言）。
+YAML 全称是 "YAML Ain’t a Markup Language"（YAML不是一种置标语言）的递归缩写。 
+
+但是在开发的这种语言时，YAML 的意思其实是："Yet Another Markup Language"（仍是一种标记语言）。
 
 
 
