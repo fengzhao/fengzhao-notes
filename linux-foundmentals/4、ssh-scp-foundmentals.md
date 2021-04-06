@@ -89,6 +89,18 @@ OpenSSL 代码库的地址是 https://github.com/openssl/openssl
 
 
 
+**OpenSSL 3.0** 
+
+OpenSSL 3.0 是下一代的 OpenSSL 发布版，目前仍然在开发中。
+
+https://wiki.openssl.org/index.php/OpenSSL_3.0
+
+
+
+
+
+
+
 OpenSSL 工具包括：
 
 - **libssl** 是TLSv1.3（[RFC 8446](https://tools.ietf.org/html/rfc8446)）之前的所有TLS协议版本的实现。
