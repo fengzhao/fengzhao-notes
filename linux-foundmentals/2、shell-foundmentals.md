@@ -117,6 +117,14 @@ Linux 的 Shell 种类众多，常见的有：
 
   集合了 C Shell 和 Bourne Shell 的优点并且和 Bourne Shell 完全兼容。
 
+- nushell 
+
+  一款用 rust 语言写的 shell 
+
+  https://www.nushell.sh/zh-cn/book/introduction.html
+
+  https://github.com/nushell/nushell
+
 这里演示用的是 Bash，也就是 Bourne Again Shell，由于易用和免费，Bash 在日常工作中被广泛使用。同时，Bash 也是大多数Linux 系统默认的 Shell。
 
 在一般情况下，人们并不区分 Bourne Shell 和 Bourne Again Shell，所以，像  **#!/bin/sh**，它同样也可以改为 **#!/bin/bash**。
