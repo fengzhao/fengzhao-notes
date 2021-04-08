@@ -666,13 +666,27 @@ scp -i 指定私钥文件。（如果公钥已经传到远程主机，并且开�
 
 ## sftp文件传输
 
-sftp是Secure FileTransferProtocol的缩写，安全文件传送协议。可以为传输文件提供一种安全的加密方法。
+sftp 是 Secure FileTransferProtocol 的缩写，安全文件传送协议。可以为传输文件提供一种安全的加密方法。
 
-sftp与 ftp有着几乎一样的语法和功能。
+sftp 与 ftp 有着几乎一样的语法和功能。
 
-SFTP为 SSH 的一部分，是一种服务器之间文件传输的安全方式。SCP和SFTP的共同之处在于「使用SSH将文件加密才传输的」
+SFTP 为 SSH 的一部分，是一种服务器之间文件传输的安全方式。SCP 和 SFTP 的共同之处在于「使用SSH将文件加密才传输的」
 
-使用「WinSCP」或者「FileZilla」之类的客户端，还可以和Windows之间进行文件传输。
+使用「WinSCP」或者「FileZilla」之类的客户端，还可以和 Windows 之间进行文件传输。
+
+
+
+**设置目标**
+
+在Ubuntu系统上开通 sftp 文件服务，允许某些用户上传及下载文件。但是这些用户只能使用 sftp 传输文件，不能使用 SSH 终端访问服务器。
+
+并且sftp不能访问系统文件。
+
+系统管理员则既能使用sftp传输文件，也能使用SSH远程管理服务器。
+
+以下是将允许sftp-users用户组内的用户使用sftp，但不允许使用SSH Shell，且该组用户不能访问系统文件。
+
+在sftp-users组内创建一个用户“sftp”。允许ssh-users用户组内的用户使用sftp以及SSH。系统管理员的账户名为bbc2005。
 
 
 
