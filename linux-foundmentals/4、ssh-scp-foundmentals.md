@@ -18,6 +18,8 @@ SSH 是目前较可靠，专为远程登录会话和其他网络服务提供安�
 
 在嵌入式服务器中，用户通过远程主机通过`OpenSSH`连接服务器。在`Linux`下基于tty运行login程序供client程序连接。
 
+https://www.openssh.com/releasenotes.html
+
 
 
 openssh 是利用 OpenSSL  协议具体实现的开源软件，包括 ssh,ssh-copyid,ssh-keygen 等一系列套件，在 Linux 各大发行版基本上都已经预先安装好了。
