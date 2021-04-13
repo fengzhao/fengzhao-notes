@@ -113,9 +113,9 @@ Pod: Pod 是 Kubernetes 最基本的部署调度单元。每个 Pod 可以由一
   >
   > 并让 kubernetes 检查当前状态是否与期望的状态一致。
 
-- ReplicaSet：是 Pod 副本的抽象，用于解决 Pod 的扩容和伸缩
+- ReplicaSet：是 Pod 副本的抽象，用于解决 Pod 的扩容和伸缩。
 
-- Deployment：Deployment 表示部署，在内部使用 ReplicaSet 来实现。可以通过 Deployment 来生成相应的 ReplicaSet 完成 Pod 副本的创建
+- Deployment：Deployment 表示部署，在内部使用 ReplicaSet 来实现。可以通过 Deployment 来生成相应的 ReplicaSet 完成 Pod 副本的创建。
 
 - pod 是短暂的，可能由于各种原因pod挂掉，pod消失后，ReplicationController会启动新的pod，
 
@@ -557,7 +557,9 @@ kubectl delete all --all
 
 
 
-pod 代表了 kubernetes 中的基本部署单元，我们也可以手动创建管理它们。在实际应用中，几乎不会去手动管理 pod 。而是使用 ReplicationController 或 Deployment 这样的资源来管理 pod 
+**pod 代表了 kubernetes 中的基本部署单元，我们也可以手动创建管理它们。在实际应用中，我们几乎不会去手动管理 pod 。**
+
+而是使用 ReplicationController 或 Deployment 这样的资源来管理 pod 。
 
 只要将 pod 调度到某个节点，该节点上的 kubelet 就会运行 pod 的容器，如果容器主进程崩溃，kubelet 会将容器重启。
 
