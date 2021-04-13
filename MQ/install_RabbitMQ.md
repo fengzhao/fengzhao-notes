@@ -107,9 +107,9 @@ sudo tee /etc/apt/sources.list.d/bintray.rabbitmq.list <<EOF
 ## Change component to "erlang-22.x" to install the latest 22.x version.
 ## "bionic" as distribution name should work for any later Ubuntu or Debian release.
 ## See the release to distribution mapping table in RabbitMQ doc guides to learn more.
-deb https://dl.bintray.com/rabbitmq-erlang/debian bionic erlang
+deb https://dl.bintray.com/rabbitmq-erlang/debian focal erlang
 ## Installs latest RabbitMQ release
-deb https://dl.bintray.com/rabbitmq/debian bionic main
+deb https://dl.bintray.com/rabbitmq/debian focal main 
 EOF
 
 ## Update package indices
@@ -130,4 +130,44 @@ sudo apt-get install -y erlang-base \
                         erlang-runtime-tools erlang-snmp erlang-ssl \
                         erlang-syntax-tools erlang-tftp erlang-tools erlang-xmerl
 ```
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 配置文件
+
+
+
+rabbitMq有三个配置文件，分别为：
+
+- 主配置文件（rabbitmq.conf）
+- Erlang术语格式配置文件(advanced.config)
+- 环境变量配置文件(rabbitmq-env.conf)
+
+
+
+RabbitMQ 提供了三种方式来定制服务器:
+
+- [环境](http://www.rabbitmq.com/configure.html#define-environment-variables)变量
+
+  定义端口，文件位置和名称（接受shell输入，或者在环境配置文件（rabbitmq-env.conf）中设置）
+
+- **配置文件**
+
+  为服务器组件设置权限,限制和集群，也可以定义插件设置.
+
+- **运行时参数和策略**
+
+  可在运行时进行修改集群设置
+
+大部分设置都使用前面的两种方法，但
 
