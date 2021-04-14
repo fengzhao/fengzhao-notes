@@ -265,6 +265,8 @@ SELECT INDEX_NAME, IS_VISIBLE
 
 
 
+## 全文索引
+
 
 
 ## 降序索引
