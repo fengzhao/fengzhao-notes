@@ -61,7 +61,7 @@ import "fmt"
 func bfSearch(s, p string) int {
     begin := 0
     i, j := 0, 0
-    n, m := len(s), len(p)  // 主串、子串长度
+    n, m := len(s), len(p)  // 主串、子串长度,假设主串长度是10，子串长度是5，n=10,m=5
     for i = 0; i < n; begin++ {
         // 通过 BF 算法暴力匹配子串和主串
         for j = 0;j < m; j++ {

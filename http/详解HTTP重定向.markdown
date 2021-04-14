@@ -163,7 +163,7 @@ Strict-Transport-Security: max-age=360
 
 
 
-
+https://www.dute.org/httpstatus
 
 ## 302 Moved Temporarily
 
@@ -189,13 +189,29 @@ Strict-Transport-Security: max-age=360
 
 
 
-
-
-
-
 ## 301 和 302 的区别
 
 
+
+> A 301 redirect means that the page has permanently moved to a new location.
+>
+> A 302 redirect means that the move is only temporary. 
+>
+> Search engines need to figure out whether to keep the old page, or replace it with the one found at the new location. 
+>
+> If the wrong type of redirect has been set up, search engines may become confused, resulting in a loss of traffic.
+
+
+
+301 表示页面已经**永久转移**到其他地址。
+
+392 表示这个重定向是**临时的。**
+
+对于web访问的用户来说，可能感受不到实际的区别。但是搜索引擎对其处理的方式是不同的。
+
+
+
+比如，你将一个web页面或整个站点都转移到新的地址（当启用新域名的场景时），你希望访客可以找到正确的站点。
 
 301表示搜索引擎在抓取新内容的同时也将旧的网址交换为重定向之后的网址；
 
@@ -204,6 +220,10 @@ Strict-Transport-Security: max-age=360
 
 
 302表示旧地址A的资源还在（仍然可以访问），这个重定向只是临时地从旧地址A跳转到地址B，搜索引擎会抓取新的内容而保存旧的网址。
+
+
+
+https://juejin.cn/post/6844904097733165069
 
 
 
