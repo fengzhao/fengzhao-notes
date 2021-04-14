@@ -609,6 +609,18 @@ WORKDIR指令设置 Dockerfile 中的任何 RUN，CMD，ENTRPOINT，COPY 和 ADD
 
 
 
+#### docker镜像制作教程
+
+https://fuckcloudnative.io/posts/docker-images-part1-reducing-image-size/
+
+https://fuckcloudnative.io/posts/docker-images-part2-details-specific-to-different-languages/
+
+
+
+
+
+
+
 ## docker 文件系统
 
 
@@ -2126,6 +2138,18 @@ json-file 日志的路径位于 `/var/lib/docker/containers/container_id/contain
 ### 生产环境如何存储容器中的日志
 
 
+
+
+
+
+
+
+
+# podman学习
+
+
+
+https://fuckcloudnative.io/posts/podman-sidecar/
 
 
 
