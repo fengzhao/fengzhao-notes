@@ -1261,6 +1261,8 @@ root@pve /data#
 
 <https://www.redhat.com/zh/topics/containers/whats-a-linux-container>
 
+https://man7.org/linux/man-pages/man7/namespaces.7.html
+
 很多人都知道 docker 底层其实就是 Linux 的容器技术。
 
 > **docker 通过 namespace 实现资源隔离，通过 cgroups 实现了资源限制。**
@@ -1270,6 +1272,12 @@ root@pve /data#
 在同一个 namespace 下的进程可以感知彼此的变化，而对外界的进程一无所知。
 
 这样就可以让容器中的进程产生错觉，仿佛自己置身于一个独立的系统环境中。以达到独立和隔离的目的。
+
+
+
+具体的实现方式是把一个或多个进程的相关资源指定在同一个 namespace 中。
+
+Linux namespaces 是对全局系统资源的一种封装隔离，使得处于不同 namespace 的进程拥有独立的全局系统资源，改变一个 namespace 中的系统资源只会影响当前 namespace 里的进程，对其他 namespace 中的进程没有影响。
 
 
 
