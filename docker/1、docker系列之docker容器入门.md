@@ -2155,7 +2155,7 @@ json-file 日志的路径位于 `/var/lib/docker/containers/container_id/contain
 
 # podman学习
 
-
+https://podman.io/getting-started/installation
 
 https://fuckcloudnative.io/posts/podman-sidecar/
 
