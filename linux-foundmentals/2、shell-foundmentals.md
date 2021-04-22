@@ -1663,3 +1663,78 @@ https://blog.csdn.net/hudashi/article/details/82464995
 
 https://www.cnblogs.com/lsgxeva/p/9309576.html
 
+
+
+
+
+
+
+# Shell 脚本进阶
+
+
+
+
+
+
+
+### 条件判断if
+
+逐条件进行判断，第一次遇为“真”条件时，执行其分支，而后结束整个if。
+
+```shell
+if 判断条件 1 ; then
+  条件为真的分支代码
+elif 判断条件 2 ; then
+  条件为真的分支代码
+elif 判断条件 3 ; then
+  条件为真的分支代码
+else
+  以上条件都为假的分支代码
+fi
+```
+
+
+
+```shell
+#判断年纪
+#!/bin/bash
+read -p "Please input your age: " age
+if [[ $age =~ [^0-9] ]] ;then
+    echo "please input a int"
+    exit 10
+elif [ $age -ge 150 ];then
+    echo "your age is wrong"
+    exit 20
+elif [ $age -gt 18 ];then
+    echo "good good work,day day up"
+else
+    echo "good good study,day day up"
+fi
+```
+
+**分析**：请输入年纪，先判断输入的是否含有除数字以外的字符，有，就报错；没有，继续判断是否小于150，是否大于18。
+
+
+
+
+
+### 条件判断case
+
+```shell
+case $name in;
+PART1)
+  cmd
+  ;;
+PART2)
+  cmd
+  ;;
+*)
+  cmd
+  ;;
+esac
+```
+
+
+
+
+
