@@ -20,6 +20,10 @@ SSH 是目前较可靠，专为远程登录会话和其他网络服务提供安�
 
 https://www.openssh.com/releasenotes.html
 
+https://www.openssh.com/
+
+
+
 
 
 openssh 是利用 OpenSSL  协议具体实现的开源软件，包括 ssh,ssh-copyid,ssh-keygen 等一系列套件，在 Linux 各大发行版基本上都已经预先安装好了。
@@ -34,44 +38,7 @@ openssh 是利用 OpenSSL  协议具体实现的开源软件，包括 ssh,ssh-co
 
 
 
-
-
-## Windows 下的 ssh
-
-从 Win10 1809 和 Windows Server 2019 开始 Windows 开始支持 OpenSSH Server。
-
-https://www.cnblogs.com/sparkdev/p/10166061.html 
-
-所以我们在 windows 10 上基本也可以不用安装什么 xshell ，只要 cmd 或 terminal 就可以 ssh 到远程服务器了。
-
-
-
-OpenSSH 客户端程序默认已经被系统安装好了，打开 设置->应用->可选功能 面板就可以看到：
-
-也可以添加功能，安装 openssh server，安装好后，在服务中启动 openssh server 就可以让 windows 被 ssh 远程连接。
-
-Windows 系统中 OpenSSH 的安装目录为 C:\Windows\System32\OpenSSH，不管是客户端程序还是服务器端程序都这这个目录中：
-
-OpenSSH 服务器端程序的默认配置文件 sshd_config_default 也在这个目录中。这个目录会被添加到 PATH 环境变量中：
-
-
-
-
-
-
-
-本文只记录 ssh 基本组件的用法，关于 ssh-agent 和 ssh-add 等命令，这里没有记录。
-
-
-
-openssh 的认证方式：
-
-- 密码认证
-- 密钥认证（非对称加密）
-
-
-
-**OpenSSL** 
+## **OpenSSL** 
 
 OpenSSL 是用于传输层安全性（TLS）协议的健壮的，商业级，功能齐全的开源工具包，因 **安全套接字层（SSL）协议** 而闻名。
 
@@ -79,15 +46,23 @@ OpenSSL 是用于传输层安全性（TLS）协议的健壮的，商业级，功
 
 OpenSSL 代码库的地址是 https://github.com/openssl/openssl 
 
-用户可以从 [www.openssl.org/source](https://www.openssl.org/source) 或者 github 下载官方发行版的源代码压缩包 。OpenSSL项目不会以二进制形式分发工具包。
+源代码包下载
+
+```shell
+wget https://www.openssl.org/source/openssl-1.1.1d.tar.gz 
+```
+
+
+
+
+
+用户可以从 [www.openssl.org/source](https://www.openssl.org/source) 或者 github 下载官方发行版的源代码压缩包 。OpenSSL 项目不会以二进制形式分发工具包。
 
 但是，对于各种各样的操作系统，可以使用 OpenSSL 工具包的预编译版本。（各大 Linux 发行版基本上都有带预编译好的 OpenSSL）
 
 特别是在Linux和其他Unix操作系统上，通常建议与发行商或供应商提供的预编译共享库链接。**一般不建议在 Linux 上自行编译安装 OpenSSL**
 
 **这是一个操作系统很底层的加密库，很多应用层的软件都引用了它（比如nginx,python等），所以一般不建议在生产环境直接编译。**
-
-
 
 
 
@@ -128,6 +103,45 @@ OpenSSL 工具包括：
 https://blog.csdn.net/naioonai/article/details/80984032
 
 
+
+
+
+
+
+
+
+## Windows 下的 ssh
+
+从 Win10 1809 和 Windows Server 2019 开始 Windows 开始支持 OpenSSH Server。
+
+https://www.cnblogs.com/sparkdev/p/10166061.html 
+
+所以我们在 windows 10 上基本也可以不用安装什么 xshell ，只要 cmd 或 terminal 就可以 ssh 到远程服务器了。
+
+
+
+OpenSSH 客户端程序默认已经被系统安装好了，打开 设置->应用->可选功能 面板就可以看到：
+
+也可以添加功能，安装 openssh server，安装好后，在服务中启动 openssh server 就可以让 windows 被 ssh 远程连接。
+
+Windows 系统中 OpenSSH 的安装目录为 C:\Windows\System32\OpenSSH，不管是客户端程序还是服务器端程序都这这个目录中：
+
+OpenSSH 服务器端程序的默认配置文件 sshd_config_default 也在这个目录中。这个目录会被添加到 PATH 环境变量中：
+
+
+
+
+
+
+
+本文只记录 ssh 基本组件的用法，关于 ssh-agent 和 ssh-add 等命令，这里没有记录。
+
+
+
+openssh 的认证方式：
+
+- 密码认证
+- 密钥认证（非对称加密）
 
 
 
