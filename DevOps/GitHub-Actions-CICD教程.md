@@ -4,15 +4,9 @@
 
 
 
-
-
-GitHub Actions 是在 GitHub Universe 大会上发布的，被 Github 主管 Sam Lambert 称为 “再次改变软件开发” 的一款重磅功能。
+GitHub Actions 是在 GitHub Universe 大会上发布的，被 Github 主管 Sam Lambert 称为 "再次改变软件开发" 的一款重磅功能。
 
 于 2018 年 10 月推出，内测了一段时间后，于 2019 年 11 月 13 日正式上线。
-
-
-
-简单说其实就是用于软件的构建编译的一个功能。
 
 
 
@@ -21,8 +15,6 @@ GitHub 会提供一个以下配置的服务器做为 runner：
 - 2-core CPU
 - 7 GB of RAM memory
 - 14 GB of SSD disk space
-
-
 
 
 
