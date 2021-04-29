@@ -621,7 +621,7 @@ https://fuckcloudnative.io/posts/docker-images-part1-reducing-image-size/
 
 https://fuckcloudnative.io/posts/docker-images-part2-details-specific-to-different-languages/
 
-
+[编写高效的Dockerfile_容器镜像服务 SWR_最佳实践_华为云 (huaweicloud.com)](https://support.huaweicloud.com/bestpractice-swr/swr_bestpractice_0002.html)
 
 
 
