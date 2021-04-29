@@ -625,6 +625,53 @@ https://fuckcloudnative.io/posts/docker-images-part2-details-specific-to-differe
 
 
 
+#### base image
+
+
+
+当我们在写 Dockerfile 的时候都需要用 `FROM` 语句来指定一个基础镜像，这些基础镜像并不是无中生有，也需要一个 Dockerfile 来构建成镜像。
+
+
+
+下面我们拿来 [debian:buster](https://hub.docker.com/_/debian) 这个基础镜像的 [Dockerfile](https://github.com/debuerreotype/docker-debian-artifacts/blob/18cb4d0418be1c80fb19141b69ac2e0600b2d601/buster/Dockerfile) 来看一下基础镜像是如何炼成的：
+
+```YAML
+FROM scratch
+ADD rootfs.tar.xz /
+CMD ["bash"]
+```
+
+一个基础镜像的 Dockerfile 一般仅有三行。第一行 `FROM scratch` 中的`scratch` 这个镜像并不真实的存在。
+
+当你使用 `docker pull scratch` 命令来拉取这个镜像的时候会翻车哦，提示 `Error response from daemon: 'scratch' is a reserved name`。
+
+这是因为自从 docker 1.5 版本开始，在 Dockerfile 中 `FROM scratch` 指令并不进行任何操作，也就是不会创建一个镜像层；
+
+接着第二行的 `ADD rootfs.tar.xz /` 会自动把 `rootfs.tar.xz` 解压到 `/` 目录下，由此产生的一层镜像就是最终构建的镜像真实的 layer 内容；
+
+第三行 `CMD ["bash"]` 指定这镜像在启动容器的时候执行的应用程序，一般基础镜像的 CMD 默认为 bash 或者 sh 。
+
+> As of Docker 1.5.0 (specifically, [`docker/docker#8827`](https://github.com/docker/docker/pull/8827)), `FROM scratch` is a no-op in the Dockerfile , and will not create an extra layer in your image (so a previously 2-layer image will be a 1-layer image instead).
+
+
+
+```shell
+# /var/lib/docker/image/overlay2/repositories.json
+# 主要存放了镜像的元数据信息。主要是 image name 和 image id 的对应，digest 和 image id 的对应。
+# 当 pull 完一个镜像的时候 docker 会更新这个文件。
+# 当我们 docker run 一个容器的时候也用到这个文件去索引本地是否存在该镜像，没有镜像的话就自动去 pull 这个镜像。
+
+
+
+
+cat /var/lib/docker/image/overlay2/repositories.json | jq
+
+
+
+```
+
+
+
 
 
 ## docker 文件系统
@@ -1931,7 +1978,7 @@ docker stats
 
 当我使用 docker 对私有存储库执行docker login时，docker 会记住对应 registry的登陆用户名。
 
-Docker利用docker login命令来校验用户镜像仓库的登录凭证，实际并不是真正意义上的登录(Web Login)，仅仅是一种登录凭证的试探校验。
+Docker 利用 docker login 命令来校验用户镜像仓库的登录凭证，实际并不是真正意义上的登录(Web Login)，仅仅是一种登录凭证的试探校验。
 
 如果用户名密码正确，Docker则会把用户名、密码 以及仓库域名等信息进行base64编码保存在docker的配置文件中。
 
@@ -1968,7 +2015,7 @@ docker push   registry.cn-hangzhou.aliyuncs.com/fengzhao/etcd:3.4.9
 
 
 
-在企业中，可以搭建自建的镜像仓库，harbor 
+在企业中，可以搭建自建的私服镜像仓库，可以使用 docker registry ，harbor  等
 
 https://goharbor.io/docs/2.0.0/install-config/
 
@@ -2022,6 +2069,19 @@ sudo docker login --username=fengzhao1124@163.com registry.cn-hangzhou.aliyuncs.
 # 推到自己的命名空间
 docker push   registry.cn-hangzhou.aliyuncs.com/fengzhao/etcd:3.4.9-1
 ```
+
+
+
+```shell
+docker pull registry:2
+
+
+
+# https://github.com/docker/distribution-library-image
+# https://hub.docker.com/_/registry
+```
+
+
 
 
 
