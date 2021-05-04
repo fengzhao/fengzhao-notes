@@ -124,6 +124,10 @@ Linux 的 Shell 种类众多，常见的有：
   https://www.nushell.sh/zh-cn/book/introduction.html
 
   https://github.com/nushell/nushell
+  
+- zsh 
+
+- fish
 
 这里演示用的是 Bash，也就是 Bourne Again Shell，由于易用和免费，Bash 在日常工作中被广泛使用。同时，Bash 也是大多数Linux 系统默认的 Shell。
 
@@ -1556,7 +1560,7 @@ Linux的管道主要包括两种：无名管道和有名管道。
 
 #### set 命令
 
-set 命令在 shell 脚本中有很多用法
+set 命令在 shell 脚本中有很多用法。
 
 
 
@@ -1579,7 +1583,6 @@ echo bar
 
 # 可以看到，echo $a输出了一个空行，Bash 忽略了不存在的$a，然后继续执行echo bar。
 # 大多数情况下，这不是开发者想要的行为，遇到变量不存在，脚本应该报错，而不是一声不响地往下执行。
-
 
 
 #  set -u就用来改变这种行为。脚本在头部加上它，遇到不存在的变量就会报错，并停止执行。
