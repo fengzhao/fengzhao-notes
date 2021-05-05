@@ -127,7 +127,9 @@ Linux 的 Shell 种类众多，常见的有：
   
 - zsh 
 
-- fish
+- [fish](https://fishshell.com/)
+
+
 
 这里演示用的是 Bash，也就是 Bourne Again Shell，由于易用和免费，Bash 在日常工作中被广泛使用。同时，Bash 也是大多数Linux 系统默认的 Shell。
 
