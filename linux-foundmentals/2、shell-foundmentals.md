@@ -753,6 +753,8 @@ array_var=(1 2 3 4 5 6 'demo')
 # 按下标取数组中的元素：demo
 echo  ${array_var[6]) 
 
+
+
 # 以清单形式打印数组中的所有值
 
 
