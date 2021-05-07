@@ -392,7 +392,7 @@ WHERE
 
 如何安全的给一个表进行 DDL 呢？
 
-首先要解决的是长事务：事务不提交，就会一直占着MDL锁。在MySQL的information_schema.innodb_trx 中，可以查到当前执行中的事务。
+首先要解决的是长事务：事务不提交，就会一直占着MDL锁。在 MySQL的 information_schema.innodb_trx 中，可以查到当前执行中的事务。
 
 如果你要做DDL变更的表刚好有长事务在执行，要考虑先暂停DDL，或者 kill 掉这个长事务。
 
