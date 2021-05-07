@@ -16,3 +16,38 @@
 |    $?    |                                                              |
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+当我们执行脚本的时候，可以是绝对路径执行，也可以是相对路径执行。
+
+```shell
+/usr/local/src/apache-zookeeper-3.7.0-bin/bin/zkServer.sh start /usr/local/src/apache-zookeeper-3.7.0-bin/zk1/zoo1.cfg
+
+
+cd /usr/local/src/apache-zookeeper-3.7.0-bin/
+
+./bin/zkServer.sh start  zk1/zoo1.cfg 
+
+
+
+```
+
+
+
+
+
