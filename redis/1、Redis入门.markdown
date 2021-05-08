@@ -2391,6 +2391,12 @@ requirepass 123456
 
 
 
+
+
+
+
+
+
 # Redis开发规范
 
 
