@@ -100,6 +100,9 @@ percona-release setup ps80
 
 sudo apt-get install percona-xtrabackup-80
 
+
+https://downloads.percona.com/downloads/Percona-XtraBackup-LATEST/Percona-XtraBackup-8.0.23-16/binary/debian/bionic/x86_64/percona-xtrabackup-dbg-80_8.0.23-16-1.bionic_amd64.deb
+
 ```
 
 
