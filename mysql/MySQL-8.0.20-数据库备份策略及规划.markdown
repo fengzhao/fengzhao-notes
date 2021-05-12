@@ -1,6 +1,8 @@
 # MySQL8
 
-MySQL8 数据库热备份规范
+MySQL8 数据库热备份相关
+
+
 
 ## 版本要求
 
@@ -13,6 +15,10 @@ https://www.percona.com/doc/percona-xtrabackup/8.0/release-notes.html
 https://www.percona.com/doc/percona-xtrabackup/LATEST/release-notes/8.0/8.0.13.html
 
 https://www.percona.com/blog/2020/07/21/new-mysql-8-0-21-and-percona-xtrabackup-8-0-13-issues/
+
+
+
+
 
 ## 备份工具安装
 
@@ -64,19 +70,15 @@ sudo apt-get install percona-xtrabackup-80
 
 
 
-
-
-
-
 ```shell
 
 
 
-# 进行一次完整的全备测试 
+# 进行一次完整的在线热全备测试 
 
 xtrabackup  --backup  -u root --port=20197 -p'QHdata@0630' --socket=/data/mysql/mysql.sock --target-dir=/data/mysql_bak/20200828
 
-# 第二种方式，加 ddl 锁，详见 https://www.cnblogs.com/shengdimaya/p/11529200.html
+# 第二种方式，加 ddl 锁，备份期间会阻塞DDL，详见 https://www.cnblogs.com/shengdimaya/p/11529200.html
 xtrabackup --defaults-file=/etc/my.cnf --backup --lock-ddl --user=root  --password=QHdata@0630  --socket=/data/mysql/mysql.sock  --no-timestamp  --target-dir=/data/mysql_bak/20200827
 
 # 华为-qhdb，基于上次全备进行增量备份
