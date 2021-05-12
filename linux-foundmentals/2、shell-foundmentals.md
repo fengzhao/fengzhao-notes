@@ -127,6 +127,9 @@ Linux 的 Shell 种类众多，常见的有：
   
 - zsh 
 
+  - oh-my-zsh
+  - https://github.com/zimfw/zimfw.sh
+
 - [fish](https://fishshell.com/)
 
 

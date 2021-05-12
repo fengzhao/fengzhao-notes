@@ -1,4 +1,6 @@
-# MySQL8
+# MySQL8.0数据库备份
+
+
 
 MySQL8 数据库热备份相关
 
@@ -15,6 +17,42 @@ https://www.percona.com/doc/percona-xtrabackup/8.0/release-notes.html
 https://www.percona.com/doc/percona-xtrabackup/LATEST/release-notes/8.0/8.0.13.html
 
 https://www.percona.com/blog/2020/07/21/new-mysql-8-0-21-and-percona-xtrabackup-8-0-13-issues/
+
+https://www.percona.com/blog/2020/04/28/percona-xtrabackup-8-x-and-mysql-8-0-20/
+
+
+
+## 相关规划
+
+```shell
+# 查看一下数据库目录所在路径
+
+mysql> show variables like 'datadir' ;
++---------------+-------------------+
+| Variable_name | Value             |
++---------------+-------------------+
+| datadir       | /data/mysql/data/ |
++---------------+-------------------+
+1 row in set (0.00 sec)
+
+# 查看一下整个数据库的大小
+du -sh /data/mysql/data/
+491G
+
+# 准备备份空间
+
+# 数据目录规划为 800G ，所以需要给备份专用的存储空间要规划为2T
+
+
+# 可选备份种类
+
+# 1.在本地服务器进行备份，备份文件存放在本地服务器上的其他磁盘或目录
+
+# 2.除了上述方式，还要再远程传输备份到外部其他服务器或备份环境
+
+
+
+```
 
 
 
@@ -72,8 +110,6 @@ sudo apt-get install percona-xtrabackup-80
 
 ```shell
 
-
-
 # 进行一次完整的在线热全备测试 
 
 xtrabackup  --backup  -u root --port=20197 -p'QHdata@0630' --socket=/data/mysql/mysql.sock --target-dir=/data/mysql_bak/20200828
@@ -112,13 +148,21 @@ base_dir=/qhdata/mysql_bak
 
 log=/qhdata/mysql_bak/log/backuplog.`date +%Y%m%d`
 
+# 远程服务器的
+remote_host=10.10.10.14
+remote_user=root
+remote_port=port
+remote_dir=/data/mysql_bak/
+
 
 case $day in  
     0)  
         # Sunday Full backup
         find $base_dir -name "xtra_*" -mtime +4 -exec rm -rf {} \;
         xtrabackup --defaults-file=/etc/my.cnf --backup --lock-ddl --user=$user --password=$pwd  --socket=$socket --no-timestamp  --target-dir=$base_dir/xtra_base_$dt > $log 2>&1
-        ;;  
+        ;;
+        # 将备份文件传输到远程主机
+        #  rsync -av -e 'ssh -p 2234' $base_dir/xtra_base_$dt user@${remote_host}:/${remote_dir}
     1)  
         # Monday Relatively Sunday's incremental backup  
         xtrabackup --defaults-file=/etc/my.cnf --backup --lock-ddl --user=$user --password=$pwd  --socket=$socket --no-timestamp  --incremental  --target-dir=$base_dir/xtra_inc_$dt --incremental-basedir=$base_dir/xtra_base_$lastday > $log 2>&1  
@@ -146,7 +190,7 @@ case $day in
         ;;  
 esac 
 
-
+# 删除老备份日志
 find /qhdata/mysql_bak/log/ -mtime +6 -type f -name 'backuplog.*' -exec rm -rf {} \;
 
 
