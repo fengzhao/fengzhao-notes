@@ -25,16 +25,24 @@ set $a "hello world";
 
 
 
-Nginx 变量名前面有一个 $ 符号，这是记法上的要求。**所有的 Nginx 变量在 Nginx 配置文件中引用时都须带上 $ 前缀。**这种表示方法和 Perl、PHP 这些语言是相似的。
+Nginx 变量名前面有一个 $ 符号，这是记法上的要求。**所有的 Nginx 变量在 Nginx 配置文件中引用时都须带上 $ 前缀。**
+
+这种表示方法和 Perl、PHP 这些语言是相似的。
+
+
 
 虽然 `$` 这样的变量前缀修饰会让正统的 `Java` 和 `C#` 程序员不舒服，但这种表示方法的好处也是显而易见的，那就是可以直接把变量嵌入到字符串常量中以构造出新的字符串：
 
 ```nginx
- set $a hello;
- set $b "$a, $a";
+# 声明一个变量a 
+set $a hello;
+# 用变量a的值来声明变量b
+set $b "$a, $a";
 ```
 
-这里我们通过已有的 Nginx 变量 `$a` 的值，来构造变量 `$b` 的值，于是这两条指令顺序执行完之后，`$a` 的值是 `hello`，而 `$b` 的值则是 `hello, hello`
+这里我们通过已有的 Nginx 变量 `$a` 的值，来构造变量 `$b` 的值。
+
+于是这两条指令顺序执行完之后，`$a` 的值是 `hello`，而 `$b` 的值则是 `hello, hello`
 
 这种技术在 Perl 世界里被称为“变量插值”（variable interpolation），它让专门的字符串拼接运算符变得不再那么必要。
 
@@ -54,7 +62,9 @@ Nginx 变量名前面有一个 $ 符号，这是记法上的要求。**所有的
 
 ```
 
-nginx echo 模块（这是一个第三方的nginx模块，如果是nginx，需要重新[编译安装](https://blog.csdn.net/jeikerxiao/article/details/106763068)，openresty已经编译进去了）  https://github.com/openresty/echo-nginx-module#readme
+nginx echo 模块（这是一个第三方的nginx模块，如果是nginx，需要重新[编译安装](https://blog.csdn.net/jeikerxiao/article/details/106763068)，不过在 openresty 已经编译进去了） 
+
+ https://github.com/openresty/echo-nginx-module#readme
 
 ```shell
 # 使用curl访问这个地址，响应体返回nginx配置文件中声明的变量值
@@ -64,7 +74,17 @@ foo: hello
 
 
 
-我们看到， [echo](http://wiki.nginx.org/HttpEchoModule#echo) 配置指令的参数也支持“变量插值”。不过，需要说明的是，并非所有的配置指令都支持“变量插值”。事实上，指令参数是否允许“变量插值”，取决于该指令的实现模块。
+我们看到， [echo](http://wiki.nginx.org/HttpEchoModule#echo) 配置指令的参数也支持“变量插值”。不过，需要说明的是，并非所有的配置指令都支持“变量插值”。
+
+事实上，指令参数是否允许”变量插值”，取决于该指令的实现模块。
+
+
+
+
+
+
+
+
 
 Nginx 变量的规则：
 
