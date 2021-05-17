@@ -1,6 +1,6 @@
 # MySQL8.0数据库备份
 
-
+开源软件 Percona Xtrabackup 可以用于对数据库进行备份恢复
 
 MySQL8 数据库热备份相关
 
@@ -116,6 +116,9 @@ https://downloads.percona.com/downloads/Percona-XtraBackup-LATEST/Percona-XtraBa
 # 进行一次完整的在线热全备测试 
 
 xtrabackup  --backup  -u root --port=20197 -p'QHdata@0630' --socket=/data/mysql/mysql.sock --target-dir=/data/mysql_bak/20200828
+
+# 最后的输出应该可以看到 xtrabackup: Transaction log of lsn (6673345540161) to (6673345540181) was copied.
+
 
 # 第二种方式，加 ddl 锁，备份期间会阻塞DDL，详见 https://www.cnblogs.com/shengdimaya/p/11529200.html
 xtrabackup --defaults-file=/etc/my.cnf --backup --lock-ddl --user=root  --password=QHdata@0630  --socket=/data/mysql/mysql.sock  --no-timestamp  --target-dir=/data/mysql_bak/20200827
@@ -277,6 +280,8 @@ xtrabackup --prepare --export --target-dir=/path/to/partial/backup
 
 因此，此时数据文件仍处于不一致状态。"准备"的主要作用正是通过回滚未提交的事务及同步已经提交的事务至数据文件也使用得数据文件处于一致性状态。
 
+可以在任意机器上执行恢复。并不一定非要在原始机器上执行，可以把数据拷到其他机器上然后执行恢复。
+
 
 
 在 xtrabackup 中，可以用 xtrabackup  --prepare 这个命令来操作。
@@ -292,12 +297,10 @@ InnoDB: Shutdown completed; log sequence number 137345046
 # 当执行结束后，会出现 completed OK ,即表示 prepare 完毕。
 # 建议：prepare阶段不要轻易中断，中断有可能损坏备份文件。
 
+# prepare完毕后，最后会输出 completed OK!，这样这份数据文件就可以直接用于启动MySQL了
 
-# prepare完毕后，这份数据文件就可以直接用于启动MySQL了
-
-# 准备一份配置文件，一份prepare好的数据文件，直接启动MySQL进行恢复
-
-
+# 准备一份配置文件，一份prepare好的数据文件，就直接启动MySQL进行恢复。
+# （注意文件权限）
 
 # 增量备份恢复
 
@@ -318,7 +321,7 @@ InnoDB: Shutdown completed; log sequence number 137345046
 
 
 # 方法一：直接备份单表，并恢复单表
-mysql> test;
+mysql> use test;
 Database changed
 mysql> checksum table sp_fixed_invest_month_bak;
 +--------------------------------------------+------------+
@@ -377,3 +380,68 @@ mysql> checksum table sp_fixed_invest_month_bak;
 
 ------
 
+
+
+
+
+
+
+
+
+## 增量备份
+
+
+
+xtrabackup 支持增量备份，这意味着，它可以只备份自动上次全量备份之后改变过的内容。
+
+
+
+一个全量备份后可以有多个增量备份，可以选择多种备份策略：
+
+- 每周一全备，每天一增备
+- 每天全备，每小时增备
+
+
+
+
+
+
+
+
+
+增量备份实际上并不是完全跟上次完整全备的比较。
+
+如果知道 lsn 号，可以用 --incremental-lsn 来指定相对的 lsn 号做增量备份。
+
+
+
+
+
+
+
+
+
+
+
+
+
+## 压缩备份
+
+
+
+为了在备份期间，直接对备份文件进行压缩，可以使用  --compress 选项。
+
+```shell
+ xtrabackup --backup --compress --target-dir=/data/compressed 
+ 
+ # 如果想加速压缩过程。可以用--compress-threads
+ xtrabackup --backup --compress --compress-threads=4 --target-dir=/data/compressed/
+```
+
+
+
+
+
+
+
+## 流备份
