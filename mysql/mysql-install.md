@@ -368,10 +368,6 @@ $ sudo service mysqld status
 
 
 
-
-
-
-
 ### 为什么升级到 MySQL 8.0 
 
 - 基于安全考虑
