@@ -56,6 +56,18 @@ devops基本理念：
 
 
 
+在应用程序中，通常会记录日志以便事后分析，在很多情况下是产生了问题之后，再去查看日志是一种事后的静态分析。
+
+在很多时候，我们可能需要了解整个系统在当前，或者某一时刻运行的情况。比如：
+
+- 每秒钟的请求数是多少（TPS）？
+
+- 请求处理的最长耗时？
+
+- 请求处理正确响应率？
+
+以及系统运行出错率等等一系列的实时数据。通过 Metrics 监控这些指标的度量，可以来告诉我们应用是否健康。
+
 ## metric 种类
 
 Metrics，谷歌翻译就是度量的意思。当我们需要为某个系统某个服务做监控、做统计，就需要用到Metrics。
@@ -74,10 +86,24 @@ Metrics，谷歌翻译就是度量的意思。当我们需要为某个系统某�
 
 
 
-Prometheus 中的 metric 种类
+Prometheus 中的 metric 种类：
+
+
+
+- gauge   （测量仪/计量器），当期值的一次快照测量，可增可减。比如磁盘使用率、当前同时在线用户数。
+  - 它可以表示一个**既可以增加, 又可以减少**的度量指标值。
+  - 它是最简单和最基本的Metrics类型，只有一个简单的返回值，通常用来记录一些对象或者事物的**瞬时值**。
+  - 典型的应用场景：温度，内存使用量
+- counter（计数器）它是一种**累计型**的度量指标，数值只能**单调递增**。
+  - 计数器的典型应用场景： http 请求数、下单数，任务完成次数，错误出现次数。
+- Histogram（直方图），通过分桶方式统计样本分布
+  - Histrogram可以计算最大/小值、平均值，方差，分位数（如中位数，或者95th分位数），如75%,90%,98%,99%的数据在哪个范围内。
+  - 直方图的典型使用场景包括：流量最大值，流量最小值，流量平均值等
+
+
 
 1. counter（计数器），始终增加，比如 http 请求数、下单数
-2. gauge（测量仪），当期值的一次快照测量，可增可减。比如磁盘使用率、当前同时在线用户数
+2. gauge（测量仪/计量器），当期值的一次快照测量，可增可减。比如磁盘使用率、当前同时在线用户数
 3. Histogram（直方图），通过分桶方式统计样本分布
 4. Summary（汇总），根据样本统计出百分位，比如客户端计算
 
@@ -138,23 +164,20 @@ Prometheus 中的 metric 种类
 
 cd /usr/local/src/
 
+export VERSION=2.4.3
+curl -LO  https://github.com/prometheus/prometheus/releases/download/v$VERSION/prometheus-$VERSION.linux-amd64.tar.gz
+
 wget  https://github.com/prometheus/prometheus/releases/download/v2.21.0/prometheus-2.21.0.linux-amd64.tar.gz
 
-mkdir /usr/local/prometheus/
+tar -zxvf prometheus-2.27.0.linux-amd64.tar.gz  -C /usr/local
 
-tar xf prometheus-2.21.0.linux-amd64.tar.gz  -C /usr/local/prometheus/
+mv /usr/local/prometheus-2.27.0.linux-amd64  /usr/local/prometheus
 
-cd /usr/local/prometheus/
-
-ln -s prometheus-2.21.0.linux-amd64  prometheus
-
-
-#　配置文件
-
-cd /usr/lib/systemd/system
+# ubuntu18.04
+vim /etc/systemd/system/prometheus.service
+# centos7
+vim /usr/lib/systemd/system/prometheus.service 
  
-vim  prometheus.service 
-
 [Unit]
 Description=prometheus
 After=network.target 
@@ -162,10 +185,15 @@ After=network.target
 [Service]
 User=prometheus
 Group=prometheus
-WorkingDirectory=/usr/local/prometheus/prometheus
-ExecStart=/usr/local/prometheus/prometheus/prometheus
+WorkingDirectory=/usr/local/prometheus
+ExecStart=/usr/local/prometheus/prometheus
+
 [Install]
 WantedBy=multi-user.target
+
+
+useradd prometheus 
+chown -R prometheus:prometheus  /usr/local/prometheus/
 
 
 # 启动管理
@@ -176,7 +204,7 @@ systemctl enable prometheus
 
 
 
-# 默认情况下prometheus会将采集的数据防止到本机的data目录的， 存储数据的大小受限和扩展不便。
+# 默认情况下prometheus会将采集的数据到本机当目录下的data目录中， 存储数据的大小受限和扩展不便。
 # 这是使用influxdb作为后端的数据库来存储数据。
 
 # influxdb的官方文档地址为： https://docs.influxdata.com/influxdb/v1.7/introduction/downloading/ 
@@ -193,8 +221,6 @@ sudo yum localinstall influxdb-1.7.8.x86_64.rpm
 
 
 
-
-
 Prometheus 是将所有数据存为时序数据。
 
 每个时序数据是由指标名称和可选的键值对（称之为标签）唯一标识。
@@ -205,7 +231,7 @@ Prometheus 是将所有数据存为时序数据。
 
 
 
-#### 度量类型
+#### 指标类型
 
 - counter: 单调递增的计数器，如果标识已经服务的请求数量可以使用该类型。
 
@@ -214,3 +240,81 @@ Prometheus 是将所有数据存为时序数据。
 - Histogram：直方图类型， 可以通过该类型获取分位数，计算分位点数据是在服务端完成的。
 
 - Summary： 摘要类型，类似于直方图，计算分位点数据是在客户端完成的
+
+
+
+
+
+
+
+## 安装
+
+
+
+
+
+```shell
+# https://github.com/prometheus/node_exporter
+
+cd /usr/local/
+
+wget https://github.com/prometheus/node_exporter/releases/download/v1.1.2/node_exporter-1.1.2.linux-amd64.tar.gz
+
+tar -zxvf node_exporter-1.1.2.linux-amd64.tar.gz
+
+mv node_exporter-0.18.1.linux-amd64 /usr/local/node_exporter
+
+ln -s /usr/local/node_exporter/node_exporter /usr/local/bin/node_exporter
+
+useradd -r -s /bin/nologin node_exporter
+
+mkdir -p /var/lib/node_exporter/textfile_collector 
+
+chown -R node_exporter:node_exporter /var/lib/node_exporter/textfile_collector 
+
+mkdir -p /etc/sysconfig/
+
+touch /etc/sysconfig/node_exporter
+# OPTIONS="--collector.textfile.directory /var/lib/node_exporter/textfile_collector"
+
+touch /etc/systemd/system/node_exporter.service
+
+[Unit]
+Description=Prometheus Node Exporter
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+User=node_exporter
+ExecStart=/usr/local/bin/node_exporter --log.level=error
+ExecStop=/usr/bin/killall node_exporter
+MemoryLimit=300M #限制内存使用最多300M
+CPUQuota=100% #限制CPU使用最多一个核
+
+[Install]
+WantedBy=multi-user.target
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+https://xinlichao.cn/back-end/java/prometheus/
