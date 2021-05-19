@@ -29,3 +29,35 @@ sudo timedatectl list-timezones
 sudo timedatectl set-timezone Asia/Shanghai
 ```
 
+
+
+
+
+
+
+# timesyncd时间同步
+
+Ubuntu 的默认安装现在使用 timesyncd 而不是 ntpd。（**ubuntu时间同步客户端配置systemd-timesyncd（20.04、18.04下配置通过）**）
+
+timesyncd 连接到相同的时间服务器，并以大致相同的方式工作，但更轻量级，更集成 systemd 和 Ubuntu 的低级别工作。
+
+我们可以通过运行没有参数的timedatectl来查询timesyncd的状态。
+
+这将打印出本地时间，通用时间（如果您没有从UTC时区切换，可能与本地时间相同），以及一些网络时间状态信息。 
+
+System clock synchronized: yes 表示时间已成功同步。
+
+Systemd-timesyncd.service active: yes表示 timesyncd 已启用并正在运行。
+
+
+```shell
+# 查看systemd-timesyncd服务状态，可以看到是跟ntp.ubuntu.com同步时间
+systemctl status systemd-timesyncd.service
+
+Status: "Synchronized to time server 91.189.89.198:123 (ntp.ubuntu.com)."
+
+# /etc/systemd/timesyncd.conf
+
+
+```
+
