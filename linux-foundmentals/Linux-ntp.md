@@ -17,3 +17,15 @@ RHEL/CentOS 7.x 已经将 chrony 作为默认时间同步工具了（其他 syst
 Ubuntu 内置了时间同步，默认情况下使用systemd的timesyncd服务激活。
 
 查找服务器上date最基本命令是date 。 任何用户都可以输入此命令来打印日期和时间：
+
+
+
+```shell
+# 查看系统当前时间，以 RFC 5322 格式查看
+sudo date -R
+Wed, 19 May 2021 01:46:02 +0000
+
+sudo timedatectl list-timezones
+sudo timedatectl set-timezone Asia/Shanghai
+```
+
