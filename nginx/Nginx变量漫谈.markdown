@@ -25,7 +25,7 @@ set $a "hello world";
 
 
 
-Nginx 变量名前面有一个 $ 符号，这是记法上的要求。**所有的 Nginx 变量在 Nginx 配置文件中引用时都须带上 $ 前缀。**
+Nginx 变量名前面有一个 `$` 符号，这是记法上的要求。**所有的 Nginx 变量在 Nginx 配置文件中引用时都须带上 `$` 前缀。**
 
 这种表示方法和 Perl、PHP 这些语言是相似的。
 
@@ -82,24 +82,22 @@ foo: hello
 
 
 
-
-
-
-
 Nginx 变量的规则：
 
 - **Nginx 变量的创建和赋值操作发生在全然不同的时间阶段：**
-  - **Nginx 变量的创建只能发生在 Nginx 配置加载的时候，或者说 Nginx 启动的时候；**
+  - **Nginx 变量的创建只能发生在 Nginx 配置加载的时候，或者说 Nginx 启动的时候；(Nginx启动的时候就会读取配置文件并加载)**
   - **Nginx 变量赋值操作则只会发生在请求实际处理的时候。**
 
 - **Nginx 变量一旦创建，其变量名的可见范围就是整个 Nginx 配置，甚至可以跨越不同虚拟主机的 `server` 配置块。**
 
 - **Nginx 变量名的可见范围虽然是整个配置，但每个请求都有所有变量的独立副本，或者说都有各变量用来存放值的容器的独立副本，彼此互不干扰。**
 
-```shell
+```nginx
    server {
         listen 8080;
-
+        include mime.types;
+		default_type text/html; 
+		
         location /foo {
             echo "foo = [$foo]";
         }
@@ -142,10 +140,11 @@ $ curl 'http://localhost:8080/foo'
 ```nginx
    server {
         listen 8080;
-
+		include mime.types;
+		default_type text/html;
         location /foo {
             set $a hello;
-        	# 内部跳转，跳转到另一个location
+        	# 如果直接请求/foo，则发生内部跳转，跳转到下面那个location
             echo_exec /bar;
         }
 
@@ -171,18 +170,23 @@ $ curl 'http://localhost:8080/foo'
 对于上面的例子，如果请求的是 `/foo` 这个接口，那么整个工作流程是这样的：
 
 - 先在 `location /foo` 中通过 [set](http://wiki.nginx.org/HttpRewriteModule#set) 指令将 `$a` 变量的值赋为字符串 `hello`
-- 后通过 [echo_exec](http://wiki.nginx.org/HttpEchoModule#echo_exec) 指令发起内部跳转，又进入到 `location /bar` 中，再输出 `$a` 变量的值。因为 `$a` 还是原来的 `$a`。
+- 后通过 [echo_exec](http://wiki.nginx.org/HttpEchoModule#echo_exec) 指令发起内部跳转，又进入到 `location /bar` 中，再输出 `$a` 变量的值。因为 `$a` 还是原来的 `$a`(hello)。
 
 如果客户端直接请求 `/bar` 接口，就会得到空的 `$a` 变量的值，因为它依赖于 `location /foo` 来对 `$a` 进行初始化。
+
+
+
+
 
 **一个请求在其处理过程中，即使经历多个不同的 `location` 配置块，它使用的还是同一套 Nginx 变量的副本。**
 
 值得一提的是，标准 [ngx_rewrite](http://wiki.nginx.org/HttpRewriteModule) 模块的 [rewrite](http://wiki.nginx.org/HttpRewriteModule#rewrite) 配置指令其实也可以发起“内部跳转”，例如上面那个例子用 [rewrite](http://wiki.nginx.org/HttpRewriteModule#rewrite) 配置指令可以改写成下面这样的形式
 
-```
+```nginx
  server {
         listen 8080;
-
+		include mime.types;
+		default_type text/html;
         location /foo {
             set $a hello;
             rewrite ^ /bar;
@@ -243,7 +247,7 @@ $ curl 'http://localhost:8080/test/hello%20world?a=3&b=4'
 
 另一个特别常用的内建变量其实并不是单独一个变量，而是有无限多变种的一群变量，即名字以 `arg_` 开头的所有变量。
 
-一个例子是 `$arg_name`，这个变量的值是当前请求名为 `name` 的 URI 参数的值，而且还是未解码的原始形式的值。
+**一个例子是 `$arg_name`，这个变量的值是当前请求名为 `name` 的 URI 参数的值，而且还是未解码的原始形式的值。**
 
 ```nginx
 location /test {
@@ -304,6 +308,8 @@ $ curl 'http://localhost:8080/test?name=hello%20world&class=9'
     class: 9
 # 空格果然被解码出来
 ```
+
+从这个例⼦我们同时可以看到，这个 set_unescape_uri 指令也像 set 指令那样，拥有⾃动创建 Nginx 变量的功能。
 
 需要指出的是，许多内建变量都是只读的，比如我们刚才介绍的 [$uri](http://wiki.nginx.org/HttpCoreModule#.24uri) 和 [$request_uri](http://wiki.nginx.org/HttpCoreModule#.24request_uri). 对只读变量进行赋值是应当绝对避免的，因为会有意想不到的后果，比如：
 
