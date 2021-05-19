@@ -1,3 +1,28 @@
+# Linux时间
+
+ 在Linux计算机上，有两个时间，一个是硬件时间（BIOS中记录的时间，称为hwclock），另一个是操作系统时间（osclock）。
+
+硬件时钟由BIOS电池供电，当计算机关机后，会继续运行，BIOS电池一般可使用几年，如果没电了，那BIOS中的数据会恢复出厂设置。
+
+硬件时钟
+
+
+
+操作系统时间
+
+osclock的时区配置文件为/etc/timezone，如果你想修改系统时区，那最好使用sudo dpkg-reconfigure tzdata来修改时区，不建议直接修改/etc/timezone文件，
+
+如果你想修改为UTC时间，那执行 sudo dpkg-reconfigure tzdata 命令时，选择 None of the above->UTC  即可
+
+```shell
+# 查看所有时区
+sudo timedatectl list-timezones
+# 设置为中国上海
+sudo timedatectl set-timezone Asia/Shanghai
+```
+
+
+
 
 
 # chrony时间同步
@@ -57,6 +82,15 @@ systemctl status systemd-timesyncd.service
 Status: "Synchronized to time server 91.189.89.198:123 (ntp.ubuntu.com)."
 
 # /etc/systemd/timesyncd.conf
+
+
+# /etc/systemd/timesyncd.conf
+# /etc/systemd/timesyncd.conf.d/*.conf
+# /run/systemd/timesyncd.conf.d/*.conf
+# /usr/lib/systemd/timesyncd.conf.d/*.conf
+
+# 这些配置文件控制着NTP网络时间同步
+
 
 
 ```
