@@ -285,6 +285,18 @@ HTTP消息由采用 ASCII 编码的多行文本构成。在HTTP/1.1及早期版�
 
 
 
+# URL的构成
+
+```
+schema://host:port/path;<params>?<query_string>#frag
+```
+
+
+
+
+
+
+
 # HTTP连接管理
 
 
