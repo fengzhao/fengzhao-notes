@@ -1,6 +1,8 @@
 # linux下的QOS：理论篇
 
-关于qos ，也是linux下面必备功能之一，一般只需要结合 iptables/etables/iproute2 和 tc 配合即可实现大部分功能。网上讲这么方面的资料很多，大部分都讲 tc 命令的应用。这里就先从理论入手。
+关于qos ，也是linux下面必备功能之一，一般只需要结合 iptables/etables/iproute2 和 tc 配合即可实现大部分功能。
+
+网上讲这么方面的资料很多，大部分都讲 tc 命令的应用。这里就先从理论入手。
 
 QoS（Quality of Service）服务质量，是网络的一种安全机制, 是用来解决网络延迟和阻塞等问题的一种技术。
 
@@ -66,7 +68,7 @@ iproute2 是linux下管理控制TCP/IP网络和流量控制的新一代工具包
 
 net-tools通过procfs(/proc)和 ioctl 系统调用去访问和改变内核网络配置，而 iproute2 则通过netlink套接字接口与内核通讯。
 
-抛开性能而言，net-tools 的用法给人的感觉是比较乱，而iproute2的用户接口相对net-tools来说相对来说，更加直观。
+抛开性能而言，net-tools 的用法给人的感觉是比较乱，而 iproute2 的用户接口相对 net-tools 来说相对来说，更加直观。
 
 比如，各种网络资源（如link、IP地址、路由和隧道等）均使用合适的对象抽象去定义，使得用户可使用一致的语法去管理不同的对象.
 
