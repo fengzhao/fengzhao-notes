@@ -127,8 +127,31 @@ Linux 的 Shell 种类众多，常见的有：
   
 - zsh 
 
-  - oh-my-zsh
-  - https://github.com/zimfw/zimfw.sh
+  - 苹果已经[宣布](https://support.apple.com/en-us/HT208050)，从 macOS 10.15 Catalina 开始，系统的默认 Shell 为`zsh`。
+
+  - [oh-my-zsh](https://github.com/ohmyzsh/ohmyzsh)
+
+    - 作为 zsh 最出名的配置框架。配置 zsh 甚至可以说 oh-my-zsh 和 非 oh-my-zsh。
+
+      自动设置颜色部分，只要启用就可以覆盖掉难看的要死的默认配色。默认配置很完美
+
+      集成了大量实用的函数和主题（个人推荐 `ys` 主题），比较极端的用户甚至会使用 ramdom 主题，每次开启随机选择一个，保证新鲜感。
+
+      oh-my-zsh 管的东西太多了。oh-my-zsh 的各种插件里面基本上全是 aliases
+
+  - prezto
+
+    oh-my-zsh 之外的另一个选择，或者说是他的的替代品。比 oh-my-zsh 轻量一点。
+
+  - [zimfw](https://github.com/zimfw/zimfw)
+
+    - 用 ruby 的 `erb` 模版引擎，编译产生最终配置文件。
+
+      在 `zimrc` 里面配置启用的插件，然后编译产生 `~/.zshrc` 文件。每次修改更新都要重新编译，不过问题不大，**每天都在修改配置文件才是最大的问题**
+
+      默认会开启 git 插件，注意把 git 插件禁用（我推荐把这个禁用），这个插件全是 git aliases。请仔细阅读代码再决定是否要使用这个插件。
+
+      是时候将你的 oh-my-zsh 换成 zimfw 了，官網附上了 zim 跟其他 framework 的[速度比较](https://github.com/zimfw/zimfw/wiki/Speed)
 
 - [fish](https://fishshell.com/)
 
@@ -1756,3 +1779,12 @@ esac
 
 
 
+# ubuntu/linux修改登录欢迎信息
+
+
+
+问题描述: 使用终端登录远程服务器时会有欢迎信息，下面说说如何自定义欢迎信息
+
+熟悉 Linux 的同学想必对 motd 全称 Message Of The Day 并不陌生。把内容放到 `/etc/motd` 里面然后每次登录显示里面的内容。在 
+
+motd 本身是纯文本，传统的 motd 只能是纯文本。当然，我们可以在 shell 启动执行命令时显示一些东西，达到类似 motd 功能的效果。
