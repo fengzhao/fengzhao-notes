@@ -368,7 +368,7 @@ export PATH USER LOGNAME MAIL HOSTNAME HISTSIZE HISTCONTROL
 
 
 
-shell 有一个很有用的特性，那就是命令历史。
+bash shell 有一个很有用的特性，那就是命令历史。
 
 当前登陆用户在终端进行操作时，该用户操作的历史命令会被记录在内存缓冲区中，使用 history 命令可以列出历史命令。
 
@@ -383,7 +383,7 @@ shell 有一个很有用的特性，那就是命令历史。
 ```shell
 # history 命令被用于列出以前执行过的命令
 
-# 在 oh-my-zsh 中。~/.oh-my-zsh/lib/history.zsh 这个脚本定义了一个函数 omz_history 封装 history,也可以用来查看命令历史。
+# 在 oh-my-zsh 中 ， ~/.oh-my-zsh/lib/history.zsh 这个脚本定义了一个函数 omz_history 封装 history,也可以用来查看命令历史。
 
 
 ```
@@ -420,6 +420,9 @@ HISTTIMEFORMAT="%F %T"
 /etc/profile:    export HISTCONTROL=ignoredups
 /etc/profile:export PATH USER LOGNAME MAIL HOSTNAME HISTSIZE HISTCONTROL
 /etc/sudoers:Defaults    env_keep =  "COLORS DISPLAY HOSTNAME HISTSIZE KDEDIR LS_COLORS"
+
+
+
 ```
 
 
@@ -442,7 +445,7 @@ history -a : 手动追加会话缓冲区的命令至历史命令文件中。（�
 
 
 
-**快捷操作（bash和zsh通用）**
+**快捷键操作（bash和zsh通用）**
 
 
 
@@ -599,7 +602,24 @@ root@pve:~#
 
 
 
+### Linux shell EOF
 
+在平时的运维工作中，我们经常会碰到这样一个场景：
+
+执行脚本的时候，需要往一个文件里插入N行内容。如果是少数的几行内容，还可以用 echo 追加方式，但如果是很多行，那么单纯用 echo 追加的方式就显得愚蠢之极了！
+
+```shell
+
+
+
+先举一个简单的例子，例1：
+# cat << EOF
+在出现输入提示符">"，输入以下内容：
+> Hello
+> EOF
+输入结束后，在终端显示以下内容：
+Hello
+```
 
 
 
