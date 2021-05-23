@@ -133,6 +133,10 @@ ZSH_AUTOSUGGEST_STRATEGY 是一个数组变量，用来控制如何生成命令�
 
 可以用命令 `type _init_completion` 检查 bash-completion 是否已安装）。
 
+
+
+https://github.com/scop/bash-completion
+
 ```shell
 yum install -y  bash-completion
 ```
