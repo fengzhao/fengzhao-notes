@@ -137,6 +137,10 @@ ZSH_AUTOSUGGEST_STRATEGY 是一个数组变量，用来控制如何生成命令�
 
 https://github.com/scop/bash-completion
 
+http://blog.fpliu.com/it/software/bash-completion
+
+https://jasonkayzk.github.io/2020/12/06/Bash%E5%91%BD%E4%BB%A4%E8%87%AA%E5%8A%A8%E8%A1%A5%E5%85%A8%E7%9A%84%E5%8E%9F%E7%90%86/
+
 ```shell
 yum install -y  bash-completion
 ```
