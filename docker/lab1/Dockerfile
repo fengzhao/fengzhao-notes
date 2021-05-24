@@ -2,10 +2,23 @@ FROM alpine:latest
 
 # MAINTAINER在官网文档中，已经被弃用，建议使用LABEL指令来描述作者信息
 
-# LABEL指令用来给镜像以键值对的形式添加一些元数据(metadata)，使用键值对的方式
+# LABEL指令用来给镜像以键值对的形式添加一些元数据(metadata)，使用键值对的方式，就是容器的注解。
 # LABEL <key>=<value> <key>=<value> <key>=<value> ...
 # 具体可以参考https://github.com/opencontainers/image-spec/blob/master/annotations.md
 LABEL org.opencontainers.image.authors="fengzhao"
+
+
+# LABEL org.label-schema.schema-version="1.0" \                                     
+#       org.label-schema.name="CentOS Base Image" \                              
+#       org.label-schema.vendor="CentOS" \
+#       org.label-schema.license="GPLv2" \
+#       org.label-schema.build-date="20200114" \
+#       org.opencontainers.image.title="CentOS Base Image" \
+#       org.opencontainers.image.vendor="CentOS" \
+#       org.opencontainers.image.licenses="GPL-2.0-only" \
+#       org.opencontainers.image.created="2020-01-14 00:00:00-08:00"
+
+# https://github.com/CentOS/sig-cloud-instance-images/blob/CentOS-8.1.1911-x86_64/docker/Dockerfile
 
 
 
