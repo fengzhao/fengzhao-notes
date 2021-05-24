@@ -41,11 +41,17 @@ ENV
 # ADD . $FOO       # ADD . /bar
 # COPY \$FOO /quux # COPY $FOO /quux
 
+# 使用 ENV 设置的环境变量将一直存在于构建镜像时以及镜像容器运行时，可以使用 docker inspect 查看设置打的变量。也可以使用 docker run --env <key> = <value> 来更改它们。
 
 
 
+# ARG指令 
+# ARG <name>[=<default value>]
+# Dockerfile 里面的 ARG 指令定义了一个变量，在运行 docker build 命令时可以使用 --build-arg <varname> = <value> 参数将其传递给构建器。
+# 这种变量只存在于镜像构建的时候，一旦镜像构建完成就失效了，不要使用构建时变量来传递诸如 github 密钥，用户凭据等机密数据，构建时变量值可以使用 docker history 命令查看。
 
-ARG 
+
+
 
 EXPOSE 
 
