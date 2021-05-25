@@ -551,19 +551,19 @@ CMD ["/usr/lib/postgresql/9.3/bin/postgres", "-D", "/var/lib/postgresql/9.3/main
 
 
 
-#### Dockerfile安全
+#### Dockerfile 安全
 
 
 
 https://blog.csdn.net/boling_cavalry/article/details/93380447
 
-docker容器中运行的进程，如果以root身份运行的会有安全隐患，该进程拥有容器内的全部权限，更可怕的是如果有数据卷映射到宿主机，那么通过该容器就能操作宿主机的文件夹了，一旦该容器的进程有漏洞被外部利用后果是很严重的。
+docker 容器中运行的进程，如果以 root 身份运行的会有安全隐患，该进程拥有容器内的全部权限，更可怕的是如果有数据卷映射到宿主机，那么通过该容器就能操作宿主机的文件夹了，一旦该容器的进程有漏洞被外部利用后果是很严重的。
 
-因此，容器内使用非root账号运行进程才是安全的方式，这也是我们在制作镜像时要注意的地方。
+因此，容器内使用非 root 账号运行进程才是安全的方式，这也是我们在制作镜像时要注意的地方。
 
 
 
-既然不能用root账号，那就要创建其他账号来运行进程了，以redis官方镜像的Dockerfile为例，来看看如何创建账号。
+既然不能用 root 账号，那就要创建其他账号来运行进程了，以 redis 官方镜像的 Dockerfile 为例，来看看如何创建账号。
 
 https://github.com/docker-library/redis/blob/master/6.2/Dockerfile
 
