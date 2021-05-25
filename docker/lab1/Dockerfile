@@ -24,6 +24,7 @@ LABEL org.opencontainers.image.authors="fengzhao"
 
 # 如果是国内服务器，一般需要给apline修改国内源
 # RUN set -eux && sed -i 's/dl-cdn.alpinelinux.org/mirrors.ustc.edu.cn/g' /etc/apk/repositories
+# RUN set -eux && sed -i 's/dl-cdn.alpinelinux.org/mirrors.aliyun.com/g' /etc/apk/repositories
 RUN apk apdate && apk --no-cache add  ca-certificates python3 curl bind-tools iptoure2 iptables ipvsadm
 
 RUN 
