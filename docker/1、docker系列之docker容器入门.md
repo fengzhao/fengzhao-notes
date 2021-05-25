@@ -569,7 +569,7 @@ https://github.com/docker-library/redis/blob/master/6.2/Dockerfile
 
 
 
-可见redis官方镜像使用 groupadd 和 useradd 创建了名为 redis 的组合账号，接下来就是用 redis 账号来启动服务了，理论上应该是以下套路：
+可见 redis 官方镜像使用 groupadd 和 useradd 创建了名为 redis 的组合账号，接下来就是用 redis 账号来启动服务了，理论上应该是以下套路：
 
 用 USER redis 将账号切换到 redis ；
 在 docker-entrypoint.sh 执行的时候已经是 redis 身份了，如果遇到权限问题，例如一些文件只有 root 账号有读、写、执行权限，用 sudo xxx 命令来执行即可；
