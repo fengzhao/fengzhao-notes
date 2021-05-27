@@ -103,6 +103,12 @@ make
 sudo make install
 
 
+# 源代码包解压之后的./utils/redis_init_script 可以做为一个简单的启停脚本
+# https://github.com/pmem/pmem-redis/blob/master/utils/redis_init_script
+
+# 源代码包解压之后的./utils/install_server.sh 可以进行一个交互式的引导用户生成配置文件，并注册成系统服务
+# https://github.com/pmem/pmem-redis/blob/master/utils/install_server.sh
+
 
 
 # 修改配置文件 redis.conf 
@@ -154,7 +160,6 @@ sudo apt-get install redis-server
 sudo systemctl enable redis-server.service
 # 在配置文件中修改使用systemd来做为redis的守护进程管理工具
 supervised systemd
-
 
 
 
@@ -242,6 +247,15 @@ sysctl vm.overcommit_memory=1
 
 echo madvise > /sys/kernel/mm/transparent_hugepage/enabled
 
+
+# WARNING: The TCP backlog setting of 511 cannot be enforced because /proc/sys/net/core/somaxconn is set to the lower value of 128.
+
+#  WARNING overcommit_memory is set to 0! Background save may fail under low memory condition. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect
+
+
+
+
+# WARNING you have Transparent Huge Pages (THP) support enabled in your kernel. This will create latency and memory usage issues with Redis. To fix this issue run the command 'echo never > /sys/kernel/mm/transparent_hugepage/enabled' as root, and add it to your /etc/rc.local in order to retain the setting after a reboot. Redis must be restarted after THP is disabled.
 ```
 
 
