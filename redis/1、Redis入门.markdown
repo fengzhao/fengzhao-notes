@@ -2330,7 +2330,7 @@ setRedis（Key，value，time + Math.random() * 10000）；
 
 
 
-# Redis ACL
+# Redis 认证和ACL
 
 同一个redis集群的所有开发都共享default用户，难免会出现误操作把别人的key删掉或者数据泄露的情况，那之前我们也可以使用rename command的方式给一些危险函数重命名或禁用，但是这样也防止不了自己的key被其他人访问。
 
@@ -2403,3 +2403,6 @@ requirepass 123456
 
 
 
+
+
+# redis安全
