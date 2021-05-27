@@ -86,14 +86,16 @@ k8s集群分为两类节点
 
 一个 Kubernetes 工作集群至少有三个节点。master 管理集群， node 用于托管正在运行的应用程序。
 
-当您在 Kubernetes 上部署应用程序时，您可以告诉 master 启动应用程序容器。Master 调度容器在集群的节点上运行。
+当您在 Kubernetes 上部署应用程序时，您可以告诉 master 启动应用程序容器。master 调度容器在集群的工作节点上运行。
 
  节点使用 Master 公开的 Kubernetes API 与 Master 通信。用户也可以直接使用 Kubernetes 的 API 与集群交互。
 
-**master 节点的组件**
+**master 节点中的组件**
+
+这些组件可以运行在单个 master 节点上，**也可以通过副本运行在多个 master 节点上以确保高可用性。**
 
 - etcd 是兼具一致性和高可用性的键值数据库，可以作为保存 Kubernetes 所有集群数据的后台数据库。可以内置在 master 中，也可以放到外面。
-  - 用来注册节点
+  - 用来注册节点，持久化存储集群配置。
 
 - kube-apiserver : 集群控制的入口，提供 HTTP REST 服务，主节点上负责提供 Kubernetes API 服务的组件；它是 Kubernetes 控制面的前端。
 - kube-scheduler : 负责 Pod 的调度，该组件监视那些新创建的未指定运行节点的 Pod，并选择节点让 Pod 在上面运行。
@@ -109,9 +111,9 @@ k8s集群分为两类节点
 **node 节点的组件**
 
 - kubelet : 负责 Pod 的创建、启动、监控、重启、销毁等工作，同时与 Master 节点协作，实现集群管理的基本功能。
-- kube-proxy : 实现 Kubernetes Service 的通信和负载均衡
+- kube-proxy : 实现 Kubernetes Service 的通信和负载均衡，负责组件之间的负载均衡网络流量。
 - 运行容器化(Pod)应用
-- Container Runtime ： 容器运行时环境， [Docker](http://www.docker.com/)、 [containerd](https://containerd.io/)、[cri-o](https://cri-o.io/)、 [rktlet](https://github.com/kubernetes-incubator/rktlet) 
+- Container Runtime ： 容器运行时环境， [Docker](http://www.docker.com/)、 [containerd](https://containerd.io/)、[cri-o](https://cri-o.io/)、 [rktlet](https://github.com/kubernetes-incubator/rktlet)  等等。
 
 
 
