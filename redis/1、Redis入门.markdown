@@ -77,8 +77,8 @@ redis 在实际项目中的应用场景：
 
 ## 准备gcc环境
 # centos7 默认的 gcc 版本为：4.8.5 < 5.3 无法编译
-sudo yum -y install centos-release-scl
-sudo yum -y install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils
+sudo yum -y install centos-release-scl tcl tclx tcl-devel  
+sudo yum -y install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils 
 # 临时有效，退出 shell 或重启会恢复原 gcc 版本
 sudo scl enable devtoolset-9 bash
 # 长期有效
