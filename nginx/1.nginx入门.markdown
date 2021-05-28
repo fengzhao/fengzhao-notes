@@ -123,12 +123,6 @@ gpgcheck=0
 enabled=1
 
 
-
-
-
-
-
-
 ```
 
 
@@ -138,14 +132,19 @@ enabled=1
 在 <http://nginx.org/en/download.html> 里面可以直接下载 Nginx 源代码。包含以下目录：
 
 ```shell
+# 安装依赖环境
+
+sudo apt install zlib1g zlib1g-dev
+
 # 在 http://nginx.org/en/download.html 里面下载 Nginx 源代码
 
 wget http://nginx.org/download/nginx-1.16.0.tar.gz
+wget http://nginx.org/download/nginx-1.20.1.tar.gz
 
 nginx-1.17.8
-├── CHANGES # 每个版本提供的特性和 bugfix
-├── CHANGES.ru # 俄罗斯版本的 CHANGES 文件
-├── LICENSE
+├── CHANGES 		# 每个版本提供的特性和 bugfix，changelog文件
+├── CHANGES.ru 		# 俄罗斯版本的 CHANGES 文件
+├── LICENSE			# 开源许可文件
 ├── Makefile
 ├── README
 ├── auto # 自动检测系统环境以及编译相关的脚本，辅助 config 脚本执行的时候去判定 nginx 支持哪些模块，当前操作系统有什么样的特性可以供给 nginx 使用
@@ -200,8 +199,6 @@ make && make install
 
 
 
-
-
 # ubuntu
 
 sudo apt-get install gcc make libpcre3 libpcre3-dev   zlib1g-dev openssl libssl-dev 
@@ -225,6 +222,9 @@ syntax on
 ### 编译 Nginx
 
 ```shell
+
+
+
 ./configure --help # --help 命令可以查看配置脚本支持哪些参数
 
 
@@ -278,6 +278,14 @@ drwxr-xr-x@  4 mtdp  staff   128B  3  3 07:29 html # 从 Nginx 源码目录拷�
 drwxr-xr-x   2 mtdp  staff    64B  3  3 07:29 logs # 日志文件目录，包括 access log 和 error log
 drwxr-xr-x   3 mtdp  staff    96B  3  3 07:29 sbin # Nginx 二进制文件目录
 ```
+
+
+
+### Nginx 安装第三方模块
+
+**安装nginx安装第三方模块**实际上是使用--add-module重新编译**安装**一次**nginx**，
+
+不要 make install 而是直接把编译目录下 objs/**nginx **文件直接覆盖老的 **nginx **文件。如果你需要**安装**多个**nginx第三方模块**,你只需要多指定几个相应的--add-module即可
 
 
 
