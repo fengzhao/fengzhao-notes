@@ -307,6 +307,40 @@ WantedBy=multi-user.target
 
 
 
+## influxdb时序数据库
+
+
+```shell
+# influxdb的官方文档地址为： https://docs.influxdata.com/influxdb/v2.0/get-started/?t=Linux
+# 可以根据不同系统进行下载，这里使用官方提供的deb包进行安装。
+
+# debian & ubuntu
+wget https://dl.influxdata.com/influxdb/releases/influxdb2-2.0.6-amd64.deb
+sudo dpkg -i influxdb2-2.0.6-amd64.deb
+
+
+# rhel & centos
+wget https://dl.influxdata.com/influxdb/releases/influxdb2-2.0.6.x86_64.rpm
+sudo yum localinstall influxdb2-2.0.6.x86_64.rpm
+
+sudo service influxdb start
+sudo service influxdb status 
+
+# 要注意设置服务器时区
+timedatectl set-timezone  Asia/Shanghai
+
+# 配置目录
+# 时序数据目录   Time series data: /var/lib/influxdb/engine/
+# 键值数据墓库   Key-value data: /var/lib/influxdb/influxd.bolt
+# influx CLI configurations: ~/.influxdbv2/configs (see influx config for more information) .
+
+# 默认地，InfluxDB 使用 TCP 8086 端口来提供客户端和服务端的  InfluxDB HTTP API 通讯。
+```
+
+
+
+
+
 
 
 
