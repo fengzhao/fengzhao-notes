@@ -71,10 +71,6 @@ ETCDCTL_API=3 /tmp/etcd-download-test/etcdctl version
 
 
 
-
-
-
-
 通过 etcdctl 可以使用 ETCD。假设使用 v3 版本，且集群设置如下
 
 ```shell
@@ -111,7 +107,7 @@ etcdctl --cacert=/opt/etcd/ssl/ca.pem  \
 
 
 
-从本质上说，服务发现就是要了解集群中是否有进程在监听upd或者tcp端口，并且通过名字就可以进行查找和链接。
+从本质上说，服务发现就是要了解集群中是否有进程在监听 upd 或者 tcp 端口，并且通过名字就可以进行查找和链接。
 
 要解决服务发现的问题，需要下面三大支柱，缺一不可。
 
