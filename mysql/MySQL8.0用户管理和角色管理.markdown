@@ -4,7 +4,7 @@
 
 在 MySQL 8.0 中，`caching_sha2_password` 是默认的身份验证插件，而不是之前版本的 `mysql_native_password`，默认的密码加密方式是 `SHA2` 。
 
-如果需要保持以前版本的密码加密方式，需要在配置文件中显示指定  default_authentication_plugin = mysql_native_password ，并重启生效。
+如果需要保持以前版本的密码加密方式，需要在配置文件中显示指定  `default_authentication_plugin = mysql_native_password` ，并重启生效。
 
 将 MySQL 8.0 中已有的 `SHA2` 密码修改为 `SHA1` 的模式。
 
