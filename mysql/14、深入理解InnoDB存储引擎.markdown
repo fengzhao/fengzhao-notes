@@ -654,11 +654,17 @@ innodb_data_file_path=ibdata1:50M;ibdata2:50M:autoextend
 
 
 
+# MySQL 线程池
+
+https://dev.mysql.com/doc/refman/8.0/en/thread-pool.html
 
 
 
+MySQL默认的连接控制方式采用的是每个连接使用一个线程执行客户端的请求。MySQL的线程池是包含在企业版里面的服务器插件。
 
+使用线程池的目的是为了改善大量并发连接所带来的性能下降。
 
+在大量并发连接的工作负载下，使用线程池可以解决无法利用CPU缓存、上下文切换开销过大以及资源争用等问题。
 
 
 
