@@ -168,7 +168,7 @@ MySQL重启后，将热点数据从磁盘逐渐缓存到 InnoDB Buffer Pool 的�
 
 
 
-在 MySQL 里，如果每一次的更新操作都需要写进磁盘，然后磁盘也要找到对应的那条记录，然后再更新，整个过程IO成本、查找成本都很高。
+在 MySQL 里，如果每一次的更新操作都需要写进磁盘持久化，然后磁盘也要找到对应的那条记录，然后再更新，整个过程IO成本、查找成本都很高。
 
 **所以有一种技术叫 WAL ，全称是 Write-Ahead Logging，它的关键点就是先写日志，再写磁盘。（日志先行）**
 
@@ -178,7 +178,7 @@ MySQL重启后，将热点数据从磁盘逐渐缓存到 InnoDB Buffer Pool 的�
 
 **由于 redo-log 是顺序写的，所以速度比较快。redo-log 是物理日志，记录的是 “在某个数据页上做了什么修改”。**
 
-**redo-log 是循环写的，当 redo-log 写完后，就要刷盘。把数据刷到磁盘中。**
+**redo-log 是循环写的，当 redo-log 写完后，就要刷盘。把数据刷到磁盘中。（更严格地说，何时刷盘应该还是有参数控制的。）**
 
 
 
@@ -228,11 +228,7 @@ innodb_log_files_in_group=2  # 默认值是2
 # innodb_log_buffer_size是会话级的，所有整个redolog buffer占用的空间应该是innodb_log_buffer_size * connections 
 innodb_log_buffer_size=16M  
 
-
-
 ## 修改redo_log文件大小必须要先关闭实例后再修改。
-
-
 
 innodb_flush_log_at_trx_commit：
 # 控制 redolog 从 redolog buffer刷新到磁盘的策略:
@@ -247,6 +243,9 @@ innodb_flush_log_at_trx_commit：
 
 # 这个参数是innodb的数据页大小单位，一般设置为
 innodb_page_size=16KB
+
+
+# https://blog.csdn.net/u010647035/article/details/104733939
 ```
 
 
@@ -306,7 +305,7 @@ SHOW GLOBAL STATUS LIKE 'Innodb_redo_log_enabled';
 
 #### redolog 归档
 
-热备的原理都是要备份redolog，由于redolog是循环写的。
+热备的原理都是要备份 redolog，由于redolog 是循环写的。
 
 **如果备份期间还是有大量的事务写入，备份速度跟不上redo log生成的速度，结果导致redo log被覆盖了，然后备份就无法保证一致性**。
 
@@ -316,7 +315,7 @@ SHOW GLOBAL STATUS LIKE 'Innodb_redo_log_enabled';
 
 
 
-想要启用redo log归档功能，只需设置**innodb_redo_log_archive_dirs**选项即可，该选项可支持在线动态修改，例如：
+想要启用 redo log 归档功能，只需设置 **innodb_redo_log_archive_dirs** 选项即可，该选项可支持在线动态修改，例如：
 
 
 
@@ -367,9 +366,6 @@ binlog_encryption=off
 
 # binlog过期时间，默认是30天
 binlog_expire_logs_seconds=2592000
-
-
-
 
 
 ```
@@ -515,36 +511,6 @@ https://www.cnblogs.com/xibuhaohao/p/10899586.html
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ## InnoDB 磁盘结构
 
 
@@ -557,7 +523,7 @@ https://www.cnblogs.com/xibuhaohao/p/10899586.html
 CREATE TABLE t1 (a INT, b CHAR (20), PRIMARY KEY (a)) ENGINE=InnoDB;
 ```
 
-如果 InnoDB 是默认存储引擎，也可以不用指定 ENGINE。使用如下语句查询 InnoDB 是否默认存储引擎。
+InnoDB 一般都是默认存储引擎，也可以不用指定 ENGINE。使用如下语句查询 InnoDB 是否默认存储引擎。
 
 ```sql
 SELECT @@default_storage_engine;
@@ -565,11 +531,59 @@ SELECT @@default_storage_engine;
 
 
 
-一个 InnoDB 表和索引，可以在 system tablespace, file-per-table tablespace, ogeneral tablespace 中创建。当 innodb_file_per_table 是 enabled 状态，它是默认的，一个 InnoDB 表被显式创建在单独的表空间中，如果是 disabled 状态，会创建在系统表空间，如果要用通用表空间，那么使用  CREATE TABLE ... TABLESPACE  语法来创建表。
+一个 InnoDB 表和索引，可以在 system tablespace, file-per-table tablespace, ogeneral tablespace 中创建。
+
+默认地，InnoDB 的表都是**独立表空间**。
+
+当 innodb_file_per_table 是 enabled 状态，它是默认的，一个 InnoDB 表被显式创建在单独的表空间中。
+
+如果是 disabled 状态，会创建在系统表空间，如果要用通用表空间，那么使用  CREATE TABLE ... TABLESPACE  语法来创建表。
+
+
+
+#### 主键
+
+强烈建议为每个 innodb 表设立主键。
+
+
+
+#### 创建外部表
+
+有时候，可能需要创建外部表（即在 datadir 外部创建表），可能是由于空间管理，IO优化等原因。
+
+InnoDB 支持外部表的语法：
+
+```sql
+-- 第一种情况，使用 DATA DIRECTORY 子句
+CREATE TABLE t1 (c1 INT PRIMARY KEY) DATA DIRECTORY = '/external/directory';
+
+
+
+```
 
 
 
 
+
+#### 导入 InnoDB 表
+
+
+
+**表空间传输特性**
+
+- 复制数据到新实例。
+- 从备份表空间中恢复数据
+- 比 dump 表更快的方式（dump需要重新插入数据和重建索引）
+
+
+
+前提：
+
+- ` innodb_file_per_table` 变量必须开启，默认就是开启的。
+- innodb_page_size 必须相等。
+- 如果一个表有外键关系，在执行 `DISCARD TABLESPACE` 语句之前必须先关掉
+
+https://blog.k4nz.com/7bbf69045e0da119a1a892e054c6d145/
 
 
 
