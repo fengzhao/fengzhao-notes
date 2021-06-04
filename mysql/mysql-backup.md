@@ -189,8 +189,11 @@ mysqldump 可以从表中逐行的取出数据，也可以在导出之前从表�
 mysqldump 大致有三种用法，可以用来导出某些库中的某些表，或者是整个 MySQL Server。
 
 ```shell
+# 一个或多个表
 $ mysqldump [options] db_name [tbl_name ...]
+# 一个或多个schema
 $ mysqldump [options] --databases db_name ...
+# 整个实例
 $ mysqldump [options] --all-databases
 ```
 
@@ -257,6 +260,12 @@ mysqldump 其实是把数据库中的数据对象转储为 sql 文件。这其�
 
 
 
+
+# mydumper
+
+
+
+https://github.com/maxbube/mydumper
 
 
 
