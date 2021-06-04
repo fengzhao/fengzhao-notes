@@ -85,7 +85,7 @@ sudo scl enable devtoolset-9 bash
 sudo echo "source /opt/rh/devtoolset-9/enable" >>/etc/profile
 
 # ubuntu
-$ sudo apt-get install libxml2  pkg-config  libxml2-dev libsqlite3-dev tcl tk
+$ sudo apt-get install  gcc g++ libxml2  pkg-config  libxml2-dev libsqlite3-dev tcl tk make
 
 
 # 下载源代码包
@@ -97,17 +97,27 @@ wget http://download.redis.io/releases/redis-6.0.5.tar.gz  -O  /usr/local/src/re
 # 编译安装，编译安装后，二进制文件会被复制到/usr/local/bin目录下
 tar xf redis-6.0.5.tar.gz
 cd redis-6.0.5
-# 编译参数 USE_SYSTEMD=yes BUILD_TLS=yes 
+# 编译参数 USE_SYSTEMD=yes BUILD_TLS=yes # 在ubuntu使用这个参数 MALLOC=libc
+
 make  
 # 默认会把二进制文件安装到 /usr/local/bin 。也可以 make PREFIX=/some/other/directory install 指定不同目录
 sudo make install
 
 
+# 创建配置目录
+sudo mkdir /etc/redis
+
+# 配置文件去掉空格
+grep -v '^#' redis.conf | grep -v '^$' >  /etc/redis/6379.conf
+
+cp utils/redis_init_script 
+
+
 # 源代码包解压之后的./utils/redis_init_script 可以做为一个简单的启停脚本
-# https://github.com/pmem/pmem-redis/blob/master/utils/redis_init_script
+# https://github.com/redis/redis/blob/unstable/utils/redis_init_script
 
 # 源代码包解压之后的./utils/install_server.sh 可以进行一个交互式的引导用户生成配置文件，并注册成系统服务
-# https://github.com/pmem/pmem-redis/blob/master/utils/install_server.sh
+# https://github.com/redis/redis/blob/unstable/utils/install_server.sh
 
 
 
@@ -145,11 +155,11 @@ rename-command EVAL ""
 
 
 
-sudo mkdir /etc/redis
-sudo cp redis.conf /etc/redis/
 
 ./redis-server /path/to/redis.conf
 ./redis-server --daemonize yes
+
+
 
 
 # Install Redis Server on Ubuntu 18.04
@@ -1285,9 +1295,11 @@ Redis集群是一个distribute、fault-tolerant的Redis实现，主要设计目�
 
 
 
-#### Redis集群数据分片
+#### Redis集群数据分片-sharding
 
 https://www.cnblogs.com/zhusihua/p/11328042.html
+
+https://www.huaweicloud.com/articles/38e2316d01880fdbdd63d62aa26b31b4.html
 
 redis 集群没有使用**一致性哈希**。它用一种不同的分片形式，在这种形式中，每个 key 都是一个概念性（**hash slot**）的一部分。中文也叫**哈希槽** 。
 
@@ -1295,7 +1307,7 @@ Redis 集群中默认分配了 16384 个 hash slots，当我们 set 一个key �
 
 为了计算给定的 key 应该在哪个 hash slot 上，我们简单地用这个 key 的 CRC16 值来对 16384 取模。
 
-（即：key的CRC16  %  16384）
+（即：key 的 CRC16  %  16384）
 
 Redis集群中的每个节点负责一部分 hash slots，假设你的集群有3个节点，那么：
 
