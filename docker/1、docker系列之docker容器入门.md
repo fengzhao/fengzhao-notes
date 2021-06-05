@@ -412,17 +412,33 @@ docker 镜像的命名空间主要是 Registry/Users/Repository/Tag，分别表�
 
 
 
+#### 镜像命名规范
+
+项目名，公共项目使用名称：base，并设置为公开；其它项目使用英文小写项目名，设置为私有。
+
+镜像名中应该包含使用的组件名称及版本信息，使用`-`连接。
+
+- 基础镜像命名规则
+   基础镜像命名应按照操作系统大版本：版本号-构建版本的格式命名，例如：`base/rehl7:7.6-1`
+- 公共镜像全名规则
+   公共镜像命名应按照服务名-中间件-上级中间件：服务版本号-中间件
+   版本号-上级中间件版本号-构建版本的格式命名，中间件名称可以包含大版本号，例如：`base/tomcat8-openjdk8:8.5.23-jre8u212-1`
+- 应用命名规则
+   使用格式：系统-模块:系统版本-模块版本-构建版本，例如：`sys/sys-rs:1.1-1.1-1`
+
+同一应用镜像在以上标签的规则下，还可以根据发布流程设置多个标签，以满足部署时版本依赖的管理要求。例如`sys/sys-rs:v1`代表`v1.x`的最新版本。
+
+
+
 每个镜像，下载到当前服务器内，都有一个唯一的镜像 id，我们可以给同一个镜像打多个标签，使用 docker tag命令来给镜像添加标签，docker tag 
 
 docker tag 一般用于给镜像打标签，用于区分设置镜像的版本号。
 
 #### 镜像管理
 
-
-
 - 镜像仓库（Registry）                         					                        
 
-  Docker 的镜像存储中心通常被称为 `Registry`。目前有 docker hub 和 阿里云镜像仓库，github packages  , https://quay.io/                  
+  Docker 的镜像存储中心通常被称为 `Registry`。目前有 docker hub 和 阿里云镜像仓库，github packages  , https://quay.io/   等等。              
 
   当您需要获取您自己的私有镜像的时候，首先需要登录 `Registry`，然后拉取镜像。
 
@@ -443,8 +459,6 @@ docker tag 一般用于给镜像打标签，用于区分设置镜像的版本号
 
   - `registry.cn-hangzhou.aliyuncs.com/acs/agent` 称为仓库坐标。                           
   - `acs/agent` 称为仓库全名（通常在API中使用）。                           
-
-
 
 
 
@@ -477,7 +491,9 @@ docker load -i spring-boot-docker.tar
 
 #### Dockerfile 构建镜像
 
-通过 docker build 命令来从 Dockerfile 和下文中构建镜像，上下文一般就是 Dockerfile 文件所在的路径， 其中包含一系列制作镜像的所需的原文件，上下文可以在某个路径，或者是某个 URL （一般是git repo）中。上下文会被递归处理，所以路径下可以包含子文件夹。
+通过 docker build 命令来从 Dockerfile 和下文中构建镜像，上下文一般就是 Dockerfile 文件所在的路径， 其中包含一系列制作镜像的所需的原文件，上下文可以在某个路径，或者是某个 URL （一般是git repo）中。
+
+上下文会被递归处理，所以路径下可以包含子文件夹。
 
 构建过程是 docker daemon 来执行的，第一件事就是把整个上下文传给 daemon 。
 
@@ -506,7 +522,7 @@ Dockerfile 包含一系列指令，它必须以 FROM 作为第一行，表示基
 # example Dockerfile for https://docs.docker.com/engine/examples/postgresql_service/
 #
 
-# 基于ubuntu
+# 基于ubuntu基镜像
 FROM ubuntu
 
 # 添加 PostgreSQL key 并验证其来源合法性
@@ -557,7 +573,9 @@ CMD ["/usr/lib/postgresql/9.3/bin/postgres", "-D", "/var/lib/postgresql/9.3/main
 
 https://blog.csdn.net/boling_cavalry/article/details/93380447
 
-docker 容器中运行的进程，如果以 root 身份运行的会有安全隐患，该进程拥有容器内的全部权限，更可怕的是如果有数据卷映射到宿主机，那么通过该容器就能操作宿主机的文件夹了，一旦该容器的进程有漏洞被外部利用后果是很严重的。
+docker 容器中运行的进程，如果以 root 身份运行的会有安全隐患，该进程拥有容器内的全部权限，更可怕的是如果有数据卷映射到宿主机。
+
+那么通过该容器就能操作宿主机的文件夹了，一旦该容器的进程有漏洞被外部利用后果是很严重的。
 
 因此，容器内使用非 root 账号运行进程才是安全的方式，这也是我们在制作镜像时要注意的地方。
 
@@ -625,9 +643,7 @@ https://fuckcloudnative.io/posts/docker-images-part2-details-specific-to-differe
 
 
 
-#### base image
-
-
+#### 深入理解 base image
 
 当我们在写 Dockerfile 的时候都需要用 `FROM` 语句来指定一个基础镜像，这些基础镜像并不是无中生有，也需要一个 Dockerfile 来构建成镜像。
 
@@ -660,9 +676,6 @@ CMD ["bash"]
 # 主要存放了镜像的元数据信息。主要是 image name 和 image id 的对应，digest 和 image id 的对应。
 # 当 pull 完一个镜像的时候 docker 会更新这个文件。
 # 当我们 docker run 一个容器的时候也用到这个文件去索引本地是否存在该镜像，没有镜像的话就自动去 pull 这个镜像。
-
-
-
 
 cat /var/lib/docker/image/overlay2/repositories.json | jq
 
