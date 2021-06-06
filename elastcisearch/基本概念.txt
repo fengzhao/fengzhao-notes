@@ -29,3 +29,37 @@ get http://es:9200/_cat/indices?v
 
 # 删除索引
 delete http://es:9200/index-name
+
+
+
+documents-文档
+
+文档就表示数据
+
+# 创建数据，数据创建成功，返回_id，由es随机生成的唯一id。非幂等性的
+post http://es:9200/index-name/_doc/
+{
+    request body
+}
+
+
+
+# 创建数据，数据创建成功，自定义_id，返回的id就是1001
+post http://es:9200/index-name/_doc/1001
+{
+    request body
+}
+
+
+# 根据id查找数据
+get  http://es:9200/index-name/_doc/1001
+
+
+# 查询索引下的所有数据
+
+get  http://es:9200/index-name/_search
+
+
+
+
+
