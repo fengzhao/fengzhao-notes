@@ -9,3 +9,23 @@ sharding-分片
 
 
 replications-复制
+
+
+
+
+index-索引
+
+索引相当于关系数据库中的库
+
+
+# 创建索引
+put  http://es:9200/index-name
+
+# 查看单个索引信息
+get http://es:9200/index-name
+
+# 查看所有索引
+get http://es:9200/_cat/indices?v
+
+# 删除索引
+delete http://es:9200/index-name
