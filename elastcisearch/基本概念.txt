@@ -60,6 +60,10 @@ get  http://es:9200/index-name/_doc/1001
 get  http://es:9200/index-name/_search
 
 
+# 查看某个索引下的文档数量
+
+get  _cat/count/dm_yqyc_org_base?v
+
 
 
 
