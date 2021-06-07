@@ -1,0 +1,216 @@
+{
+	"info": {
+		"_postman_id": "59b4791d-500d-429f-872e-fc9c0af66193",
+		"name": "elasticsearch",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "创建索引",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"url": {
+					"raw": "10.10.20.101:9200/test2/",
+					"host": [
+						"10",
+						"10",
+						"20",
+						"101"
+					],
+					"port": "9200",
+					"path": [
+						"test2",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "修改索引",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    //设置索引基本属性\r\n    \"index\" : {\r\n        \"refresh_interval\" : -1,\r\n        \"merge\" : {\r\n            \"scheduler\": {\r\n                \"max_thread_count\":1\r\n            }\r\n        },\r\n        \"translog\" : {\r\n          \"flush_threshold_size\" : \"1024mb\"\r\n        }\r\n    }\r\n} ",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "10.10.20.101:9200/test2/_settings",
+					"host": [
+						"10",
+						"10",
+						"20",
+						"101"
+					],
+					"port": "9200",
+					"path": [
+						"test2",
+						"_settings"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "查看索引",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "10.10.20.101:9200/dw_addr_lng_lat/_settings",
+					"host": [
+						"10",
+						"10",
+						"20",
+						"101"
+					],
+					"port": "9200",
+					"path": [
+						"dw_addr_lng_lat",
+						"_settings"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "创建文档",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{ \r\n \r\n \r\n    \"name\" : \"nginx\"\r\n    \r\n }",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "10.10.20.101:9200/test2/_doc/10011?refresh",
+					"host": [
+						"10",
+						"10",
+						"20",
+						"101"
+					],
+					"port": "9200",
+					"path": [
+						"test2",
+						"_doc",
+						"10011"
+					],
+					"query": [
+						{
+							"key": "refresh",
+							"value": null
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "查看文档",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": null
+			},
+			"response": []
+		},
+		{
+			"name": "查看文档数据行总数",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "10.10.20.101:9200/_cat/count/dw_addr_lng_lat?v",
+					"host": [
+						"10",
+						"10",
+						"20",
+						"101"
+					],
+					"port": "9200",
+					"path": [
+						"_cat",
+						"count",
+						"dw_addr_lng_lat"
+					],
+					"query": [
+						{
+							"key": "v",
+							"value": null
+						}
+					]
+				},
+				"description": "查看文档数据行总数"
+			},
+			"response": []
+		},
+		{
+			"name": "从文档中按条件查找数据",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "\r\n{\r\n  // 类似于MySQL中的like \"%白石厦社区龙翔北路%\" 查找\r\n  \"query\":{\r\n    \"match_phrase\":{\"addr\": \"白石厦社区龙翔北路\"}\r\n  }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "10.10.20.101:9200/dw_addr_lng_lat/_search",
+					"host": [
+						"10",
+						"10",
+						"20",
+						"101"
+					],
+					"port": "9200",
+					"path": [
+						"dw_addr_lng_lat",
+						"_search"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "分词器",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": null
+			},
+			"response": []
+		}
+	]
+}

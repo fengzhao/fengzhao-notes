@@ -33,6 +33,9 @@ https://help.aliyun.com/document_detail/98886.html?spm=a2c4g.11186623.6.1078.323
 
 
 ```shell
+# 
+cd /usr/local/src/
+
 # cfssl工具包，可以先下好
 wget https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
 wget https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
