@@ -70,6 +70,8 @@ GitLab CI/CD 由一个名为 .gitlab-ci.yml 的文件进行配置，改文件位
 
 ## gitlab-runner 安装
 
+https://blinkfox.github.io/2018/11/22/ruan-jian-gong-ju/devops/gitlab-ci-jie-shao-he-shi-yong/
+
 .gitlab-ci.yml  是 gitlab 项目仓库中的文件，定义了一系列构建，测试，部署的脚本。
 
 
