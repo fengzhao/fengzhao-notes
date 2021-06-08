@@ -23,6 +23,9 @@ put  http://es:9200/index-name
 
 # 查看单个索引信息
 get http://es:9200/index-name
+# 查看单个索引的详细信息，分片，
+get http://es:9200/index-name/_settings
+
 
 # 查看所有索引
 get http://es:9200/_cat/indices?v
