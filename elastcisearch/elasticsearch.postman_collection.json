@@ -11,7 +11,7 @@
 				"method": "PUT",
 				"header": [],
 				"url": {
-					"raw": "10.10.20.101:9200/test2/",
+					"raw": "10.10.20.101:9200/test3/",
 					"host": [
 						"10",
 						"10",
@@ -20,7 +20,7 @@
 					],
 					"port": "9200",
 					"path": [
-						"test2",
+						"test3",
 						""
 					]
 				}
@@ -204,11 +204,148 @@
 			"response": []
 		},
 		{
-			"name": "分词器",
+			"name": "查看所有索引情况",
 			"request": {
 				"method": "GET",
 				"header": [],
-				"url": null
+				"url": {
+					"raw": "10.10.20.101:9200/_cat/indices?pretty",
+					"host": [
+						"10",
+						"10",
+						"20",
+						"101"
+					],
+					"port": "9200",
+					"path": [
+						"_cat",
+						"indices"
+					],
+					"query": [
+						{
+							"key": "pretty",
+							"value": null
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "查看所有节点情况",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://10.10.20.101:9200/_cat/nodes?v",
+					"protocol": "http",
+					"host": [
+						"10",
+						"10",
+						"20",
+						"101"
+					],
+					"port": "9200",
+					"path": [
+						"_cat",
+						"nodes"
+					],
+					"query": [
+						{
+							"key": "v",
+							"value": null
+						}
+					]
+				},
+				"description": "查看节点情况"
+			},
+			"response": []
+		},
+		{
+			"name": "更新索引的相关设置",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"index\" : {\r\n        \"refresh_interval\" : \"1m\"\r\n    }\r\n}\r\n\r\n\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "10.10.20.101:9200/dw_addr_lng_lat/_settings",
+					"host": [
+						"10",
+						"10",
+						"20",
+						"101"
+					],
+					"port": "9200",
+					"path": [
+						"dw_addr_lng_lat",
+						"_settings"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "按照条件查找",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "\r\n{\r\n  // 类似于MySQL中的like \"%白石厦社区龙翔北路%\" 查找\r\n  \"query\":{\r\n    \"match_phrase\":{\"addr\": \"白石厦社区龙翔北路\"}\r\n  }\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "10.10.20.101:9200/dw_addr_lng_lat/_search/",
+					"host": [
+						"10",
+						"10",
+						"20",
+						"101"
+					],
+					"port": "9200",
+					"path": [
+						"dw_addr_lng_lat",
+						"_search",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "查看索引的配置",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "10.10.20.101:9200/test/_settings",
+					"host": [
+						"10",
+						"10",
+						"20",
+						"101"
+					],
+					"port": "9200",
+					"path": [
+						"test",
+						"_settings"
+					]
+				}
 			},
 			"response": []
 		}
