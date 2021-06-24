@@ -636,3 +636,29 @@ https://www.cnblogs.com/wupeixuan/p/12074007.html
 
 
 
+# Nginx 反向代理
+
+
+
+
+
+ `ngx_http_proxy_module` 模块可以使发到 nginx 的请求转发到真正的另外一个后端服务器上。
+
+
+
+
+
+**反向代理时的头部处理**
+
+
+
+在实际应用中，我们可能需要获取用户的 ip 地址，比如做异地登陆的判断，或者统计 ip 访问次数等，通常情况下我们使用 request.getRemoteAddr() 就可以获取到客户端ip。
+
+但是当我们使用了 nginx 作为反向代理后，使用 request.getRemoteAddr() 获取到的就一直是 nginx 服务器的 ip 的地址。
+
+经过反向代理后，由于在客户端和 web 服务器之间增加了中间层，因此web服务器无法直接拿到客户端的 ip，通过 $remote_addr 变量拿到的将是反向代理服务器的ip地址。
+
+
+
+
+
