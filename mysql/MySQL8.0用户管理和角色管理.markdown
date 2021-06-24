@@ -13,8 +13,6 @@
 mysql> ALTER USER 'root'@'127.0.0.1' IDENTIFIED WITH mysql_native_password BY 'password';
 
 ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'sj@36668182';
-
-
 alter user root@'%' IDENTIFIED WITH mysql_native_password BY 'sj36668182';
 -- 刷新权限
 mysql> FLUSH PRIVILEGES;
@@ -30,6 +28,8 @@ mysql> FLUSH PRIVILEGES;
 ### 用户管理
 
 ```sql
+-- 在MySQL中。user@host 两个字段一起唯一标识一个用户
+-- 也就是说 dba@10.10.%  dba@10.% 其实是两个不同的用户
 
 -- 建用户
 CREATE USER 'dba'@'%' IDENTIFIED WITH 'mysql_native_password' by 'admin@123' ;
