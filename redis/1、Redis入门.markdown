@@ -2464,3 +2464,111 @@ requirepass 123456
 
 
 # redis安全
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# redis 三节点-cluster部署
+
+
+
+
+
+### 集群规划
+
+
+
+三台服务器各部署一个主节点、一个从节点，同一台服务器上不是直接主从关系。
+
+| 服务器 | 操作系统                      | 角色           | ip:端口                               |
+| ------ | ----------------------------- | -------------- | ------------------------------------- |
+| node1  | CentOS Linux release 7.6.1810 | master1/slave2 | 192.168.1.199:6379/192.168.1.199:6380 |
+| node2  | CentOS Linux release 7.6.1810 | master2/slave3 | 192.168.1.200:6379/192.168.1.200:6380 |
+| node3  | CentOS Linux release 7.6.1810 | master3/slave1 | 192.168.1.201:6379/192.168.1.201:6380 |
+
+
+
+### 准备工作
+
+以下都要在三个节点上准备：
+
+```shell
+
+# vi /etc/hosts，给三台主机都设置hosts
+192.168.1.199 node1 
+192.168.1.200 node2
+192.168.1.201 node3
+
+# 防火墙
+sudo firewall-cmd --zone=public --add-port=6379/tcp --permanent
+sudo firewall-cmd --zone=public --add-port=6380/tcp --permanent
+sudo firewall-cmd --zone=public --add-port=16379/tcp --permanent
+sudo firewall-cmd --zone=public --add-port=16380/tcp --permanent
+sudo firewall-cmd --permanent --zone=public --list-ports
+sudo firewall-cmd --reload
+
+
+## 准备gcc环境
+# 查看，如果是gcc version 4.8.5，则看下面
+gcc -v
+
+# centos7 默认的 gcc 版本为：4.8.5 < 5.3 无法编译，需要准备新的gcc，并设置默认gcc
+sudo yum -y install centos-release-scl tcl tclx tcl-devel  
+sudo yum -y install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils 
+# 临时有效，退出 shell 或重启会恢复原 gcc 版本
+sudo scl enable devtoolset-9 bash
+# 长期有效
+sudo echo "source /opt/rh/devtoolset-9/enable" >>/etc/profile
+
+# 查看gcc版本：
+gcc -v
+
+
+# 下载当前最新的源代码包
+wget http://download.redis.io/releases/redis-6.2.4.tar.gz -O  /usr/local/src/redis-6.2.4.tar.gz
+cd /usr/local/src/
+# 编译安装，编译安装后，二进制文件会被复制到/usr/local/bin目录下
+tar xf redis-6.0.5.tar.gz
+cd redis-6.0.5
+# 编译参数 USE_SYSTEMD=yes BUILD_TLS=yes # 在ubuntu使用这个参数 MALLOC=libc
+make  
+# 默认会把二进制文件安装到 /usr/local/bin 。也可以 make PREFIX=/some/other/directory install 指定不同目录
+sudo make install
+
+
+
+
+# 创建日志目录和工作目录
+mkdir -p /var/log/redis/
+mkdir -p /var/lib/redis/6379
+mkdir -p /var/lib/redis/6380
+
+
+# 创建配置目录
+sudo mkdir /etc/redis/
+# 把默认配置文件去掉空格
+grep -v '^#' redis.conf | grep -v '^$' >  /etc/redis/6379.conf
+
+
+
+cp utils/redis_init_script 
+
+```
+
+
+
