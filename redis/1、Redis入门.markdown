@@ -2566,7 +2566,7 @@ grep -v '^#' redis.conf | grep -v '^$' >  /etc/redis/6379.conf
 
 
 
-cp utils/redis_init_script 
+cp utils/redis_init_script  
 
 ```
 
