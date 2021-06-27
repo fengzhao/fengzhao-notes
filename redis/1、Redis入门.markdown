@@ -1891,7 +1891,8 @@ redis的哨兵(sentinel) 系统用于管理多个 redis 服务器组，该系统
 
 
 **Sentinel工作方式（每个Sentinel实例都执行的定时任务）**
-1）每个 Sentinel 以每秒钟一次的频率向它所知的 Master，Slave 以及其他 Sentinel 实例发送一个 PING 命令。
+
+1）每个 Sentinel 以每秒钟一次的频率向它所管理的 Master，Slave 以及其他 Sentinel 实例发送一个 PING 命令。
 2）如果一个实例（instance）距离最后一次有效回复 PING 命令的时间超过 own-after-milliseconds 选项所指定的值，则这个实例会被 Sentinel 标记为主观下线。 
 3）如果一个 Master 被标记为主观下线，则正在监视这个 Master 的所有 Sentinel 要以每秒一次的频率确认 Master 的确进入了主观下线状态。 
 4）当有足够数量的 Sentinel（大于等于配置文件指定的值）在指定的时间范围内确认 Master 的确进入了主观下线状态，则 Master 会被标记为客观下线。
@@ -1996,7 +1997,7 @@ cluster是为了解决单机Redis容量有限的问题，将数据按一定的�
 
 ### 数据分片
 
-哨兵：哨兵就没有高可用，
+
 
 
 
