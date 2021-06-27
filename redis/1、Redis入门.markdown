@@ -1851,11 +1851,11 @@ Redis 集群中的节点有以下责任：
 
 https://v2ex.com/t/696387
 
-redis 哨兵（sentinel ）也是企业场景中最常见的高可用方案。也是官方推荐的高可用方案
+redis 哨兵（sentinel ）也是企业场景中最常见的高可用方案。也是官方推荐的高可用方案。
 
 redis-sentinel 本身也是一个独立运行的进程，它能监控多个 master-slave 集群，发现 master 宕机后能进行自动切换。
 
-当一个集群中的master失效之后，sentinel 可以选举出一个新的 master 用于自动接替 master 的工作，集群中的其他 redis 服务器自动指向新的 master 同步数据。
+当一个集群中的 master 失效之后，sentinel 可以选举出一个新的 master 用于自动接替 master 的工作，集群中的其他 redis 服务器自动指向新的 master 同步数据。
 
 一般建议 sentinel 采取奇数台，防止某一台 sentinel 无法连接到 master 导致误切换。其结构如下:
 
@@ -1867,25 +1867,25 @@ redis-sentinel 本身也是一个独立运行的进程，它能监控多个 mast
 
 
 
-**哨兵(sentinel) 是一个分布式系统,你可以在一个架构中运行多个哨兵(sentinel) 进程。**这些进程使用流言协议(gossip protocols)来接收关于Master 是否下线的信息。
+**哨兵(sentinel) 是一个分布式系统，你可以在一个架构中运行多个哨兵(sentinel) 进程。**这些进程使用流言协议(gossip protocols)来接收关于Master 是否下线的信息。
 
 **Sentinel 状态持久化**
 
 snetinel 的状态会被持久化地写入sentinel 的配置文件中。每次当收到一个新的配置时，或者新创建一个配置时，配置会被持久化到硬盘中，并带上配置的版本戳。
 
-这意味着，可以安全的停止和重启sentinel进程。
+**这意味着，可以安全的停止和重启sentinel进程。**
 
 
 
-redis的哨兵(sentinel) 系统用于管理多个 redis 服务器，该系统执行以下三个任务:
+redis的哨兵(sentinel) 系统用于管理多个 redis 服务器组，该系统执行以下三个任务:
 
 - **监控(Monitoring)**：哨兵(sentinel) 会不断地检查你的 Master 和 Slave 是否运作正常。
 
-- **提醒(Notification)**：当被监控的某个 Redis 出现问题时, 哨兵(sentinel) 可以通过 API 向管理员或者其他应用程序发送通知。
+- **提醒(Notification)**：当被监控的某个 Redis 组出现问题时, 哨兵(sentinel) 可以通过 API 向管理员或者其他应用程序发送通知。
 - **故障转移(Automatic failover)**：当一个Master不能正常工作时，哨兵(sentinel) 会开始一次自动故障迁移操作；
-  - 它会将失效Master的其中一个Slave升级为新的Master,
-  -  并让失效Master的其他Slave改为复制新的Master; 
-  - 当客户端试图连接失效的Master时,集群也会向客户端返回新Master的地址,使得集群可以使用新 master代替失效的 Master。
+  - 它会将失效 Master 的其中一个 Slave 升级为新的 Master,
+  -  并让失效 Master 的其他 Slave 改为复制新的 Master; 
+  - 当客户端试图连接失效的 Master 时,集群也会向客户端返回新Master的地址,使得集群可以使用新 master代替失效的 Master。
   - master_redis.conf、slave_redis.conf和 sentinel.conf 的内容都会发生改变，即 master_redis.conf 中会多一行 slaveof 的配置，sentinel.conf 的监控目标会随之调换。
 
 
@@ -1923,7 +1923,7 @@ redis的哨兵(sentinel) 系统用于管理多个 redis 服务器，该系统执
 
 
 
-
+redis 哨兵是如何保证高可用的
 
 
 
