@@ -552,3 +552,8 @@ select id, SUM(cnt) from t group by id  asc;
 
  
 
+## MySQL 日志切割
+
+
+
+在 REHL 中，可以使用 mysql-log-rotate 这个脚本来实现日志切割。如果是RPM包方式安装，这个脚本会自动安装好。
