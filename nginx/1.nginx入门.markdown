@@ -74,12 +74,12 @@ Nginx服务器的所有工作进程都用于接收和处理客户端的请求。
 
 ------
 
-在 Nginx 中，有两种分支，分别是 mainline 和 stable。
+在 Nginx 的[开源代码库](http://hg.nginx.org/nginx/branches)中，有两种分支，分别是 mainline 和 stable。
 
--  Mainline 相当于开发分支，更新比较活跃，包含引入一些新的功能或者bug修复，版本号的第二个数字如果是基数，那就是 Mainline 版本，比如 1.17.0。
+-  Mainline 相当于开发分支，更新比较活跃，包含引入一些新的功能或者bug修复，版本号的第二个数字如果是奇数，那就是 Mainline 版本，比如 1.17.0。
 - Stable 分支很容易理解，就是相对稳定的版本，除非有重大Bug，否则在它的生命周期内不会更新，版本号的第二个数字如果是偶数，那就是 Mainline 版本，比如 1.16.0。
 
-
+对于 NGINX 开源，“稳定”一词指的是功能和更新频率，而不是软件质量。稳定分支在其生命周期中从不接收新功能，通常只接收一两个更新，用于关键错误修复。
 
 stable 版本代表功能多少和更新频率，和软件质量没有太大的关系（当然任何软件都会有Bug）。
 
@@ -113,10 +113,13 @@ https://www.cnblogs.com/91donkey/p/11639355.html
 name=nginx repo
 # 系统:CentOS7 架构:x86_64
 baseurl=https://nginx.org/packages/centos/7/x86_64/
+
 # 系统:CentOS8 架构:x86_64
 # baseurl=https://nginx.org/packages/centos/7/x86_64/
+
 # 系统:RHEL7 架构:x86_64
-baseurl=https://nginx.org/packages/rhel/7/x86_64/
+# baseurl=https://nginx.org/packages/rhel/7/x86_64/
+
 # 系统:RHEL8 架构:x86_64
 # baseurl=https://nginx.org/packages/rhel/7/x86_64/
 gpgcheck=0
@@ -137,8 +140,7 @@ enabled=1
 sudo apt install zlib1g zlib1g-dev
 
 # 在 http://nginx.org/en/download.html 里面下载 Nginx 源代码
-
-wget http://nginx.org/download/nginx-1.16.0.tar.gz
+# wget http://nginx.org/download/nginx-1.16.0.tar.gz
 wget http://nginx.org/download/nginx-1.20.1.tar.gz
 
 nginx-1.17.8
@@ -156,7 +158,6 @@ nginx-1.17.8
 └── src # nginx 源代码
 
 
-
 # 配置 Vim 高亮, 如果 Vim 没有开启语法高亮的话，最好开启一下
 
 cp -r contrib/vim/* ~/.vim
@@ -164,7 +165,6 @@ echo 'syntax on' > ~/.vimrc
 
 
 # configure
-
 ./configure   --user=nginx --group=nginx  --prefix=/usr/local/nginx/  --with-http_stub_status_module  --with-http_ssl_module
 
 ./configure --help # --help 命令可以查看配置脚本支持哪些参数
@@ -187,7 +187,6 @@ echo 'syntax on' > ~/.vimrc
 --with-http_v2_module              enable ngx_http_v2_module
 --with-http_realip_module          enable ngx_http_realip_module
 ...
-
 --without-http_charset_module      disable ngx_http_charset_module
 --without-http_gzip_module         disable ngx_http_gzip_module
 --without-http_ssi_module          disable ngx_http_ssi_module
@@ -224,7 +223,6 @@ syntax on
 ```shell
 
 
-
 ./configure --help # --help 命令可以查看配置脚本支持哪些参数
 
 
@@ -256,9 +254,9 @@ syntax on
 
 
 
- 1. 使用默认参数，进行 configure 指定编译安装目录
+ # 1. 使用默认参数，进行 configure 指定编译安装目录
 ./configure --prefix=/usr/localnginx/
- 编译完成后生成 objs 文件夹中间文件
+ # 编译完成后生成 objs 文件夹中间文件
 ➜   ls -al 
 total 176
 -rw-r--r--  1 mtdp  staff    40K  3  3 07:23 Makefile
@@ -336,9 +334,9 @@ http {
         location /lua {
             default_type text/html;
             content_by_lua '
-ngx.say("User-Agent: ", ngx.req.get_headers()["User-Agent"])
-';
-}
+			ngx.say("User-Agent: ", ngx.req.get_headers()["User-Agent"])
+			';
+			}
         }
         #error_page 404 /404.html;
 
@@ -636,7 +634,74 @@ https://www.cnblogs.com/wupeixuan/p/12074007.html
 
 
 
-# Nginx 反向代理
+# Nginx 反向代理和负载均衡
+
+
+
+四层和七层负载均衡
+
+- 所谓四层就是基于IP+端口的负载均衡；七层就是基于URL等应用层信息的负载均衡；同理，还有基于MAC地址的二层负载均衡和基于IP地址的三层负载均衡。
+
+- 二层负载均衡会通过一个虚拟MAC地址接收请求，然后再分配到真实的MAC地址；
+- 三层负载均衡会通过一个虚拟IP地址接收请求，然后再分配到真实的IP地址；
+- 四层通过虚拟IP+端口接收请求，然后再分配到真实的服务器；
+- 七层通过虚拟的 URL 或 主机名 接收请求，然后再分配到真实的服务器。
+
+
+
+我们最常见的 nginx location proxy_pass 反向代理，就是基于 URL 匹配将 HTTP 请求转到真实的后端服务。
+
+
+
+### nginx负载均衡算法
+
+
+
+#### **轮询 （round-robin）**
+
+轮询为负载均衡中较为基础也较为简单的算法，它不需要配置额外参数。
+
+假设配置文件中共有 $M$ 台服务器，该算法遍历服务器节点列表，并按节点次序每轮选择一台服务器处理请求。当所有节点均被调用过一次后，该算法将从第一个节点开始重新一轮遍历。
+
+**特点**：由于该算法中每个请求按时间顺序逐一分配到不同的服务器处理，因此适用于服务器性能相近的集群情况，其中每个服务器承载相同的负载。但对于服务器性能不同的集群而言，该算法容易引发资源分配不合理等问题。
+
+
+
+#### 加权轮询
+
+```nginx
+# 定义一个后端服务，由三个节点组成
+upstream cluster  {
+    server backend1-inc.example.com        weight=5;
+    server backend2-inc.example.com:8080;
+    server unix:/tmp/backend3;
+
+    server backup1.example.com:8080   backup;
+    server backup2.example.com:8080   backup;
+}
+
+server {
+   location / {
+   		proxy_set_header X-Real-IP $remote_addr;               //返回真实IP
+   		proxy_pass http://cluster;                             //代理指向cluster 
+    
+}
+}
+```
+
+
+
+
+
+
+
+上游
+
+upstream 即上游的意思，是一个想对到概念，从客户端到中间的网络链路到服务器到链路中，可以将越接近客户到设备越理解成下游，相反到为上游。
+
+所以如果只有一个upstream，可以将其为理解成转发客户到请求到服务器，然后响应服务器转发到客户端到过程。
+
+下游
 
 
 
@@ -652,11 +717,11 @@ https://www.cnblogs.com/wupeixuan/p/12074007.html
 
 
 
-在实际应用中，我们可能需要获取用户的 ip 地址，比如做异地登陆的判断，或者统计 ip 访问次数等，通常情况下我们使用 request.getRemoteAddr() 就可以获取到客户端ip。
+在实际应用中，我们的后端服务器可能需要获取客户端用户的 ip 地址，比如做异地登陆的判断，或者统计 ip 访问次数等，通常情况下我们使用 request.getRemoteAddr() 就可以获取到客户端 ip。
 
 但是当我们使用了 nginx 作为反向代理后，使用 request.getRemoteAddr() 获取到的就一直是 nginx 服务器的 ip 的地址。
 
-经过反向代理后，由于在客户端和 web 服务器之间增加了中间层，因此web服务器无法直接拿到客户端的 ip，通过 $remote_addr 变量拿到的将是反向代理服务器的ip地址。
+经过反向代理后，由于在客户端和 web 服务器之间增加了中间层，因此 web 服务器无法直接拿到客户端的 ip，通过 $remote_addr 变量拿到的将是反向代理服务器的 ip 地址。
 
 
 
