@@ -1,14 +1,56 @@
+## InnoDB存储引擎概述
+
+
+
+InnoDB 是事务安全的 MySQL 存储引擎，设计上采用了类似于Oracle数据库的架构。通常来说，InnoDB 存储引擎时 OLTP 应用中核心表的首选存储引擎。
+
+同样，也正是因为 InnoDB 的存在，才使 MySQL 数据库变得更有魅力。目前 InnoDB 属于 MySQL 默认存储引擎，并且**在MySQL 8.0开始，包括元数据表也都是使用InnoDB存储引擎，**
+
+
+
+InnoDB 存储引擎的创始人 Heikki Tuuri，1964年出生于芬兰赫尔辛基，与著名的Linux创始人Linus同时芬兰赫尔辛基大学校友，同时MySQL创始人Monty也是芬兰人，很传奇。
+
+他在 1995 年成立 Innobase Oy 公司并担任CEO。InnoDB 最初就由 Innobase Oy 公司开发，后来被包括在 MySQL 所有的二进制发行版本中，也是 MySQL 5.5.8 开始默认的存储引擎。
+
+该存储引擎是一个支持 ACID 事务，行锁设计，支持 MVCC 功能，提供类似于 Oracle 风格的一致性非锁定读，支持外键，被设计用来最有效地利用内存和CPU。
+
+并且实现了 SQL 标准的 4 种隔离级别，其默认级别是 REPEATABLE READ。并通过一种被称为 netxt-key locking的策略来避免幻读。
+
+MySQL 在 2008 年被 SUN 公司收购，最后 SUN 又被 Oracle 收购，自然 MySQL 也就到了 Oracle 手里。现在 Oracle 拥有 MySQL 数据库及 InnoDB 存储引擎， Oracle 收购 MySQL 后，推出 5.6、5.7、8.0 几个大版本。
+
+做了大量的优化和功能，并且在 8.0 大量重构了 InnoDB 存储引擎，性能大幅度提升。可以说目前能大量重构 InnoDB 存储引擎的人估计也只有 Oracle 官方团队可以了，包括 InnoDB 创始人目前也在 Oracle 公司。
+
+如果不出现 MySQL 被闭源的情况，那么 Oracle 官方MySQL 可以说是前途一片大好。
+
+
+
+
+
+
+
+![InnoDB architecture diagram showing in-memory and on-disk structures. In-memory structures include the buffer pool, adaptive hash index, change buffer, and log buffer. On-disk structures include tablespaces, redo logs, and doublewrite buffer files.](assets/innodb-architecture.png)
+
+<center>InnoDB体系架构</center>
+
+
+
+
+
+
+
 ## 内存
 
-### 缓冲池（buffer pool）
+### 内存缓冲池（buffer pool）
 
 **InnoDB 存储引擎是基于磁盘存储的，并将其中的记录按照页的方式进管理，因此可以将其视为基于磁盘的数据库系统。**
 
 在数据库系统中，由于 CPU 和磁盘交换速度的差距，基于磁盘的数据库系统通常使用缓冲池技术来提高数据库的整体性能。
 
-缓冲池简单说就是一块内存区域，通过内存的速度来弥补磁盘的速度，在数据库中读取页时，首先将磁盘读到的页放到缓冲池中，这个过程称为将页 fix 到缓冲池，下次再读取相关的页时，下次再读取相同的页时，先判断是否在缓冲池中，若在，则称为该页在缓冲池被命中。
+内存缓冲池简单说就是 MySQL 进程向操作系统申请一块内存区域，通过内存的速度来弥补磁盘的速度，在数据库中读取页时，首先将磁盘读到的页放到缓冲池中，这个过程称为将页 fix 到缓冲池。
 
-对于修改数据（增删改），同样首先修改缓冲池中的页，然后在以一定的频率刷新到磁盘。通过一种 checkpoint 的机制刷回磁盘。
+下次再读取相关的页时，下次再读取相同的页时，先判断是否在缓冲池中，若在，则称为该页在缓冲池被命中。
+
+对于修改数据（增删改），同样首先修改缓冲池中的页，然后在以一定的频率刷新到磁盘。**通过一种被称作 checkpoint 的机制刷回磁盘。**
 
 
 
@@ -18,13 +60,61 @@
 
 缓冲池是 MySQL 向操作系统申请的一块内存区域，操作系统是以页为单位对内存进行管理。
 
-具体来看，缓冲池中的页类型有：数据页，索引页，undo页，插入缓冲，自适应哈希索引，InnoDB存储的锁信息，数据字典信息等。
+具体来看，缓冲池中的页类型有：**数据页，索引页，undo页，插入缓冲，自适应哈希索引，InnoDB存储的锁信息，数据字典信息等。**
 
-**不能简单的认为，缓冲池只是缓冲索引和数据页。**
+**不能简单的认为，缓冲池只是缓冲索引和数据页。它们只是占内存缓冲池很大的一部分而已**
 
 
 
-InnoDB 中的数据访问是以 Page 为单位的，每个 Page 的大小默认为 16KB，Buffer Pool 是用来管理和缓存这些 Page 的。
+> 在 Linux 中，操作系统以页为单位管理内存，无论是将磁盘中的数据加载到内存中，还是将内存中的数据写回磁盘，操作系统都会以页面为单位进行操作。
+>
+> 哪怕我们只向磁盘中写入一个字节的数据，我们也需要将整个页面中的全部数据刷入磁盘中。
+>
+> 在操作系统层面，每个进程都有自己独立的地址空间，看到的都是操作系统虚拟出来的地址空间，虚拟地址最终还是要落在实际内存的物理地址上进行操作的。
+>
+> 操作系统就会通过页表的机制来实现进程的虚拟地址到物理地址。其中每一页的大小都是固定的。
+>
+> ```shell
+> ####X86：
+> [root@ens8 ~]# getconf PAGESIZE
+> 4096
+> ####ARM：
+> root@ens8ARM:~# getconf PAGESIZE
+> 65536
+> ```
+>
+> 
+>
+> Linux 同时支持正常大小的内存页和大内存页（Huge Page）
+>
+> **绝大多数处理器上的内存页（page）的默认大小都是 4KB**，虽然部分处理器会使用 8KB、16KB 或者 64KB 作为默认的页面大小，但是 4KB 的页面仍然是操作系统默认内存页配置的主流；
+>
+> [为什么 Linux 默认页大小是 4KB](https://draveness.me/whys-the-design-linux-default-page/) 
+
+
+
+innodb_page_size 作为 innodb 和 OS 交互单位。文件系统对文件的 buffer IO，也是 page 为单位进行处理的。
+
+InnoDB 缓冲池中的数据访问是以 Page 为单位的，每个 Page 的大小默认为 16KB，Buffer Pool 是用来管理和缓存这些 Page 的。
+
+
+
+#### 内存缓冲池相关参数配置
+
+```shell
+# 内存缓冲池总大小，默认是128M，应当适当设置调大buffer_pool_size,一般设置为服务器内存60%。通常实际占用的内存会比配置的还要大10%
+# MySQL5.7.5之后可以动态调整。在调整innodb_buffer_pool_size 期间，用户的请求将会阻塞，直到调整完毕，所以请勿在白天调整，在凌晨3-4点低峰期调整。
+innodb_buffer_pool_size=8G 
+# 内存缓冲池实例数，默认是1，通过将buffer pool 分成多个区，每个区用独立的锁保护，这样就减少了访问buffer_pool时需要上锁的粒度，以提高并发能力和性能。
+innodb_buffer_pool_instances=16
+# innodb页大小，默认是16KB，一般设置为16KB或64KB
+innodb_page_size=16KB
+# 在调整内存缓冲池总大小时，内部把数据页移动到一个新的位置，单位是块。如果想增加移动的速度，需要调整innodb_buffer_pool_chunk_size参数的大小，默认是128M。
+# 缓冲池配置时的基本单位，以块的形式配置，指明块大小。
+# innodb_buffer_pool_size=innodb_buffer_pool_chunk_size * innodb_buffer_pool_instances * n 
+innodb_buffer_pool_chunk_size=128MB
+
+```
 
 
 
@@ -32,9 +122,13 @@ InnoDB 中的数据访问是以 Page 为单位的，每个 Page 的大小默认�
 
 ### 什么是 LRU 算法
 
-就是一种缓存淘汰策略。
+LRU 就是一种缓存淘汰策略。
 
-计算机的缓存容量有限，如果缓存满了就要删除一些内容，给新内容腾位置。但问题是，删除哪些内容呢？我们肯定希望删掉哪些没什么用的缓存，而把有用的数据继续留在缓存里，方便之后继续使用。那么，什么样的数据，我们判定为「有用的」的数据呢？
+一般计算机内存容量有限，操作系统分配给 MySQL 的内存缓存池容量自然也有限，如果缓存池满了就要删除一些内容，给新内容腾位置。
+
+但问题是，删除哪些内容呢？我们肯定希望删掉哪些没什么用的缓存，而把有用的数据继续留在缓存里，方便之后继续使用。
+
+那么，什么样的数据，我们判定为「有用的」的数据呢？
 
 LRU 缓存淘汰算法就是一种常用策略。LRU 的全称是 Least Recently Used，也就是说我们认为最近使用过的数据应该是是「有用的」，很久都没用过的数据应该是无用的，内存满了就优先删那些很久没用过的数据。
 
@@ -46,7 +140,7 @@ LRU 缓存淘汰算法就是一种常用策略。LRU 的全称是 Least Recently
 
 通常，数据库中的缓冲池是通过 LRU (Latest Recent Used) 算法来管理的，即最频繁使用的页在 LRU 最前端。
 
-
+但是 MySQL InnoDB 对传统的 LRU 算法做了一些优化。
 
 在 buffer pool 中的的数据页可以认为是一个 LIST 列表，分为两个子列表 （New Sublist） （ Old Sublist）
 
@@ -75,25 +169,42 @@ innodb_old_blocks_pct=37
 
 ![](../resources/InnoDB-buffer-pool.png)
 
+
+
+
+
 MySQL默认在InnoDB缓冲池（而不是整个缓冲池）中仅保留最频繁访问页的25%  。
 
 在多数使用场景下，合理的选择是：保留最有用的数据页，比加载所有的页(很多页可能在后续的工作中并没有访问到)在缓冲池中要更快。
 
 
 
-### **缓冲池相关参数**
-
 ```shell
-# 缓冲池实例数量，默认为1，不可以动态调整
-innodb_buffer_pool_instances=1
-# 缓冲池总大小，默认是128MB，一般设置为物理内存的70%左右。MySQL5.7.5之后可以动态调整，不要在业务繁忙的时候进行动态调整。
-innodb_buffer_pool_size=134217728
-# 缓冲池配置时的基本单位，以块的形式配置，指明块大小。
-# innodb_buffer_pool_size=innodb_buffer_pool_chunk_size * innodb_buffer_pool_instances * n 
-innodb_buffer_pool_chunk_size=128M # 默认内存块是128M，可以以1MB为单位(1048576字节)增加或减少
+# INFORMATION_SCHEMA中有几个缓冲池表提供有关InnoDB缓冲池中页面的缓冲池状态信息和元数据。
 
+############ 查询INNODB_BUFFER_PAGE表可能会影响性能。 除非您了解性能影响并确定其可接受，否则请勿在生产系统上查询此表。 为避免影响生产系统的性能，请重现要调查的问题并在测试实例上查询缓冲池统计信息。
 
+mysql> SHOW TABLES FROM INFORMATION_SCHEMA LIKE 'INNODB_BUFFER%';
++-----------------------------------------------+
+| Tables_in_INFORMATION_SCHEMA (INNODB_BUFFER%) |
++-----------------------------------------------+
+| INNODB_BUFFER_PAGE_LRU                        |
+| INNODB_BUFFER_PAGE                            |
+| INNODB_BUFFER_POOL_STATS                      |
++-----------------------------------------------+
+
+# INNODB_BUFFER_PAGE：保存InnoDB缓冲池中每个页面的信息。
+
+# INNODB_BUFFER_PAGE_LRU：保存有关InnoDB缓冲池中页面的信息，特别是它们在LRU列表中的排序方式，确定哪些页面在缓冲池变满时从缓冲池中逐出。 INNODB_BUFFER_PAGE_LRU表与INNODB_BUFFER_PAGE表具有相同的列。
+# 但INNODB_BUFFER_PAGE_LRU表具有LRU_POSITION列而不是BLOCK_ID列。
+# INNODB_BUFFER_POOL_STATS：提供缓冲池状态信息。许多相同的信息由SHOW ENGINE INNODB STATUS输出提供，或者可以使用InnoDB缓冲池服务器状态变量获得。
 ```
+
+
+
+
+
+
 
 ### 缓冲池预热
 
@@ -107,15 +218,13 @@ innodb_buffer_pool_chunk_size=128M # 默认内存块是128M，可以以1MB为单
 
 
 
-在生产中，重启MySQL后，会发现一段时间内SQL性能变差，然后最终恢复到原有性能。
+在生产中，重启 MySQL 后，会发现一段时间内 SQL 性能变差，然后最终恢复到原有性能。
 
-这是因为MySQL经常操作的热点数据都已经缓存到 InnoDB Buffer Pool 中。
+这是因为 MySQL 已经经常操作的热点数据都已经缓存到 InnoDB Buffer Pool 中。
 
 重启后。需要将热点数据从磁盘中逐渐缓存到 InnoDB Buffer Pool 中，从磁盘读取数据自然没有从内存读取数据快。
 
-
-
-MySQL重启后，将热点数据从磁盘逐渐缓存到 InnoDB Buffer Pool 的过程称为预热（warmup）。
+**MySQL 重启后，将热点数据从磁盘逐渐缓存到 InnoDB Buffer Pool 的过程称为预热（warmup）。**
 
 让应用系统自身慢慢通过SQL给 InnoDB Buffer Pool 预热成本很高，如果遇到高峰期极有可能带来一场性能灾难，业务卡顿不能顺利运营。
 
@@ -126,7 +235,16 @@ MySQL重启后，将热点数据从磁盘逐渐缓存到 InnoDB Buffer Pool 的�
 - innodb_buffer_pool_dump_at_shutdown 
 -  innodb_buffer_pool_load_at_startup 
 
-这两个参数控制了预热，不过默认都是关闭的，需要开启。MySQL 5.7则是默认开启。
+这两个参数控制了预热，不过默认都是关闭的，需要开启。MySQL 5.7 则是默认开启。
+
+
+
+```shell
+# 
+SET GLOBAL innodb_buffer_pool_dump_now=ON;
+```
+
+
 
 
 
