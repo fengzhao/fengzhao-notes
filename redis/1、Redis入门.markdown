@@ -1928,11 +1928,11 @@ redis的哨兵(sentinel) 系统用于管理多个 redis 服务器组，该系统
 
 **Sentinel支持集群**（可以部署在多台机器上，也可以在一台物理机上通过多端口实现伪集群部署）
 
-很显然，只使用单个sentinel进程来监控redis集群是不可靠的，当sentinel进程宕掉后
+很显然，只使用单个 sentinel 进程来监控 redis 集群是不可靠的，当 sentinel 进程宕掉后
 
-(sentinel本身也有单点问题，single-point-of-failure) 整个集群系统将无法按照预期的方式运行。所以有必要将sentinel集群，这样有几个好处：
+(sentinel 本身也有单点问题，single-point-of-failure) 整个集群系统将无法按照预期的方式运行。所以有必要将 sentinel 集群，这样有几个好处：
 
-1）即使有一些sentinel进程宕掉了，依然可以进行redis集群的主备切换；
+1）即使有一些 sentinel 进程宕掉了，依然可以进行 redis 集群的主备切换；
 
 2）如果只有一个sentinel进程，如果这个进程运行出错，或者是网络堵塞，那么将无法实现redis集群的主备切换（单点问题）;
 
