@@ -1855,7 +1855,9 @@ redis 哨兵（sentinel ）也是企业场景中最常见的高可用方案。�
 
 redis-sentinel 本身也是一个独立运行的进程，它能监控多个 master-slave 集群，发现 master 宕机后能进行自动切换。
 
-当一个集群中的 master 失效之后，sentinel 可以选举出一个新的 master 用于自动接替 master 的工作，集群中的其他 redis 服务器自动指向新的 master 同步数据。
+当一个集群中的 master 失效之后，sentinel 可以选举出一个新的 master 用于自动接替 master 的工作。
+
+集群中的其他 redis 服务器自动指向新的 master 同步数据。
 
 一般建议 sentinel 采取奇数台，防止某一台 sentinel 无法连接到 master 导致误切换。其结构如下:
 
@@ -1867,11 +1869,17 @@ redis-sentinel 本身也是一个独立运行的进程，它能监控多个 mast
 
 
 
-**哨兵(sentinel) 是一个分布式系统，你可以在一个架构中运行多个哨兵(sentinel) 进程。**这些进程使用流言协议(gossip protocols)来接收关于Master 是否下线的信息。
+**哨兵(sentinel) 是一个分布式系统，你可以在一个架构中运行多个哨兵(sentinel) 进程。**
+
+这些进程使用流言协议(gossip protocols)来接收关于Master 是否下线的信息。
+
+
 
 **Sentinel 状态持久化**
 
-snetinel 的状态会被持久化地写入sentinel 的配置文件中。每次当收到一个新的配置时，或者新创建一个配置时，配置会被持久化到硬盘中，并带上配置的版本戳。
+snetinel 的状态会被持久化地写入sentinel 的配置文件中。
+
+每次当收到一个新的配置时，或者新创建一个配置时，配置会被持久化到硬盘中，并带上配置的版本戳。
 
 **这意味着，可以安全的停止和重启sentinel进程。**
 
@@ -1902,11 +1910,19 @@ redis的哨兵(sentinel) 系统用于管理多个 redis 服务器组，该系统
 
 **sentinel在内部有3个定时任务**
 
-- 每10秒每个sentinel会对master和slave执行info命令，这个任务达到两个目的：
+- 每10秒对每个sentinel会对master和slave执行info命令，这个任务达到两个目的：
   - a）发现slave节点
   - b）确认主从关系
 - 每2秒每个sentinel通过master节点的channel交换信息（pub/sub）。master节点上有一个发布订阅的频道(__sentinel__:hello)。sentinel节点通过__sentinel__:hello频道进行信息交换(对节点的"看法"和自身的信息)，达成共识。
 - 每1秒每个 sentinel 对其他 sentinel 和 redis 节点执行 ping 操作（相互监控），这个其实是一个心跳检测，是失败判定的依据。
+
+
+
+**主观下线**：仅哨兵集群中的一个哨兵进程或少数哨兵进程认为实例下线。
+
+**客观下线**：**不但哨兵自己认为节点宕机，而且该哨兵与其他哨兵沟通后，达到一定数量的哨兵都认为实例下线。**
+
+这里的「一定数量」是一个法定数量（Quorum），是由哨兵监控配置决定的，解释一下该配置：
 
 
 
@@ -2729,3 +2745,27 @@ cp utils/redis_init_script
 
 
 
+# redis 三节点-sentinel部署
+
+
+
+
+
+
+
+**一主二从三哨兵**
+
+redis 哨兵集群最少要三个节点。
+
+
+
+- 哨兵进程的可执行文件，编译安装后的 redis-sentinel 。一般位于 /usr/local/bin/redis-sentinel
+- 哨兵配置文件，位于redis解压根目录下 redis.conf 。/usr/local/src/redis-6.0.5/sentinel.conf
+
+
+
+**每一个哨兵**都可以去**监控多个master-slaves的主从架构。**
+
+因为生产环境一般会 **部署多个master-slaves的redis主从集群。相同的一套哨兵集群，可以去** 监控不同的多个redis主从集群**。**
+
+哨兵默认是用26279端口，默认不能跟其他集群在指定端口联通，只能在本地访问。
