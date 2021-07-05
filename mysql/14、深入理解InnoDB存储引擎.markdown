@@ -177,13 +177,25 @@ LRU 的主要衡量指标是**使用的时间**。附加指标是**使用的次�
 
 
 
+#### LRU 的实现
+
+- **实现 LRU 缓存的常用方法是使用固定长度的队列。实现 LRU 的关键是将所有最近使用的数据放在队列的开头。**
+- **每次有新数据插入之前，我们检查队列是否已满。如果队列已满，我们将删除其最后一个元素，并将新节点插入队列的开头。**
+- **如果队列未满，我们只需将数据添加到队列的开头。**
+
+
+
+在一些大厂面试中，经常会要求手写 LRU 算法。
+
+
+
+
+
 ### LRU List
 
 通常，数据库中的缓冲池是通过 LRU (Latest Recent Used) 算法来管理的，即最频繁使用的页在 LRU 最前端。
 
-但是 MySQL InnoDB 对传统的 LRU 算法做了一些优化。
-
-在 buffer pool 中的的数据页可以认为是一个 LIST 列表，分为两个子列表 （New Sublist） （ Old Sublist）
+但是 MySQL InnoDB 对传统的 LRU 算法做了一些优化。在 buffer pool 中的的数据页可以认为是一个 LIST 列表，分为两个子列表 （New Sublist） （ Old Sublist）
 
 ```shell
 # 这个参数控制着 New Sublist 和 Old Sublist 的比例 ，New Sublist占5/8，Old Sublist占3/8
@@ -243,35 +255,114 @@ mysql> SHOW TABLES FROM INFORMATION_SCHEMA LIKE 'INNODB_BUFFER%';
 
 
 
+### 使用InnoDB标准监视器监视缓冲池
 
+`InnoDB`可以使用访问的标准监视器输出， [`SHOW ENGINE INNODB STATUS`](https://dev.mysql.com/doc/refman/5.7/en/innodb-standard-monitor.html)提供有关缓冲池操作的度量。
+
+缓冲池度量标准位于`BUFFER POOL AND MEMORY`“ `InnoDB`标准监视器”输出中的部分，其输出类似于以下内容：
+
+```
+----------------------
+BUFFER POOL AND MEMORY
+----------------------
+Total large memory allocated 2198863872
+Dictionary memory allocated 776332
+Buffer pool size   131072
+Free buffers       124908
+Database pages     5720
+Old database pages 2071
+Modified db pages  910
+Pending reads 0
+Pending writes: LRU 0, flush list 0, single page 0
+Pages made young 4, not young 0
+0.10 youngs/s, 0.00 non-youngs/s
+Pages read 197, created 5523, written 5060
+0.00 reads/s, 190.89 creates/s, 244.94 writes/s
+Buffer pool hit rate 1000 / 1000, young-making rate 0 / 1000 not
+0 / 1000
+Pages read ahead 0.00/s, evicted without access 0.00/s, Random read
+ahead 0.00/s
+LRU len: 5720, unzip_LRU len: 0
+I/O sum[0]:cur[0], unzip sum[0]:cur[0]
+```
+
+
+
+下表描述了`InnoDB`标准监视器报告的缓冲池度量标准
+
+
+
+| 名称                          | 描述                                                         |
+| ----------------------------- | ------------------------------------------------------------ |
+| ***Total memory allocated***  | ***为缓冲池分配的总内存（以字节为单位）***                   |
+| Dictionary memory allocated   | 为`InnoDB`数据字典分配的总内存，以字节为单位                 |
+| ***Buffer pool size***        | ***分配给缓冲池的页面总大小***                               |
+| ***Free buffers***            | ***缓冲池空闲列表的页面总大小***                             |
+| ***Database pages***          | ***缓冲池LRU列表的页面总大小***                              |
+| ***Old database pages***      | ***缓冲池旧LRU子列表的页面总大小***                          |
+| ***Modified db pages***       | ***缓冲池中当前修改的页面数***                               |
+| Pending reads                 | 等待读入缓冲池的缓冲池页面数                                 |
+| Pending writes LRU            | 从LRU列表的底部开始写入的缓冲池中的旧脏页数                  |
+| Pending writes flush list     | 检查点期间要刷新的缓冲池页面数                               |
+| Pending writes single page    | 缓冲池中暂挂的独立页面写入数                                 |
+| Pages made young              | 缓冲池LRU列表中变年轻的页面总数（已移至“ new ”页面的子列表的开头） |
+| Pages made not young          | 缓冲池LRU列表中没有年轻的页面总数（保留在“ old ”子列表中但没有年轻的页面） |
+| ***youngs/s***                | ***每秒平均访问缓冲池LRU列表中的旧页面所导致的页面年轻***    |
+| ***non-youngs/s***            | ***每秒平均访问缓冲池LRU列表中的旧页面导致的页面不年轻***    |
+| Pages read                    | 从缓冲池读取的页面总数                                       |
+| Pages created                 | 在缓冲池中创建的页面总数                                     |
+| Pages written                 | 从缓冲池写入的页面总数                                       |
+| reads/s                       | 每秒平均每秒读取的缓冲池页面数                               |
+| creates/s                     | 每秒平均创建的缓冲池页面的每秒数量                           |
+| writes/s                      | 每秒平均缓冲池页面写入数                                     |
+| ***Buffer pool hit rate***    | ***从缓冲池内存与磁盘存储读取的页面的缓冲池页面命中率***     |
+| ***young-making rate***       | ***页面访问的平均命中率使页面更年轻***                       |
+| ***not (young-making rate)*** | ***页面访问未使页面变年轻的平均命中率***                     |
+| Pages read ahead              | 预读操作的每秒平均数                                         |
+| Pages evicted without access  | 每秒从缓冲池访问而未访问的页面的平均值                       |
+| Random read ahead             | 随机预读操作的每秒平均数                                     |
+| LRU len                       | 缓冲池LRU列表的页面总大小                                    |
+| unzip_LRU len                 | 缓冲池unzip_LRU列表的页面总大小                              |
+| I/O sum                       | 最近50秒内访问的缓冲池LRU列表页面的总数                      |
+| I/O cur                       | 已访问的缓冲池LRU列表页面的总数                              |
+| I/O unzip sum                 | 已访问的缓冲池unzip_LRU列表页面的总数                        |
+| I/O unzip cur                 | 已访问的缓冲池unzip_LRU列表页面的总数                        |
 
 
 
 ### 缓冲池预热
 
-
-
-**缓冲池中的数据**
-
-具体来看，缓冲池中的页类型有：数据页，索引页，undo页，插入缓冲，自适应哈希索引，InnoDB存储的锁信息，数据字典信息等。
-
-不能简单的认为，缓冲池只是缓冲索引和数据页。
-
-
+https://dev.mysql.com/doc/refman/8.0/en/innodb-preload-buffer-pool.html
 
 在生产中，重启 MySQL 后，会发现一段时间内 SQL 性能变差，然后最终恢复到原有性能。
 
-这是因为 MySQL 已经经常操作的热点数据都已经缓存到 InnoDB Buffer Pool 中。
+这是因为 MySQL 已经经常操作的热点数据都已经缓存到 InnoDB Buffer Pool 缓冲池中。
 
-重启后。需要将热点数据从磁盘中逐渐缓存到 InnoDB Buffer Pool 中，从磁盘读取数据自然没有从内存读取数据快。
+MySQL 进程重启后，它在内存中的数据自然就释放了。通过业务的访问才会逐步将热点数据从磁盘缓存到 InnoDB Buffer Pool 中，从磁盘读取数据自然没有从内存读取数据快。
 
-**MySQL 重启后，将热点数据从磁盘逐渐缓存到 InnoDB Buffer Pool 的过程称为预热（warmup）。**
+**MySQL 重启后，将热点数据从磁盘逐渐缓存到 InnoDB Buffer Pool 的过程称为预热（官方文档称之为warmup）。**
 
 让应用系统自身慢慢通过SQL给 InnoDB Buffer Pool 预热成本很高，如果遇到高峰期极有可能带来一场性能灾难，业务卡顿不能顺利运营。
 
 
 
-为了避免这种情况发生，MySQL 5.6 引入了数据预热机制：
+为了避免这种情况发生，MySQL 5.6 引入了数据预热机制，在停止数据库的时候，把内存中的热点数据dump到磁盘文件中，启动时，直接把热点数据从磁盘加载回内存中。
+
+**需要注意的是，对于较大内存的数据库来说，配置这种预热机制，会让关闭数据库的时间非常长。同样启动过程也会延长。**
+
+```toml
+# 关闭数据库时是否保留当前的缓冲池的状态到磁盘中，MySQL5.7之后默认开启
+innodb_buffer_pool_dump_at_shutdown=on
+# 保留内存缓冲池中数据的比例，默认是25%
+innodb_buffer_pool_dump_pct=25
+# 缓冲池数据dump到磁盘中的文件名称，默认是ib_buffer_pool，一般放在
+innodb_buffer_pool_filename=ib_buffer_pool
+
+innodb_buffer_pool_load_at_startup=on
+
+```
+
+
 
 - innodb_buffer_pool_dump_at_shutdown 
 -  innodb_buffer_pool_load_at_startup 
