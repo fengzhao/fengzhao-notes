@@ -8,11 +8,11 @@
 
 ### 1.1、二进制
 
-​	binary 。计算机底层存储数据只是一大堆二进制的0和1
+binary 。计算机底层存储数据只是一大堆二进制的0和1。
 
 ### 1.2、字符
 
-​	character 。现在有各种各样的字符，包括英文字母，英文数字，中文，emoji 等等。
+character 。现在有各种各样的字符，包括英文字母，英文数字，中文，emoji 等等。
 
 ### 1.3、字符集
 
@@ -22,9 +22,9 @@ character set 。想要把各种人类可以理解的字符存储到计算机中
 
 MySQL中所支持的字符集存在 `information_schema.CHARACTER_SETS` 表中。
 
+utf8 是 MySQL 中的一种字符集，只支持最长三个字节的 UTF-8 字符，也就是 Unicode 中的基本多文本平面。
+
 其中 utf8mb4 字符集兼容性最好，它可以存各种语言的字符，包括 emoji 表情等。一般都可以直接使用 utf8mb4  字符集。
-
-
 
 ```shell
 CREATE TABLE `article` (
@@ -46,9 +46,9 @@ INSERT INTO article (title) VALUES ('😄');
 
 **MySQL中常见的字符集**
 
-- utf8mb4       **在 MySQL 中，uft8mb4 字符集就是国际上的 `UTF-8`，最多每字符最多占四个字节**   
+- utf8mb4         **在 MySQL 中，uft8mb4 字符集就是国际上的 `UTF-8`，最多每字符最多占四个字节。**   
 
-- gbk/gb2312
+- gbk/gb2312   
 
  
 
@@ -58,7 +58,7 @@ INSERT INTO article (title) VALUES ('😄');
 
 collation 。检验规则，又称排序规则，是用于比较字符和排序的一套规则，即字符的排序规则。比如有的规则区分大小写，有的则无视。
 
-如果指定“不区分大小写”，那么a和A，e和E就是等价的。
+如果指定校验规则为"不区分大小写"，那么a和A，e和E就是等价的。
 
 世界上的文字很多，所以才会有“不区分音调”的要求，这时候e、ē、é、ě、è就是等价的。
 
