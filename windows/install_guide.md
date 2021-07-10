@@ -246,6 +246,10 @@ Win PE 全称叫做 Windows 预安装系统，是 Windows 系统运行所必须�
 
 
 
+https://hikaripe-sc.hikaricalyx.com/chapter1
+
+
+
 
 ## 9、激活码
 
