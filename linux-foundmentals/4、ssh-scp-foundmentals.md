@@ -1074,3 +1074,24 @@ yes | pv | ssh remote_host "cat >/dev/null"
 
 ```
 
+
+
+# TCP Wrappers 访问控制
+
+
+
+TCP Wrappers 像一个防护罩一样，保护着TCP服务程序，它代为监听TCP服务程序的端口，为其增加了一个安全检测过程。
+
+外来的连接请求必须先通过这层安全检测，获得许可后才能访问真正的服务程序。大多数 Linux 发行版，TCP Wrappers 是默认提供的功能。
+
+tcp wrapper是Wietse Venema开发的一个开源软件。它是一个**用来分析TCP/IP封包的软件**，类似的IP封包软件还有iptables。Linux默认安装了tcp_wrapper。
+
+作为一个安全的系统，Linux本身有两层安全防火墙，通过IP过滤机制的iptables实现第一层防护。
+
+iptables防火墙通过直观的监视系统的运行状况，阻挡网络中的一些恶意攻击，保护整个系统正常运行免遭攻击和破坏。
+
+如果通过了第一层防护，那么下一层防护就是tcp_wrapper了。
+
+**通过tcp_wrapper可以实现对系统中提供的某些服务的开放和关闭、允许及禁止，从而更有效的保证系统安全运行。**
+
+使用tcp_wrapper的功能仅需要两个配置文件：/etc/hosts.allow 和/etc/hosts.deny。
