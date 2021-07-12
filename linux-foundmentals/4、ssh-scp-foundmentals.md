@@ -1086,6 +1086,8 @@ TCP Wrappers 像一个防护罩一样，保护着TCP服务程序，它代为监�
 
 tcp wrapper是Wietse Venema开发的一个开源软件。它是一个**用来分析TCP/IP封包的软件**，类似的IP封包软件还有iptables。Linux默认安装了tcp_wrapper。
 
+
+
 作为一个安全的系统，Linux本身有两层安全防火墙，通过IP过滤机制的iptables实现第一层防护。
 
 iptables防火墙通过直观的监视系统的运行状况，阻挡网络中的一些恶意攻击，保护整个系统正常运行免遭攻击和破坏。
@@ -1095,3 +1097,36 @@ iptables防火墙通过直观的监视系统的运行状况，阻挡网络中的
 **通过tcp_wrapper可以实现对系统中提供的某些服务的开放和关闭、允许及禁止，从而更有效的保证系统安全运行。**
 
 使用tcp_wrapper的功能仅需要两个配置文件：/etc/hosts.allow 和/etc/hosts.deny。
+
+**如何界定特殊服务: 凡是调用了libwrap.so库的文件都受TCP Wrapper控制**
+
+
+
+判断方式：
+
+- 查看服务命令所在路径
+
+  - 拿 ssh 为例
+
+    ```shell
+    [root@centos7 ~]# which sshd
+    ```
+
+- 查看指定命令时是否调用libwrap.so文件
+
+  - ```shell
+    [root@centos7 ~]# ldd /usr/sbin/sshd | grep libwrap.so
+    libwrap.so.0 => /lib64/libwrap.so.0 (0x00007fbfcf5c0000)
+    ```
+
+**ldd是用来静态查看服务启动时所调用的库**
+
+
+
+**特性**
+
+- 工作在第四层（传输层）的TCP协议
+- 对有状态连接的特定服务进行安全检测并实现访问控制
+- 以库文件形式实现
+- 某进程是否接受libwrap的控制取决于发起此进程的程序在编译时是否针对libwrap进行编译的
+- 判断sshd服务是否支持tcp_wrapper：
