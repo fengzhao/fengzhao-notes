@@ -28,12 +28,13 @@ sshfs  的代码仓库地址：https://github.com/libfuse/sshfs
 
 ```shell
 # 
+# 将远程主机192.168.0.105的/data 挂载到当前系统下的/data_tmp/ (一般要先在当前系统下建一个空目录)
+sshfs root@192.168.0.105: /mnt
 
 
 sshfs -o rw,default_permissions,allow_other,uid=1000,gid=100,reconnect,ServerAliveInterval=15,ServerAliveCountMax=3  
 
-# 将远程主机192.168.0.105的/data 挂载到当前系统下的/data_tmp/ (一般先在当前系统下建一个空目录)
-sshfs root@192.168.0.105: /mnt
+
 
 test@192.168.0.114:/home/test/      /mnt
 
