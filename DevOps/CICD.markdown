@@ -66,9 +66,19 @@ GitLab CI/CD 由一个名为 .gitlab-ci.yml 的文件进行配置，改文件位
 
 
 
+- Continuous Integration (CI)       持续集成
+- Continuous Delivery (CD)           持续交付
+- Continuous Deployment (CD)   持续部署
+
+
+
+
+
 ## gitlab CICD 基本概念
 
+CI/CD 是一种通过在应用开发阶段引入[自动化](https://www.redhat.com/zh/topics/automation/whats-it-automation)来频繁向客户交付应用的方法。
 
+CI/CD 的核心概念是持续集成、[持续交付](https://www.redhat.com/zh/topics/devops/what-is-continuous-delivery)和持续部署。作为一个面向开发和运营团队的解决方案，CI/CD 主要针对在集成新代码时所引发的问题（亦称：“[集成地狱](https://www.solutionsiq.com/agile-glossary/integration-hell/)”）。
 
 通过软件开发的持续方法，您可以持续构建、测试和部署迭代代码更改。
 
