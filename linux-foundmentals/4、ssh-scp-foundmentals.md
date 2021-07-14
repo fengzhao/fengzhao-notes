@@ -686,9 +686,13 @@ sftp 是 Secure FileTransferProtocol 的缩写，安全文件传送协议。可�
 
 sftp 与 ftp 有着几乎一样的语法和功能。
 
-SFTP 为 SSH 的一部分，是一种服务器之间文件传输的安全方式。SCP 和 SFTP 的共同之处在于「使用SSH将文件加密才传输的」
+SFTP 为 SSH 的一部分，是一种服务器之间文件传输的安全方式。SCP 和 SFTP 的共同之处在于「使用SSH将文件加密才传输的」。
 
-使用「WinSCP」或者「FileZilla」之类的客户端，还可以和 Windows 之间进行文件传输。
+由于这种传输方式使用了加密/解密技术，所以传输效率比普通的 FTP 要低得多，如果您对网络安全性要求更高时，可以使用 SFTP 代替 FTP。
+
+
+
+可以使用「WinSCP」或者「FileZilla」之类的客户端，还可以和 Windows 之间进行文件传输。
 
 
 
@@ -696,17 +700,17 @@ SFTP 为 SSH 的一部分，是一种服务器之间文件传输的安全方式�
 
 在Ubuntu系统上开通 sftp 文件服务，允许某些用户上传及下载文件。但是这些用户只能使用 sftp 传输文件，不能使用 SSH 终端访问服务器。
 
-并且sftp不能访问系统文件。
+并且 sftp 不能访问系统文件。
 
-系统管理员则既能使用sftp传输文件，也能使用SSH远程管理服务器。
+系统管理员则既能使用 sftp 传输文件，也能使用 SSH 远程管理服务器。
 
-以下是将允许sftp-users用户组内的用户使用sftp，但不允许使用SSH Shell，且该组用户不能访问系统文件。
+以下是将允许 sftp-users 用户组内的用户使用 sftp，但不允许使用 SSH Shell，且该组用户不能访问系统文件。
 
-在sftp-users组内创建一个用户“sftp”。允许ssh-users用户组内的用户使用sftp以及SSH。系统管理员的账户名为bbc2005。
-
-
+在 sftp-users 组内创建一个用户 "sftp"。允许 ssh-users 用户组内的用户使用 sftp 以及 SSH。系统管理员的账户名为 bbc2005。
 
 
+
+https://www.cnblogs.com/binarylei/p/9201975.html
 
 
 
