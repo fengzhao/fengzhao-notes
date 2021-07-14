@@ -2,7 +2,7 @@
 
 
 
-sshfs 是基于 ssh 中的 sftp 的一个工具，用于挂载远端的文件系统到本地. 只要可以用 ssh 方式访问远端。
+sshfs 是基于 ssh 中的 sftp 的一个工具，用于挂载远端的文件系统到本地.。只要可以用 ssh 方式访问远端。
 
 那么就可以用 sshfs 这个工具把有权限的目录挂载到本地来。有点像远程挂载。
 
@@ -22,12 +22,20 @@ sshfs  的代码仓库地址：https://github.com/libfuse/sshfs
 
 #### sshfs的使用方法
 
-
+强烈建议使用普通用户来运行 sshfs 挂载。
 
 使用sshfs 命令进行挂载的格式就是:   **sshfs  -o  OPTION   LOGINID@HOST:/REMOTE_PATH     /LOCAL_PATH**
 
 ```shell
-sshfs -o rw,default_permissions,allow_other,uid=1000,gid=100,reconnect,ServerAliveInterval=15,ServerAliveCountMax=3  test@192.168.0.114:/home/test/      /mnt
+# 
+
+
+sshfs -o rw,default_permissions,allow_other,uid=1000,gid=100,reconnect,ServerAliveInterval=15,ServerAliveCountMax=3  
+
+# 将远程主机192.168.0.105的/data 挂载到当前系统下的/data_tmp/ (一般先在当前系统下建一个空目录)
+sshfs root@192.168.0.105: /mnt
+
+test@192.168.0.114:/home/test/      /mnt
 
 ```
 
