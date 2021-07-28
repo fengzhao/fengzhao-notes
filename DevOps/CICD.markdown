@@ -114,13 +114,13 @@ CI/CD 的核心概念是持续集成、[持续交付](https://www.redhat.com/zh/
 
 https://blinkfox.github.io/2018/11/22/ruan-jian-gong-ju/devops/gitlab-ci-jie-shao-he-shi-yong/
 
-.gitlab-ci.yml  是 gitlab 项目仓库中的文件，定义了一系列构建，测试，部署的脚本。
+.gitlab-ci.yml  是 gitlab 项目仓库根目录中的文件，定义了一系列构建，测试，部署的脚本。
 
 
 
 GitLab-Runner 就是一个用来执行.gitlab-ci.yml 脚本的工具，是 gitlab 官方用 go 写的一个项目。
 
-一般运行在单独的CICD专用的服务器上（**注意，跟gitlab server不是一台机器**）。
+一般运行在单独的CICD专用的服务器上（**注意，一般尽量要跟gitlab server不是一台机器**）。
 
 可以理解成，Runner 就像认真工作的工人，GitLab-CI 就是管理工人的中心，所有工人都要在 GitLab-CI 里面注册，并且表明自己是为哪个项目服务。
 
@@ -145,8 +145,6 @@ rpm -i gitlab-runner_<arch>.rpm
 
 # 二进制安装（Linux x86-64） 
 # https://docs.gitlab.com/runner/install/linux-manually.html
-
-
 sudo curl -L --output /usr/local/bin/gitlab-runner \
 	"https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-amd64"
 
@@ -155,34 +153,41 @@ sudo useradd --comment 'GitLab Runner' --create-home gitlab-runner --shell /bin/
 sudo gitlab-runner install --user=gitlab-runner --working-directory=/home/gitlab-runner
 sudo gitlab-runner start
 
+# 使用docker启动一个runner进程
+docker run -d --name gitlab-runner --restart always \
+     -v /srv/gitlab-runner/config:/etc/gitlab-runner \
+     -v /var/run/docker.sock:/var/run/docker.sock \
+     gitlab/gitlab-runner:latest
 
-# 注册服务
 
 
-#　配置文件
-/etc/gitlab-runner/config.toml　 # 以root身份运行服务时的配置文件
-~/.gitlab-runner/config.toml     # 以非root身份运行服务时的配置文件 
+
+
+# 注册gitlab-runner(其实就是让gitlab-runner和项目关联起来)
+# 指定gitlab地址，仓库token，cicid的运行时为docker，构建环境为go环境
+# 运行时环境可以是docker-ssh, parallels, shell, virtualbox, docker+machine, docker, ssh, docker-ssh+machine, kubernetes, custom
+sudo gitlab-runner register \
+  --non-interactive \
+  --url "https://gitlab.com/" \
+  --registration-token "PROJECT_REGISTRATION_TOKEN" \
+  --executor "docker" \
+  --docker-image golang:1.16.6-alpine \
+  --description "docker-runner" \
+  --tag-list "docker,aws" \
+  --run-untagged="true" \
+  --locked="false" \
+  --access-level="not_protected"
+
+
+docker exec -it  gitlab-runner 
+
+
+#　上面的注册其实会写到下面这些配置文件中
+/etc/gitlab-runner/config.toml　 # 以root身份运行gitlab-runner服务时的配置文件
+~/.gitlab-runner/config.toml     # 以非root身份运行gitlab-runner服务时的配置文件 
 ./config.toml                    # 项目配置文件 
 
 ```
-
-
-
-
-
-注册runner
-
-```shell
-
-
-sudo gitlab-runner register
-```
-
-
-
-
-
-
 
 
 
@@ -208,7 +213,92 @@ sudo gitlab-runner register
 
 
 
+## 配置`.gitlab-ci.yml`文件
 
+.gitlab-ci.yml 是在仓库项目根目录中的一个 yaml 格式的文件，它定义了cicd的主要任务。在这个文件中：
+
+- 定义了 runner 需要执行的步骤和任务顺序。
+- 当特定条件满足时，runner需要执行的任务。
+
+例如，你需要定义一个任务（当有提交到任意分支（非默认分支）时，执行一系列构建测试。当提交到默认分支时，执行构建测试并发布到项目测试环境中）
+
+```yaml
+build-job:
+  stage: build
+  script:
+    - echo "Hello, $GITLAB_USER_LOGIN!"
+
+test-job1:
+  stage: test
+  script:
+    - echo "This job tests something"
+
+test-job2:
+  stage: test
+  script:
+    - echo "This job tests something, but takes more time than test-job1."
+    - echo "After the echo commands complete, it runs the sleep command for 20 seconds"
+    - echo "which simulates a test that runs 20 seconds longer than test-job1"
+    - sleep 20
+
+deploy-prod:
+  stage: deploy
+  script:
+    - echo "This job deploys something from the $CI_COMMIT_BRANCH branch."
+```
+
+
+
+可以使用 CI Lint tool 检查器检查 .gitlab-ci.yml 文件格式。
+
+
+
+## CICD pipelines流水线
+
+pipeline流水线是CICD的顶层组件，流水线定义了如下：
+
+- jobs（任务），job定义了需要做什么，比如编译代码等。
+- stages（阶段），stages定义了什么时候执行job，比如执行test测试的job要在编译的job后面。
+
+job 是通过 runner 执行，多个job也可以在一个stage中并行执行（如果有足够多的runner）
+
+如果一个stage中的job都执行完成，流水线就会跳到下一个job。
+
+如果任意一个job失败，通常剩下的stage都不会执行。
+
+
+
+一个典型的流水线，通常由如下四个stage组成（按照顺序执行）：
+
+- build stage，有一个 compile job
+- test stage，有两个job：test1，test2
+- staging stage，一个job：deploy-to-stage（发布到测试环境）
+- production stage，一个job：deploy-to-prod（发布到生产环境）
+
+
+
+### 流水线类型
+
+- [Basic pipelines](https://docs.gitlab.com/ee/ci/pipelines/pipeline_architectures.html#basic-pipelines) 
+- [Directed Acyclic Graph Pipeline (DAG) pipelines](https://docs.gitlab.com/ee/ci/directed_acyclic_graph/index.html) 
+- [Multi-project pipelines](https://docs.gitlab.com/ee/ci/pipelines/multi_project_pipelines.html) 
+- [Parent-Child pipelines](https://docs.gitlab.com/ee/ci/pipelines/parent_child_pipelines.html) 
+- [Pipelines for Merge Requests](https://docs.gitlab.com/ee/ci/pipelines/merge_request_pipelines.html) 
+- [Pipelines for Merged Results](https://docs.gitlab.com/ee/ci/pipelines/pipelines_for_merged_results.html)
+- [Merge Trains](https://docs.gitlab.com/ee/ci/pipelines/merge_trains.html)
+
+
+
+### 计划流水线
+
+流水线通常是由外部条件触发的，比如一个分支被push到仓库。计划流水线就像定时任务一样，比如：
+
+- Every month on the 22nd for a certain branch.
+- Once every day
+
+
+
+触发器流水线
 
 
 
