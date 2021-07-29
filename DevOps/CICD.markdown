@@ -124,7 +124,7 @@ GitLab-Runner 就是一个用来执行.gitlab-ci.yml 脚本的工具，是 gitla
 
 可以理解成，Runner 就像认真工作的工人，GitLab-CI 就是管理工人的中心，所有工人都要在 GitLab-CI 里面注册，并且表明自己是为哪个项目服务。
 
-当相应的项目发生变化时，GitLab-CI 就会通知相应的工人执行对应的脚本。
+当相应的项目发生变化时，GitLab-CI 就会通知相应的 gitlab runner (工人) 执行对应的脚本任务。
 
 
 
@@ -247,17 +247,155 @@ deploy-prod:
     - echo "This job deploys something from the $CI_COMMIT_BRANCH branch."
 ```
 
-
+## .gitlab-ci.yml 语法检查
 
 可以使用 CI Lint tool 检查器检查 .gitlab-ci.yml 文件格式。
 
+GitLab CI / CD的每个实例都有一个称为Lint的嵌入式调试工具，该工具可以验证.gitlab-ci.yml文件的内容。您可以在ci/lint项目名称空间页面下找到Lint 。
+
+例如，https://gitlab.example.com/gitlab-org/project-123/-/ci/lint 
 
 
-## CICD pipelines流水线
+## .gitlab-ci.yml 文件参考
+
+使用GitLab自带的流水线，必须要定义流水线的内容，而定义内容的文件默认叫做.gitlab-ci.yml，使用yml的语法进行编写。
+目前任务关键词有28个，全局的关键词有10个，两者重叠的有很多。掌握这些关键词的用法，你可以编写逻辑严谨，易于扩展的流水线。
+
+
+
+
+
+**全局关键词**
+
+有些关键词不是在一个job中定义的，这些关键词控制着整个流水线的行为或者导入附加的流水线配置。
+
+- stages
+
+  stages 是流水线的阶段，主要是用于定义阶段（每个stages阶段里面有一组任务），在流水线的最顶层定义。
+
+  stages 定义的先后顺序决定了任务的先后顺序：
+
+  - 同一个stage中的job会并行执行。
+  - 后一个stage中的job会等前一个stage中的job全部执行成功后才继续执行。
+
+```yaml
+stages:
+  - build
+  - test
+  - deploy
+# 对于这样一个stage
+# 1.build这个stage里面的job会被并行执行
+# 2.如果build中的所有job执行成功，test中的job被并行执行
+# 3.如果test中的所有job执行成功，deploy中的job被并行执行
+# 4.如果deploy中的所有job执行成功，这个流水线被标记为passed
+
+# 如果任意一个job执行失败，流水线被标记为failed，后续stage中的job都不会执行，同一stage中的job不会被停止，会继续执行。
+# 如果流水线中没有定义stages，那么 build,test,depoly就是默认的stages
+# 如果定义了一个stage，没有job使用它，那么这个stage在流水线中是不可见的。
+```
+
+
+
+- workflow:rules
+
+  workflow 用于配置规则，来确认是否执行流水线，workflow 在流水线最顶层定义。
+
+  ```yaml
+  workflow:
+    # 规则一：
+    rules:
+      # if条件判断：如果提交信息带"draft"
+      - if: $CI_COMMIT_MESSAGE =~ /-draft$/
+      # 不执行流水线
+        when: never
+      # if判断：所有的push事件都会触发流水线执行，这个流水线是严格模式，只有这个规则才会执行
+      - if: '$CI_PIPELINE_SOURCE == "push"'
+  ```
+
+  ```yaml
+  workflow:
+    rules:
+      - if: '$CI_PIPELINE_SOURCE == "schedule"' # 计划流水线不执行
+        when: never
+      - if: '$CI_PIPELINE_SOURCE == "push"'     # push事件不执行
+        when: never
+      - when: always                            # 其他的事件都流水线
+      
+  ```
+
+- include
+
+  include 用于引进cicid配置文件外部的yaml配置。可以把长的 .gitlab-ci.yml 文件切割成多个文件来增加可读性，或者通过引用来避免多处重复写相同的配置。
+
+  ```yaml
+  include: 'configs/*.yml'
+  
+  include: 'configs/**.yml'
+  
+  include:
+    - local: '/templates/.gitlab-ci-template.yml'
+    
+  include: '.gitlab-ci-production.yml'
+  
+  include:
+    - project: 'my-group/my-project'
+      ref: main
+      file: '/templates/.gitlab-ci-template.yml
+      
+  include:
+    - remote: 'https://gitlab.com/example-project/-/raw/main/.gitlab-ci.yml'    
+  ```
+
+  
+
+
+
+- job
+
+  job 是流水线中的任务，一条流水线可以有多个任务。**如果一个job没有stage阶段属性，那么这个job的默认stage就是Test**
+
+- 
+
+  
+
+- script
+
+当你使用自己的runner时，每个runner**默认**每次只能同时执行一个任务，Job可以并行执行（如果job运行在不同的runer中）
+
+当然，也可以修改runner的concurrent属性大于1来设置一个runner并行执行多个job。
+
+
+
+**job关键词**
+script, after_script, allow_failure, artifacts, before_script, cache, coverage, dependencies, environment, except, extends, image, include, interruptible, only, pages, parallel, release, resource_group, retry, rules, services, stage, tags, timeout, trigger, variables, when
+
+最常任务中最常用的是这七个`script`，`artifacts`，`stage`， `when`，`tags`，`image`，`cache`，
+知道了这个七个关键词，一般的流水线随随便便拿下。
+
+任务要执行的shell脚本内容，内容会被runner执行，在这里，你不需要使用git clone ....克隆当前的项目，来进行操作，因为在流水线中，每一个的job的执行都会将项目下载，恢复缓存这些流程，不需要你再使用脚本恢复。你只需要在这里写你的项目安装，编译执行，如
+npm install 另外值得一提的是，脚本的工作目录就是当前项目的根目录，所有可以就像在本地开发一样。此外script可以是单行或者多行
+
+**stage**
+
+- 
+
+官方默认提供了五个阶段，按照先后顺序执行
+
+- .pre            pre 这个stage被保证为是第一个stage，最先执行
+- build
+- test
+- depoly
+- .post          .post 个stage被保证为是最后一个stage，最后执行 
+
+
+
+
+
+
 
 pipeline流水线是CICD的顶层组件，流水线定义了如下：
 
-- jobs（任务），job定义了需要做什么，比如编译代码等。
+- jobs（任务），job定义了需要做什么，比如编译代码等，任务是流水线的最基本的单位。
 - stages（阶段），stages定义了什么时候执行job，比如执行test测试的job要在编译的job后面。
 
 job 是通过 runner 执行，多个job也可以在一个stage中并行执行（如果有足够多的runner）
