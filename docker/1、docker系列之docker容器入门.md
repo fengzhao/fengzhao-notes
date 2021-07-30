@@ -685,6 +685,24 @@ cat /var/lib/docker/image/overlay2/repositories.json | jq
 
 
 
+#### 镜像是怎么存放在本地的
+
+当我们构建完一个镜像之后，镜像就存储在了我们 docker 本地存储目录，默认情况下为 `/var/lib/docker` 。
+
+
+
+#### 镜像是怎么搬运的
+
+当我们在本地构建完成一个镜像之后，如何传递给他人呢？
+
+这就涉及到镜像是怎么搬运的一些知识，搬运镜像就像我们在 GitHub 上搬运代码一样，docker 也有类似于 git clone 和 git push 的搬运方式。
+
+docker push 就和我们使用 git push 一样，将本地的镜像推送到一个称之为 registry 的镜像仓库，这个 registry 镜像仓库就像 GitHub 用来存放公共/私有的镜像，一个中心化的镜像仓库方便大家来进行交流和搬运镜像。
+
+docker pull 就像我们使用 git pull 一样，将远程的镜像拉拉取本地。
+
+
+
 
 
 ## docker 文件系统
@@ -702,8 +720,6 @@ docker 镜像分层，一个新的镜像层的建立，其实就是用上一层�
 ```shell
 
 # 默认地，当没有镜像和容器时，/var/lib/docker/overlay2/文件目录中是空的。仅有一个l目录，用于存放链接
-
-
 
 # 一开始overlay路径下为空，用docker pull命令下载一个由3层镜像层组成的docker镜像(ubuntu):
 root@fengzhao:~# docker pull ubuntu                                                                                        
