@@ -470,6 +470,12 @@ Jenkins 的特征：
 
 
 
+
+
+
+
+
+
 # 部署 GitLab
 
 
@@ -521,9 +527,7 @@ wget https://mirrors.tuna.tsinghua.edu.cn/gitlab-ce/debian/pool/buster/main/g/gi
 # https://www.cnblogs.com/hellxz/p/install_jenkins.html
 
 
-# centos7 
-
-# 安装 jenkins
+# centos7 安装 jenkins
 
 # 安装jdk1.8
 wget  https://repo.huaweicloud.com/java/jdk/8u181-b13/jdk-8u181-linux-x64.tar.gz
@@ -531,7 +535,7 @@ rpm -ivh https://repo.huaweicloud.com/java/jdk/8u181-b13/jdk-8u181-linux-x64.rpm
 yum -y install git
 
 
-# rpm 安装jenkins
+# rpm 方式安装jenkins
 sudo wget -O /etc/yum.repos.d/jenkins.repo  https://pkg.jenkins.io/redhat-stable/jenkins.repo
 sudo rpm --import https://pkg.jenkins.io/redhat-stable/jenkins.io.key
 sudo yum upgrade
@@ -543,7 +547,7 @@ http://mirrors.jenkins.io/
 # 清华大学jenkins镜像源
 https://mirrors.tuna.tsinghua.edu.cn/jenkins/
 
-# tomcat
+# tomcat方式安装Jenkins
 wget  https://mirrors.cnnic.cn/apache/tomcat/tomcat-9/v9.0.41/bin/apache-tomcat-9.0.41.tar.gz
 
 # jenkins-war包下载
@@ -564,11 +568,6 @@ http://mirrors.jenkins.io/redhat-stable/jenkins-2.235.3-1.1.noarch.rpm
 #　/var/log/jenkins/jenkins.log    　　　　Jenkins日志文件
 
 
-
-
-
-
-
 # jenkins插件安装
 # 插件下载地址为国内地址 
 
@@ -578,9 +577,9 @@ http://mirrors.jenkins.io/redhat-stable/jenkins-2.235.3-1.1.noarch.rpm
 
 # jenkins用户角色权限插件
 
-Role-Based 插件
+# Role-Based 插件
 
-#　修改权限策略为Role-Based，可以提升到更细致权限
+# 修改权限策略为Role-Based，可以提升到更细致权限
 
 # Global roles
 # Project roles
