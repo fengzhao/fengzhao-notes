@@ -97,7 +97,9 @@ Docker客户端（`docker`）是许多 Docker 用户与 Docker 交互的主要�
 
 #### Docker Registry
 
-Docker Registry 就是一个镜像商店，它里面可以包括各种镜像，可以分为私有仓库和公有仓库（其中 docker hub 最为出名，它是由 docker 公司开发，国内有阿里云等镜像市场）。我们常用的各种开源软件和运行时环境，基本上都可以在 registry 上找到 docker 镜像。
+Docker Registry 就是一个镜像商店，它里面可以包括各种镜像，可以分为私有仓库和公有仓库（其中 docker hub 最为出名，它是由 docker 公司开发，国内有阿里云等镜像市场）。
+
+我们常用的各种开源软件和运行时环境，基本上都可以在 registry 上找到 docker 镜像。
 
 一个 Docker Registry 中可以包含多个仓库（`Repository`）；每个仓库可以包含多个标签（`Tag`）；每个标签对应一个镜像。  
 
@@ -119,11 +121,25 @@ Docker Registry 就是一个镜像商店，它里面可以包括各种镜像，�
 
 
 
+
+
 > 常用的公共 docker registry 服务 
 >
 > https://cr.console.aliyun.com/
 >
 > https://hub.docker.com/
+>
+> https://quay.io/ （红帽® Quay 容器镜像仓库）
+
+
+
+#### 私有docker registry
+
+在企业内部，我们可以创建一个本地镜像仓库供企业内部使用。
+
+[`docker-registry`](https://docs.docker.com/registry/) 是官方提供的工具，可以用于构建私有的镜像仓库。
+
+
 
 #### Docker 对象
 
