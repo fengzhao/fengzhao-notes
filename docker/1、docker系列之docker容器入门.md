@@ -115,6 +115,22 @@ Docker Registry 就是一个镜像商店，它里面可以包括各种镜像，�
 
 如果忽略了标签，比如 `ubuntu`，那将视为 `ubuntu:latest`。
 
+```shell
+
+docker pull registry-1.docker.io/distribution/registry:2.1
+
+ docker run -d \
+  -e REGISTRY_HTTP_ADDR=0.0.0.0:5001 \
+  -p 5001:5001 \
+  --name registry-test \
+  -v /mnt/registry:/var/lib/registry \
+  registry-1.docker.io/distribution/registry:2.1
+  
+  
+
+https://hub.docker.com/r/joxit/docker-registry-ui
+```
+
 
 
 
