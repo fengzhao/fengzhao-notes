@@ -29,7 +29,9 @@
 
 
 
-在常见的企业上云等场景，通常会在公有云创建 vpc ，然后在 vpc 中创建 ecs 用于部署企业生产项目应用。如果企业内网与公有云 vpc 之间的网络打通。
+在常见的企业上云等场景，通常会在公有云创建 vpc ，然后在 vpc 中创建 ecs 用于部署企业生产项目应用。
+
+如果企业内网与公有云 vpc 之间的网络打通的需求。
 
 这时就可以借助 vpn 技术，给 vpc 内的一台 ecs 绑定弹性公网 ip ，部署 vpn 软件，企业运维人员就可以拨 vpn 连入 vpc 进行日常运维。
 
@@ -45,7 +47,7 @@
 
 
 
-我们使用[社区提供的万能脚本](https://github.com/Nyr/openvpn-install)来进行安装部署和配置：
+我们使用社区提供的[万能脚本](https://github.com/Nyr/openvpn-install)来进行安装部署和配置：
 
 ```shell
 wget https://git.io/vpn -O openvpn-install.sh && bash openvpn-install.sh
