@@ -132,7 +132,27 @@ GitLab-Runner 就是一个用来执行.gitlab-ci.yml 脚本的工具，是 gitla
 # gitlab runner 安装
 
 # 确定runner跟gitlab-server的版本号相同
- cat /opt/gitlab/embedded/service/gitlab-rails/VERSION
+cat /opt/gitlab/embedded/service/gitlab-rails/VERSION
+
+
+
+# 二进制安装（Linux x86-64） ，强烈建议
+# https://docs.gitlab.com/runner/install/linux-manually.html
+sudo curl -L --output /usr/local/bin/gitlab-runner \
+	"https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-amd64"
+
+sudo chmod +x /usr/local/bin/gitlab-runner
+
+sudo useradd --comment 'GitLab Runner' --create-home gitlab-runner --shell /bin/bash
+
+sudo gitlab-runner install --user=gitlab-runner --working-directory=/home/gitlab-runner
+
+sudo gitlab-runner start
+
+
+# ================================================
+# =========== 其他安装方式（不推荐) ==============
+# ================================================
 
 # ubuntu
 curl -LJO https://gitlab-runner-downloads.s3.amazonaws.com/latest/deb/gitlab-runner_amd64.deb
@@ -143,25 +163,12 @@ curl -LJO https://gitlab-runner-downloads.s3.amazonaws.com/latest/rpm/gitlab-run
 rpm -i gitlab-runner_<arch>.rpm
 
 
-# 二进制安装（Linux x86-64） 
-# https://docs.gitlab.com/runner/install/linux-manually.html
-sudo curl -L --output /usr/local/bin/gitlab-runner \
-	"https://gitlab-runner-downloads.s3.amazonaws.com/latest/binaries/gitlab-runner-linux-amd64"
-
-sudo chmod +x /usr/local/bin/gitlab-runner
-sudo useradd --comment 'GitLab Runner' --create-home gitlab-runner --shell /bin/bash
-sudo gitlab-runner install --user=gitlab-runner --working-directory=/home/gitlab-runner
-sudo gitlab-runner start
 
 # 使用docker启动一个runner进程
 docker run -d --name gitlab-runner --restart always \
      -v /srv/gitlab-runner/config:/etc/gitlab-runner \
      -v /var/run/docker.sock:/var/run/docker.sock \
      gitlab/gitlab-runner:latest
-
-
-
-
 
 # 注册gitlab-runner(其实就是让gitlab-runner和项目关联起来)
 # 指定gitlab地址，仓库token，cicid的运行时为docker，构建环境为go环境
@@ -179,7 +186,7 @@ sudo gitlab-runner register \
   --access-level="not_protected"
 
 
-docker exec -it  gitlab-runner 
+docker exec -it  gitlab-runner  register 
 
 
 #　上面的注册其实会写到下面这些配置文件中
