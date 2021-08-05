@@ -922,9 +922,29 @@ innodb_data_file_path=ibdata1:50M;ibdata2:50M:autoextend
 
 https://dev.mysql.com/doc/refman/8.0/en/thread-pool.html
 
+http://mysql.taobao.org/monthly/2016/02/09/
+
+https://www.cnblogs.com/ivictor/p/5733329.html
+
+在MySQL社区版中，MySQL使用 one-thread-per-connection 的方式来处理数据库连接。
+
+即当MySQL客户端与服务器端建立连接时会创建一个线程来专门处理该连接的所有SQL请求。
 
 
-MySQL默认的连接控制方式采用的是每个连接使用一个线程执行客户端的请求。MySQL的线程池是包含在企业版里面的服务器插件。
+
+**优点**
+
+one-thread-per-connection方式实现简单，在连接数较少或使用长连接的场景中有保证较小的响应时间。
+
+**缺点**
+
+在大量短连接或高并发场景下，one-thread-per-connection方式需要频繁地创建/销毁线程，并在大量线程间进行切换调度，产生较多的上线文切换(context-switch)，导致系统出现性能问题。
+
+
+
+在Percona，MariaDB，Oracle MySQL企业版中提中，提供了**线程池特性**。
+
+通过创建多个工作线程来共同处理所有连接的SQL请求，控制MYSQL内部线程数量，避免当连接过多时存储引擎创建大量线程，保证数据库在大并发的情况下保持稳定性和持续的吞吐能力。
 
 使用线程池的目的是为了改善大量并发连接所带来的性能下降。
 
