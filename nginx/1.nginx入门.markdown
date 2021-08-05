@@ -653,6 +653,18 @@ https://www.cnblogs.com/wupeixuan/p/12074007.html
 
 
 
+
+
+### 在nginx内部处理3xx跳转
+
+
+
+nginx反向代理，后端服务器可能返回 3XX的redirect的response, Nginx会把这个请求直接返回给客户端。
+
+现在我们的需求是让Nginx自己处理这个跳转，而客户端无感知。
+
+
+
 ### nginx负载均衡算法
 
 

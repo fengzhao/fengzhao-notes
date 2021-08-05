@@ -187,6 +187,16 @@ sudo gitlab-runner register \
 
 
 docker exec -it  gitlab-runner  register 
+ --non-interactive \
+  --url "https://gitlab.com/" \
+  --registration-token "PROJECT_REGISTRATION_TOKEN" \
+  --executor "docker" \
+  --docker-image golang:1.16.6-alpine \
+  --description "docker-runner" \
+  --tag-list "docker,aws" \
+  --run-untagged="true" \
+  --locked="false" \
+  --access-level="not_protected"
 
 
 #　上面的注册其实会写到下面这些配置文件中
