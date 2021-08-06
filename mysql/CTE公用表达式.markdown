@@ -219,6 +219,7 @@ CTE  相较于派生表有 4 个明显的优势：
 - 可以引用其他的 CTE
 
   - ```sql
+    -- 传统这种不行，会报表不存在，要用更复杂的子查询
     SELECT ...
     FROM (SELECT ... FROM ...) AS d1, (SELECT ... FROM d1 ...) AS d2 ...
     
@@ -336,10 +337,12 @@ mysql>
 -- 通过递归CTE来查询用户的层级关系
 -- 规划一个ID，name，path这样的一个层级临时表
  with recursive employee_paths (id, name, path) as (
+     --先查最顶层节点
      select id, name, cast(id as char(200))
      from db_test.employees_mgr
      where manager_id is null
      union all
+     -- 递归查询
      select e.id, e.name, concat(ep.path, '->', e.id)
      from employee_paths as ep
      join db_test.employees_mgr as e
