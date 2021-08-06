@@ -19,6 +19,28 @@ FROM
 WHERE
  　　   amount = (SELECT  MAX(amount) FROMpayments);
 
+-- 标量子查询 （一行一列）
+-- 那些只返回一个单一值的子查询称之为标量子查询：子查询里面的查询结果只返回一行一列一个值的情况。
+SELECT (SELECT m1 FROM e1 LIMIT 1);
+SELECT * FROM e1 WHERE m1 = (SELECT MIN(m2) FROM e2);
+SELECT * FROM e1 WHERE m1 < (SELECT MIN(m2) FROM e2);
+
+
+-- 行子查询（一行多列）
+-- 顾名思义，就是返回一条记录的子查询，不过这条记录需要包含多个列（只包含一个列就成了标量子查询了）。
+-- 其中的(SELECT m2, n2 FROM e2 LIMIT 1)就是一个行子查询
+-- 整条语句的含义就是要从 e1 表中找一些记录，这些记录的 m1 和 n1 列分别等于子查询结果中的 m2 和 n2 列
+SELECT * FROM e1 WHERE (m1, n1) = (SELECT m2, n2 FROM e2 LIMIT 1);
+
+-- 列子查询（一列数据）
+-- 列子查询自然就是查询出一个列的数据，不过这个列的数据需要包含多条记录
+-- 其中的(SELECT m2 FROM e2)就是一个列子查询，表明查询出 e2 表的 m2 列 的所有值作为外层查询 IN 语句的参数。
+SELECT * FROM e1 WHERE m1 IN (SELECT m2 FROM e2);
+
+-- 表子查询（二维多行多列）
+-- 顾名思义，就是子查询的结果既包含很多条记录，又包含很多个列
+-- 其中的(SELECT m2, n2 FROM e2)就是一个表子查询、此sql必须要在m1，n1都满足的条件下方可成立
+SELECT * FROM e1 WHERE (m1, n1) IN (SELECT m2, n2 FROM e2);
 
 
 
@@ -35,6 +57,20 @@ SELECT
 FROM
     (SELECT column_list ... FROM table_1) derived_table_name
 WHERE derived_table_name.c1 > 0;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 -- 子查询的CTE写法
