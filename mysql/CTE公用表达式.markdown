@@ -5,6 +5,27 @@ MySQL 8.0 引入CTE(Common Table Expression)功能，CTE除了替代派生表以
 在数据库中，我们经常使用子查询和派生表来进行查询。
 
 ```sql
+-- 子查询
+
+-- 在另一个查询(外部查询)中嵌套另一个查询语句(内部查询)，并使用内部查询的结果值作为外部查询条件。
+
+-- 子查询在where中
+-- where条件比对的值是从其他表查出来的。
+
+SELECT 
+       customerNumber, checkNumber, amount
+FROM
+   　　 payments
+WHERE
+ 　　   amount = (SELECT  MAX(amount) FROMpayments);
+
+
+
+
+
+
+-- From子句中的子查询
+
 -- 派生表（子查询）
 
 -- from后面跟的表是通过其他查询查出来的，这叫派生表，派生表必须要有别名，以便稍后在查询中引用其名称。
@@ -12,10 +33,7 @@ MySQL 8.0 引入CTE(Common Table Expression)功能，CTE除了替代派生表以
 SELECT 
     column_list
 FROM
-    (SELECT 
-        column_list ...
-    FROM
-        table_1) derived_table_name;
+    (SELECT column_list ... FROM table_1) derived_table_name
 WHERE derived_table_name.c1 > 0;
 
 
