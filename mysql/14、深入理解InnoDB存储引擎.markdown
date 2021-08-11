@@ -922,9 +922,29 @@ innodb_data_file_path=ibdata1:50M;ibdata2:50M:autoextend
 
 https://dev.mysql.com/doc/refman/8.0/en/thread-pool.html
 
+http://mysql.taobao.org/monthly/2016/02/09/
+
+https://www.cnblogs.com/ivictor/p/5733329.html
+
+在MySQL社区版中，MySQL使用 one-thread-per-connection 的方式来处理数据库连接。
+
+即当MySQL客户端与服务器端建立连接时会创建一个线程来专门处理该连接的所有SQL请求。
 
 
-MySQL默认的连接控制方式采用的是每个连接使用一个线程执行客户端的请求。MySQL的线程池是包含在企业版里面的服务器插件。
+
+**优点**
+
+one-thread-per-connection方式实现简单，在连接数较少或使用长连接的场景中有保证较小的响应时间。
+
+**缺点**
+
+在大量短连接或高并发场景下，one-thread-per-connection方式需要频繁地创建/销毁线程，并在大量线程间进行切换调度，产生较多的上线文切换(context-switch)，导致系统出现性能问题。
+
+
+
+在Percona，MariaDB，Oracle MySQL企业版中提中，提供了**线程池特性**。
+
+通过创建多个工作线程来共同处理所有连接的SQL请求，控制MYSQL内部线程数量，避免当连接过多时存储引擎创建大量线程，保证数据库在大并发的情况下保持稳定性和持续的吞吐能力。
 
 使用线程池的目的是为了改善大量并发连接所带来的性能下降。
 
@@ -1063,6 +1083,8 @@ MySQL通过关键字将SQL语句进行解析，并生成一颗对应的解析树
 
 
 ### 查询优化
+
+
 
 经过前面的步骤生成的语法树被认为是合法的了，并且由优化器将其转化成查询计划。
 
@@ -1217,7 +1239,7 @@ SELECT * FROM s1 WHERE order_note IN (SELECT order_note FROM s2 WHERE order_no =
 -- 2.对于外层查询来说，如果子查询的结果集太多，那就意味着 IN 子句中的参数特别多，由于order_note不是索引列，每个IN语句的条件都会全表扫描进行遍历。
 
 -- 结果集过多的处理方案
--- IN子句中的结果集可能存在着大量的重复字段。这些字段对于获取最后的查询结果而言，都是浪费资源的无用功，因此，结果集过多的第一个处理方案，就是思考去重。
+-- IN子句中的结果集可能存在着大量的重复字段。这些字段对于获取最后的查询结果而言，都是浪费资源的无用功，因此，结果集过多的第一个处理方案，就是考虑去重。
 -- 如果结果集中确实过大，导致即使结果去重后，内存存放仍然有压力，因此转存到磁盘当中。
 
 -- order_note不是索引，你怎么滴还能让他不进行全表扫描不成？当然，直接加索引是不成的。但是我们可以通过物化表的方式对sql进行改造，由优化器再次判断是否使用全表扫描。
@@ -1240,3 +1262,18 @@ SELECT s1.* FROM s1 INNER JOIN materialized_table ON order_note = m_val
 
 ```
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+https://blog.csdn.net/weixin_47184173/article/details/117411011
