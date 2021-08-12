@@ -258,6 +258,17 @@ Win PE 全称叫做 Windows 预安装系统，是 Windows 系统运行所必须�
 
 https://hikaripe-sc.hikaricalyx.com/chapter1
 
+https://post.smzdm.com/p/a25dx0rp/
+
+
+### Hikari PE
+
+### Edgeless
+
+[edgeless](https://home.edgeless.top/) 是一款开源的PE，拥有详细的用户手册，他的插件功能给你非常的强大，用户可以根据使用手册自行定制对应的插件！而且日常使用和完整win10体验相差不远，很多软件都能装！推荐指数：五颗星。并且有微PE专用版。[文档地址](https://wiki.edgeless.top/v2/required.html)
+
+
+
 
 
 
