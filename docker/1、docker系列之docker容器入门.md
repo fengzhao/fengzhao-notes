@@ -706,7 +706,7 @@ CMD ["bash"]
 ```shell
 # /var/lib/docker/image/overlay2/repositories.json
 # 主要存放了镜像的元数据信息。主要是 image name 和 image id 的对应，digest 和 image id 的对应。
-# 当 pull 完一个镜像的时候 docker 会更新这个文件。
+# 当 pull 了一个镜像的时候，docker 会更新这个文件。
 # 当我们 docker run 一个容器的时候也用到这个文件去索引本地是否存在该镜像，没有镜像的话就自动去 pull 这个镜像。
 
 cat /var/lib/docker/image/overlay2/repositories.json | jq
@@ -1923,7 +1923,7 @@ ip netns exec nstest ip link
 
 cgroup和namespace类似，也是将进程进行分组，但它的目的和 namespace 不一样，namespace 是为了隔离进程组之间的资源，而 cgroup 是为了对一组进程进行统一的资源监控和限制。
 
-cgroup 当前包含了 v1， 以及 v2 版本，v2 版本相比 v1 在目录组织上更加清晰，管理更加方便
+cgroup 当前包含了 v1， 以及 v2 版本，v2 版本相比 v1 在目录组织上更加清晰，管理更加方便。
 
 
 
@@ -1953,6 +1953,8 @@ cgroup 是 Linux 下的一种将进程按组进行管理的机制。
 > https://www.cnblogs.com/sparkdev/p/8296063.html
 >
 > https://segmentfault.com/a/1190000008125359
+>
+> https://openeuler.org/zh/blog/wangfengtu/2021-04-19-isulad-cgroupv2.html
 >
 > cgroup v1 官方文档  https://www.kernel.org/doc/Documentation/cgroup-v1/cgroups.txt
 >
