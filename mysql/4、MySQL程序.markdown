@@ -226,7 +226,7 @@ The following options may be given as the first argument:
 
 
 
-很多配置文件都是纯文本的，使用任意一种编辑器都可以编辑。有一个例外的是  .mylogin.cnf 文件，这是一个需要通过 mysql_config_editor 工具来创建的加密文件
+很多配置文件都是纯文本的，使用任意一种编辑器都可以编辑。有一个例外的是  .mylogin.cnf 文件，这是一个需要通过 mysql_config_editor 工具来创建的加密文件。
 
 
 
