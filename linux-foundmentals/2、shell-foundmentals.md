@@ -1473,7 +1473,7 @@ fengzhao@fengzhao-pc:~$
 
 当命令解释程序（即shell）运行一个程序的时候，它将打开三个文件，对应当文件描述符分别为0，1，2，依次表示标准输入、标准输出、标准错误。
 
-一个程序的执行，一般都会有标准输入和标准输出，例如 ls 如果不跟参数，标准输入就是当前路径，标准输出就是列出当前目录和文件
+一个程序的执行，一般都会有标准输入和标准输出，例如 ls 如果不跟参数，标准输入就是当前路径，标准输出就是列出当前目录和文件。
 
 读入数据：input
 
@@ -1539,9 +1539,39 @@ fengzhao@fengzhao-pc:~$
 
 ### 标准输入重定向
 
+前面讲到，正常的标准输入是键盘。
 
+可以把上一条的命令的输出作为下一个命令的标准输入。
 
 **标准输入重定向：**
+
+```shell
+# wc的用法：wc主要用于统计文件行数
+# wc -l FILE 统计FILE文件中的行数
+# 如果wc -l 后没跟文件名，那么就会接收标准输入，把当前命令的所在路径作为标准输入。
+
+
+# 比如统计/etc/passwd文件的行数
+# wc命令后跟要统计行数的文件，wc知道自己是从passwd文件中统计
+fengzhao@fengzhao-pc:~$  wc -l /etc/passwd
+30 /etc/passwd
+fengzhao@fengzhao-pc:~$ 
+
+# shell将标准输入从终端重定向到了文件passwd中，就wc而言，它并不知道是来自的是标准输入还是文件。所以没有列出文件名。
+fengzhao@fengzhao-pc:~$  wc -l < /etc/passwd
+30
+fengzhao@fengzhao-pc:~$ 
+
+
+# 
+fengzhao@fengzhao-pc:~$  cat /etc/passwd | wc -l 
+30
+fengzhao@fengzhao-pc:~$ 
+```
+
+
+
+
 
 ​	command < file.txt    
 
