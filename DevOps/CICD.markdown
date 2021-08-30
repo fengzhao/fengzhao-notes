@@ -300,6 +300,7 @@ stages:
   - build
   - test
   - deploy
+  
 # 对于这样一个stage
 # 1.build这个stage里面的job会被并行执行
 # 2.如果build中的所有job执行成功，test中的job被并行执行
@@ -310,6 +311,77 @@ stages:
 # 如果流水线中没有定义stages，那么 build,test,depoly就是默认的stages
 # 如果定义了一个stage，没有job使用它，那么这个stage在流水线中是不可见的。
 ```
+
+
+
+```shell
+# 对于一个前端项目，每次提交，都执行：安装依赖，执行测试用例，编译打包，测试发布，生产发布
+stages:
+  - install_deps
+  - test
+  - build
+  - deploy_test
+  - deploy_production
+
+cache:
+  key: ${CI_BUILD_REF_NAME}
+  paths:
+    - node_modules/
+    - dist/
+
+
+# 安装依赖job，job所属的stage是install_deps
+install_deps_job:
+  stage: install_deps
+  only:
+    - develop
+    - master
+  script:
+    - npm install
+
+
+# 运行测试用例job，job所属的stage是test
+test_job:
+  stage: test
+  only:
+    - develop
+    - master
+  script:
+    - npm run test
+
+
+# 编译job，job所属的stage
+build:
+  stage: build
+  only:
+    - develop
+    - master
+  script:
+    - npm run clean
+    - npm run build:client
+    - npm run build:server
+
+
+# 部署测试服务器job，job所属的stage
+deploy_test:
+  stage: deploy_test
+  only:
+    - develop
+  script:
+    - pm2 delete app || true
+    - pm2 start app.js --name app
+
+
+# 部署生产服务器，job所属的stage
+deploy_production:
+  stage: deploy_production
+  only:
+    - master
+  script:
+    - bash scripts/deploy/deploy.sh
+```
+
+
 
 
 
@@ -390,7 +462,7 @@ script, after_script, allow_failure, artifacts, before_script, cache, coverage, 
 知道了这个七个关键词，一般的流水线随随便便拿下。
 
 任务要执行的shell脚本内容，内容会被runner执行，在这里，你不需要使用git clone ....克隆当前的项目，来进行操作，因为在流水线中，每一个的job的执行都会将项目下载，恢复缓存这些流程，不需要你再使用脚本恢复。你只需要在这里写你的项目安装，编译执行，如
-npm install 另外值得一提的是，脚本的工作目录就是当前项目的根目录，所有可以就像在本地开发一样。此外script可以是单行或者多行
+npm install 另外值得一提的是，脚本的工作目录就是当前项目的根目录，所有可以就像在本地开发一样。此外script可以是单行或者多行。
 
 **stage**
 
@@ -406,14 +478,20 @@ npm install 另外值得一提的是，脚本的工作目录就是当前项目�
 
 
 
+**注意，stages和stage不是一个概念。**
 
+
+
+
+
+### CICD流水线
 
 
 
 pipeline流水线是CICD的顶层组件，流水线定义了如下：
 
 - jobs（任务），job定义了需要做什么，比如编译代码等，任务是流水线的最基本的单位。
-- stages（阶段），stages定义了什么时候执行job，比如执行test测试的job要在编译的job后面。
+- stages（阶段），stages定义了什么时候执行什么job，比如test测试的job要在编译的job后面执行。
 
 job 是通过 runner 执行，多个job也可以在一个stage中并行执行（如果有足够多的runner）
 
@@ -425,10 +503,10 @@ job 是通过 runner 执行，多个job也可以在一个stage中并行执行（
 
 一个典型的流水线，通常由如下四个stage组成（按照顺序执行）：
 
-- build stage，有一个 compile job
-- test stage，有两个job：test1，test2
-- staging stage，一个job：deploy-to-stage（发布到测试环境）
-- production stage，一个job：deploy-to-prod（发布到生产环境）
+- 构建阶段：build stage，有一个 compile job（比如常见的java打jar包，go的编译阶段等）
+- 测试阶段：test stage，有两个job：test1，test2
+- 预发布阶段：staging stage，一个job：deploy-to-stage（发布到测试环境）
+- 生产发布阶段：production stage，一个job：deploy-to-prod（发布到生产环境）
 
 
 
@@ -441,6 +519,12 @@ job 是通过 runner 执行，多个job也可以在一个stage中并行执行（
 - [Pipelines for Merge Requests](https://docs.gitlab.com/ee/ci/pipelines/merge_request_pipelines.html) 
 - [Pipelines for Merged Results](https://docs.gitlab.com/ee/ci/pipelines/pipelines_for_merged_results.html)
 - [Merge Trains](https://docs.gitlab.com/ee/ci/pipelines/merge_trains.html)
+
+
+
+#### 基本流水线
+
+
 
 
 
