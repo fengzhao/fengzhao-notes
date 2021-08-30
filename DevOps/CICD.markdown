@@ -220,7 +220,7 @@ docker exec -it  gitlab-runner  register
 
 ### runner 类型
 
-- [Shared runners](https://docs.gitlab.com/ee/ci/runners/#shared-runners)    全局 runner ，对于整个 gitlab 实例里面的每个组和项目都适用
+- [Shared runners](https://docs.gitlab.com/ee/ci/runners/#shared-runners)    全局 runner ，对于整个 gitlab 实例里面的每个组和每个项目都适用
 
 - [Group runners](https://docs.gitlab.com/ee/ci/runners/#group-runners)     可以用于某个 group 里面的项目
 
