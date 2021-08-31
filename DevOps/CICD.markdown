@@ -936,3 +936,78 @@ volumes:
 
 
 
+# 各种项目的cicd
+
+
+
+### java 项目
+
+
+
+```yaml
+stages:
+  - build jar
+  - build and run image
+
+# 打包流程
+buildJar:
+  stage: build jar
+  variables:
+    # 默认是clone，改为fetch加快拉取速度（若本地无则会自动clone）
+    GIT_STRATEGY: fetch
+  only:
+    # 将只会运行以issue-开始的refs(分支)
+    - /^issue-.*$/
+  script:
+    - >
+      docker run -d --rm --name justforpackage-$CI_COMMIT_REF_NAME
+      -v "$(pwd)":/build/inkscreen
+      -v /inkscreen/maven/m2:/root/.m2
+      -w /build/inkscreen
+      maven:3-jdk-8 mvn clean package
+
+    - sleep 60
+  tags:
+    - inkscreen_hostrunner
+  artifacts:
+    paths:
+      - louwen-admin/target/louwen-admin.jar
+    expire_in: 3600 seconds
+
+testDeploy:
+  stage: build and run image
+  only:
+    - dev
+  variables:
+    # 不拉取代码
+    GIT_STRATEGY: none
+    IMAGE_NAME: louwen/inkscreen-api:$CI_COMMIT_REF_NAME
+    PORT: 38082
+  before_script:
+    # 移除旧容器和镜像。这里为什么要写成一行，下面有讲
+    - if [ docker ps | grep inkscreen-$CI_COMMIT_REF_NAME ]; then docker stop inkscreen-$CI_COMMIT_REF_NAME; docker rm inkscreen-$CI_COMMIT_REF_NAME; docker rmi $IMAGE_NAME; fi
+  script:
+    - docker build --build-arg JAR_PATH=louwen-admin/target/louwen-admin.jar -t $IMAGE_NAME .
+    - >
+      docker run -d --name inkscreen-$CI_COMMIT_REF_NAME
+      -p $PORT:$PORT
+      --network my_bridge --env spring.redis.host=myredis
+      -v /inkscreen/inkscreen-api/logs/:/logs/
+      -v /inkscreen/inkscreen-api/louwen-admin/src/main/resources/:/configs/
+      $IMAGE_NAME
+  tags:
+    - inkscreen_hostrunner
+```
+
+
+
+
+
+
+
+
+
+参考
+
+https://www.cnblogs.com/newton/p/14035169.html
+
