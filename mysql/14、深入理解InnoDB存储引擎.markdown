@@ -916,7 +916,17 @@ innodb_data_file_path=ibdata1:50M;ibdata2:50M:autoextend
 
 
 
+# doublewrite buffer 插入缓冲
 
+Doublewrite buffer是一个存储，InnoDB将页写入InnoDB数据文件适当位置之前，会将缓冲池中页刷新到该存储中。
+
+如果操作系统，存储子系统，或者`mysqld`进程在页写入中途崩溃，InnoDB可以在崩溃恢复中从doublewrite buffer中找到一份好的备份。
+
+
+
+虽然数据写了2次，doublewrite buffer不会需要2倍的IO负载和2倍的IO操作。数据将以一个大的连续块写入到doublewrite buffer中，操作系统单次调用`fsync()`（除非`innodb_flush_method`被设置为`O_DIRECT_NO_FSYNC`）。
+
+MySQL8.0.20之前，doublewrite buffer存储在InnoDB 系统表空间中。从MySQL8.0.20开始，doublewrite buffer存储在双写文件中。
 
 # MySQL 线程池
 
