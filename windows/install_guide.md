@@ -447,6 +447,60 @@ https://post.smzdm.com/p/a25dx0rp/
 
 
 
+# win10设置多人同时远程登录
+
+RDP，Remote Desktop Protocol,远程桌面协议，是一个多通道（mutil-channel）的协议，让用户（客户端或称“本地电脑”）连上提供微软终端机服务的电脑（服务器端或称“远程电脑”）。
+
+大部分的Windows、Linux、FreeBSD、Mac OS X都有相应的客户端。服务端听取送到 TCP 3389 端口的数据。
+
+windows从NT开始提供终端服务，它是微软买来的网络协议技术(Citrix)，服务器端要安装、配置，客户端要连接程序。
+
+终端服务使任何一台有权限的终端机，用已知的账号登录服务器，可以使用账号内的资源，包括软件，硬件资源；
+
+同时，在协议升级后，客户端连接后可以使用本地的资源，包括本地打印机、声音本地回放，本地磁盘资源和本地硬件接口。
+
+**所有的计算都在服务器端进行，客户端只需要处理网络连接、接收数据、界面显示和设备数据输出。**
+
+目前，关于RDP服务的linux客户端程序有 winconnect，linrdp，rdesktop，前两个没有源码，但 redsktop 已经由原来的个人开发后公开代码演变成现在的项目组开发。
+
+[RDP简介](https://blog.csdn.net/qq_38526635/article/details/81672490)
+
+[RDP协议](https://docs.microsoft.com/zh-CN/troubleshoot/windows-server/remote/understanding-remote-desktop-protocol)
+
+设置之前注意防火墙问题，可以先把防火墙关掉，不想关的话需要设置防火墙允许通过的应用，在里面找到远程桌面，将其设置为允许（默认是关闭的）。
+
+
+
+
+
+在 window 上新建多个用户账号
+
+右键 "此电脑" -> 管理 -> 本地用户和组 -> 右键“用户”选择【新用户】-> 点击【创建】按钮，即可完成创建
+
+
+
+
+
+
+
+由于RDP很久没有更新了，而win10系统还在持续更新中，所以就会造成系统更新时修改termsrv.dll文件(termsrv.dll所在位置为: C:\Windows\System32，可右键查看其版本信息)，导致多人同时远程登录失败，同时RDP也无法设置成功，幸好一直有大佬在及时更新rdpwrap.ini，这样就可以仅更新rdpwrap.ini文件即可成功配置成功。
+具体操作步骤可参考如下：
+
+1、克隆一个包含rdpwrap.ini最新内容的GitHub链接`git clone https://github.com/asmtron/rdpwrap`。如果克隆过了，可以使用`git pull origin`更新本地仓库。
+2、第一次使用请将rdpwrap中bin目录下的helper文件夹和autoupdate.bat复制到C:\Program Files\RDP Wrapper下。
+3、每次重新配置都需要将rdpwrap中res目录下的rdwrap.ini复制到C:\Program Files\RDP Wrapper（一定要确保此时的rdpwrap.ini中包含当前系统中termsrv.dll的版本信息说明，可以用记事本打开rdpwrap.ini文件查看）
+4、右键管理员运行autoupdate.bat，执行成功即可。
+5、双击RDPCheck.exe测试是否成功配置成功。
+6、如果没有，可以再次查看rdpwrap.ini文件确保该文件中包含当前系统中termsrv.dll的版本信息说明,并确保autoupdate.bat执行成功，然后尝试重启电脑。
+
+7、如果还是没有配置成功，可尝试管理员运行uninstall.bat，重新安装rdpwrap软件，然后重复上述步骤。
+
+这个方法可以不关闭远程服务，即可在远程连接的状态下完成，不过我感觉有可能程序关闭远程服务导致远程断开，所以为了解决远程服务莫名断开而无法远程连接的问题，我自己找到了一个方法，让电脑自动在某个时间重启远程连接服务，特别在另一篇博客中记录，欢迎大家浏览，[链接](https://www.cnblogs.com/xingyu666/p/14279630.html)。
+
+----------分割线----------
+
+设置成功之后，就可以多人同时登陆工作站了。
+
 
 
 # 固件
