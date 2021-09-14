@@ -374,7 +374,7 @@ root@vpsServer:~#
 
 ### 变量
 
-变量是暂时存储数据的地方及标记，所存储的数据位于内存空间中，通过正确的调用内存中变量的名字可以取出其变量值。
+**变量是暂时存储数据的地方及标记，所存储的数据位于内存空间中，通过正确的调用内存中变量的名字可以取出其变量值。**
 
 使用 **$VARIABLES** 或 **${VARIABLES}** 来引用变量。应用程序运行时通过读取环境变量
 
@@ -912,6 +912,19 @@ Linux 命令分为两种类型：
 
   shell 通过读取 $PATH 这个环境变量来查找应用程序执行路径。
 
+
+
+内部命令实际上是shell程序的一部分，其中包含的是一些**比较简单的linux系统命令**，这些命令由shell程序识别并在shell程序内部完成运行，通常在linux系统加载运行时shell就被加载并驻留在系统内存中。
+
+内部命令是写在bash源码里面的，其执行速度比外部命令快，因为解析内部命令shell不需要创建子进程。比如：exit，history，cd，echo等。
+有些命令是由于其**必要性**才内建的，例如cd用来改变目录，read会将来自用户（和文件）的输入数据传给Shell外亮。
+
+
+
+
+
+
+
 通过 type 来查看命令是 shell 内建命令，还是二进制程序（如果是二进制可执行文件，还能打印出所在路径）。
 
 ``` shell 
@@ -939,9 +952,9 @@ find: /usr/bin/find
 
 ### 1.2、几种常见的 Shell
 
- Linux 发行版自带的标准 Shell 都是 Bash shell，Linux 的默认命令行就是 Bash，我们的最多的也是这个。
+ Linux 发行版自带的标准 Shell 都是 [Bash shell](https://www.gnu.org/software/bash/)，是 BourneAgain Shell 的缩写，内部命令一共有 40 个。Linux 的默认命令行就是 Bash，我们的最多的也是这个。
 
-是 BourneAgain Shell 的缩写，内部命令一共有 40 个。一般日常使用 bash 基本上都够了，进阶可以试试 zsh。
+一般日常使用 bash 基本上都够了，进阶可以试试 zsh。
 
  另一个强大的 Shell 就是 zsh，它比 bash 更强大，但是也更复杂，配置起来比较麻烦。所以有个 [on-my-zsh](https://github.com/robbyrussell/oh-my-zsh/)，它大大简化了 zsh 的配置，一般通过包管理器安装 zsh，然后通过 git 安装 on-my-zsh：
 ```shell
