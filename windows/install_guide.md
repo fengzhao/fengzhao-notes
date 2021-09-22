@@ -216,14 +216,52 @@ https://lighti.me/2858.html
 
 所谓母盘就是我们平时说的官方原版镜像，在封装系统的过程中常常需要精简某些功能，有些功能在系统封装阶段是没办法彻底精简的。
 
+
+
 所以我们首先需要对官方镜像进行精简操作，以去除某些不需要的功能，减小镜像大小。精简母盘的工具有很多，Dism++、MSMG Toolkit、NTLite等，这里我用的是 NTLite。
 
+
+
+封装环境可以分为两种 —— 基于实体机、基于虚拟机。
+
+
+
+准备工具：
+
+- 移动硬盘 / U盘
+- 原版windows操作系统镜像
+- 7zip压缩软件，Dism++软件
+- 
+
+
+
+制作过程：
+
+- 用7zip解压windows原版镜像
+
+- 打开 dism++ 软件，挂载原版映像，选择解压后的source文件夹下的install.wim格式的文件。xuan'ze
+
+  
+
+打开 dism++ 软件，挂在原版iso镜像，选择目标映像（专业版win10），选择挂载路径
+
+
+
+
+
+https://www.cnblogs.com/caishuaichao/p/14452670.html
+
+https://sspai.com/post/61917
 
 ## 8、PE系统
 
 Win PE 全称叫做 Windows 预安装系统，是 Windows 系统运行所必须的所有组件的最小集合。
 
+
+
 > Windows PE系统的全称叫做Windows Preinstallation Environment，即Windows预安装环境。
+>
+> Windows PE的全称是Windows Preinstallation Environment，即Microsoft Windows 预安装环境，是一个基于保护模式下运行的Windows [ xp](http://www.mt30.com/system.html) Professional的工具，只拥有较少（但是非常核心）服务的Win32子[ 系统](http://www.mt30.com/Soft/systools/Index.html)。这些服务为Windows安装、实现[ 网络](http://www.mt30.com/Soft/nettools/Index.html)共享、自动底层处理进程和实现硬件验证。
 >
 > 顾名思义，这是安装系统前需要进入的环境，为安装系统而生。
 
@@ -267,7 +305,9 @@ https://post.smzdm.com/p/a25dx0rp/
 
 [edgeless](https://home.edgeless.top/) 是一款开源的PE，拥有详细的用户手册，他的插件功能给你非常的强大，用户可以根据使用手册自行定制对应的插件！而且日常使用和完整win10体验相差不远，很多软件都能装！推荐指数：五颗星。并且有微PE专用版。[文档地址](https://wiki.edgeless.top/v2/required.html)
 
+### firpe
 
+https://firpe.cn/
 
 
 
