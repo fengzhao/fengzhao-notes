@@ -1,0 +1,15 @@
+version: '2.4'
+services:
+  jkenkins:
+    image: "ghcr.io/fengzhao-study-notes/blueocean"
+    restart: always
+    privileged: true
+    ports:
+     - "8088:8080"
+    volumes:
+     - "/home/jenkins_root/jenkins_data:/var/jenkins_home"
+     - "/home/jenkins_root/jenkins_home:/home"
+     - "/var/run/docker.sock:/var/run/docker.sock"
+    network_mode: "host"
+    cpus: 1
+    #mem_limit: 4g
