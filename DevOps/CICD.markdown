@@ -727,7 +727,7 @@ services:
      - "/var/run/docker.sock:/var/run/docker.sock"
     network_mode: "host"
     cpus: 1
-    mem_limit: 4g
+    #mem_limit: 4g
 
 
 
