@@ -136,6 +136,7 @@ enabled=1
 
 ```shell
 # 安装依赖环境
+sudo yum install gcc gcc-c++ make automake autoconf libtool pcre* zlib openssl openssl-devel
 
 sudo apt install zlib1g zlib1g-dev
 
