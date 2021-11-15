@@ -795,6 +795,13 @@ Role-based Authorization Strategy          https://www.cnblogs.com/netflix/p/121
 
 
 
+### Jenkins集成钉钉通知
+
+
+
+1. 创建钉钉群，在群聊中添加机器人。
+2. 安装[钉钉机器人插件](https://jenkinsci.github.io/dingtalk-plugin/)
+
 
 
 # Jenkins && Gitlab 集成
