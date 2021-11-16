@@ -1,0 +1,110 @@
+// 前端项目JenkinsFile配置，后端项目配置稍有不同，后面会区分说明
+pipeline {
+  agent any
+  environment {
+    HOST_DEV = 'root@10.10.20.81'
+    HOST_TEST = 'root@10.10.20.82'
+    SOURCE_DIR = 'dist/*'
+    DEV_TARGET_DIR = '/home/zhtj/docker/nginx/html/admin/'
+    TEST_TARGET_DIR = '/home/zhtj/qhdata/html/admin'
+  }
+
+
+triggers{
+    GenericTrigger(
+        genericVariables: [
+          [key: 'ref', value: '$.ref']
+         ],
+        causeString: 'Triggered on $ref',
+        token: '226289b3b949e350a039c4932cb84a5d',
+        printContributedVariables: true,
+        printPostContent: true,
+        silentResponse: false,
+        regexpFilterText: '$ref',
+        regexpFilterExpression: '^refs/heads/(dev/test\\d*|master)$'
+    )
+}
+
+  stages {
+    stage('获取git commit message') {
+     steps {
+       script {
+         env.GIT_COMMIT_MSG = sh (script: 'git log -1 --pretty=%B ${GIT_COMMIT}', returnStdout: true).trim()
+       }
+     }
+  }
+
+    stage('打包') {
+      steps {
+          echo 'start packageing' 
+          
+          nodejs(nodeJSInstallationName: 'node-14.11.0'){
+
+          sh 'node -v '
+          sh 'npm config ls'
+          sh 'npm install -g yarn '
+          sh 'yarn config set registry https://registry.npm.taobao.org --global'
+          sh  'yarn config set disturl https://npm.taobao.org/dist --global'
+          echo '开始安装依赖'
+          sh 'yarn install '
+          echo '开始打包'
+          sh 'npm run build'
+          }
+        
+      }
+    }
+
+    stage('发布DEV环境') {
+      when {
+        expression {
+          BRANCH_NAME == "dev"
+        }
+      }
+      steps {
+    
+          sh "ssh -o StrictHostKeyChecking=no ${HOST_DEV} uname -a"
+          sh "scp -r ${SOURCE_DIR} ${HOST_DEV}:${DEV_TARGET_DIR}"
+	  sh 'ssh -i  ~/.ssh/gitlab_fz -tt root@10.10.20.81 chmod -R 755 /home/zhtj/docker/nginx/html/admin/   '
+          sh 'echo "zhtj-front-dev环境发布成功~"'
+        
+      }
+    }
+
+    stage('发布TEST环境') {
+      when {
+        expression {
+         BRANCH_NAME == "test"
+        }
+      }
+      steps {
+      
+          sh "ssh -o StrictHostKeyChecking=no ${HOST_TEST} uname -a"
+          sh "scp -r ${SOURCE_DIR} ${HOST_TEST}:${TEST_TARGET_DIR}"
+	      sh 'ssh -i  ~/.ssh/gitlab_fz -tt root@10.10.20.82 chmod -R 755 /home/zhtj/qhdata/html/admin/  '
+          sh 'echo "zhtj-front-test环境发布成功~"'
+        
+      }
+    }
+  }
+
+  post {
+    success {
+      dingtalk (
+        robot: '21d58de8-22da-4601-b0ae-408a01a4be9c',
+        type: 'MARKDOWN',
+        atAll: true,
+        title: '你有新的消息，请注意查收',
+        text:[
+          '# 智慧统计系统发布通知',
+          '---',
+          '#### **所属：前端**',
+          "#### **构建任务：${env.BUILD_DISPLAY_NAME}**",
+          "#### **Git commit：${env.GIT_COMMIT_MSG}**",
+          "#### **本次更新内容：${params.update}**",
+          "#### **部署环境：${BRANCH_NAME}**",
+          '#### **构建结果：成功**'
+        ]
+      )
+    }
+  }
+}
