@@ -806,6 +806,105 @@ Role-based Authorization Strategy          https://www.cnblogs.com/netflix/p/121
 
 
 
+
+
+### Blue Ocean
+
+Blue Ocean 插件默认没有被安装。
+
+
+
+
+
+### gitlab和git插件
+
+
+
+
+
+
+
+## jenkins agent节点
+
+
+
+Jenkins采用分布式架构，分为server节点和agent节点。可以采用多个agent节点在不同环境中为多个项目并行构建多个任务。
+
+
+
+server节点（jenkins安装节点）也是可以运行构建任务的，但我们一般使其主要来做任务的调度。
+
+
+
+
+
+（毕竟server节点挂了就都...）agent节点专门用于任务的执行。
+
+随着现在容器的盛行，我们可以将server节点和agent节点在容器或者基于Kubernetes中部署。
+
+关于agent节点借助容器可以实现动态的资源分配等等好处。agent节点可以分为静态节点和动态节点：
+
+- 静态节点是固定的一台vm虚机或者容器。
+- 动态节点是随着任务的构建来自动创建agent节点。
+
+
+
+
+
+
+
+### 固定节点
+
+物理固定节点是指专门准备和配置单独的主机来处理构建任务。
+
+1. 准备一台单独的主机，配置好jdk1.8。
+
+2. 在  jenkins 服务器上创建 sshkey  （用于登陆和管理从节点）。把公钥从添加到节点的 ~/.ssh/authorized_keys 中。
+
+   ```shell
+    ssh-keygen -t rsa -b 4096 -C "jenkins-agent-key"  -f ~/.ssh/jenkins_agent_key
+   ```
+   
+3. 在 jenkins 管理界面的   manage credentials 中添加这个key。
+
+4. 在 jenkins  管理界面的  Manage Nodes and clouds 添加 agent 节点。启动节点。
+
+5. 在主节点可以看到从节点在线，在从节点可以看到如下进程。
+
+   ```shell
+    /usr/java/jdk1.8.0_201/bin/java -jar remoting.jar -workDir /home/jenkins -jar-cache /home/jenkins/remoting/jarCache
+   ```
+
+   
+
+
+### docker agent
+
+
+
+1. 先在 jenkins 服务器上创建 sshkey  
+
+```shell
+ ssh-keygen -t rsa -b 4096 -C "jenkins-agent-key"  -f ~/.ssh/jenkins_agent_key
+```
+
+2. 在 jenkins 服务器的 manage credentials 中添加这个key
+
+
+
+3. 创建docker agents
+
+```shell
+# 注意公钥，要替换成上面生成的公钥：cat ~/.ssh/jenkins_agent_key.pub
+docker run -d --rm --name=agent1 -p 22:22 -e "JENKINS_AGENT_SSH_PUBKEY=[your-public-key]" jenkins/ssh-agent:alpine
+```
+
+
+
+4. 在 jenkins 服务器中的 Manage Nodes and clouds 添加 agent 节点
+
+
+
 # Jenkins && Gitlab 集成
 
 
