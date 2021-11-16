@@ -650,6 +650,7 @@ https://mirrors.tuna.tsinghua.edu.cn/jenkins/
 
 # tomcat方式安装Jenkins
 wget  https://mirrors.cnnic.cn/apache/tomcat/tomcat-9/v9.0.41/bin/apache-tomcat-9.0.41.tar.gz
+wget --no-check-certificate https://dlcdn.apache.org/tomcat/tomcat-10/v10.0.13/bin/apache-tomcat-10.0.13.tar.gz
 
 # jenkins-war包下载
 # wget http://mirrors.jenkins.io/war-stable/latest/jenkins.war
