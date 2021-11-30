@@ -896,11 +896,14 @@ https://github.com/Snailclimb/JavaGuide/blob/master/docs/database/MySQL%E9%AB%98
 
 
 
-# 索引失效的原因？
+# 索引失效的原因
 
 
 
-索引列字段数据类型不一致，字符集不一致
+- 索引列字段数据类型不一致
+  - 
+
+- 字符集不一致
 
 
 
