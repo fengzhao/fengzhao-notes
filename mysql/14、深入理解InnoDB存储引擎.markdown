@@ -38,6 +38,47 @@ MySQL 在 2008 年被 SUN 公司收购，最后 SUN 又被 Oracle 收购，自�
 
 
 
+
+
+## InnoDB磁盘数据结构
+
+数据永远会存在磁盘上，但是在处理数据的时候并不是在磁盘上处理的。首先要把数据加载到内存中，然后再由CPU进行计算。
+
+凡是学过计算机组成原理的同学应该都有印象，数据加载并不是需要哪个bit就去加载哪个bit，而是按照内存分页的大小一起把相邻的数据加载到一个内存页里，来减少IO的消耗。
+
+在InnoDB中也是一样，但是它有自己的加载规则。InnoDB也是把数据分成若干个页面，以页为基本单位进行内存和磁盘间交互。
+
+在MySQL中，innodb表是以 tablename.ibd 格式的文件存放在磁盘中。
+
+页是InnoDB磁盘管理的最小单位，默认每页为16KB，从InnoDB1.2.x开始，可以通过innodb_page_size参数将页设置为4K、8K、16K。
+
+常见的页有**数据页（B-tree Node）、undo页（undo Log Page）、插入缓冲位图页（Insert Buffer Bitmap）**
+
+
+
+数据页是 MySQL 抽象出来的数据单位，磁盘文件中就是存放了很多数据页，每个数据页里存放了很多行数据。**默认情况下，数据页的大小是 16KB。**
+
+MySQL server每次和 InnoDB存储引擎交互都会从磁盘上读取16KB的数据到内存中处理，同样反过来每次写入磁盘的时候也是按照16KB的大小写入的。
+
+
+
+对应的，在 `Buffer Pool` 中，也是以数据页为数据单位，存放着很多数据。但是通常被叫做缓存页，因为 `Buffer Pool` 是一个缓冲池，并且里面的数据都是从磁盘文件中缓存到内存中。
+
+所以，默认情况下缓存页的大小也是 16KB，因为它和磁盘文件中数据页是一一对应的。
+
+缓冲池和磁盘之间的数据交换的单位是数据页，包括从磁盘中读取数据到缓冲池和缓冲池中数据刷回磁盘中。
+
+```shell
+# 数据页的控制参数，默认是16KB  : 16384=1024*16
+SHOW GLOBAL STATUS like 'Innodb_page_size';
+
+
+```
+
+
+
+
+
 ## 内存
 
 ### 内存缓冲池（buffer pool）
@@ -51,20 +92,6 @@ MySQL 在 2008 年被 SUN 公司收购，最后 SUN 又被 Oracle 收购，自�
 下次再读取相关的页时，下次再读取相同的页时，先判断是否在缓冲池中，若在，则称为该页在缓冲池被命中。
 
 对于修改数据（增删改），同样首先修改缓冲池中的页，然后在以一定的频率刷新到磁盘。**通过一种被称作 checkpoint 的机制刷回磁盘。**
-
-
-
-### 关键概念——数据页
-
-在MySQL中，innodb表以 tablename.ibd 格式的文件存放在磁盘中。
-
-数据页是 MySQL 抽象出来的数据单位，磁盘文件中就是存放了很多数据页，每个数据页里存放了很多行数据。**默认情况下，数据页的大小是 16KB。**
-
-对应的，在 `Buffer Pool` 中，也是以数据页为数据单位，存放着很多数据。但是通常被叫做缓存页，因为 `Buffer Pool` 是一个缓冲池，并且里面的数据都是从磁盘文件中缓存到内存中。
-
-所以，默认情况下缓存页的大小也是 16kb，因为它和磁盘文件中数据页是一一对应的。
-
-缓冲池和磁盘之间的数据交换的单位是数据页，包括从磁盘中读取数据到缓冲池和缓冲池中数据刷回磁盘中。
 
 
 
@@ -1159,7 +1186,11 @@ MySQL将缓存存放在一个引用表（不要理解成table，可以认为是�
 
 MySQL通过关键字将SQL语句进行解析，并生成一颗对应的解析树。这个过程解析器主要通过语法规则来验证和解析。
 
-比如SQL中是否使用了错误的关键字或者关键字的顺序是否正确等等。预处理则会根据MySQL规则进一步检查解析树是否合法。比如检查要查询的数据表和数据列是否存在等等。
+比如SQL中是否使用了错误的关键字或者关键字的顺序是否正确等等。预处理则会根据MySQL规则进一步检查解析树是否合法。
+
+- 语法检查
+
+- 比如检查要查询的数据表和数据列是否存在等。
 
 
 
@@ -1169,7 +1200,64 @@ MySQL通过关键字将SQL语句进行解析，并生成一颗对应的解析树
 
 经过前面的步骤生成的语法树被认为是合法的了，并且由优化器将其转化成查询计划。
 
+#### 查询成本的概念
 
+一般来说一个sql查询可以有不同的执行方案，可以选择某个索引进行查询，也可以选择全表扫描，**查询优化器**则会比较并选择其中成本最低的方案去执行查询。
+
+查询成本分大体为两种：
+
+- **I/O成本**：磁盘读写的开销。一个查询或一个写入，都要从磁盘中读写数据，要一定的IO开销。
+
+- **CPU成本**：关联查询，条件查找，都要CPU来进行计算判断，一定的计算开销。
+
+MySQL使用的InnoDB引擎会把数据和索引都存储到磁盘上，当查询的时候需要先把数据先加载到内存中在进行下一步操作，这个加载的时间就是I/O成本。
+
+当数据被加载到内存中后，CPU会计算查询条件，对数据排序等等操作，这一步所消耗的时间就是CPU成本。
+
+**但是查询优化器并不会真正的去执行sql，只会去根据优化的结果去预估一个成本。**
+
+**InnoDB引擎规定读取一个页面花费的成本默认约是0.25，读取以及检测一条记录是否符合搜索条件的成本默认约是0.1。**
+
+为什么都是约呢，因为MySQL内部的计算成本比较复杂这里提取了两个主要的计算参数。
+
+```shell
+# 
+mysql>
+mysql> select * from mysql.server_cost;
++------------------------------+------------+---------------------+---------+---------------+
+| cost_name                    | cost_value | last_update         | comment | default_value |
++------------------------------+------------+---------------------+---------+---------------+
+| disk_temptable_create_cost   |       NULL | 2021-09-24 14:47:20 | NULL    |            20 |
+| disk_temptable_row_cost      |       NULL | 2021-09-24 14:47:20 | NULL    |           0.5 |
+| key_compare_cost             |       NULL | 2021-09-24 14:47:20 | NULL    |          0.05 |
+| memory_temptable_create_cost |       NULL | 2021-09-24 14:47:20 | NULL    |             1 |
+| memory_temptable_row_cost    |       NULL | 2021-09-24 14:47:20 | NULL    |           0.1 |
+| row_evaluate_cost            |       NULL | 2021-09-24 14:47:20 | NULL    |           0.1 |
++------------------------------+------------+---------------------+---------+---------------+
+6 rows in set (0.00 sec)
+
+mysql>
+
+## 存储引擎层面的开销。
+mysql> select * from mysql.engine_cost;
++-------------+-------------+------------------------+------------+---------------------+---------+---------------+
+| engine_name | device_type | cost_name              | cost_value | last_update         | comment | default_value |
++-------------+-------------+------------------------+------------+---------------------+---------+---------------+
+| default     |           0 | io_block_read_cost     |       NULL | 2021-09-24 14:47:20 | NULL    |             1 |
+| default     |           0 | memory_block_read_cost |       NULL | 2021-09-24 14:47:20 | NULL    |          0.25 |
++-------------+-------------+------------------------+------------+---------------------+---------+---------------+
+2 rows in set (0.00 sec)
+
+mysql>
+```
+
+
+
+
+
+#### 基于成本的优化
+
+在一条单表查询语句真正执行之前，Mysql的查询优化器会找出执行该语句所有可能使用的方案，对比之后找出成本最低的方案，这个成本最低的方案就是所谓的执行计划，之后才会调用存储引擎提供的接口真正的执行查询。
 
 多数情况下，一条查询可以有很多种执行方式，最后都返回相应的结果。优化器的作用就是找到这其中最好的执行计划。
 
@@ -1210,10 +1298,66 @@ mysql> show status like 'last_query_cost';
 
 
 
-#### 优化器的功能
+**这里 last_query_cost 的值是 io_cost 和 cpu_cost 的开销总和，它通常也是我们评价一个查询的执行效率的一个常用指标。**
+
+
+
+
+
+
+
+#### 优化器
+
+优化器的功能
 
 1. 不改变语义的情况下，重写sql。重写后的 sql 更简单，更方便制定执行计划。
 2. 根据成本分析，制定执行计划。
+
+```shell
+# 优化器开关
+
+SELECT @@optimizer_switch;
+
+index_merge=on,
+index_merge_union=on,
+index_merge_sort_union=on,
+index_merge_intersection=on,
+engine_condition_pushdown=on
+index_condition_pushdown=on,
+mrr=on,
+mrr_cost_based=on,
+block_nested_loop=on,
+batched_key_access=off,
+materialization=on,
+semijoin=on,
+loosescan=on,
+firstmatch=on,
+duplicateweedout=on,
+subquery_materialization_cost_based=on,
+use_index_extensions=on,
+condition_fanout_filter=on,
+derived_merge=on,
+use_invisible_indexes=off,
+skip_scan=on,
+hash_join=on
+
+
+## 修改优化器语法
+SET [GLOBAL|SESSION] optimizer_switch='command[,command]...';
+
+-- command语法如下：
+-- default          --重置为默认
+-- opt_name=default	--选项默认 
+-- opt_name=off	    --关掉某项优化
+-- opt_name=on	    --开启某项优化
+
+```
+
+
+
+#### 优化器追踪
+
+
 
 ####  条件化简
 
@@ -1245,7 +1389,9 @@ a = 5 AND b > a
 
 **子查询优化**
 
-我们查询中的 select 列 from 表 中，有时候，列和表可能是我们其他查询中出来的。这种列和表是用 select 语句表现出来的就叫子查询。外层 select 就叫外层查询。
+我们查询中的 select 列 from 表 中，有时候，列和表可能是我们其他查询中出来的。
+
+这种列和表是用 select 语句表现出来的就叫子查询。外层 select 就叫外层查询。
 
 - SELECT 子句
 
@@ -1257,7 +1403,7 @@ SELECT (SELECT m1 FROM e1 LIMIT 1);
 
 ```sql
 -- 子查询后边的 AS t 表明这个子 查询的结果就相当于一个名称为 t 的表，这个名叫 t 的表的列就是子查询结果中的列（m和n）。
--- 这个放在 FROM 子句中的子查询本质上相当于一个表，但又和我们平常使用的表有点儿不一样，MySQL 把这种由子查询结果集组成的表称之为派生表。
+-- 这个放在 FROM 子句中的子查询本质上相当于一个表，但又和我们平常使用的表有点儿不一样，MySQL 把这种由子查询结果集组成的临时表称之为派生表。
 SELECT m, n FROM (SELECT m2 + 1 AS m, n2 AS n FROM e2 WHERE m2 > 2) AS t;
 ```
 
@@ -1305,7 +1451,7 @@ SELECT * FROM e1 WHERE m1 IN (SELECT m2 FROM e2);
 SELECT * FROM e1 WHERE (m1, n1) IN (SELECT m2, n2 FROM e2);
 ```
 
-
+- 相关子查询
 
 #### 子查询在 MySQL 中是怎么执行的
 
