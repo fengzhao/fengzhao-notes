@@ -520,11 +520,18 @@ CREATE TABLE `tuser` (
 
 ------
 
+https://www.cnblogs.com/xuwc/p/14007766.html
+
+
+
+
+
 MySQL可以创建联合索引（即在多列上创建索引，一个索引可以包含最多16列。）
 
 联合索引的好处：
 
-- 建一个联合索引 `(col1,col2,col3)`，实际相当于建了 `(col1)`，`(col1,col2)`，`(col1,col2,col3)` 三个索引。每多一个索引，都会增加写操作的开销和磁盘空间的开销。对于大量数据的表，使用联合索引会大大的减少开销！
+- 建一个联合索引 `(col1,col2,col3)`，实际相当于建了 `(col1)`，`(col1,col2)`，`(col1,col2,col3)` 三个索引。
+  - 每多一个索引，都会增加写操作的开销和磁盘空间的开销。对于大量数据的表，使用联合索引会大大的减少开销！
 - 
 
 
@@ -533,7 +540,11 @@ MySQL可以创建联合索引（即在多列上创建索引，一个索引可以
 
 #### 最左前缀匹配原则
 
-关于最左前缀匹配，有如下原则：
+
+
+**最左前缀原则指的是，如果查询的时候查询条件精确匹配索引的左边连续一列或几列，则此列就可以被用到**。
+
+
 
 顺序扫描索引
 
@@ -550,12 +561,18 @@ CREATE TABLE test (
 -- name 是一个包含了 last_name 和 first_name 列的联合索引。
 
 -- 对于这个表，使用 (last_name) 和 (last_name,first_name) (last_name,first_name,age) 这样的条件才可以走索引
+-- 这里需要注意的是，查询的时候如果两个条件都用上了，但是顺序不同，如 city= xx and name ＝xx，那么现在的查询引擎会自动优化为匹配联合索引的顺序，这样是能够命中索引的。
+-- 由于最左前缀原则，在创建联合索引时，索引字段的顺序需要考虑字段值去重之后的个数，较多的放前面。ORDER BY子句也遵循此规则。
+
+
 
 SELECT * FROM test WHERE last_name='Jones';
 SELECT * FROM test WHERE last_name='Jones' AND first_name='John';
 SELECT * FROM test WHERE last_name='Jones' AND (first_name='John' OR first_name='Jon');
 SELECT * FROM test WHERE last_name='Jones' AND first_name >='M' AND first_name < 'N';
 select * FROM test where last_name like '张%' and age=10 ;
+
+
 
 -- 下面的查询无法用到这个索引
 SELECT * FROM test WHERE first_name='John';
@@ -735,6 +752,12 @@ https://www.cnblogs.com/youzhibing/p/12318565.html
 
 ## 索引合并（Index-merge）
 
+https://dev.mysql.com/doc/refman/8.0/en/index-merge-optimization.html
+
+
+
+
+
 MySQL5.0之前，一个表一次只能使用一个索引，无法同时使用多个索引分别进行条件扫描。
 
 但是从5.1开始，引入了 index merge 优化技术，对同一个表可以使用多个索引分别进行条件扫描。
@@ -745,9 +768,9 @@ MySQL5.0之前，一个表一次只能使用一个索引，无法同时使用多
 
 
 
-
-
 ```sql
+-- 可以使用索引合并的语句示例
+
 SELECT * FROM tbl_name WHERE key1 = 10 OR key2 = 20;
 
 SELECT * FROM tbl_name
@@ -769,9 +792,26 @@ SELECT * FROM t1, t2
 -- 
 ```
 
+> 
+>
+> **注意：**
+>
+> 索引合并优化算法具有以下已知限制：
+>
+> - 如果您的查询具有深度 AND/OR 嵌套的复杂 WHERE 子句，并且 MySQL 没有选择最佳计划，请尝试使用以下转换后表达方式来满足条件：
+>
+>   ```sql
+>   (x AND y) OR z => (x OR z) AND (y OR z)
+>   (x OR y) AND z => (x AND z) OR (y AND z)
+>   ```
+>
+> - 索引合并不适用于全文索引。
 
 
-https://dev.mysql.com/doc/refman/8.0/en/index-merge-optimization.html
+
+
+
+
 
 
 
@@ -785,7 +825,7 @@ https://dev.mysql.com/doc/refman/8.0/en/index-merge-optimization.html
 
 
 
-### index merge intersection access algorithm（索引合并交集访问算法）
+### index merge intersection access algorithm（索引合并-交集访问算法）
 
 对于每一个使用到的索引进行查询，查询主键值集合，然后进行合并，求交集，也就是 and 运算。下面是使用到该算法的两种必要条件：
 
@@ -794,6 +834,7 @@ https://dev.mysql.com/doc/refman/8.0/en/index-merge-optimization.html
 - **在二级索引列上进行等值查询**；如果是组合索引，组合索引的每一位都必须覆盖到，不能只是部分
 
   ```sql
+  --所有查询的字段都有索引，并且都是等值查询
   key_part1 = const1 AND key_part2 = const2 ... AND key_partN = constN
   ```
 
@@ -807,13 +848,10 @@ https://dev.mysql.com/doc/refman/8.0/en/index-merge-optimization.html
 -- 例子
 
 -- 主键可以是范围查询，二级索引只能是等值查询
-
-SELECT * FROM innodb_table
-  WHERE primary_key < 10 AND key_col1 = 20;
+SELECT * FROM innodb_table  WHERE primary_key < 10 AND key_col1 = 20;
 
 -- 没有主键的情况
-SELECT * FROM tbl_name
-  WHERE key1_part1 = 1 AND key1_part2 = 2 AND key2 = 2;
+SELECT * FROM tbl_name  WHERE key1_part1 = 1 AND key1_part2 = 2 AND key2 = 2;
 ```
 
 
@@ -1462,13 +1500,17 @@ select city,name,age from t where city = '杭州' order by name limit 1000;
 
 执行流程：
 
-- 初始化sort_buffer，确定放入name、city、age三个字段;
-- 从索引city找到第一个满足city = '杭州’条件的主键id，也就是ID_X;
-- 到主键id索引取出整行，取name、city、age三个字段值，存入sort_buffer;
-- 从索引city取下一个记录的主键id;
-- 重复step3、4直到city的值不满足查询条件为止，对应的ID(X+N);
-- 对sort_buffer中的数据按照字段name做快速排序
-- 按照排序结果取前1000行返回给客户端
+1. 初始化sort_buffer，确定放入name、city、age三个字段;
+2. 从索引city找到第一个满足city = '杭州’条件的主键id，也就是ID_X;
+3. 到主键id索引取出整行，取name、city、age三个字段值，存入sort_buffer;
+4. 从索引city取下一个记录的主键id;
+5. 重复step3、4直到city的值不满足查询条件为止，对应的ID(X+N);
+6. 对sort_buffer中的数据按照字段name做快速排序
+7. 按照排序结果取前1000行返回给客户端
+
+
+
+简单说，就是通过索引字段查找之后，然后把整行数据都加载到内存
 
 
 
