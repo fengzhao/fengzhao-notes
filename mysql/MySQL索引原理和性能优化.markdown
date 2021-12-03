@@ -711,7 +711,7 @@ PRIMARY KEY (`id`),
 
 
 
-## 索引下推（ICP）
+## 索引下推（Index Condition Pushdown）
 
 在联合索引的最左前缀匹配时，以 INDEX name (last_name,first_name,age) 这个索引为例。有如下查询
 
@@ -725,13 +725,25 @@ select * FROM test where last_name like '张%' and age=10 ;
 
 
 
+https://dev.mysql.com/doc/refman/5.6/en/index-condition-pushdown-optimization.html
+
+https://www.cnblogs.com/three-fighter/p/15246577.html
+
+https://www.cnblogs.com/youzhibing/p/12318565.html
+
+
+
 ## 索引合并（Index-merge）
 
 MySQL5.0之前，一个表一次只能使用一个索引，无法同时使用多个索引分别进行条件扫描。
 
 但是从5.1开始，引入了 index merge 优化技术，对同一个表可以使用多个索引分别进行条件扫描。
 
-当单表使用了多个索引，每个索引都可能返回一个结果集，mysql会将其求交集或者并集，或者是交集和并集的组合。也就是说一次查询中可以使用多个索引。
+当单表使用了多个索引，每个索引查找都可能返回一个结果集，mysql会将其求交集或者并集，或者是交集和并集的组合。
+
+也就是说一次查询中可以使用多个索引。
+
+
 
 
 
@@ -749,15 +761,27 @@ SELECT * FROM t1, t2
   WHERE t1.key1 = 1
   AND (t2.key1 = t1.some_col OR t2.key2 = t1.some_col2);
   
--- 对于第一条语句：使用索引并集访问算法，得到key1=10的主键有序集合，得到key2=20的主键有序集合，再进行求并集；最后回表。
+-- 对于第一条语句：使用索引并集访问算法，得到key1=10的主键有序集合，得到key2=20的主键有序集合，再进行求并集；最后回表查找。
 
--- 对于第二条语句：先丢弃non_key=30,因为它使用不到索引，where语句就变成了where key10 or key2=20，使用索引先根据索引合并并集访问算法。
--- 先通过索引查找算法查找后缩小结果集，在小表中再进行匹配查询。
+-- 对于第二条语句：先丢弃non_key=30,因为它使用不到索引，where子句就变成了where key10 or key2=20，使用索引先根据索引合并并集访问算法。
+-- 先通过索引查找算法查找后缩小结果集，在小表中再进行全表匹配查询。
 
 -- 
 ```
 
 
+
+https://dev.mysql.com/doc/refman/8.0/en/index-merge-optimization.html
+
+
+
+索引合并访问方法有几个算法，这些算法显示在 EXPLAIN 输出的 `Extra` 字段中：
+
+- `Using intersect(...)`
+- `Using union(...)`
+- `Using sort_union(...)`
+
+ 
 
 
 
@@ -1277,8 +1301,13 @@ id, select_type, table, partitions, type, possible_keys, key, key_len, ref, rows
 |       ALL        |         全表扫描         | 一般是没有where条件或者where条件没有使用索引的查询语句       |
 | :--------------: | :----------------------: | ------------------------------------------------------------ |
 |    **index**     |      **索引全扫描**      | **MySQL遍历整个索引来查询匹配行，并不会扫描表，一般是查询的字段有索引的语句** |
-|    **range**     |     **索引范围扫描**     | **索引范围扫描，常用于<、<=、>、>=、between等操作**          |
-|     **ref**      |    **非唯一索引扫描**    | **使用非唯一索引或唯一索引的前缀扫描，返回匹配某个单独值的记录行** |
+| **range** | **索引范围扫描** | **索引范围扫描，常用于<、<=、>、>=、between等操作** |
+| **index_subquery** | **索引子查询** |  |
+| **unique_subquery** | **唯一索引子查询** |  |
+| **index_merge** | **索引合并** |  |
+| **ref_or_null** |  |  |
+| **fulltext** | **全文索引扫描** |  |
+|     **ref**     |    **非唯一索引扫描**    | **使用非唯一索引或唯一索引的前缀扫描，返回匹配某个单独值的记录行** |
 |    **eq_ref**    |     **唯一索引扫描**     | **类似ref，区别在于使用的索引是唯一索引，对于每个索引键值，表中只有一条记录匹配** |
 | **const,system** | **单表最多有一个匹配行** | **单表中最多有一条匹配行，查询起来非常迅速，所以这个匹配行的其他列的值可以被优化器在当前查询中当作常量来处理** |
 |     **NULL**     |   **不用扫描表或索引**   |                                                              |
@@ -1363,3 +1392,84 @@ system查找
 
 
 
+
+
+
+
+# MySQL排序优化
+
+
+
+
+
+- **通过有序索引顺序扫描直接返回有序数据**
+
+  因为索引的结构是B+树，索引中的数据是按照一定顺序进行排列的，所以在排序查询中如果能利用索引，就能避免额外的排序操作。
+
+  EXPLAIN分析查询时，Extra显示为Using index。
+
+
+
+
+
+
+
+- **Filesort排序，对返回的数据进行排序**
+
+  所有不是通过索引直接返回排序结果的操作都是Filesort排序，也就是说进行了额外的排序操作。EXPLAIN分析查询时，Extra显示为Using filesort。
+
+  
+
+  
+
+**其实 MySQL 会给每个线程分配一块内存用于排序，称为 sort_buffer，由sort_buffer_size这个参数控制**。
+
+
+
+
+
+
+
+
+
+## ORDER BY优化的核心原则
+
+
+
+
+
+### 全字段排序
+
+```sql
+create table 't' (
+	'id' int(11) not null,
+	'city' vachar(16) not null,
+	'name' vachar(16) not null,
+	'age' vachar(16) not null,
+	'addr' varchar(128) default null,
+	primary key('id'),
+	key 'city'('city')
+)engine = InnoDB;
+
+select city,name,age from t where city = '杭州' order by name limit 1000;
+```
+
+
+
+为了避免全表扫描，需要在city字段上加上索引
+
+假设满足city = '杭州’条件的行是从ID_X到ID_(X+N)的这些记录。
+
+执行流程：
+
+- 初始化sort_buffer，确定放入name、city、age三个字段;
+- 从索引city找到第一个满足city = '杭州’条件的主键id，也就是ID_X;
+- 到主键id索引取出整行，取name、city、age三个字段值，存入sort_buffer;
+- 从索引city取下一个记录的主键id;
+- 重复step3、4直到city的值不满足查询条件为止，对应的ID(X+N);
+- 对sort_buffer中的数据按照字段name做快速排序
+- 按照排序结果取前1000行返回给客户端
+
+
+
+### rowid排序

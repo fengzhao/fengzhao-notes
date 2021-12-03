@@ -1009,15 +1009,30 @@ $ chsh -s /bin/zsh  # 修改当前用户的 shell
   比如，非常流行的直接运行网络上的脚本。
 
   ```shell
+  # curl 参数
+  -s 是slient或 quite mode模式，静默模式，不回显输出
+  -S --show-error ，通常跟-sS这样一起使用，如果有报错则输出报错
+  -L --location 通常是应对30x跳转
+  
+  
   # daocloud的设置镜像加速的脚本
   curl -sSL https://get.daocloud.io/daotools/set_mirror.sh | sh -s http://f1361db2.m.daocloud.io
+  
   # rust官方推荐的安装脚本
   curl https://sh.rustup.rs -sSf | sh -s -- --help
   
-  # sh -s 用于从标准输入中读取命令，命令在子shell中执行
-  # 当sh -s 后面跟的参数,从第一个非 - 开头的参数，就被赋值为子shell的$1,$2,$3....
+  # 用国内的阿里云安装docker
+  curl -fsSL https://get.docker.com | bash -s docker --mirror Aliyun
+  
+  # 1. 先用curl访问下载脚本，后跟管道。把下载的输出做为管道后的命令的输出
+  # 2. sh -s 用于从标准输入中读取命令，命令在子shell中执行
+  # 3. 当sh -s 后面跟的参数,从第一个非 - 开头的参数，就被赋值为子shell的$1,$2,$3....
   
   ## 本质就是下载 set_mirror.sh 这个脚本，然后再执行 ./set_mirror.sh  http://f1361db2.m.daocloud.io
+  ## 本质就是下载  https://get.docker.com 里面的脚本，然后执行
+  
+  #   $ curl -fsSL https://get.docker.com -o get-docker.sh
+  #   $ sh get-docker.sh
   ```
 
 - 使用 source shellscript.sh 或 . shellscript.sh 这种格式去运行。

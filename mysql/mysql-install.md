@@ -372,7 +372,7 @@ $ sudo service mysqld status
 
 - 基于安全考虑
 - 基于性能和稳定性考虑
-- 新功能新特性
+- 新功能、新特性
 - 8.0 已经基本稳定，可以投入生产使用
 
 
@@ -513,16 +513,36 @@ systemctl start mysql
 
 **从 5.7 升级到 8.0 的注意事项**
 
-在 MySQL5.7 中，group by 子句会隐式排序。
-
-默认情况下 GROUP BY 会隐式排序（即 group by id 后面没有 asc 和 desc 关键字）。但是 group by 自己会排序
-
-- 不推荐 **GROUP BY隐式排序（group by id）**  或**GROUP BY显式排序( group by id desc)**。
-
-- 要生成给定的排序 ORDER，请提供ORDER BY子句。`group by id order by id `
+在 MySQL5.7 中，使用 group by 分组查询，**默认会隐式按照分组条件排序。**
 
 ```sql
- CREATE TABLE t (id INTEGER,  cnt INTEGER);
+-- 在5.7中，这两个写法等价
+SELECT .. GROUP BY expr  
+SELECT .. GROUP BY expr ORDER BY expr
+```
+
+
+
+默认情况下 GROUP BY 会隐式排序（即 group by id 后面没有 asc 和 desc 关键字）。但是返回结果是按照 group by 的字段排序。
+
+
+
+**在 MySQL8.0 中，group by 该语法所返回的结果并不承诺任何顺序。**
+
+
+
+**所以最佳实践，可以确保在 5.7 和 8.0 中查询结果一致**
+
+```sql
+-- 如果仅分组，不关心是否排序
+SELECT .. GROUP BY expr 
+-- 如果分组排序（千万不要依赖默认的隐式排序）
+SELECT .. GROUP BY expr ORDER BY expr
+
+
+-- 测试效果
+
+CREATE TABLE t (id INTEGER,  cnt INTEGER);
  
 INSERT INTO t VALUES (4,1),(3,2),(1,4),(2,2),(1,1),(1,5),(2,6),(2,1),(1,3),(3,4),(4,5),(3,6);
 
@@ -546,7 +566,23 @@ select id, SUM(cnt) from t group by id  asc;
 4 rows in set (0.00 sec)
 
 -- 从 MySQL8.0 开始，不支持 GROUP BY隐式排序 和 GROUP BY显式排序
+
+
 ```
+
+
+
+#### 隐式排序起源
+
+最初为什么要用隐式排序呢？
+
+我们知道，要对一组数据进行分组，MySQL优化器会选择不同的方法。**其中最有效的一种是分组之前对数据排序，降低数据复杂度，使得连续分组变得很容易。**
+
+另外，如果可以Group by 一个索引字段来用于获取排序的数据，那么使用它的成本就非常低了（因为BTree索引是天然有序的）。
+
+而在实际操作中，Group by用到索引的频率很高。这么看，这确实是个很棒的主意！也可以说是留了一个优美的BUG。
+
+
 
 
 
