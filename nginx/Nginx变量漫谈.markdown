@@ -206,11 +206,11 @@ $ curl 'http://localhost:8080/foo'
 
 既然有“用户自定义变量”，自然也就有由 Nginx 核心和各个 Nginx 模块提供的“预定义变量”，或者说“内建变量”（builtin variables）。
 
+
+
 ### nginx 内置变量
 
-http://nginx.org/en/docs/varindex.html
-
-所有的 nginx 内置变量都可以在官方文档中找到。
+所有的 nginx 内置变量都可以在[官方文档](http://nginx.org/en/docs/varindex.html)中找到。
 
 Nginx 内建变量最常见的用途就是获取关于请求或响应的各种信息。
 
