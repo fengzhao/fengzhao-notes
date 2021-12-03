@@ -44,7 +44,7 @@ set $b "$a, $a";
 
 于是这两条指令顺序执行完之后，`$a` 的值是 `hello`，而 `$b` 的值则是 `hello, hello`
 
-这种技术在 Perl 世界里被称为“变量插值”（variable interpolation），它让专门的字符串拼接运算符变得不再那么必要。
+**这种技术在 Perl 世界里被称为“变量插值”（variable interpolation），它让专门的字符串拼接运算符变得不再那么必要。**
 
 看一个比较完备的 nginx 配置文件示例：
 
@@ -82,7 +82,9 @@ foo: hello
 
 
 
-Nginx 变量的规则：
+### Nginx 变量的规则
+
+
 
 - **Nginx 变量的创建和赋值操作发生在全然不同的时间阶段：**
   - **Nginx 变量的创建只能发生在 Nginx 配置加载的时候，或者说 Nginx 启动的时候；(Nginx启动的时候就会读取配置文件并加载)**
@@ -109,7 +111,9 @@ Nginx 变量的规则：
     }
 ```
 
-这里我们在 `location /bar` 中用 `set` 指令创建了变量 `$foo`，于是在整个配置文件中这个变量都是可见的，因此我们可以在 `location /foo` 中直接引用这个变量而不用担心 Nginx 会报错。
+这里我们在 `location /bar` 中用 `set` 指令创建了变量 `$foo`，于是在整个配置文件中这个变量都是可见的。
+
+因此我们可以在 `location /foo` 中直接引用这个变量而不用担心 Nginx 会报错。
 
 
 
