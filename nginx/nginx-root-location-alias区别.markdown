@@ -1,8 +1,12 @@
 ### Nginx 路径指令
 
+
+
+
+
 在 nginx 中，root 和 alias 指令都是用于访问服务器本地文件的。
 
-
+nginx 指定文件路径有两种方式root和alias，指令的使用方法和作用域：
 
 ```nginx
 [root]
@@ -22,7 +26,8 @@ root是用于设置请求的根路径的。可以存在于 http 、server 、loc
 
 
 ```nginx
-# 当请求URL是 /i/top.gif 时，在服务器中的资源就是/data/w3/top.gif 
+# 当请求URL是 https://www.domain.com/i/top.gif 时，在服务器中的资源就是/data/w3/top.gif
+
 location /i/ {
     root /data/w3;
 }
