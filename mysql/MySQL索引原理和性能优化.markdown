@@ -1112,17 +1112,16 @@ Simple Nested-Loop Join 是这三种方法里面最简单，最好理解，也�
 
 
 
-1、 上面的 left join 会从**驱动表 table A** 中**依次取出**每一个值。（在外层循环中）
-
-2、 然后去**非驱动表 table B** 中从**上往下依次匹配查找（在内存循环中）**，
-
-3、然后把匹配到的值进行返回，最后把所有返回值进行合并，这样我们就查找到了 table A left join table B 的结果。
 
 
+- 上面的 left join 会从**驱动表 table A** 中**逐行取出每一个值**。（在外层循环中）
+- 然后去**非驱动表 table B**   中从**上往下依次匹配**。（在内存循环中）
 
-利用这种方法，如果 table A 有 100 行，table B 有 100 行，总共需要执行 10 x 10 = 100 次查询。
+- 然后把匹配到的值进行返回，最后把所有返回值进行合并，这样我们就查找到了 table A left join table B 的结果。
 
+利用这种方法，如果 table A 有 100 行，table B 有 100 行，总共需要执行 10 x 10 = 100 次循环。
 
+**嵌套循环连接join（Nested-Loop Join Algorithms）：是每次匹配1行，匹配速度较慢，需要的内存较少。**
 
 ```sql
 -- 在实际 inner join 中，数据库引擎会自动选取数量小的表做为驱动表
@@ -1169,6 +1168,85 @@ for(Row r1 in List<Row> t1){
 
 
 
+```shell
+# 对于t1,t2,t3这样三个表，t1范围查找，t2索引查找，t3全扫描
+
+
+Table   Join Type
+t1      range
+t2      ref
+t3      ALL
+
+
+for each row in t1 matching range {
+  for each row in t2 matching reference key {
+    for each row in t3 {
+      if row satisfies join conditions, send to client
+    }
+  }
+}
+
+
+# 因为NLJ算法是通过外循环的行去匹配内循环的行，所以内循环的表会被扫描多次。
+```
+
+
+
+## Block Nested-Loop Join Algorithm
+
+https://dev.mysql.com/doc/refman/8.0/en/nested-loop-joins.html
+
+https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_join_buffer_size
+
+前面的算法， 逐行查找，每次磁盘IO都读很少数据，自然效率很低。
+
+**块嵌套循环联接（BNL）算法**，将外循环的行缓存起来，读取缓存中的行，减少内循环的表被扫描的次数。
+
+**例如，如果10行读入缓冲区并且缓冲区传递给下一个内循环，在内循环读到的每行可以和缓冲区的10行做比较。**
+
+**这样使内循环表被扫描的次数减少了一个数量级。**
+
+
+
+**在 MySQL 8.0.18 之前，如果连接字段没有索引，MySQL 默认会使用这个算法。**
+
+在 MySQL 8.0.18 之后。
+
+
+
+MySQL使用联接缓冲区时，会遵循下面这些原则：
+
+- join_buffer_size 系统变量的值决定了每个 join_buffer 的大小。
+- 联接类型为ALL、index、range时（换句话说，联接的过程会扫描索引或全表扫描时），MySQL会使用 join_buffer 。
+- join_buffer 是分配给每一个能被缓冲的 join，所以一个查询可能会使用多个 join_buffer 。
+- 使用到的列才会放到 join_buffer 中，并不是每一个整行数据。
+- 缓冲区是分配给每一个能被缓冲的联接，所以一个查询可能会使用多个联接缓冲区。
+
+
+
+**注意**
+
+```sql
+-- 注意 在 MySQL 中， CROSS JOIN  等价于  INNER JOIN ， 这两个可以互换使用。
+-- 但是在标准SQL中，这两个并不一样。
+
+SELECT * FROM t1 LEFT JOIN (t2, t3, t4)  ON (t2.a=t1.a AND t3.b=t1.b AND t4.c=t1.c)
+
+SELECT * FROM t1 LEFT JOIN (t2 CROSS JOIN t3 CROSS JOIN t4)  ON (t2.a=t1.a AND t3.b=t1.b AND t4.c=t1.c)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
 ## Index Nested-Loop Join
 
 Index Nested-Loop Join  翻译成中文叫 **索引嵌套循环连接查询**
@@ -1177,13 +1255,15 @@ Index Nested-Loop Join  翻译成中文叫 **索引嵌套循环连接查询**
 
 Index Nested-Loop Join 这种方法中，我们看到了 Index，大家应该都知道这个就是索引的意思。
 
-这个 Index 是要求非驱动表上要有索引，有了索引以后可以减少匹配次数，匹配次数减少了就可以提高查询的效率了。
+
+
+**这个 Index 是要求非驱动表上要有索引，有了索引以后可以减少匹配次数，匹配次数减少了就可以提高查询的效率了。**
 
 为什么会有了索引以后可以减少查询的次数呢？这个其实就涉及到数据结构里面的一些知识了，给大家举个例子就清楚了
 
 
 
-1. 索引嵌套循环连接是基于索引进行连接的算法，索引是基于内层表的，通过外层表匹配条件直接与内层表索引进行匹配，避免和内层表的每条记录进行比较， 从而利用索引的查询减少了对内层表的匹配次数，优势极大的提升了 join的性能：
+1. 索引嵌套循环连接是基于索引进行连接的算法，索引是基于内层表的，通过**外层表匹配条件**直接与**内层表索引**进行匹配，避免和内层表的每条记录进行比较， 从而利用索引的查询减少了对内层表的匹配次数，优势极大的提升了 join的性能：
 
 > 原来的匹配次数 = 外层表行数 * 内层表行数
 > 优化后的匹配次数= 外层表的行数 * 内层表索引的高度
