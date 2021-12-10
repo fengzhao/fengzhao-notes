@@ -728,7 +728,11 @@ PRIMARY KEY (`id`),
 
 
 
-## 索引下推（Index Condition Pushdown）
+## 索引下推ICP
+
+Index Condition Pushdown
+
+
 
 在联合索引的最左前缀匹配时，以 INDEX name (last_name,first_name,age) 这个索引为例。有如下查询
 
@@ -736,13 +740,22 @@ PRIMARY KEY (`id`),
 select * FROM test where last_name like '张%' and age=10 ;
 ```
 
-在 5.6 之前，这个语句在搜索索引树的时候，使用第一个字段的条件去匹配。找到所有匹配的行，逐行去主键索引上找到数据行，对比后面的条件。
+在 5.6 之前，这个语句在搜索索引树的时候，使用第一个字段的条件去匹配。找到所有匹配的行，逐行去主键索引上找到数据行，然后再对比后面的条件匹配。
 
 在 5.6 之后，MySQL 引入了**索引下推**优化，可以在索引遍历的过程中，对索引包含的字段先做判断，过滤掉不满足要求的行，减少回表次数。
 
 
 
-https://dev.mysql.com/doc/refman/5.6/en/index-condition-pushdown-optimization.html
+
+
+ICP优化的场景：
+
+- ICP is used for the [`range`](https://dev.mysql.com/doc/refman/8.0/en/explain-output.html#jointype_range), [`ref`](https://dev.mysql.com/doc/refman/8.0/en/explain-output.html#jointype_ref), [`eq_ref`](https://dev.mysql.com/doc/refman/8.0/en/explain-output.html#jointype_eq_ref), and [`ref_or_null`](https://dev.mysql.com/doc/refman/8.0/en/explain-output.html#jointype_ref_or_null) access methods when there is a need to access full table rows.
+- 对于InnoDB表，ICP只能用在二级索引上。ICP的核心目的就是减少回表和IO次数。
+
+
+
+https://dev.mysql.com/doc/refman/8.0/en/index-condition-pushdown-optimization.html
 
 https://www.cnblogs.com/three-fighter/p/15246577.html
 
@@ -1058,8 +1071,6 @@ https://github.com/Snailclimb/JavaGuide/blob/master/docs/database/MySQL%E9%AB%98
 
 **改变驱动表就意味着改变连接顺序，只有在不会改变最终输出结果的前提下才可以对驱动表做优化选择。**
 
-
-
 https://blog.csdn.net/lkforce/article/details/102940091
 
 
@@ -1068,23 +1079,64 @@ https://blog.csdn.net/lkforce/article/details/102940091
 
 写过或者学过 SQL 的人应该都知道 left join，知道 left join 的实现的效果，就是保留左表的全部信息，然后把右表往左表上拼接，如果拼不上就是 null。
 
-除了 left join 以外，还有 inner join、outer join、right join，这些不同的 join 能达到的什么样的效果，大家应该都了解了，如果不了解的可以看看网上的帖子或者随便一本 SQL 书都有讲的。
-
-今天我们不讲这些 join 能达到什么效果，我们主要讲这些 join 的底层原理是怎么实现的，也就是具体的效果是怎么呈现出来的。
+除了 left join 以外，还有 inner join、outer join、right join，这些不同的 join 能达到的什么样的效果，大家应该都了解了。
 
 
 
-join 主要有 Nested Loop、Hash Join、Merge Join 这三种算法方式，我们这里先讲最普遍的，也是最好的理解的 Nested Loop join 。
+驱动表的选择原则
 
-Nested Loop join 翻译过来就是**嵌套循环连接**的意思，那什么又是嵌套循环呢？嵌套大家应该都能理解，就是一层套一层；那循环呢，你可以理解成是 for 循环。
+MySQL 会如何选择驱动表，按从左至右的顺序选择第一个？
 
-Nested Loop 里面又有三种细分的连接方式，分别是 Simple Nested-Loop Join、Index Nested-Loop Join、Block Nested-Loop Join，接下来我们就分别去看一下这三种细分的连接方式。
+
+
+
+
+多表连接的顺序？
+
+假设我们有 3 张表：A、B、C，和如下 SQL
+
+```sql
+-- 伪 SQL，不能直接执行
+A LEFT JOIN B ON B.aId = A.id  LEFT JOIN C ON C.aId = A.id
+WHERE A.name = '666' AND B.state = 1 AND C.create_time > '2019-11-22 12:12:30'
+```
+
+是 A 和 B 联表处理完之后的结果再和 C 进行联表处理，还是 A、B、C 一起联表之后再进行过滤处理 ，还是说这两种都不对，有其他的处理方式 ？
+
+
+
+join 主要有 Nested Loop、Hash Join、Merge Join 这三种算法方式，最普遍最好的理解的 Nested Loop join 。
+
+顾名思义就是嵌套循环连接。
+
+但是根据场景不同可能有不同的变种：
+
+- Simple Nested-Loop join
+- Index Nested-Loop join
+- Block Nested-Loop join
+- Betched Key Access join
+
+
+
+Nested Loop join 翻译过来就是**嵌套循环连接**的意思，那什么又是嵌套循环呢？
+
+嵌套大家应该都能理解，就是一层套一层；那循环呢，你可以理解成是 for 循环。
+
+
 
 
 
 在正式开始之前，先介绍两个概念：
 
-驱动表（也叫主表）：
+- 驱动表（也叫主表）：
+
+
+
+小表驱动大表。
+
+
+
+我们常说，**小表驱动大表，驱动表一定是小表吗？其实更精准一点是指的是根据条件获得的子集合一定要小，而不是说实体表本身一定要小，大表如果获得的子集合小，一样可以简称这个大表为驱动表。 ，最好选择与其他表的主键字段进行比较，或者与已经索引的字段进行比较，这样一来，就有意识地将业务需求的主表**
 
 和被驱动表（也叫非驱动表，还可以叫匹配表，亦可叫内表），简单来说，驱动表就是主表，left join 中的左表就是驱动表，right join 中的右表是驱动表。
 
@@ -1122,6 +1174,24 @@ Simple Nested-Loop Join 是这三种方法里面最简单，最好理解，也�
 利用这种方法，如果 table A 有 100 行，table B 有 100 行，总共需要执行 10 x 10 = 100 次循环。
 
 **嵌套循环连接join（Nested-Loop Join Algorithms）：是每次匹配1行，匹配速度较慢，需要的内存较少。**
+
+```java
+//伪代码表示
+List<Row> result = new ArrayList<>();
+for(Row r1 in List<Row> t1){
+	for(Row r2 in List<Row> t2){
+		if(r1.id = r2.tid){
+			result.add(r1.join(r2));
+		}
+	}
+}
+
+// 很多人说
+```
+
+
+
+
 
 ```sql
 -- 在实际 inner join 中，数据库引擎会自动选取数量小的表做为驱动表
@@ -1190,7 +1260,7 @@ for each row in t1 matching range {
 # 因为NLJ算法是通过外循环的行去匹配内循环的行，所以内循环的表会被扫描多次。
 ```
 
-
+https://blog.csdn.net/weixin_44663675/article/details/112190762
 
 ## Block Nested-Loop Join Algorithm
 
@@ -1539,6 +1609,48 @@ system查找
 
 
 
+
+
+
+### Extra 类型
+
+
+
+关于如何理解MySQL执行计划中Extra列的Using where、Using Index、Using index condition，Using index,Using where这四者的区别。
+
+首先，我们来看看官方文档关于三者的简单介绍（官方文档并没有介绍Using index,Using where这种情况）
+
+
+
+**Using where**
+
+  表示MySQL Server在存储引擎收到记录后进行“后过滤”（Post-filter）。
+
+如果查询未能使用索引，Using where的作用只是提醒我们MySQL将用where子句来过滤结果集。这个一般发生在MySQL服务器，而不是存储引擎层。
+
+**一般发生在不能走索引扫描的情况下或者走索引扫描，但是有些查询条件不在索引当中的情况下。**
+
+注意，Using where过滤元组和执行计划是否走全表扫描或走索引查找没有关系。
+
+Using where: 仅仅表示MySQL服务器在收到存储引擎返回的记录后进行“后过滤”（Post-filter）。
+
+ 不管SQL语句的执行计划是全表扫描（type=ALL)或非唯一性索引扫描（type=ref)。
+
+网上有种说法“Using where：表示优化器需要通过索引回表查询数据" ，上面实验可以证实这种说法完全不正确。
+
+
+
+**Using Index**
+
+ [覆盖索引](###索引覆盖)：表示直接访问索引就能够获取到所需要的数据（），不需要通过回表查询。
+
+注意：执行计划中的Extra列的“Using index”跟type列的“index”不要混淆。Extra列的“Using index”表示索引覆盖。而type列的“index”表示Full Index Scan。
+
+
+
+**Using Index Condition**
+
+[索引下推](###索引下推ICP)：会先条件过滤索引，过滤完索引后找到所有符合索引条件的数据行，随后用 WHERE 子句中的其他条件去过滤这些数据行；
 
 
 
