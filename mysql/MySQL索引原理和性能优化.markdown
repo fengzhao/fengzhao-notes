@@ -69,9 +69,9 @@ MySql 最常用存储引擎 InnoDB 和 MyISAM 都不支持 Hash 索引，它们�
 
 但是如果你在创建索引的时候定义其类型为 Hash，成功建表，而且你通过 SHOW CREATE TABLE  和 show index from table 来看，实际还是 B-Tree
 
-虽然常见存储引擎并不支持 Hash 索引，但 InnoDB 有另一种实现方法：自适应哈希索引。
+**虽然常见存储引擎并不支持 Hash 索引，但 InnoDB 有另一种实现方法：自适应哈希索引。**
 
-InnoDB 存储引擎会监控对表上索引的查找，如果观察到建立哈希索引可以带来速度的提升，则建立哈希索引。  
+**InnoDB 存储引擎会监控对表上索引的查找，如果观察到建立哈希索引可以带来速度的提升，则建立哈希索引。**  
 
 
 
@@ -1068,10 +1068,22 @@ https://github.com/Snailclimb/JavaGuide/blob/master/docs/database/MySQL%E9%AB%98
 
 
 
-- 索引列字段数据类型不一致
-  - 
 
+
+
+
+
+
+- 索引列字段数据类型不一致
+  
+- 两个表的索引列的字段数据类型不一致。
+  - 索引列字段和常量比较时，数据类型不一致。
+  
 - 字符集不一致
+
+  要比较的字段字符集不一致
+
+- 
 
 
 
@@ -1085,7 +1097,8 @@ https://github.com/Snailclimb/JavaGuide/blob/master/docs/database/MySQL%E9%AB%98
 
 驱动表的确定很关键，会直接影响多表连接的关联顺序，也决定了后续关联时的查询性能。
 
-
+- 驱动表/主表/前表
+- 被驱动表/副表/后表
 
 驱动表的选择遵循一个原则：**`在对最终结果集没影响的前提下，优先选择结果集最小的那张表作为驱动表`**。
 
@@ -1391,7 +1404,6 @@ CREATE TABLE `t2` (
   KEY `d` (`d`)
 ) ENGINE=InnoDB;
 
-
 -- t2测试数据
 delimiter ;;
 create procedure idata2()
@@ -1415,14 +1427,14 @@ create table t1 like t2;
 insert into t1 (select * from t2 where id<=100);
 
 
--- t1的存储过程，插入数据
+-- t1测试数据
 delimiter ;;
-create procedure idata()
+create procedure idata1()
 begin
   declare i int;
   set i=2000;
   while(i<=3000)do
-    insert into t1 values(i, i, i);
+    insert into t1 values(i, i, i, i, i);
     set i=i+1;
   end while;
 end;;
@@ -1430,7 +1442,7 @@ end;;
 delimiter ;
 
 -- 调用存储过程
-call idata();
+call idata1();
 
 
 
@@ -1443,14 +1455,28 @@ select *  from t1 , t2
 
 
 
--- 连表查询，匹配到了1-100这100行数据
+-- 内连接查询，匹配到了1-100这100行数据
 select count(*)  from t1  join t2 on  t1.id=t2.id
 
 -- 查看执行计划
+
+
 explain select count(*)  from t1  join t2 on  t1.id=t2.id
+-- 此时驱动表是t2
 
--- 对于t2
 
+explain select t1.* from t1  join t2 on  t1.id=t2.id
+
+explain select t2.* from t1  join t2 on  t1.id=t2.id
+
+-- 不等值连接查询
+explain select count(*) from t1  join t2 on  t1.id != t2.id
+
+
+
+
+-- t1 的数据  1-100  2000-3000  一共是1101条数据
+-- t2 的数据  1-1000  一共是1000条数据
 
 
 ```
@@ -1584,13 +1610,39 @@ EXPLAIN select  apprdate from temp_policy_org_base where apprdate > '8' and appr
 
 
 
+#### [`index_subquery`](https://dev.mysql.com/doc/refman/8.0/en/explain-output.html#jointype_index_subquery)
+
+#### [`unique_subquery`](https://dev.mysql.com/doc/refman/8.0/en/explain-output.html#jointype_unique_subquery)
+
+#### [`index_merge`](https://dev.mysql.com/doc/refman/8.0/en/explain-output.html#jointype_index_merge)
+
+#### [`ref_or_null`](https://dev.mysql.com/doc/refman/8.0/en/explain-output.html#jointype_ref_or_null)
+
+
+
+#### fulltext场景
+
+
+
 #### ref场景
 
 - 根据索引字段进行等值查询，**返回匹配某个单独值的记录行** （非唯一索引，或者唯一索引的前缀扫描。）
 
+  ```sql
+  SELECT * FROM ref_table WHERE key_column=expr;
+  ```
+
+  
+
 - join联表查询
 
-**customer**、**payment** 表关联查询，关联字段`customer.customer_id`（主键），`payment.customer_id`（非唯一索引）
+**ref_table、other_table** 表关联查询，关联字段`customer.customer_id`（主键），`payment.customer_id`（非唯一索引）
+
+```sql
+SELECT * FROM ref_table,other_table  WHERE ref_table.key_column=other_table.column;
+```
+
+
 
 关联查询时必定会有一张表进行全表扫描，此表一定是几张表中记录行数最少的表，然后再通过非唯一索引寻找其他关联表中的匹配行，以此达到表关联时扫描行数最少。
 
@@ -1600,7 +1652,13 @@ EXPLAIN select  apprdate from temp_policy_org_base where apprdate > '8' and appr
 
 
 
+
+
+
+
 #### eq_ref场景
+
+表示对于前表的每一个结果，都只能匹配到后表的一行结果。并且查询的比较操作通常是 `=`，查询效率较高。
 
 
 
@@ -1615,16 +1673,18 @@ SELECT * FROM ref_table,other_table  WHERE ref_table.key_column_part1=other_tabl
 
 #### system/const场景
 
-**单表中最多有一条匹配行，查询起来非常迅速，所以这个匹配行的其他列的值可以被优化器在当前查询中当作常量来处理**
+**单表中最多有一条匹配行，查询起来非常迅速，所以这个匹配行的其他列的值可以被优化器在当前查询中当作常量来处理。**
 
-将唯一索引或主键，跟常量匹配查找。
+场景：将唯一索引或主键，跟常量匹配查找。
 
 ```shell
 SELECT * FROM tbl_name WHERE primary_key=1;
 SELECT * FROM tbl_name  WHERE primary_key_part1=1 AND primary_key_part2=2;
+
+
 ```
 
-system查找
+system查找，表中只有一行。system是特殊的const查找情况。
 
 
 
@@ -1671,6 +1731,10 @@ Using where: 仅仅表示MySQL服务器在收到存储引擎返回的记录后�
 **Using Index Condition**
 
 [索引下推](###索引下推ICP)：会先条件过滤索引，过滤完索引后找到所有符合索引条件的数据行，随后用 WHERE 子句中的其他条件去过滤这些数据行；
+
+
+
+
 
 
 
