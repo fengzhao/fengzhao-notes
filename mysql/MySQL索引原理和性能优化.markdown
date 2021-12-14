@@ -1639,7 +1639,7 @@ EXPLAIN select  apprdate from temp_policy_org_base where apprdate > '8' and appr
 **ref_table、other_table** 表关联查询，关联字段`customer.customer_id`（主键），`payment.customer_id`（非唯一索引）
 
 ```sql
-SELECT * FROM ref_table,other_table  WHERE ref_table.key_column=other_table.column;
+    SELECT * FROM ref_table,other_table  WHERE ref_table.key_column=other_table.column;
 ```
 
 
