@@ -784,9 +784,19 @@ mkdir /data/jenkins_home
 
 
 
+## 构建触发器
+
+构建触发器，顾名思义，就是构建任务的触发器。
+
+如果不配置这一段，则要手动发布项目。配置如下后，则根据配置自动发布，例如每天发布一次，或代码更新就发布一次。
 
 
 
+- 定时构建
+- Generic Webhook Trigger （插件，一般默认都会安装）
+- Build when a change is pushed to GitLab （gitlab插件，一般默认都会安装）
+
+ 
 
 ## 常用插件
 
@@ -924,6 +934,22 @@ docker run -d --rm --name=agent1 -p 22:22 -e "JENKINS_AGENT_SSH_PUBKEY=[your-pub
 **基础实现**
 
 使用`Gitlab Hook Plugin`，并在 Jenkins 和 GitLab 中分别配置。在Jenkins 插件管理中搜索并安装插件：
+
+
+
+
+
+# CDF基金会
+
+2019年3月12日，CDF（Continuous Delivery Foundation，持续交付基金会）在开源领袖峰会上启动。
+
+Linux 基金会与 CloudBees、Google 和一些其他公司启动了一个新的开源软件基金会，也就是持续交付基金会(CDF)。
+
+CDF 相信持续交付的力量，它旨在培养与支持开源生态，以及厂商中立的项目。
+
+
+
+Jenkins 的贡献者们已经决定，我们的项目应该加入这个新的基金会。 实际上，这样的讨论持续了多年，大致的动机简洁摘要在这里。
 
 
 
