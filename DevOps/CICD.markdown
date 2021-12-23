@@ -835,21 +835,21 @@ Blue Ocean 插件默认没有被安装。
 
 
 
-## jenkins agent节点
+## jenkins 分布式构建
 
+项目比较多时，单个master负载较大，构建会出现长时间等待，可以采用 master-slave 架构来提升构建性能。
 
+利用多台服务器来进行构建。分担构建压力。
 
 Jenkins采用分布式架构，分为server节点和agent节点。可以采用多个agent节点在不同环境中为多个项目并行构建多个任务。
 
+- master 节点安装 jenkins 服务。 master 节点负责分配调度任务。
 
+- agent 节点安装 jdk 和各种编译运行环境。agent 节点负责具体的构建任务。
 
-server节点（jenkins安装节点）也是可以运行构建任务的，但我们一般使其主要来做任务的调度。
+  
 
-
-
-
-
-（毕竟server节点挂了就都...）agent节点专门用于任务的执行。
+server节点（jenkins安装节点）也是可以运行构建任务的，但我们分布式构建场景中一般使其主要来做任务的调度。
 
 随着现在容器的盛行，我们可以将server节点和agent节点在容器或者基于Kubernetes中部署。
 
