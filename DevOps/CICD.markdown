@@ -833,6 +833,12 @@ Blue Ocean 插件默认没有被安装。
 
 
 
+### NodeJS插件
+
+
+
+ 
+
 
 
 ## jenkins 分布式构建
