@@ -9,6 +9,7 @@ in_path(){
     oldIFS=${IFS}
     IFS=":"
 
+    # 遍历操作系统的PATH，查找传入的参数文件名是不是在其中
     for directory in $ourpath 
     do 
         if [ -x $directory/$cmd ] ; then 
@@ -30,6 +31,7 @@ checkForCmdInPath(){
             if [ ! -x $var ] ; then 
                 return 1
             fi
+        # 如果不是以斜杠开头，则认为不是路径，交给in_path函数来处理：in_path()第二个参数就是字符串"$PATH"
         elif ! in_path $var "$PATH" ; then 
             return 2
         fi
