@@ -45,6 +45,11 @@ col_name data_type [GENERATED ALWAYS] AS (expr)
   [VIRTUAL | STORED] [NOT NULL | NULL]
   [UNIQUE [KEY]] [[PRIMARY] KEY]
   [COMMENT 'string']
+  
+-- 其中，GENERATED ALWAYS可以省略；
+-- AS定义了生成列的表达式；
+-- VIRTUAL表示创建虚拟生成列，虚拟列的值不会存储，而是在读取时BEFORE触发器之后立即计算；
+-- STORED表示存储生成列；默认创建的是VIRTUAL生成列。
 ```
 
 
