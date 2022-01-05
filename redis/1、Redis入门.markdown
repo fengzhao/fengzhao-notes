@@ -881,7 +881,7 @@ OK
 
 在配置文件 redis.conf 中，可以通过参数 `maxmemory  <bytes>`  来设定最大内存。
 
-
+当现有内存大于 maxmemory 时，便会触发 redis 主动淘汰内存方式，通过设置 maxmemory-policy
 
 
 
