@@ -1,2 +1,7 @@
 #!/bin/bash 
 
+validAlphaNum(){
+    
+
+
+}
