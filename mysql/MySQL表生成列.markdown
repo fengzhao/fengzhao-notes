@@ -2,9 +2,18 @@
 
 https://blog.csdn.net/qq_32392597/article/details/108200778
 
-SQL 建表语句支持指定的生成列，列的取值由其定义计算出来的。
+**在 SQL 数据库中，生成列（Generated Column）是指由表中其他字段计算得到的列，因此也称为计算列（Computed Column）**。
+
+在 SQL 建表语句支持指定的生成列，列的取值由其定义计算出来的。
 
 
+
+MySQL 5.7 引入了生成列，支持虚拟和存储两种类型的生成列。
+
+- Virtual（虚拟）：这个类型的列会在读取表记录时自动计算此列的结果并返回。
+- Stored（存储）：这个类型的列会在表中插入一条数据时自动计算对应的值，并插入到这个列中，那么这个列会作为一个常规列存在表中。
+
+默认创建的是`VIRTUAL`生成列。
 
 ```sql
 
@@ -36,11 +45,18 @@ col_name data_type [GENERATED ALWAYS] AS (expr)
   [VIRTUAL | STORED] [NOT NULL | NULL]
   [UNIQUE [KEY]] [[PRIMARY] KEY]
   [COMMENT 'string']
+  
+-- 其中，GENERATED ALWAYS可以省略；
+-- AS定义了生成列的表达式；
+-- VIRTUAL表示创建虚拟生成列，虚拟列的值不会存储，而是在读取时BEFORE触发器之后立即计算；
+-- STORED表示存储生成列；默认创建的是VIRTUAL生成列。
 ```
 
 
 
 
 
-- Virtual（虚拟）：这个类型的列会在读取表记录时自动计算此列的结果并返回。
-- Stored（存储）：这个类型的列会在表中插入一条数据时自动计算对应的值，并插入到这个列中，那么这个列会作为一个常规列存在表中。
+
+
+
+
