@@ -330,7 +330,7 @@ shell脚本有种执行方式：
 
 - bash ScriptName.sh 或 sh ScriptName.sh 
 
-  这种方式执行，脚本中可以没有执行权限，也可以没指定解释器
+  这种方式执行，脚本中可以没有执行权限，也可以没指定解释器。
 
 - ./ScriptName.sh 或  /path/ScriptName.sh
 
@@ -381,13 +381,29 @@ root@vpsServer:~#
 使用 **$VARIABLES** 或 **${VARIABLES}** 来引用变量。应用程序运行时通过读取环境变量
 
 ```shell
-# 声明变量 NAME='VALUE'，变量名大写，变量值用引号括起来,防止值中有空格
+# 变量声明，变量名大写，变量值用引号括起来，防止值中有空格
+
+# 单引号声明变量 NAME='VALUE'，单引号不能识别特殊语法，即raw string
+
+# 双引号声明变量 NAME="VALUE"，双引号不能识别特殊语法，可以实现变量插值
+
+
 root@vpsServer:~# NAME='fengzhao'
-# 引用变量加上引号，防止变量名中有空格，${VARIABLES}
 root@vpsServer:~# echo ${NAME}
 fengzhao
-root@vpsServer:~# 
+root@vpsServer:~#
 
+# 单引号变量，raw string
+root@vpsServer:~# NAME2='${NAME}'
+root@vpsServer:~# echo ${NAME2}
+${NAME}
+root@vpsServer:~#
+
+# 双引号变量
+root@vpsServer:~# NAME3="${NAME}"
+root@vpsServer:~# echo ${NAME3}
+fengzhao
+root@vpsServer:~#
 ```
 
 
@@ -1936,7 +1952,23 @@ esac
 
 子shell会从父shell中继承很多环境，如变量、命令全路径、文件描述符、当前工作目录、陷阱等等，但子shell有很多种类型，不同类型的子shell继承的环境不相同。
 
-可以使用**$BASH_SUBSHELL**变量来查看从当前进程开始的子shell层数，**$BASHPID** 查看当前所处BASH的PID，这不同于特殊变量"$$"值，因为"$$"在大多数情况下都会从父shell中继承。
+可以使用 **${BASH_SUBSHELL}** 变量来查看从当前进程开始的子shell层数，**${BASHPID}** 查看当前所处 BASH 的 PID。
+
+```shell
+root@fengzhao-ubuntu ~# cat 1.sh
+#!/bin/bash
+echo ${BASHPID}
+root@fengzhao-ubuntu ~#
+root@fengzhao-ubuntu ~# bash 1.sh
+2759143
+root@fengzhao-ubuntu ~#
+
+#　对于这个脚本，
+```
+
+
+
+
 
 
 
