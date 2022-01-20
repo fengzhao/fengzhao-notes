@@ -416,7 +416,7 @@ root@vpsServer:~#
 根据变量的生命周期，可以分为两类：
 
 - 永久的：需要修改配置文件，变量永久生效。（这种变量需要在文件中声明）
-- 临时的：使用 `export` 命令声明即可，变量在关闭 shell 时失效。（这种变量在命令中声明）
+- 临时的：使用 `export` 命令声明即可，变量在关闭 shell 时失效。（这种变量在命令或在脚本中声明，用的比较多）
 
 
 
@@ -476,7 +476,9 @@ mesg n || true
 
 # pathmunge大致的作用是：判断当前系统的PATH中是否有该命令的目录，如果没有，则判断是要将该目录放于PATH之前还是之后
 pathmunge () {
+
     case ":${PATH}:" in
+        
         *:"$1":*)
             ;;
         *)
@@ -522,6 +524,25 @@ export PATH USER LOGNAME MAIL HOSTNAME HISTSIZE HISTCONTROL
 # By default, we want umask to get set. This sets it for login shell
 # Current threshold for system reserved uid/gids is 200
 # You could check uidgid reservation validity in
+
+if [ $UID -gt 199 ] && [ "`/usr/bin/id -gn`" = "`/usr/bin/id -un`" ]; then
+    umask 002
+else
+    umask 022
+fi
+
+for i in /etc/profile.d/*.sh /etc/profile.d/sh.local ; do
+    if [ -r "$i" ]; then
+        if [ "${-#*i}" != "$-" ]; then
+            . "$i"
+        else
+            . "$i" >/dev/null
+        fi
+    fi
+done
+
+unset i
+unset -f pathmunge
 
 ```
 
