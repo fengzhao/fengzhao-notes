@@ -523,7 +523,7 @@ docker load -i spring-boot-docker.tar
 
 #### Dockerfile 构建镜像
 
-通过 docker build 命令来从 Dockerfile 和下文中构建镜像，上下文一般就是 Dockerfile 文件所在的路径， 其中包含一系列制作镜像的所需的原文件，上下文可以在某个路径，或者是某个 URL （一般是git repo）中。
+通过 docker build 命令来从 Dockerfile 和下文中构建镜像，上下文一般就是 Dockerfile 文件所在的路径， 其中包含一系列制作镜像的所需的原文件，上下文可以是某个路径，或者是某个 URL （一般是git repo）中。
 
 上下文会被递归处理，所以路径下可以包含子文件夹。
 
@@ -637,9 +637,27 @@ https://github.com/docker-library/redis/blob/master/6.2/Dockerfile
 
 
 
+
+
+Rootless 模式允许以非 root 用户身份运行 **Docker 守护进程（dockerd）和容器**，以缓解 Docker 守护进程和容器运行时中潜在的漏洞。Rootless 模式是在 Docker v19.03 版本作为实验性功能引入的，在 Docker v20.10 版本 GA。
+
+Rootless 模式目前对 Cgroups 资源控制，Apparmor 安全配置，Overlay 网络，存储驱动等还有一定的限制，暂时还不能完全取代 “Rootful” Docker。关于 Docker Rootless 的详细信息参见 Docker 官方文档 [ Run the Docker daemon as a non-root user (Rootless mode)] (https://docs.docker.com/engine/security/rootless/#limiting-resources)
+
+Rootless 模式利用 user namespaces 将容器中的 root 用户和 Docker 守护进程（dockerd）用户映射到[宿主机](https://cloud.tencent.com/product/cdh?from=10680)的非特权用户范围内。Docker 此前已经提供了 `--userns-remap` 标志支持了相关能力，提升了容器的安全隔离性。Rootless 模式在此之上，让 Docker 守护进程也运行在重映射的用户名空间中。
+
+
+
 #### Dockerfile 中的指令
 
 
+
+**FROM**
+
+
+
+**COPY**
+
+**ADD**
 
 Dockerfile 中的 COPY 指令和 ADD 指令都可以将主机上的资源复制或加入到容器镜像中，都是在构建镜像的过程中完成的。
 
@@ -653,12 +671,17 @@ COPY 指令只能从执行 docker build 所在的主机上读取资源并复制�
 
 
 
-WORKDIR 
+**WORKDIR** 
 
 WORKDIR指令设置 Dockerfile 中的任何 RUN，CMD，ENTRPOINT，COPY 和 ADD 指令的工作目录。
 
 如果 WORKDIR 指 定的目录不存在，即使随后的指令没有用到这个目录，都会创建。
 
+
+
+**ENTRYPONIT**
+
+**CMD**
 
 
 
