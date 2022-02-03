@@ -577,7 +577,7 @@ server {
 
 ### listen 指令
 
-listen 指令在 server 块中生效，用来配置监听哪些端口，由这些端口来处理请求。listen 指令的配置语法如下：
+listen 指令在 server 块中生效，用来配置监听哪些网络接口地址，哪些端口，由这些端口来处理请求。listen 指令的配置语法如下：
 
 ```nginx
 Syntax:	listen address[:port] [default_server] [ssl] [http2 | spdy] [proxy_protocol] [setfib=number] [fastopen=number] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [ipv6only=on|off] [reuseport] [so_keepalive=on|off|[keepidle]:[keepintvl]:[keepcnt]];
@@ -590,7 +590,7 @@ Context:	server
 
 
 
-＃常见的litsen配置语法
+# 常见的litsen配置语法
 
 listen 443 ssl http2;
 
@@ -612,9 +612,9 @@ listen *:8080；
 
 ### server_name 指令
 
-server_name 指令是用来配置究竟是哪个 server 来处理我们的请求的。
+server_name 指令是用来配置究竟是哪个 server 块来处理我们的请求的。
 
-- server_name 指令后可以跟多个域名，第一个是主域名，多个域名之间空格分隔
+- server_name 指令后可以跟多个域名，第一个是主域名，多个域名之间空格分隔。
 - 泛域名：仅支持在最前或最后加 *，例如：`server_name* .taohui.tech`
 - 正则表达式匹配：`server_name www.taohui.tech ~^www\d+\.taohui\.tech$;`
 
@@ -626,7 +626,41 @@ Context http, server, location
 
 
 
+nginx 是如何处理一个请求的，假设有这样一个配置文件，配置了三个域名。
 
+```nginx
+server {
+    listen      80;
+    server_name example.org www.example.org;
+    ...
+}
+
+server {
+    listen      80;
+    server_name example.net www.example.net;
+    ...
+}
+
+server {
+    listen      80;
+    server_name example.com www.example.com;
+    ...
+}
+```
+
+当 nginx 接收到 http 请求时，先从请求头提取到 Host 头部字段，然后跟 server_name 匹配来确认是哪个server块来处理请求。如果都不匹配，那么就用这个端口号的 default server 来处理。
+
+在这个例子中，就是第一个来处理。——这是nginx的标准做法。也可以在端口号后面加上一个 default_server 来指定这个行为。
+
+```nginx
+server {
+    listen      80 default_server;
+    server_name example.net www.example.net;
+    ...
+}
+```
+
+对于没有
 
 ### set 指令
 
@@ -731,13 +765,13 @@ server {
 
 
 
-上游
+**上游**
 
 upstream 即上游的意思，是一个想对到概念，从客户端到中间的网络链路到服务器到链路中，可以将越接近客户到设备越理解成下游，相反到为上游。
 
 所以如果只有一个upstream，可以将其为理解成转发客户到请求到服务器，然后响应服务器转发到客户端到过程。
 
-下游
+**下游**
 
 
 

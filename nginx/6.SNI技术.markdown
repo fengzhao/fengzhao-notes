@@ -1,0 +1,76 @@
+
+
+## 背景
+
+早期的SSLv2根据经典的公钥基础设施PKI(Public Key Infrastructure)设计，它默认认为：一台服务器（或者说一个IP）只会提供一个服务，所以在SSL握手时，服务器端可以确信客户端申请的是哪张证书。
+
+
+
+当虚拟主机发展起来了，这就造成了一个IP（一个服务器多个网站）会对应多个域名的情况。
+
+解决办法有一些，例如申请泛域名证书，对所有*.yourdomain.com的域名都可以认证，但如果你还有一个yourdomain.net的域名，那就不行了。
+
+
+
+在HTTP协议中，请求的域名作为主机头（Host）放在HTTP Header中，所以服务器端知道应该把请求引向哪个域名。
+
+但是早期的SSL做不到这一点，因为在SSL握手的过程中，根本不会有Host的信息，所以服务器端通常返回的是配置中的第一个可用证书。
+
+因而一些较老的环境，可能会产生多域名分别配好了证书，但返回的始终是同一个。
+
+
+
+
+
+SNI（Server Name Indication）定义在RFC 4366，是一项用于改善SSL/TLS的技术，在SSLv3/TLSv1中被启用。
+
+它允许客户端在发起SSL握手请求时（具体说来，是客户端发出SSL请求中的ClientHello阶段），就提交请求的Host信息，使得服务器能够切换到正确的域并返回相应的证书。
+
+要使用SNI，需要客户端和服务器端同时满足条件，幸好对于现代浏览器来说，大部分都支持SSLv3/TLSv1，所以都可以享受SNI带来的便利。
+
+
+
+
+
+nginx支持TLS协议的SNI扩展（Server Name Indication，简单地说这个扩展使得在同一个IP上可以以不同的证书serv不同的域名）。不过，SNI扩展还必须有客户端的支持，另外本地的OpenSSL必须支持它。
+
+如果启用了SSL支持，nginx便会自动识别OpenSSL并启用SNI。
+
+是否启用SNI支持，是在编译时由当时的 ssl.h 决定的（SSL_CTRL_SET_TLSEXT_HOSTNAME），如果编译时使用的OpenSSL库支持SNI，则目标系统的OpenSSL库只要支持它就可以正常使用SNI了。
+
+**nginx在默认情况下是TLS SNI support disabled。**
+
+```shell
+# 查看是否启用TLS SNI
+/usr/local/nginx/sbin/nginx -V
+
+TLS SNI support enabled
+```
+
+
+
+对于https的域名在同一个IP上如何同时存在多个虚拟主机呢？在 [nginx](http://nginx.org/en/docs/http/server_names.html) 手册中有这样的配置：
+
+```nginx
+server {
+    listen          443 ssl;
+    server_name     www.example.com;
+    ssl_certificate www.example.com.crt;
+    ...
+}
+
+server {
+    listen          443 ssl;
+    server_name     www.example.org;
+    ssl_certificate www.example.org.crt;
+    ...
+}
+```
+
+
+
+
+
+
+
+CDN
