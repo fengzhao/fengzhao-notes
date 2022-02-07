@@ -653,9 +653,49 @@ Rootless 模式利用 user namespaces 将容器中的 root 用户和 Docker 守�
 
 **FROM**
 
+一个 `Dockerfile` 中 `FROM` 是必备的指令，并且必须是第一条指令。
+
+在 [Docker Hub](https://hub.docker.com/search?q=&type=image&image_filter=official) 上有非常多的高质量的官方镜像，有可以直接拿来使用的服务类的镜像，如 [`nginx`](https://hub.docker.com/_/nginx/)、[`redis`](https://hub.docker.com/_/redis/)、[`mongo`](https://hub.docker.com/_/mongo/)、[`mysql`](https://hub.docker.com/_/mysql/)、[`httpd`](https://hub.docker.com/_/httpd/)、[`php`](https://hub.docker.com/_/php/)、[`tomcat`](https://hub.docker.com/_/tomcat/) 等；
+
+也有一些方便开发、构建、运行各种语言应用的镜像，如 [`node`](https://hub.docker.com/_/node)、[`openjdk`](https://hub.docker.com/_/openjdk/)、[`python`](https://hub.docker.com/_/python/)、[`ruby`](https://hub.docker.com/_/ruby/)、[`golang`](https://hub.docker.com/_/golang/) 等。
+
+可以在其中寻找一个最符合我们最终目标的镜像为基础镜像进行定制。
+
+
+
+如果没有找到对应服务的镜像，官方镜像中还提供了一些更为基础的操作系统镜像。如 [`ubuntu`](https://hub.docker.com/_/ubuntu/)、[`debian`](https://hub.docker.com/_/debian/)、[`centos`](https://hub.docker.com/_/centos/)、[`fedora`](https://hub.docker.com/_/fedora/)、[`alpine`](https://hub.docker.com/_/alpine/) 等，这些操作系统的软件库为我们提供了更广阔的扩展空间。
+
+
+
+除了选择现有镜像为基础镜像外，Docker 还存在一个特殊的镜像，名为 `scratch`。这个镜像是虚拟的概念，并不实际存在，它表示一个空白的镜像。
+
+
+
+
+
+
+
+**ARG**
+
+Dockerfile 里面的 ARG 指令定义了一个变量，在运行 `docker build` 命令时使用 `--build-arg <varname> = <value>` 参数将其传递给构建器。
+
+```Dockerfile
+ARG <name>[=<default value>]
+```
+
+这种变量只存在于镜像构建的时候，一旦镜像构建完成就失效了，不要使用构建时变量来传递诸如 github 密钥，用户凭据等机密数据，构建时变量值可以使用 docker history 命令查看。`ARG` 就是专门为构建镜像而生的。
+
+
+
+**ENV**
+
+Dockerfile 里面的 ENV 指令将环境变量设置为值 ，这个变量将在构建阶段中所有后续指令的环境中使用。
+
 
 
 **COPY**
+
+
 
 **ADD**
 
@@ -680,6 +720,8 @@ WORKDIR指令设置 Dockerfile 中的任何 RUN，CMD，ENTRPOINT，COPY 和 ADD
 
 
 **ENTRYPONIT**
+
+
 
 **CMD**
 
