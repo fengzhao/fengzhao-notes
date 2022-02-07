@@ -22,7 +22,9 @@ GitLab CI/CD 由一个名为 .gitlab-ci.yml 的文件进行配置，改文件位
 
 
 
-软件开发的持续方法基于自动执行脚本，以最大程度地减少在开发应用程序时引入错误的机会。从开发新代码到部署新代码，他们几乎不需要人工干预，甚至根本不需要干预。 
+软件开发的持续方法基于自动执行脚本，以最大程度地减少在开发应用程序时引入错误的机会。
+
+从开发新代码到部署新代码，他们几乎不需要人工干预，甚至根本不需要干预。 
 
 它涉及到在每次小的迭代中就不断地构建、测试和部署代码更改，从而减少了基于已经存在bug或失败的先前版本开发新代码的机会。
 
@@ -58,29 +60,35 @@ GitLab CI/CD 是一款免费且自托管的内置于 GitLab CI/CD 的持续集�
 
 GitLab CI/CD 先前是作为一个独立项目发布的，并从 2015 年 9 月发布的 GitLab 8.0 正式版开始集成到 GitLab 主软件。
 
-一个单独的 GitLab CI/CD 服务器可以管理 25000 多个用户，它还可以与多个活跃的服务器构成一个高可用性的配置。GitLab CI/CD 和 GitLab 是用 Ruby 和 Go 编写的，并在 MIT 许可下发布。
+一个单独的 GitLab CI/CD 服务器可以管理 25000 多个用户，它还可以与多个活跃的服务器构成一个高可用性的配置。
 
-除了其它 CI/CD 工具关注的 CI/CD 功能之外，GitLab CI/CD 还提供了计划、打包、源码管理、发布、配置和审查等功能。
+**GitLab CI/CD 和 GitLab 是用 Ruby 和 Go 编写的，并在 MIT 许可证下发布。**
+
+**除了其它 CI/CD 工具关注的 CI/CD 功能之外，GitLab CI/CD 还提供了计划、打包、源码管理、发布、配置和审查等功能。**
 
 GitLab CI/CD 还提供了仓库，因此 GitLab CI/CD 的集成非常简单直接。在使用 GitLab CI/CD 时，phase 命令包含一系列阶段，这些阶段将按照精确的顺序实现或执行。
 
+
+
 在实现后，每个作业都被描述和配置了各种选项。每个作业都是一个阶段的一个部分，会在相似的阶段与其它作业一起自动并行运行。
 
-一旦你那样做，作业就被配置好了，你就可以运行 GitLab CI/CD 管道了。
+一旦你那样做，作业就被配置好了，你就可以运行 GitLab CI/CD 管道了。其结果会稍后演示，而且你可以检查某个阶段你指定的每一个作业的状态。
 
-其结果会稍后演示，而且你可以检查某个阶段你指定的每一个作业的状态。
+
 
 这也是 GitLab CI/CD 与其它用于 DevOps 测试的 CI/CD 工具的不同之处。
 
 
 
-为了使用 GitLab CI/CD，你需要一个托管在GitLab上的应用程序代码库，并且在根目录中的 .gitlab-ci.yml 文件中指定构建、测试和部署的脚本。
+**为了使用 GitLab CI/CD，你需要一个托管在 GitLab上 的应用程序代码库，并且在根目录中的 .gitlab-ci.yml 文件中指定构建、测试和部署的脚本。**
 
-在这个文件中，你可以定义要运行的脚本，定义包含的依赖项，选择要按顺序运行的命令和要并行运行的命令，定义要在何处部署应用程序，以及指定是否 要自动运行脚本或手动触发脚本。 
+
+
+在这个文件中，你可以定义要运行的脚本，定义包含的依赖项，选择要按顺序运行的命令和要并行运行的命令，定义要在何处部署应用程序，以及指定是否要自动运行脚本或手动触发脚本。 
 
 为了可视化处理过程，假设添加到配置文件中的所有脚本与在计算机的终端上运行的命令相同。
 
-一旦你已经添加了.gitlab-ci.yml到仓库中，GitLab将检测到该文件，并使用名为GitLab Runner的工具运行你的脚本。该工具的操作与终端类似。
+一旦你已经添加了.gitlab-ci.yml到仓库中，GitLab 将检测到该文件，并使用名为 GitLab Runner 的工具运行你的脚本。该工具的操作与终端类似。
 
 这些脚本被分组到jobs，它们共同组成一个pipeline。一个最简单的.gitlab-ci.yml文件可能是这样的：
 
@@ -93,6 +101,10 @@ GitLab CI/CD 还提供了仓库，因此 GitLab CI/CD 的集成非常简单直�
 - Continuous Deployment (CD)   持续部署
 
 
+
+## gitlab CICD 架构图
+
+https://docs.gitlab.com/ee/ci/introduction/img/gitlab_workflow_example_extended_v12_3.png
 
 
 
@@ -114,27 +126,25 @@ CI/CD 的核心概念是持续集成、[持续交付](https://www.redhat.com/zh/
 
 https://blinkfox.github.io/2018/11/22/ruan-jian-gong-ju/devops/gitlab-ci-jie-shao-he-shi-yong/
 
-.gitlab-ci.yml  是 gitlab 项目仓库根目录中的文件，定义了一系列构建，测试，部署的脚本。
+.gitlab-ci.yml  是 gitlab 项目仓库根目录中的文件，它定义了一系列构建，测试，部署的脚本。
 
 
 
-GitLab-Runner 就是一个用来执行.gitlab-ci.yml 脚本的工具，是 gitlab 官方用 go 写的一个项目。
+GitLab-Runner 就是一个用来执行 .gitlab-ci.yml 脚本的工具，是 gitlab 官方用 go 写的一个项目。
 
-一般运行在单独的CICD专用的服务器上（**注意，一般尽量要跟gitlab server不是一台机器**）。
+一般运行在单独的 CICD 专用的服务器上（**注意，一般尽量要跟 gitlab server 不是一台机器**）。
 
-可以理解成，Runner 就像认真工作的工人，GitLab-CI 就是管理工人的中心，所有工人都要在 GitLab-CI 里面注册，并且表明自己是为哪个项目服务。
+可以理解成，Runner 就像 agent ，GitLab server 就是 server，所有 agent 都要在 GitLab-CI 里面注册，并且表明自己是为哪个项目服务。
 
 当相应的项目发生变化时，GitLab-CI 就会通知相应的 gitlab runner (工人) 执行对应的脚本任务。
 
-
+分为两种方式：
 
 ```shell
 # gitlab runner 安装
 
 # 确定runner跟gitlab-server的版本号相同
 cat /opt/gitlab/embedded/service/gitlab-rails/VERSION
-
-
 
 # 二进制安装（Linux x86-64） ，强烈建议
 # https://docs.gitlab.com/runner/install/linux-manually.html
@@ -171,7 +181,7 @@ docker run -d --name gitlab-runner --restart always \
      gitlab/gitlab-runner:latest
 
 # 注册gitlab-runner(其实就是让gitlab-runner和项目关联起来)
-# 指定gitlab地址，仓库token，cicid的运行时为docker，构建环境为go环境
+# 指定gitlab地址，仓库token，cici的运行时为docker，构建环境为go环境
 # 运行时环境可以是docker-ssh, parallels, shell, virtualbox, docker+machine, docker, ssh, docker-ssh+machine, kubernetes, custom
 sudo gitlab-runner register \
   --non-interactive \
@@ -220,11 +230,11 @@ docker exec -it  gitlab-runner  register
 
 ### runner 类型
 
-- [Shared runners](https://docs.gitlab.com/ee/ci/runners/#shared-runners)    全局 runner ，对于整个 gitlab 实例里面的每个组和每个项目都适用
+- [Shared runners](https://docs.gitlab.com/ee/ci/runners/#shared-runners)    全局 runner ，对于整个 gitlab 实例里面的每个组和每个项目都适用。
 
 - [Group runners](https://docs.gitlab.com/ee/ci/runners/#group-runners)     可以用于某个 group 里面的项目
 
-- [Specific runners](https://docs.gitlab.com/ee/ci/runners/#specific-runners)   单独用于某个项目
+- [Specific runners](https://docs.gitlab.com/ee/ci/runners/#specific-runners)   单独配置，某个runner仅用于某个特定项目
 
 
 
@@ -232,7 +242,7 @@ docker exec -it  gitlab-runner  register
 
 ## 配置`.gitlab-ci.yml`文件
 
-.gitlab-ci.yml 是在仓库项目根目录中的一个 yaml 格式的文件，它定义了cicd的主要任务。在这个文件中：
+.gitlab-ci.yml 是在仓库项目根目录中的一个 yaml 格式的文件，它定义了 cicd 的主要任务。在这个文件中：
 
 - 定义了 runner 需要执行的步骤和任务顺序。
 - 当特定条件满足时，runner需要执行的任务。
@@ -268,9 +278,9 @@ deploy-prod:
 
 可以使用 CI Lint tool 检查器检查 .gitlab-ci.yml 文件格式。
 
-GitLab CI / CD的每个实例都有一个称为Lint的嵌入式调试工具，该工具可以验证.gitlab-ci.yml文件的内容。您可以在ci/lint项目名称空间页面下找到Lint 。
+GitLab CI / CD 的每个实例都有一个称为Lint的嵌入式调试工具，该工具可以验证.gitlab-ci.yml文件的内容。您可以在 ci/lint 项目名称空间页面下找到 Lint 。
 
-例如，https://gitlab.example.com/gitlab-org/project-123/-/ci/lint 
+例如，https://git.lug.ustc.edu.cn/fengzhao/fengzhao-notes/-/ci/lint 
 
 
 ## .gitlab-ci.yml 文件参考
@@ -301,9 +311,9 @@ stages:
   - test
   - deploy
   
-# 对于这样一个stage
+# 对于这样一个stages
 # 1.build这个stage里面的job会被并行执行
-# 2.如果build中的所有job执行成功，test中的job被并行执行
+# 2.如果build中的所有job执行成功，test中的job跟着继续被并行执行
 # 3.如果test中的所有job执行成功，deploy中的job被并行执行
 # 4.如果deploy中的所有job执行成功，这个流水线被标记为passed
 

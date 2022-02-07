@@ -1,0 +1,68 @@
+stages:
+  - build
+  - deploy
+  - on_success
+  - on_failer
+
+before_script:
+  - git version
+  - go version
+  - go env -w GO111MODULE=on
+  - go env -w GOPROXY="https://goproxy.io,direct"
+
+  ## 定义项目全局变量
+variables:
+  PROJECT_NAME: "xgo"
+
+build:
+  # build构建之前输出提示文字 
+  before_script:
+    - echo "开始对 $PROJECT_NAME 持续集成 build"
+    - mailer -c /root/mailer.toml -bodyPath /root/build.html -template {{PROJECT_NAME}}=$PROJECT_NAME,{{STATUS}}=开始构建
+  # build构建之后输出提示文字   
+  after_script:
+    - echo "$PROJECT_NAME 持续集成 build 结束"
+    - mailer -c /root/mailer.toml -bodyPath /root/build.html -template {{PROJECT_NAME}}=$PROJECT_NAME,{{STATUS}}=构建结束
+  stage: build
+  script:
+    - go build -o $PROJECT_NAME
+  only:
+    - master
+  artifacts:
+    paths:
+      - xgo
+  tags:
+    - server-runner
+
+deploy:
+  stage: deploy
+  script:
+    - echo "开始对 $PROJECT_NAME 进行部署 deploy"
+    # 将构建的文件拷贝至生产组
+    - ansible product -m copy   -a "src=./$PROJECT_NAME dest=/$PROJECT_NAME owner=root group=root mode=755"
+    - ansible product -m shell  -a "supervisorctl restart $PROJECT_NAME"
+  only:
+    - master
+  tags:
+    - server-runner
+
+
+# 当且仅仅由于持续集成失败才触发
+on_failer:
+  stage: on_failer
+  script:
+    - echo " $PROJECT_NAME 持续集成失败"
+    - mailer -c /root/mailer.toml -bodyPath /root/deploy.html -template {{PROJECT_NAME}}=$PROJECT_NAME,{{STATUS}}=部署失败
+  tags:
+    - server-runner
+  when: on_failure
+
+# 当且仅当成功时会触发
+on_success:
+  stage: on_success
+  script:
+    - echo "$PROJECT_NAME 持续集成 成功"
+    - mailer -c /root/mailer.toml -bodyPath /root/deploy.html -template {{PROJECT_NAME}}=$PROJECT_NAME,{{STATUS}}=部署成功
+  tags:
+    - server-runner
+  when: on_success
