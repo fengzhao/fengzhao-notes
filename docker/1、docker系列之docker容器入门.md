@@ -663,11 +663,21 @@ Rootless 模式利用 user namespaces 将容器中的 root 用户和 Docker 守�
 
 
 
-如果没有找到对应服务的镜像，官方镜像中还提供了一些更为基础的操作系统镜像。如 [`ubuntu`](https://hub.docker.com/_/ubuntu/)、[`debian`](https://hub.docker.com/_/debian/)、[`centos`](https://hub.docker.com/_/centos/)、[`fedora`](https://hub.docker.com/_/fedora/)、[`alpine`](https://hub.docker.com/_/alpine/) 等，这些操作系统的软件库为我们提供了更广阔的扩展空间。
+如果没有找到对应服务的镜像，官方镜像中还提供了一些更为基础的操作系统镜像。
+
+如 [`ubuntu`](https://hub.docker.com/_/ubuntu/)、[`debian`](https://hub.docker.com/_/debian/)、[`centos`](https://hub.docker.com/_/centos/)、[`fedora`](https://hub.docker.com/_/fedora/)、[`alpine`](https://hub.docker.com/_/alpine/) 等，这些操作系统的软件库为我们提供了更广阔的扩展空间。
 
 
 
 除了选择现有镜像为基础镜像外，Docker 还存在一个特殊的镜像，名为 `scratch`。这个镜像是虚拟的概念，并不实际存在，它表示一个空白的镜像。
+
+对于 ubuntu 等最底层的基镜像，其 Dockerfile 就类似这样：
+
+```dockerfile
+FROM scratch
+ADD ubuntu-focal-oci-amd64-root.tar.gz /
+CMD ["bash"]
+```
 
 
 
