@@ -149,13 +149,16 @@ openssh 的认证方式：
 
 ## ssh命令组件
 
-| 命令                                           | 作用               |
-| ---------------------------------------------- | ------------------ |
-| [ssh](https://www.ssh.com/ssh/)                | 登陆远程主机       |
-| [ssh-keygen](https://www.ssh.com/ssh/keygen/)  | 生成密钥对         |
-| [ssh-copy-id](https://www.ssh.com/ssh/copy-id) | 传输公钥到远程主机 |
-| [scp](https://www.ssh.com/ssh/scp/)            | 远程传输文件       |
-| [ssh-agent](<https://www.ssh.com/ssh/agent>)   |                    |
+| 命令                                           | 文件             | 作用                                   |
+| ---------------------------------------------- | ---------------- | -------------------------------------- |
+| [ssh](https://www.ssh.com/ssh/)                | 二进制可执行文件 | ssh客户端，用于登陆远程主机            |
+| [ssh-keygen](https://www.ssh.com/ssh/keygen/)  | 二进制可执行文件 | 生成密钥对                             |
+| [ssh-copy-id](https://www.ssh.com/ssh/copy-id) | shell脚本        | 传输公钥到远程主机                     |
+| [scp](https://www.ssh.com/ssh/scp/)            | 二进制可执行文件 | 远程传输文件                           |
+| [ssh-agent](<https://www.ssh.com/ssh/agent>)   |                  |                                        |
+| ssh-keyscan                                    |                  |                                        |
+| sshd                                           |                  | ssh服务端，用于在服务器上启动sshdj进程 |
+|                                                |                  |                                        |
 
 
 
@@ -241,8 +244,20 @@ ssh user@remoteNode "cd /home ; ls"
 
 　基本能完成常用的对于远程节点的管理了，几个注意的点：
 
-1. 双引号，必须有。如果不加双引号，第二个ls命令在本地执行
-2. 分号，两个命令之间用分号隔开
+1. 双引号，必须有。如果不加双引号，第二个ls命令在本地执行。
+2. 分号，两个命令之间用分号隔开。
+
+ssh 会将远程命令的 stdout 和本地的 stdout 连接起来。可以用这样的命令来看实时的日志：` ssh root@myserver.com "tail -f access.log"`。
+
+这样就可以在本地执行一条命令就可以了，方便脚本化或记录到 本地 history。
+
+```shell
+# 将本地的公钥，通过管道传到远程主机的~/.ssh/authorized_keys文件中
+
+cat ~/.ssh/id_rsa.pub | ssh root@myserver.com "cat - >> ~/.ssh/authorized_keys"
+```
+
+
 
 
 
@@ -488,7 +503,7 @@ Enter file in which to save the key (/home/fengzhao/.ssh/id_rsa):
 生成的两个文件 id_rsa 和 id_rsa.pub 分别是私钥（私钥自己保留）和公钥（传到远程主机）。
 > 注意保存好私钥文件，开启私钥认证之后，就可以直接凭私钥登陆。
 
-2. 通过 ssh-copy-id 命令将公钥传到远程主机。（ssh-copy-id 拥有到远程机器的home, ~./ssh , 和 ~/.ssh/authorized_keys的权限，这个命令其实就是将公钥写入到远程主机~/.ssh/authorized_key文件中，所以也可以手动复制写进去）。
+2. 通过 ssh-copy-id 命令将公钥传到远程主机。（ssh-copy-id 拥有到远程机器的home, ~./ssh , 和 ~/.ssh/authorized_keys的权限，这个命令其实就是将公钥写入到远程主机的 ~/.ssh/authorized_key文件中，所以也可以手动复制写进去）。
 
 ``` shell
 fengzhao@fengzhao-work:~$ ssh-copy-id    -i /home/fengzhao/.ssh/id_rsa.pub  root@192.168.8.23
@@ -1010,6 +1025,16 @@ https://www.cnblogs.com/canyezhizi/p/13537495.html
 
 
 
+```shell
+yum -y install zlib*  libcry*  openssl openssl-devel  pam-devel   gcc make cmake 
+
+
+
+```
+
+
+
+https://blog.51cto.com/gagarin/2989884
 
 
 
@@ -1018,9 +1043,10 @@ https://www.cnblogs.com/canyezhizi/p/13537495.html
 
 
 
-<<<<<<< HEAD
+
+
 # ssh-deny
-=======
+
 
 
 https://blog.csdn.net/weixin_41305441/article/details/107108429
