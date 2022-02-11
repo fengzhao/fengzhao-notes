@@ -9,6 +9,8 @@ autocmd BufWritePost $MYVIMRC source $MYVIMRC
 " 关闭兼容模式
 set nocompatible
 
+" 启动鼠标支持，在xterm和gui中才能支持
+set mouse=a
 
 " 默认字符编码
 set fenc=utf-8 
