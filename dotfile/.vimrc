@@ -6,7 +6,7 @@
 " 建议配置完成后将这个关闭
 autocmd BufWritePost $MYVIMRC source $MYVIMRC
 
-" 关闭兼容模式
+" 关闭兼容模式,默认配置
 set nocompatible
 
 " 启动鼠标支持，在xterm和gui中才能支持
