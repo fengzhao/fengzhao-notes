@@ -196,6 +196,7 @@ sudo gitlab-runner register \
   --access-level="not_protected"
 
 
+
 docker exec -it  gitlab-runner  register 
  --non-interactive \
   --url "https://gitlab.com/" \
