@@ -62,7 +62,7 @@ set $b "$a, $a";
 
 ```
 
-nginx echo 模块（这是一个第三方的nginx模块，如果是nginx，需要重新[编译安装](https://blog.csdn.net/jeikerxiao/article/details/106763068)，不过在 openresty 已经编译进去了） 
+nginx echo 模块（这是一个第三方的nginx模块，如果是nginx，需要重新 [编译安装](https://blog.csdn.net/jeikerxiao/article/details/106763068)，不过在 openresty 已经编译进去了） 
 
  https://github.com/openresty/echo-nginx-module#readme
 

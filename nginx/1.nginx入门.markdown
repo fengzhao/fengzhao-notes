@@ -166,6 +166,7 @@ sudo apt install zlib1g zlib1g-dev
 # 在 http://nginx.org/en/download.html 里面下载 Nginx 源代码
 # wget http://nginx.org/download/nginx-1.16.0.tar.gz
 wget http://nginx.org/download/nginx-1.20.1.tar.gz
+wget http://nginx.org/download/nginx-1.20.2.tar.gz
 
 nginx-1.17.8
 ├── CHANGES 		# 每个版本提供的特性和 bugfix，changelog文件
@@ -188,7 +189,7 @@ cp -r contrib/vim/* ~/.vim
 echo 'syntax on' > ~/.vimrc 
 
 
-# configure
+# configure配置，configure之后，会生成Makefile文件，用于编译和构建nginx
 ./configure   --user=nginx --group=nginx  --prefix=/usr/local/nginx/  --with-http_stub_status_module  --with-http_ssl_module
 
 ./configure --help # --help 命令可以查看配置脚本支持哪些参数
