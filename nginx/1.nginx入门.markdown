@@ -540,8 +540,6 @@ Context: http
 
 既然 nginx 指令是可以嵌套分层的，而且指令可以存在于多个上下文环境。所以必然存在指令的继承。
 
-
-
 例如下面的配置文件，这里面在 server 块和 location 块中都配置了 root 指令，Nginx 的继承规则如下：
 
 - 子配置不存在时，直接使用父配置块的指令
@@ -568,7 +566,9 @@ server {
 
 
 
-根据上面这两条规则，第一个 location 使用自己的 root 指令，后面两个 location 则使用 server 块的 root 指令。这和编程语言中变量的作用域也是类似的，作用域更小的变量优先级往往更高，Nginx 的指令也是一样。
+根据上面这两条规则，第一个 location 使用自己的 root 指令，后面两个 location 则使用 server 块的 root 指令。
+
+这和编程语言中变量的作用域也是类似的，作用域更小的变量优先级往往更高，Nginx 的指令也是一样。
 
 
 
@@ -584,8 +584,8 @@ listen 指令在 server 块中生效，用来配置监听哪些网络接口地�
 Syntax:	listen address[:port] [default_server] [ssl] [http2 | spdy] [proxy_protocol] [setfib=number] [fastopen=number] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [ipv6only=on|off] [reuseport] [so_keepalive=on|off|[keepidle]:[keepintvl]:[keepcnt]];
 listen port [default_server] [ssl] [http2 | spdy] [proxy_protocol] [setfib=number] [fastopen=number] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [ipv6only=on|off] [reuseport] [so_keepalive=on|off|[keepidle]:[keepintvl]:[keepcnt]];
 listen unix:path [default_server] [ssl] [http2 | spdy] [proxy_protocol] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [so_keepalive=on|off|[keepidle]:[keepintvl]:[keepcnt]];
-Default:	
-listen *:80 | *:8000;
+Default:	 listen *:80 | *:8000;
+
 # 只能出现在server块中
 Context:	server
 
@@ -798,3 +798,62 @@ upstream 即上游的意思，是一个想对到概念，从客户端到中间�
 
 
 
+
+
+# 初探 nginx 架构
+
+
+
+nginx 在启动后，在 unix 系统中会以 daemon 的方式在后台运行，后台进程包含一个 master 进程和多个 worker 进程。
+
+我们也可以手动地关掉后台模式，让 nginx 在前台运行，并且通过配置让 nginx 取消 master 进程，从而可以使 nginx 以单进程方式运行。
+
+很显然，生产环境下我们肯定不会这么做，所以关闭后台模式，一般是用来调试用的，在后面的章节里面，我们会详细地讲解如何调试nginx。
+
+**nginx是以多进程的方式来工作的，当然nginx也是支持多线程的方式的，只是我们主流的方式还是多进程的方式，也是nginx的默认方式。**
+
+
+
+
+
+nginx在启动后，会有一个master进程和多个worker进程。
+
+- master进程主要用来管理worker进程，包含：
+  - 接收来自外界的信号，向各worker进程发送信号。比如 reload 重载配置文件，重启nginx等。
+  - 监控worker进程的运行状态，当worker进程退出后(异常情况下)，会自动重新启动新的worker进程。
+
+- worker进程：
+  - 真正的工作进程，处理网络请求事件。各进程互相之间是独立的。
+  - 一个请求，只可能在一个worker进程中处理。
+
+
+
+**worker进程的个数是可以设置的，一般我们会设置与机器cpu核数一致。**
+
+
+
+master来管理worker进程，所以我们只需要与master进程通信就行了。master进程会接收来自外界发来的信号，再根据信号做不同的事情。
+
+所以我们要控制nginx，只需要通过kill向master进程发送信号就行了。比如kill -HUP pid，则是告诉nginx，从容地重启nginx，我们一般用这个信号来重启nginx，或重新加载配置，因为是从容地重启，因此服务是不中断的。
+
+master进程在接收到HUP信号后是怎么做的呢？首先master进程在接到信号后，会先重新加载配置文件，然后再启动新的worker进程，并向所有老的worker进程发送信号，告诉他们可以光荣退休了。新的worker在启动后，就开始接收新的请求，而老的worker在收到来自master的信号后，就不再接收新的请求，并且在当前进程中的所有未处理完的请求处理完成后，再退出。当然，直接给master进程发送信号，这是比较老的操作方式，nginx在0.8版本之后，引入了一系列命令行参数，来方便我们管理。比如，./nginx -s reload，就是来重启nginx，./nginx -s stop，就是来停止nginx的运行。如何做到的呢？我们还是拿reload来说，我们看到，执行命令时，我们是启动一个新的nginx进程，而新的nginx进程在解析到reload参数后，就知道我们的目的是控制nginx来重新加载配置文件了，它会向master进程发送信号，然后接下来的动作，就和我们直接向master进程发送信号一样了。
+
+
+
+
+
+
+
+异步非阻塞
+
+
+
+一个请求的完整过程。首先，请求过来，要建立连接，然后再接收数据，接收数据后，再发送数据。
+
+具体到系统底层，就是读写事件，而当读写事件没有准备好时，必然不可操作，如果不用非阻塞的方式来调用，那就得阻塞调用了，事件没有准备好，那就只能等了，等事件准备好了，你再继续吧
+
+
+
+
+
+# Nginx基础概念
