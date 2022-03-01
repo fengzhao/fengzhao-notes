@@ -110,7 +110,7 @@ Linux 的 Shell 种类众多，常见的有：
 
 - **Bourne Again Shell（/bin/bash）**
 
-  - **Linux 默认的 shell 它是 Bourne Shell 的扩展。 与 Bourne Shell 完全兼容，并且在 Bourne Shell 的基础上增加了很多特性，可以提供命令补全，命令编辑和命令历史等功能。**
+  - **Linux 默认的 shell ，它是 Bourne Shell 的扩展。 与 Bourne Shell 完全兼容，并且在 Bourne Shell 的基础上增加了很多特性，可以提供命令补全，命令编辑和命令历史等功能。**
   - **基本上现在各大Linux发行版都是使用 bash 做为默认 shell**
 
   
@@ -122,6 +122,8 @@ Linux 的 Shell 种类众多，常见的有：
 - K Shell（/usr/bin/ksh）
 
   集合了 C Shell 和 Bourne Shell 的优点并且和 Bourne Shell 完全兼容。
+
+- **[Elvish](https://elv.sh/)** 清华的大佬用go语言写的shell
 
 - nushell 
 
@@ -139,7 +141,7 @@ Linux 的 Shell 种类众多，常见的有：
 
     - 作为 zsh 最出名的配置框架。配置 zsh 甚至可以说 oh-my-zsh 和 非 oh-my-zsh。
 
-      自动设置颜色部分，只要启用就可以覆盖掉难看的要死的默认配色。默认配置很完美
+      自动设置颜色部分。默认配置很完美，配色很干净。
 
       集成了大量实用的函数和主题（个人推荐 `ys` 主题），比较极端的用户甚至会使用 ramdom 主题，每次开启随机选择一个，保证新鲜感。
 
@@ -277,7 +279,7 @@ UNIX的守护进程一般都命名为*d的形式，如httpd，telnetd等等。
 
 ```shell
 # 举个简单的例子，我们在windows中使用终端工具ssh远程到一个Linux后，通常输入exit，会断开当前ssh连接。
-# 如果我们连上去后，多输入几次bash，即多启动几个shell，然后每次输入exit其实是退出当前shell而已，并没有很快断开ssh连接
+# 如果我们连上去后，多输入几次bash，即多启动几个shell，然后每次输入exit其实是退出当前shell进程而已，并没有很快断开ssh连接
 ```
 
 login Shell 会初始化一些针对整个登录会话的任务。
