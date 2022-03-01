@@ -26,14 +26,54 @@
 
 IP地理信息是天然不精确的。尤其是现在很多客户端是 NAT 上网，通过IP很难定位到具体的地址或房子。
 
-GeoLite2 Free Downloadable Databases
+IP 地址和地理位置并不是直接相关的，通过IP地址来进行地理定位本质上是不精确的，地点通常靠近人口中心。
 
-https://dev.maxmind.com/geoip/geoip2/geolite2/
-
-
+GeoIP数据库提供的任何位置不应用于识别特定[地址](https://so.csdn.net/so/search?q=地址&spm=1001.2101.3001.7020)或家庭，使用精度半径作为IP地址返回的纬度和经度坐标的地理定位精度指示，IP地址的实际位置可能在这个半径和经纬度坐标所定义的区域内。
 
 
 
-**阿里巴巴IP地址库**
+
+
+### MaxMind GeoIP
+
+MaxMind公司成立于2002年，是领先业界的IP智能与在线欺诈检测工具供应商。MaxMind通过GeoIP品牌提供IP智能服务。目前全球有超过5,000家公司正在使用GeoIP的数据对其网站访客进行定位，并向其显示相关内容和广告、进行各种分析、执行数字版权，并对网络流量进行高效路由管理。此外，GeoIP的数据也可帮助企业进一步了解客户的联网速度、ISP以及其它信息。
+
+
+
+MaxMind GeoIP2 服务能识别互联网用户的地点位置与其他特征，应用广泛，包括个性化定制内容、诈欺检测、广告定向、网站流量分析、执行规定、地理目标定位、地理围栏定位 (geo-fencing)以及数字版权管理。目前使用 GeoIP 更多是配合Nginx或Apache服务器进行日志分析获取网站访问量地域分布状况。
+
+
+
+- [MaxMind  GeoLite2 databases](https://dev.maxmind.com/geoip/geolite2-free-geolocation-data?lang=en)  免费的GeoIP数据库，可以下载后离线使用，也可以在线调接口。
+- [MaxMind’s GeoIP2 databases](https://www.maxmind.com/en/geoip2-databases)    收费的商业GeoIP数据库，准确性更高
+
+GeoLite2国家，城市和ASN数据库（GeoLite2 Country, City, and ASN databases）**每周两次更新**。 
+
+此前，MaxMind一直提供GeoLite2公开的访问下载地址，但从2019年12月30日开始，MaxMind不再提供GeoLite2公开的访问下载地址，需要用户注册一个MaxMind帐户并获取许可密钥，才能下载GeoLite2数据库。
+
+
+
+```shell
+# 查看自己当前主机公网出口的GEOIP信息，curl指定
+curl -u "{account_id}:{license_key}"   "https://geolite.info/geoip/v2.1/city/me?pretty"
+
+# 查看某个公网IP的GEOIP信息
+curl -u "{account_id}:{license_key}" "https://geolite.info/geoip/v2.1/city/{ip_address}?pretty"
+
+
+
+# 下载地址
+https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-Country&license_key={license_key}&suffix=tar.gz
+https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-Country&license_key=o23RigbM86yCt0RW&suffix=tar.gz
+
+# 使用 github actions 自动更新和下载，参考如下
+https://github.com/fengzhao-study-notes/maxmind-geoip
+```
+
+
+
+
+
+### **阿里巴巴IP地址库**
 
 https://help.aliyun.com/document_detail/153347.html

@@ -425,7 +425,7 @@ $ rpm -ql openssh-clients
 
 
 
-# ssh客户端全局配置文件，所有用户公用的配置文件。
+# ssh客户端全局配置文件，所有用户公用的配置文件
 /etc/ssh/ssh_config
 # ssh客户端用户配置文件，针对某个用户的具体配置文件，可以覆盖全局配置文件
 ~/.ssh/config
@@ -433,6 +433,11 @@ $ rpm -ql openssh-clients
 
 # ssh服务端配置文件，用来配置认证方式，是否启用root登陆，加密方式
 /etc/ssh/sshd_config
+
+# 服务程序sshd启动时生成的服务端公钥和私钥文件。如ssh_host_rsa_key和ssh_host_rsa_key.pub。
+# 其中.pub文件是主机验证时的host key(服务端主机指纹)，将写入到客户端的~/.ssh/known_hosts文件中。
+# 其中私钥文件严格要求权限为600，若不是则sshd服务可能会拒绝启动。
+/etc/ssh/ssh_host_*
 
 
 # 客户端用户私钥，从客户端登陆服务端需要提供这个私钥证明合法登陆。为了安全，这个文件的权限必须是600。~/.ssh 目录的权限必须是700
