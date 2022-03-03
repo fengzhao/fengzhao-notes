@@ -84,8 +84,8 @@ Nginx服务器的所有工作进程都用于接收和处理客户端的请求。
 介绍完 Nginx 的背景，我们就该说说 Nginx 的版本了。目前 Nginx 有三个主要的产品：
 
 - 官方 Nginx。包含开源版（nginx.org）和商业版（nginx.com）
-- 阿里巴巴的 Tengine。Tengine 是由淘宝网发起的 Web 服务器项目，目前已经开源。
-- OpenResty。OpenResty 通过 Lua 对 Nginx 进行扩展，使得扩展 Nginx 模块变得异常轻松
+- [Tengine](https://tengine.taobao.org/)。Tengine 是由淘宝网发起的 Web 服务器项目，目前已经开源。
+- [OpenResty](https://openresty.org/cn/)。OpenResty 通过 Lua 对 Nginx 进行扩展，使得扩展 Nginx 模块变得异常轻松
 
 针对我们日常工作学习来说，选择官方开源版的 Nginx 或者 OpenResty 就可以了。
 

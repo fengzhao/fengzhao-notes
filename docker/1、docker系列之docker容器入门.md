@@ -2287,7 +2287,7 @@ local 日志驱动的储存位置 `/var/lib/docker/containers/容器id/local-log
 // /etc/docker/daemon.json
 
 {
- 	"log-driver": "local",
+ 	"log-driver": "local",    // 全局设置：所有容器日志驱动都使用local，container进程原样记录写入日志
   	"log-opts": {
     	"max-size": "10m",    // 切割之前日志的最大大小，可取值为(k,m,g)， 默认为20m
         "max-file": "5",      // 可以存在的最大日志文件数。如果超过最大值，则会删除最旧的文件。**仅在max-size设置时有效。默认为5。
