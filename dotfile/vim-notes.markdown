@@ -10,6 +10,10 @@ vimtutor 是 vim 自带的一个小教程，直接在终端中使用 vimtutor �
 
 [vimcdoc](https://github.com/fengzhao/vimcdoc) 一个 vim 中文文档项目，可以按照该文档教程安装帮助手册。
 
+
+
+
+
 ### Vim配置文件
 
 vimrc 是 Vim 的配置文件，这个文件分为全局配置文件和用户配置文件。在终端中通过 vim --version 命令可以查看全局配置和用户配置的文件路径。

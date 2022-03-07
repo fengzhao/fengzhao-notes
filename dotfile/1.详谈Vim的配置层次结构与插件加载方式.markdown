@@ -26,6 +26,38 @@ vim依靠海量的插件库可以打造成一款神器的编辑器，但是网�
 ```shell
 # 查看vim加载时加载了那些插件（执行了哪些脚本）
 :scriptnames 
+
+  1: /usr/share/vim/vimrc
+  2: /usr/share/vim/vim81/debian.vim
+  3: /usr/share/vim/vim81/syntax/syntax.vim
+  4: /usr/share/vim/vim81/syntax/synload.vim
+  5: /usr/share/vim/vim81/syntax/syncolor.vim
+  6: /usr/share/vim/vim81/filetype.vim
+  7: ~/.vim/ftdetect/nginx.vim
+  8: ~/.vimrc
+  9: /usr/share/vim/vim81/colors/space-vim-dark.vim
+ 10: /usr/share/vim/vim81/plugin/getscriptPlugin.vim
+ 11: /usr/share/vim/vim81/plugin/gzip.vim
+ 12: /usr/share/vim/vim81/plugin/logiPat.vim
+ 13: /usr/share/vim/vim81/plugin/manpager.vim
+ 14: /usr/share/vim/vim81/plugin/matchparen.vim
+ 15: /usr/share/vim/vim81/plugin/netrwPlugin.vim
+ 16: /usr/share/vim/vim81/plugin/rrhelper.vim
+ 17: /usr/share/vim/vim81/plugin/spellfile.vim
+ 18: /usr/share/vim/vim81/plugin/tarPlugin.vim
+ 19: /usr/share/vim/vim81/plugin/tohtml.vim
+ 20: /usr/share/vim/vim81/plugin/vimballPlugin.vim
+ 21: /usr/share/vim/vim81/plugin/zipPlugin.vim
+ 22: /usr/share/vim/vim81/scripts.vim
+ 23: /usr/share/vim/vim81/syntax/vim.vim
+ 24: /usr/share/vim/vim81/syntax/python.vim
+ 25: ~/.vim/plugged/vim-airline/plugin/airline.vim
+ 26: ~/.vim/plugged/vim-airline/autoload/airline/init.vim
+ 27: ~/.vim/plugged/vim-airline/autoload/airline/parts.vim
+ 28: ~/.vim/plugged/vim-airline/autoload/airline/util.vim
+ 29: ~/.vim/plugged/vim-easy-align/plugin/easy_align.vim
+ 
+ 
 ```
 
 
@@ -283,6 +315,36 @@ vim的插件的本质是脚本，在Vim中，**插件只是脚本**，必须放�
 - **[Vundle](https://github.com/VundleVim/Vundle.vim)**
 
 - **[vim-plug](https://github.com/junegunn/vim-plug)**
+
+- Vim 8 packages
+
+  
+
+
+
+## vim8 native package manager
+
+
+
+最稳定的管理插件的方法是使用Vim8的内置的 native package manager功能，该功能不需要第三方代码。
+
+
+
+首先在用户目录之下的.vim文件夹之下创建一个pack目录，然后在pack目录中创建两个子目录opt和start。
+
+注意这里，这里的自定义名称是我们要对插件进行的一个分类，比如自动补全的、导航的、调试的等等，方便管理，当然我就统统放在一个目录之下也行，只是不方便管理。
+
+```
+mkdir -p ~/.vim/pack/{自定义名称}/{opt,start}
+```
+
+
+
+注意**占位符自定义名称**。这个名称完全取决于你。我们用它对包进行分类。大多数人会把所有的插件都扔进一个无意义的类别中，这样完全没问题。你可以选择自己喜欢的名称，在本文中我选择使用 foobar。理论上，你也可以创建多个类别，比如~/.vim/pack/navigation， ~/.vim/pack/linting等，当然我也可以都放在foobar 这个目录之下。
+
+
+
+**Vim不会检测类别之间的重复，**如果存在重复，则会加载两次。
 
 
 
