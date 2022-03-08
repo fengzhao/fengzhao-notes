@@ -2100,3 +2100,71 @@ shell脚本的后缀一般是“.sh”，但这个后缀并不是必需的，添
 ——转义
 
 shell中转义字符用法特殊，这里着重介绍一下。在某些场合下，比如说正则表达式，因为有许多字符是特殊字符，有着特殊含义，所以在正则匹配时要对这些特殊字符进行转义，转义成它们的字面意思。对于换行符，不同的操作系统有不同的格式，Linux上为”\n“，Mac上位”\r“， Windows上为”\n\r“。有时候，对一个字符串引用时要使用单引号而非双引号，比如说awk这个命令，字符串中若包含转义字符，会根据一定的规则进行处理，下面是ANSI（即American National Standards Institute美国国家标准学会） C标准定义的转义字符：
+
+
+
+
+
+
+
+# shell脚本中嵌入文件
+
+
+
+
+
+linux版的jdk安装包是一个.bin后缀文件，下载后给执行权限就能解压安装，即简单又方便，Nvidia的闭源驱动（.run）也是一样。
+
+一直以为这两个安装包是编译好的二进制文件，可安装过程怎么看都像shell脚本，用sh -x 看了下执行过程，果然就是一个shell脚本，只不过脚本最后嵌入了二进制文件。
+
+
+
+
+
+
+
+```shell
+#!/bin/bash
+
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
+
+# shell self-extracting 
+
+
+# 检查操作系统 
+if [ "`uname -s`" = "Linux" ]; then
+    echo "Please  Use this script on Linux platfrom"
+    exit 1
+fi
+
+
+# 检查是否 root 用户
+[ $(id -u) != "0" ] && { echo "Error: You must be root to run this script"; exit 1; }
+
+TmpDir=/tmp
+
+# 执行时，awk提取当前shell文件下ARCHIVE_BELOW后面的文件内容
+ARCHIVE=$(awk '/^__ARCHIVE_BELOW__/ {print NR + 1; exit 0; }' "$0")
+# tail获取这些内容，然后提取解压到/tmp/文件夹中
+tail -n+$ARCHIVE "$0" | tar -xzvm -C $TmpDir > /dev/null 2>&1 3>&1
+
+
+if [ $? == 0 ];then
+        echo "Success"
+else
+        echo "Fail"
+fi
+
+
+exit 0
+#This line must be the last line of the file
+__ARCHIVE_BELOW__
+
+```
+
+
+
+
+
+
+
