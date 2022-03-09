@@ -76,7 +76,7 @@ k8s集群分为两类节点
 
 - master node
   - **Master 负责管理集群**, master 协调集群中的所有活动，例如调度应用程序、维护应用程序的所需状态、扩展应用程序和滚动更新。
-  - 
+  - 主节点，承载着 Kubernetes 控制和管理整个集群系统的控制面板。
 - worker node (node)
   - **节点是 Kubernetes 集群中的工作机器，可以是物理机或虚拟机。**
   - 每个工作节点都有一个 kubelet，它是管理节点并与 Kubernetes Master 节点进行通信的代理。
@@ -114,6 +114,29 @@ k8s集群分为两类节点
 - kube-proxy : 实现 Kubernetes Service 的通信和负载均衡，负责组件之间的负载均衡网络流量。
 - 运行容器化(Pod)应用
 - Container Runtime ： 容器运行时环境， [Docker](http://www.docker.com/)、 [containerd](https://containerd.io/)、[cri-o](https://cri-o.io/)、 [rktlet](https://github.com/kubernetes-incubator/rktlet)  等等。
+
+```shell
+# https://kubernetes.io/docs/tasks/tools/install-kubectl-linux/
+
+#　kubectl是一个用于操作kubernetes集群的命令行工具
+
+kubectl version --client --output=yaml    
+
+# 用法
+kubectl [command] [TYPE] [NAME] [flags]
+
+command: command意指你想对某些资源所进行的操作，常用的有create、get、describe、delete等。
+
+TYPE: 声明command需要操作的资源类型，TYPE对大小写、单数、复数不敏感，支持缩写。
+
+NAME: 即资源的名称，NAME是大小写敏感的。如果不指定某个资源的名称，则显示所有资源，如kubectl get pods 会显示Default命名空间下所有的pod
+
+
+
+
+
+
+```
 
 
 
