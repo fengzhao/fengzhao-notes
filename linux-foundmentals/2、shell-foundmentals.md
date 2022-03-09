@@ -2131,17 +2131,19 @@ PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
 # shell self-extracting 
 
 
-# 检查操作系统 
+# check operating system
 if [ "`uname -s`" = "Linux" ]; then
     echo "Please  Use this script on Linux platfrom"
     exit 1
 fi
 
-
-# 检查是否 root 用户
+# check root user
 [ $(id -u) != "0" ] && { echo "Error: You must be root to run this script"; exit 1; }
 
 TmpDir=/tmp
+
+
+
 
 # 执行时，awk提取当前shell文件下ARCHIVE_BELOW后面的文件内容
 ARCHIVE=$(awk '/^__ARCHIVE_BELOW__/ {print NR + 1; exit 0; }' "$0")
@@ -2156,7 +2158,11 @@ else
 fi
 
 
-exit 0
+
+
+
+
+exit 0  #退出当前脚本，后面内容为压缩进来的二进制内容，不需要再执行
 #This line must be the last line of the file
 __ARCHIVE_BELOW__
 
