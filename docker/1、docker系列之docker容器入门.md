@@ -1023,7 +1023,9 @@ docker 网络子系统
 
 当 Docker 启动后，会自动创建一个默认的网桥 docker0 ，其IP地址默认为 172.17.0.1/16 。新启动的容器默认会加入到其中。
 
-在宿主机中，使用 ip addr 看到多了一块 docker0 的网卡。有了这样一块网卡，宿主机也会在内核路由表上添加一条到达相应网络的静态路由。
+
+
+在宿主机中安装docker后，使用 ip addr 看到多了一块 docker0 的网卡。有了这样一块网卡，宿主机也会在内核路由表上添加一条到达相应网络的静态路由。
 
 可以使用 ip route 命令看到这个路由。
 
@@ -1033,8 +1035,10 @@ docker 网络子系统
 # 查看所有网络
 docker network ls
 # 用户自定义bridge网络，后跟网络名字，可以理解为创建一个子网，新建的子网，会自动在内核中添加静态路由
-docker network create my-net  
-# 用户自定义bridge网络（也可以 -o 指定名字），自定义子网地址，自定义宿主机中的网卡名称
+docker network create my-net 
+
+
+# 用户自定义bridge网络（也可以 -o 指定名字），自定义子网网段，自定义宿主机中的网卡名称
 docker network create docker02 --subnet=172.30.0.0/16 -o com.docker.network.bridge.name=docker02
 
 # 查看network基本信息，可以看到连接到这个网络的网段，连接到其中的容器。 
@@ -1077,7 +1081,7 @@ ping alpine2
 
 - 用户自定义 bridge 提供更好的隔离性，所有没有使用 --network 选项的容器都会连到默认的 bridge 网络中。
 
-- 在用户自定义 bridge 中的容器，可以随时把容器 disconnect 出来，再 connect 到其他的用户自定义 bridge 中。而不用关闭容器
+- 在用户自定义 bridge 中的容器，可以随时把容器 disconnect 出来，再 connect 到其他的用户自定义 bridge 中。而不用关闭容器。
 
   而在默认 bridge 中的容器，必须要关闭重启才能为其设置其他网络选项。
 
@@ -1103,8 +1107,18 @@ sudo iptables -P FORWARD ACCEPT
 
 **配置默认网桥**
 
+要配置默认网桥，需要在 daemon.json 配置文件中指定选项。下面的例子声明了几个选项。只需要在文件中指定需要自定义的设置。
+
 ```json
-bui
+{
+  "bip": "192.168.1.1/24",                           
+  "fixed-cidr": "192.168.1.5/25",
+  "fixed-cidr-v6": "2001:db8::/64",
+  "mtu": 1500,
+  "default-gateway": "10.20.1.1",
+  "default-gateway-v6": "2001:db8:abcd::89",
+  "dns": ["10.20.1.2","10.20.1.3"]
+}
 ```
 
 
@@ -2410,6 +2424,10 @@ kube-apiserver 在设计上考虑了水平扩缩的需要。 换言之，通过�
 #### etcd
 
 k8s的数据库，用来注册节点、服务、记录、记录账号、记录节点的信息。
+
+
+
+
 
 ### node组件
 
