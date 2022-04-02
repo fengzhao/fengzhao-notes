@@ -467,7 +467,10 @@ http://www.ruanyifeng.com/blog/2011/12/ssh_remote_login.html
 
 ``` shell
 # ~/.ssh/config 配置示例
+# https://www.cnblogs.com/xjshi/p/9146296.html
 # 这个例子配置了三个主机。端口，用户，私钥这些可以共用的配置都被 * 号这个主机段匹配。
+
+
 Host server1
          Hostname 192.168.1.101    
 Host server2

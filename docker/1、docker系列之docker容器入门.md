@@ -80,16 +80,26 @@ docker daemon 创建和管理Docker对象，例如镜像，容器，网络和数
 
 ### Docker架构
 
-Docker 使用的是 c/s 架构，Docker 客户端与 Docker 守护进程通讯，后者负责构建，运行，分发 Docker 容器。Docker 客户端和守护进程可以在同一台机器，也可以用 Docker 客户端连接远端 docker 守护进程。Docker自带的客户端程序是通过 Unix socket 套接字文件来与服务端通讯，Docker 官方也提供了 REST 风格的 API，你也可以开发自己的客户端来使用 HTTP 协议来与服务端通讯。
+Docker 使用的是 c/s 架构，Docker 客户端与 Docker 守护进程通讯，后者负责构建，运行，分发 Docker 容器。
+
+Docker 客户端和守护进程可以在同一台机器，也可以用 Docker 客户端连接远端 docker 守护进程。
+
+Docker自带的客户端程序是通过 Unix socket 套接字文件来与本地的 dockerd 服务端通讯，Docker 官方也提供了 REST 风格的 API，你也可以开发自己的客户端来使用 HTTP 协议来与服务端通讯。
 
 ![docker-architecture](./resources/docker-architecture.png)
 
 <center>docker架构图</center>
 #### docker 守护进程
 
-Docker守护程序（`dockerd`）监听 Docker API 的请求，并对各种 Docker 对象进行管理，如镜像，容器，网络和卷的管理。
+Docker守护进程（`dockerd`）监听 Docker API 的请求，并对各种 Docker 对象进行管理，如镜像，容器，网络和卷的管理。
 
 守护程序还可以与其他守护程序通信以管理 Docker 服务。
+
+
+
+
+
+
 
 #### docker 客户端
 
@@ -97,9 +107,11 @@ Docker客户端（`docker`）是许多 Docker 用户与 Docker 交互的主要�
 
 #### Docker Registry
 
-Docker Registry 就是一个镜像商店，它里面可以包括各种镜像，可以分为私有仓库和公有仓库（其中 docker hub 最为出名，它是由 docker 公司开发，国内有阿里云等镜像市场）。
+Docker Registry 就是一个镜像商店，它里面可以包括各种镜像，可以分为私有镜像仓库和公有镜像仓库
 
-我们常用的各种开源软件和运行时环境，基本上都可以在 registry 上找到 docker 镜像。
+（其中 docker hub 最为出名，它是由 docker 公司开发，国内有阿里云等镜像市场）。
+
+我们常用的各种开源软件和运行时环境，基本上都可以在 dockerhub registry 上找到 docker 镜像。
 
 一个 Docker Registry 中可以包含多个仓库（`Repository`）；每个仓库可以包含多个标签（`Tag`）；每个标签对应一个镜像。  
 
@@ -153,7 +165,19 @@ https://hub.docker.com/r/joxit/docker-registry-ui
 
 在企业内部，我们可以创建一个本地镜像仓库供企业内部使用。
 
-[`docker-registry`](https://docs.docker.com/registry/) 是官方提供的工具，可以用于构建私有的镜像仓库。
+[`docker-registry`](https://docs.docker.com/registry/) 是官方提供的工具，可以用于构建企业内部的私有镜像仓库。docker registry 最大的缺点就是没有图形化管理界面。
+
+
+
+```
+
+```
+
+
+
+
+
+
 
 
 
@@ -193,7 +217,7 @@ docker run -d -p 8080:80 nginx
 
 #### 运行 docker
 
-安装好 docker 之后，一般 docker 守护进程会自动启动，我们可以通过直接启动或系统服务的方式来启动 docker。
+安装好 docker 之后，一般 docker 守护进程会自动启动，我们可以通过直接启动或系统服务的方式来启动 docker。 
 
 ##### 直接启动
 
