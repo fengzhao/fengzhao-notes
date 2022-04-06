@@ -158,33 +158,32 @@ enabled=1
 在 <http://nginx.org/en/download.html> 里面可以直接下载 Nginx 源代码。包含以下目录：
 
 ```shell
-# 安装依赖环境
-sudo yum install gcc gcc-c++ make automake autoconf libtool pcre* zlib openssl openssl-devel
+# 安装依赖环境，确保编译正常
+sudo yum install gcc gcc-c++ make automake autoconf libtool pcre* zlib openssl openssl-devel  pcre pcre-devel
 
 sudo apt install zlib1g zlib1g-dev
 
-# 在 http://nginx.org/en/download.html 里面下载 Nginx 源代码
-# wget http://nginx.org/download/nginx-1.16.0.tar.gz
-wget http://nginx.org/download/nginx-1.20.1.tar.gz
-wget http://nginx.org/download/nginx-1.20.2.tar.gz
+# 在 http://nginx.org/en/download.html 里面下载 Nginx 源代码，永远下载最新的Stable release版本
+wget http://nginx.org/download/nginx-1.21.4.tar.gz
 
-nginx-1.17.8
+
+# https://www.cnblogs.com/chrdai/p/11306728.html
+nginx-1.21.4
 ├── CHANGES 		# 每个版本提供的特性和 bugfix，changelog文件
 ├── CHANGES.ru 		# 俄罗斯版本的 CHANGES 文件
 ├── LICENSE			# 开源许可文件
-├── Makefile
-├── README
-├── auto # 自动检测系统环境以及编译相关的脚本，辅助 config 脚本执行的时候去判定 nginx 支持哪些模块，当前操作系统有什么样的特性可以供给 nginx 使用
+├── Makefile        #    
+├── README          # README说明文件
+├── auto # 自动检测系统环境以及编译相关的脚本，辅助 configure 脚本执行的时候去判定nginx支持哪些模块，当前操作系统有什么样的特性可以供给nginx使用
 ├── conf # 示例文件，方便运维配置，会把 conf 示例文件拷贝到安装目录
 ├── configure # 命令脚本，用来生成中间文件，执行编译前的一个必备动作
 ├── contrib # 提供了两个 pl 脚本和 vim 工具
 ├── html # 一个 500 错误的默认页面，另一个是默认的 index 页面
 ├── man # nginx 对 Linux 的帮助文件，man ./nginx.8
-└── src # nginx 源代码
+└── src # nginx 核心源代码
 
 
 # 配置 Vim 高亮, 如果 Vim 没有开启语法高亮的话，最好开启一下
-
 cp -r contrib/vim/* ~/.vim
 echo 'syntax on' > ~/.vimrc 
 
@@ -196,17 +195,25 @@ echo 'syntax on' > ~/.vimrc
 
 # 第一类配置参数
 
---prefix=PATH                      set installation prefix # 指定这个路径就可以了，其他文件会在 prefix 目录下建立相应的文件夹
+--prefix=PATH                      set installation prefix      # 一般指定这个路径就可以了，其他文件会在 prefix 目录下建立相应的文件夹
 --sbin-path=PATH                   set nginx binary pathname
 --modules-path=PATH                set modules path
 --conf-path=PATH                   set nginx.conf pathname
 --error-log-path=PATH              set error log pathname
 --pid-path=PATH                    set nginx.pid pathname
 --lock-path=PATH                   set nginx.lock pathname
+--user=USER                        set non-privileged user for worker processes
+--group=GROUP                      set non-privileged group for worker processes
+--build=NAME                       set build name
+--builddir=DIR                     set build directory
+
 
 
 # 第二类配置参数
-# 可以配置使用或不使用哪些模块，前缀通常是 with 和 with out，需要加 with 参数的通常是不会被 Nginx 默认编译的，without 则是会移出编译。
+# 可以配置使用或不使用哪些模块，前缀通常是 with 和 with out。
+## with开头的表示该模块默认是未开启的，可以使用--with开启。
+## without开头的表示该模块默认是启用的，可以使用--without禁用。
+## 第三方模块使用--add-module=PATH添加。如果支持动态加载，使用--add-dynamic-module=PATH添加。
 
 --with-http_ssl_module             enable ngx_http_ssl_module
 --with-http_v2_module              enable ngx_http_v2_module
@@ -248,6 +255,16 @@ syntax on
 ```shell
 
 
+
+
+
+
+
+
+
+
+
+
 ./configure --help # --help 命令可以查看配置脚本支持哪些参数
 
 
@@ -260,6 +277,11 @@ syntax on
 --error-log-path=PATH              set error log pathname
 --pid-path=PATH                    set nginx.pid pathname
 --lock-path=PATH                   set nginx.lock pathname
+--user=USER                        set non-privileged user for worker processes
+--group=GROUP                      set non-privileged group for worker processes
+--build=NAME                       set build name
+--builddir=DIR                     set build directory
+
 
 
 # 第二类配置参数
@@ -306,7 +328,15 @@ drwxr-xr-x   3 mtdp  staff    96B  3  3 07:29 sbin # Nginx 二进制文件目录
 
 ### Nginx 安装第三方模块
 
-**安装nginx安装第三方模块**实际上是使用--add-module重新编译**安装**一次**nginx**，
+第三模块是对nginx 的功能扩展，第三方模块需要在编译安装nginx 的时候使用参数--add-module=PATH指定路径添加。
+
+有的模块是由公司的开发人员针对业务需求定制开发的。
+
+有的模块是开源爱好者开发好之后上传到github进行开源的模块，nginx支持第三方模块，需要重新编译源码才能支持。
+
+
+
+**安装nginx安装第三方模块** 实际上是使用--add-module重新编译**安装**一次**nginx**，
 
 不要 make install 而是直接把编译目录下 objs/**nginx **文件直接覆盖老的 **nginx **文件。如果你需要**安装**多个**nginx第三方模块**,你只需要多指定几个相应的--add-module即可
 
@@ -919,3 +949,94 @@ master进程在接收到HUP信号后是怎么做的呢？首先master进程在�
 
 
 # Nginx基础概念
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# nginx 第三方模块
+
+
+
+
+
+
+
+## 访问控制
+
+
+
+### GEOIP访问控制
+
+对于在公网部署的应用，需要通过检测访问者的 IP ，来决定转发策略，或者是否访问。可以采用  ngx_http_geoip2_module 模块。
+
+GeoIP2 是 MaxMind 公司推出的知名 IP 定位数据库，数据库每周更新。可以通过 [github](https://github.com/fengzhao-study-notes/maxmind-geoip/releases) 下载。
+
+
+
+利用访问
+
+nginx的版本比较重要，低于`1.9.11`版本的nginx无法使用动态模块，低于`1.11.5`版本的nginx编译动态模块时不支持`--with-compat`兼容参数，所以请保证您的nginx版本不低于`1.11.5`。
+
+
+
+ngx_http_geoip2_module 
+
+
+
+
+
+```shell
+# 如果nginx是编译安装的，可以用nginx -V查看nginx源版本和编译参数
+
+[root@stxz-elk-01 nginx-1.21.4]#
+[root@stxz-elk-01 nginx-1.21.4]# /usr/local/nginx/sbin/nginx  -V
+nginx version: nginx/1.21.4
+built by gcc 4.8.5 20150623 (Red Hat 4.8.5-44) (GCC)
+built with OpenSSL 1.0.2k-fips  26 Jan 2017
+TLS SNI support enabled
+configure arguments: --user=nginx --group=nginx --prefix=/usr/local/nginx/ --with-http_stub_status_module --with-http_ssl_module
+[root@stxz-elk-01 nginx-1.21.4]#
+
+
+# 下载对应版本的nginx源代码，然后
+
+
+ ./configure                                     \
+ --user=nginx --group=nginx                      \
+ --prefix=/usr/local/nginx/                      \
+ --with-http_stub_status_module                  \
+ --with-http_ssl_module                          \
+ --add-dynamic-module=./ngx_http_geoip2_module   \
+ --with-stream                                   \
+ --with-compat
+
+
+
+
+
+
+wget -O /usr/local/nginx/geo/GeoLiteCountry.mmdb  https://github.com/fengzhao-study-notes/maxmind-geoip/releases/download/20220301/Country.mmdb
+
+
+wget -O /usr/local/nginx/geo/GeoLiteCity.mmdb https://github.com/fengzhao-study-notes/maxmind-geoip/releases/download/20220301/City.mmdb
+
+
+wget -O /usr/local/nginx/geo/GeoLiteASN.mmdb https://github.com/fengzhao-study-notes/maxmind-geoip/releases/download/20220301/ASN.mmdb
+
+
+
+```
+
