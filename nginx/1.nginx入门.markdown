@@ -796,6 +796,68 @@ upstream 即上游的意思，是一个想对到概念，从客户端到中间�
 
 
 
+如果服务是直接暴露在公网上，根据TCP的原理通过socket是可以拿到真实的用户IP的。但是为了安全性和负载均衡的需要我们很少会直接把后端服务直接放在公网上，通常会在服务前置`Nginx`、`Haproxy`等反向代理软件，有时为了需要还会加多层代理，比如CDN和WAF等，这时如何能获取到用户的IP就成了问题，因为根据TCP的原理，反向代理时上一层和下一层代理建连，后层代理只能获取到上一层代理的IP，没法获取到用户的源IP。
+
+
+
+
+
+`X-Forwarded-For`是 HTTP头的一个字段，最开始是由 `Squid`这个缓存代理软件引入，在客户端访问服务器的过程中如果需要经过HTTP代理或者负载均衡服务器，可以被用来获取最初发起请求的客户端的IP地址，如今它已经成为事实上的标准，被各大 HTTP 代理、负载均衡等转发服务广泛使用。 [RFC 7239](http://tools.ietf.org/html/rfc7239)（Forwarded HTTP Extension）是这个头信息的标准化版本。
+
+
+
+X-Forwarded-For 格式：
+
+```shell
+X-Forwarded-For: <client>, <proxy1>, <proxy2>
+```
+
+
+
+- client：客户端的IP地址。
+- proxy1, proxy2：如果一个请求经过了多个代理服务器，那么每一个代理服务器的IP地址都会被依次记录在内。也就是说，最右端的IP地址表示最近通过的代理服务器，而最左端的IP地址表示最初发起请求的客户端的IP地址。
+
+
+
+**`X-Forwarded-For`只规定了这个字段的格式，并不代表这是代理服务器的默认行为，是否增加还要是具体配置。**
+
+
+
+#### Nginx 处理 X-Forwarded-For
+
+Nginx做反向代理时为了让后端服务能获取到真实的用户ip网上的教程大多会让增加下边两行配置：
+
+```nginx
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+```
+
+**$proxy_add_x_forwarded_for 变量的含义**
+
+- 如果请求中不带X-Forwarded-For头，那么取`$remote_addr`的值；
+- 如果请求中带X-Forwarded-For头，那么在X-Forwarded-For后追加`$remote_addr`，即: `X-Forwarded-For,$remote_addr`
+
+
+
+因为`X-Forwarded-For`只是一个http的请求头，客户端很容易伪造一个 X-Forwarded-For 请求头。这时`Nginx`如果使用上边的配置的话由于`X-Forwarded-For`不为空，所以`Nginx`只会在现在值的基础上追加，这样后端服务在拿到头后根据约定取最左边ip话就会拿到一个伪造的IP，会有安全风险。
+
+```shell
+curl -H "X-Forwarded-For: 8.8.8.8" https://www.google.com 
+```
+
+由于请求头是不可靠的，我们不能信任客户端传过来头信息，那么如何解决呢？
+
+
+
+TCP不像UDP必须经过3次握手，客户端的IP是无法伪造的，所以**最外层的代理**一定要取`$remote_addr`的值，对应配置：
+
+```nginx
+proxy_set_header X-Real-IP $remote_addr;
+proxy_set_header X-Forwarded-For $remote_addr;
+```
+
+
+
 
 
 
