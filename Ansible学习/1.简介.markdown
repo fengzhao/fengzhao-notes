@@ -2,6 +2,18 @@
 
 
 
+Ansible的第一个版本是0.0.1，发布于2012年3月9日，其作者兼创始人是Michael DeHaan。
+
+Michael DeHaan曾经供职于Puppet Labs、RedHat、Michael，在配置管理和架构设计方面有丰富的经验。
+
+其在RedHat任职期间主要开发了Cobble，经历了各种系统简化、自动化基础架构操作的失败和痛苦，在尝试了Puppet、Chef、Cfengine、Capistrano、Fabric、Function、Plain SSH等各式工具后，决定自己打造一款能结合众多工具优点的自动化运维工具，Ansible由此诞生。其第一个版本号被非常谨慎地定义为0.01。
+
+
+
+
+
+
+
 Ansible 是2012年推出的一种通用的开源自动化工具，可用于配置管理或工作流程自动化。基于 python 开发的自动化运维工具。
 
 配置管理是一种" **基础架构代码** "实践，它将事物编码，例如应该在系统上安装什么包和版本，或者应该运行什么守护进程。
@@ -109,7 +121,11 @@ ansible可以帮助运维人员完成一些批量任务，或者完成一些需�
 
 ## Ansible的组成部分
 
-ansible palybooks
+
+
+
+
+
 
 
 
@@ -135,16 +151,68 @@ ansible palybooks
 
 
 
-
-
-
-
-
-
 ```shell
-# 修改机器上的python链接，指向python3版本的二进制文件
-ln -snf  /usr/bin/python3.6 /usr/bin/python
+# 确保pip安装
+python3 -m pip -V
+
+# 如果没有，则要安装pip3
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python3 get-pip.py --user
+
+# 使用pip安装ansible到用户目录
+python3 -m pip install --user ansible 
+# 也可以安装指定版本的ansible
+python3 -m pip install --user ansible-core==2.12.3
+
+
+# 升级
+python3 -m pip install --upgrade --user ansible
+
+
+# 确认ansible core版本号
+┌──(root㉿kali)-[~]
+└─# ansible --version
+ansible [core 2.12.4]
+  config file = None
+  configured module search path = ['/root/.ansible/plugins/modules', '/usr/share/ansible/plugins/modules']
+  ansible python module location = /root/.local/lib/python3.9/site-packages/ansible
+  ansible collection location = /root/.ansible/collections:/usr/share/ansible/collections
+  executable location = /root/.local/bin//ansible
+  python version = 3.9.10 (main, Feb 22 2022, 13:54:07) [GCC 11.2.0]
+  jinja version = 3.0.3
+  libyaml = True
+
+┌──(root㉿kali)-[~]
+└─#
+
+
+# 确认ansible包版本号
+┌──(root㉿kali)-[~]
+└─# python3 -m pip show ansible
+Name: ansible
+Version: 5.6.0
+Summary: Radically simple IT automation
+Home-page: https://ansible.com/
+Author: Ansible, Inc.
+Author-email: info@ansible.com
+License: GPLv3+
+Location: /root/.local/lib/python3.9/site-packages
+Requires: ansible-core
+Required-by:
+
+┌──(root㉿kali)-[~]
+└─#
 ```
+
+
+
+
+
+
+
+
+
+
 
 ### 主控节点要求
 
