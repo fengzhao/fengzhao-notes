@@ -1510,6 +1510,8 @@ https://man7.org/linux/man-pages/man7/namespaces.7.html
 
 
 
+
+
 具体的实现方式是把一个或多个进程的相关资源指定在同一个 namespace 中。
 
 Linux namespaces 是对全局系统资源的一种封装隔离，使得处于不同 namespace 的进程拥有独立的全局系统资源，改变一个 namespace 中的系统资源只会影响当前 namespace 里的进程，对其他 namespace 中的进程没有影响。

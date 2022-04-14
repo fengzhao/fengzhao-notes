@@ -18,11 +18,98 @@ https://help.aliyun.com/document_detail/98886.html?spm=a2c4g.11186623.6.1078.323
 
 **节点规划**
 
-| 主机          | 配置                   | 主机名    | 部署组件 |      |      |
-| ------------- | ---------------------- | --------- | -------- | ---- | ---- |
-| 192.168.4.96  | CPU 2核 内存2G 硬盘60G | master-01 | etcd     |      |      |
-| 192.168.4.100 | CPU 2核 内存2G 硬盘60G | node-01   | etcd     |      |      |
-| 192.168.4.100 | CPU 2核 内存2G 硬盘60G | node-02   | etcd     |      |      |
+| 主机        | 配置                                 | 主机名    | 部署组件                                                     |      |      |
+| ----------- | ------------------------------------ | --------- | ------------------------------------------------------------ | ---- | ---- |
+| 10.10.20.41 | 4 vCPUs  8G  50GB<br />CentOS7.x_x64 | master-01 | kube-apiserver<br />kube-controller-manager <br />kube-scheduler<br />docker<br />etcd |      |      |
+| 10.10.20.42 | 4 vCPUs  8G  50GB<br />CentOS7.x_x64 | node-01   | kube-apiserver<br />kube-controller-manager<br />kube-scheduler,docker |      |      |
+| 10.10.20.43 | 4 vCPUs  8G  50GB<br />CentOS7.x_x64 | node-02   | etcd                                                         |      |      |
+
+
+
+
+
+
+
+## 环境配置
+
+```shell
+# 关闭防火墙 
+systemctl stop firewalld 
+systemctl disable firewalld 
+
+# 关闭selinux 
+sed -i 's/enforcing/disabled/' /etc/selinux/config  # 永久 
+setenforce 0  # 临时 
+
+# 关闭禁用swap 
+swapoff -a 
+cp /etc/fstab  /etc/fstab.bak
+cat /etc/fstab.bak | grep -v swap > /etc/fstab
+
+
+
+# 将桥接的IPv4流量传递到iptables的链 
+cat > /etc/sysctl.d/k8s.conf << EOF 
+net.bridge.bridge-nf-call-ip6tables = 1 
+net.bridge.bridge-nf-call-iptables = 1 
+net.ipv4.ip_forward = 1
+EOF 
+
+sysctl --system  # 生效 
+
+
+cat >> /etc/hosts <<EOF 
+10.10.20.41 centos79-node1
+10.10.20.42 centos79-node2
+10.10.20.43 centos79-node3 
+EOF
+
+
+# 时间同步
+timedatectl set-timezone Asia/Shanghai 
+systemctl enable --now chronyd
+timedatectl status
+# 将当前的 UTC 时间写入硬件时钟 
+timedatectl set-local-rtc 0 
+# 重启依赖于系统时间的服务 
+systemctl restart rsyslog && systemctl restart crond
+
+
+
+# 安装epel源
+yum install epel-release -y
+# 加载ipvs模块
+yum install -y ipvsadm
+
+
+
+
+# 编写加载IPVS模块的脚本
+vim /etc/sysconfig/modules/ipvs.modules
+
+#!/bin/bash
+ipvs_mods_dir="/usr/lib/modules/$(uname -r)/kernel/net/netfilter/ipvs"
+for i in $(ls $ipvs_mods_dir|grep -o "^[^.]*")
+do
+  /sbin/modinfo -F filename $i &>/dev/null
+  if [ $? -eq 0 ];then
+    /sbin/modprobe $i
+  fi
+done
+
+# 执行并检查IPVS模块加载情况
+chmod 755 /etc/sysconfig/modules/ipvs.modules 
+sh /etc/sysconfig/modules/ipvs.modules 
+lsmod | grep ip_vs
+
+
+
+# ssh互信
+```
+
+
+
+
 
 
 
@@ -34,17 +121,7 @@ https://help.aliyun.com/document_detail/98886.html?spm=a2c4g.11186623.6.1078.323
 
 ```shell
 # 
-cd /usr/local/src/
 
-# cfssl工具包，可以先下好
-wget https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
-wget https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
-wget https://pkg.cfssl.org/R1.2/cfssl-certinfo_linux-amd64
-
-chmod +x cfssl_linux-amd64 cfssljson_linux-amd64 cfssl-certinfo_linux-amd64
-cp cfssl_linux-amd64 /usr/local/bin/cfssl
-cp cfssljson_linux-amd64 /usr/local/bin/cfssljson
-cp cfssl-certinfo_linux-amd64 /usr/bin/cfssl-certinfo
 
 # etcd-3.4.9
 wget https://github.com/etcd-io/etcd/releases/download/v3.4.9/etcd-v3.4.9-linux-amd64.tar.gz
@@ -61,11 +138,28 @@ wget https://github.com/etcd-io/etcd/releases/download/v3.4.9/etcd-v3.4.9-linux-
 ### 生成etcd证书
 
 ```shell
-##  自签证书颁发机构（CA）
+# 在任意etcd主机上执行
 
-mkdir -p ~/TLS/{etcd,k8s}
 
-cd ~/TLS/etcd
+cd /usr/local/src/
+
+# cfssl工具包，可以先下好
+wget https://pkg.cfssl.org/R1.2/cfssl_linux-amd64
+wget https://pkg.cfssl.org/R1.2/cfssljson_linux-amd64
+wget https://pkg.cfssl.org/R1.2/cfssl-certinfo_linux-amd64
+chmod +x cfssl_linux-amd64 cfssljson_linux-amd64 cfssl-certinfo_linux-amd64
+cp cfssl_linux-amd64 /usr/local/bin/cfssl
+cp cfssljson_linux-amd64 /usr/local/bin/cfssljson
+cp cfssl-certinfo_linux-amd64 /usr/bin/cfssl-certinfo
+
+
+
+##  自建证书颁发机构（CA）
+
+mkdir -p /usr/local/etcd/{bin,data,config,wal,src,tls,log}
+
+cd  /usr/local/etcd/tls/
+
 
 cat > ca-config.json <<EOF
 {
@@ -121,9 +215,9 @@ cat > server-csr.json <<EOF
 {
     "CN": "etcd",
     "hosts": [
-    "192.168.4.96",
-    "192.168.4.100",
-    "192.168.4.101"
+    "10.10.20.41",
+    "10.10.20.42",
+    "10.10.20.43"
     ],
     "key": {
         "algo": "rsa",
