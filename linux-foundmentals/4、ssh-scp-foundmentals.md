@@ -30,7 +30,7 @@ openssh 是利用 OpenSSL  协议具体实现的开源软件，包括 ssh,ssh-co
 
 可以使用 ssh -V 命令来查看 OpenSSH 版本。
 
-在 Linux 中，sshd 是 OpenSSH SSH 的守护进程。用于在不可信网络上提供安全的连接通道。
+在 Linux 中，sshd 是 OpenSSH SSH 的守护进程。**用于在不可信网络上提供安全的连接通道。**
 
  sshd 守护进程通常由 root 用户启动，它监听来自客户端的连接，然后为每个连接派生一个子进程。
 
@@ -362,7 +362,7 @@ $ ssh-copy-id -i /path/publice_key  user@host -p port
 ```shell
 
 # 把本地文件上传到远程主机
-$ scp /path/filename user@host:/path／
+$ scp /path/filename user@host:/path/
 # 从远程主机下载文件到本地
 $ scp user@host:/path/filename /var/www/local_dir
 ```
@@ -469,6 +469,9 @@ http://www.ruanyifeng.com/blog/2011/12/ssh_remote_login.html
 # ~/.ssh/config 配置示例
 # https://www.cnblogs.com/xjshi/p/9146296.html
 # 这个例子配置了三个主机。端口，用户，私钥这些可以共用的配置都被 * 号这个主机段匹配。
+
+# SSH 使命令行中给出的主机名与配置文件中定义的 Host 来匹配。它从文件顶部向下执行此操作，所以顺序非常重要。
+# 现在是指出 Host 定义中的模式不必与您要连接的实际主机匹配的好时机。 实际上，您可以使用这些定义为主机设置别名，以替代实际的主机名。
 
 
 Host server1
