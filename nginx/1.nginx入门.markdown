@@ -597,6 +597,135 @@ server {
 
 
 
+
+
+### http 指令
+
+http 是最顶层的指令之一了，它必须直接在 main 中使用。
+
+```nginx
+# 指定运行nginx进程的用户，Default: nobody，
+user nginx;  
+# 工作进程数，等于CPU核数
+worker_processes  auto;  
+error_log  logs/error.log;
+pid        logs/nginx.pid;
+worker_rlimit_nofile 8192;
+
+events {
+  worker_connections  4096;  ## Default: 1024
+}
+
+http {
+  include    conf/mime.types;
+  include    /etc/nginx/proxy.conf;
+  include    /etc/nginx/fastcgi.conf;
+  index    index.html index.htm index.php;
+
+  default_type application/octet-stream;
+    
+  server { # php/fastcgi
+    listen       80;
+    server_name  domain1.com www.domain1.com;
+    access_log   logs/domain1.access.log  main;
+    root         html;
+
+    location ~ \.php$ {
+      fastcgi_pass   127.0.0.1:1025;
+    }
+  }  
+    
+    server {
+       ...
+    }
+    
+}    
+
+```
+
+
+
+### server 指令 
+
+server 是 nginx 中最重要的指令了，它必须被包含在 http 指令中使用。一个 server 就定义了一个虚拟主机。http块中可以有多个 server，可以让 nginx 支持多个虚拟主机。
+
+虚拟主机是一种特殊的软硬件技术，它可以将网络上的每一台计算机分成多个虚拟主机，每个虚拟主机可以独立对外提供 www 服务，这样就可以实现一台主机对外提供多个 web 服务，每个虚拟主机之间是独立的，互不影响的。通俗说，一个虚拟主机就是一个网站。
+
+```
+Syntax:	server { ... }
+Default:	—
+Context:	http
+```
+
+### server_name 指令
+
+server_name 指令是用来配置究竟是哪个 server 块来处理我们的请求的。它必须在 server 块中使用。
+
+- server_name 指令后可以跟多个域名，第一个是主域名，多个域名之间空格分隔。
+- 泛域名：仅支持在最前或最后加 * 通配符匹配任意字符串，例如：`*.demo.com` 和 `test.nginx.*`
+- 正则表达式匹配：`server_name www.taohui.tech ~^www\d+\.taohui\.tech$;`
+
+
+
+```nginx
+Syntax:	server_name name ...;
+Default:	
+server_name "";
+Context:	server
+```
+
+
+
+nginx 是如何处理一个请求的，假设有这样一个配置文件，配置了三个域名。
+
+```nginx
+server {
+    listen      80;
+    server_name example.org www.example.org;
+    ...
+}
+
+server {
+    listen      80;
+    server_name example.net www.example.net;
+    ...
+}
+
+server {
+    listen      80;
+    server_name example.com www.example.com;
+    ...
+}
+```
+
+当 nginx 接收到 http 请求时，先从请求头提取到 Host 头部字段，然后跟 server_name 匹配来确认是哪个server块来处理请求。如果都不匹配，那么就用这个端口号的 default server 来处理。
+
+在这个例子中，就是第一个来处理。——这是nginx的标准做法。也可以在端口号后面加上一个 default_server 来显示指定这个行为。
+
+```nginx
+server {
+    listen      80 default_server;
+    server_name example.net www.example.net;
+    ...
+}
+```
+
+**注意在这个配置中，default_server只是跟在端口后面，并没有配置在域名上面。 **
+
+对于请求头中没有Host头部的请求，如果要禁止访问，可以设置如下配置：没有host头部的请求就会被这个server匹配上，并返回非标准的444状态码关闭连接。
+
+```
+server {
+    listen      80;
+    server_name "";
+    return      444;
+}
+```
+
+
+
+
+
 ### listen 指令
 
 listen 指令在 server 块中生效，用来配置监听哪些网络接口地址，哪些端口，由这些端口来处理请求。listen 指令的配置语法如下：
@@ -632,61 +761,9 @@ listen *:8080；
 
 
 
-### server_name 指令
-
-server_name 指令是用来配置究竟是哪个 server 块来处理我们的请求的。
-
-- server_name 指令后可以跟多个域名，第一个是主域名，多个域名之间空格分隔。
-- 泛域名：仅支持在最前或最后加 *，例如：`server_name* .taohui.tech`
-- 正则表达式匹配：`server_name www.taohui.tech ~^www\d+\.taohui\.tech$;`
-
-```nginx
-Syntax  server_name_in_redirect on | off;
-Default server_name_in_redirect off; 
-Context http, server, location
-```
 
 
-
-nginx 是如何处理一个请求的，假设有这样一个配置文件，配置了三个域名。
-
-```nginx
-server {
-    listen      80;
-    server_name example.org www.example.org;
-    ...
-}
-
-server {
-    listen      80;
-    server_name example.net www.example.net;
-    ...
-}
-
-server {
-    listen      80;
-    server_name example.com www.example.com;
-    ...
-}
-```
-
-当 nginx 接收到 http 请求时，先从请求头提取到 Host 头部字段，然后跟 server_name 匹配来确认是哪个server块来处理请求。如果都不匹配，那么就用这个端口号的 default server 来处理。
-
-在这个例子中，就是第一个来处理。——这是nginx的标准做法。也可以在端口号后面加上一个 default_server 来指定这个行为。
-
-```nginx
-server {
-    listen      80 default_server;
-    server_name example.net www.example.net;
-    ...
-}
-```
-
-对于没有
-
-### set 指令
-
-
+### location指令
 
 
 
@@ -739,7 +816,7 @@ https://www.cnblogs.com/wupeixuan/p/12074007.html
 
 
 
-nginx反向代理，后端服务器可能返回 3XX的redirect的response, Nginx会把这个请求直接返回给客户端。
+nginx反向代理，后端服务器可能返回 3XX 的redirect的response, Nginx会把这个请求直接返回给客户端。
 
 现在我们的需求是让Nginx自己处理这个跳转，而客户端无感知。
 
