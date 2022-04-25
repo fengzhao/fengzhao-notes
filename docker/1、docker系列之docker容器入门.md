@@ -486,7 +486,7 @@ docker 镜像的命名空间主要是 Registry/Users/Repository/Tag，分别表�
 
 
 
-每个镜像，下载到当前服务器内，都有一个唯一的镜像 id，我们可以给同一个镜像打多个标签，使用 docker tag命令来给镜像添加标签，docker tag 
+每个镜像被下载到当前服务器内，都有一个唯一的镜像 id，我们可以给同一个镜像打多个标签，使用 docker tag命令来给镜像添加标签，docker tag 
 
 docker tag 一般用于给镜像打标签，用于区分设置镜像的版本号。
 
@@ -547,13 +547,13 @@ docker load -i spring-boot-docker.tar
 
 #### Dockerfile 构建镜像
 
-通过 docker build 命令来从 Dockerfile 和下文中构建镜像，上下文一般就是 Dockerfile 文件所在的路径， 其中包含一系列制作镜像的所需的原文件，上下文可以是某个路径，或者是某个 URL （一般是git repo）中。
+通过 docker build 命令来从 Dockerfile 和下文中构建镜像，上下文一般就是 Dockerfile 文件所在的路径， 其中包含一系列制作镜像的所需的原文件，上下文可以是本地操作系统磁盘中的某个路径，或者是某个 URL （一般是git repo）中。
 
 上下文会被递归处理，所以路径下可以包含子文件夹。
 
 构建过程是 docker daemon 来执行的，第一件事就是把整个上下文传给 daemon 。
 
-在多数情况下，创建一个空文件夹来存放 Dockerfile 和构建镜像所需的文件，把这个文件夹作为上下文。
+在多数情况下，创建一个空文件夹来存放 Dockerfile 和构建镜像所必需的文件，把这个文件夹作为上下文。
 
 也可以在任何位置执行 docker build 构建镜像，通过 -f 选项来指定 Dockerfile 文件。
 
@@ -564,7 +564,7 @@ $ docker build -f /path/to/a/Dockerfile
 -t  选项来指定 **用户空间:仓库名称:标签**，可以指定多个标签（tag）。
 
 ```shell
-docker build -t shykes/myapp:1.0.2 -t shykes/myapp:latest .  #最后的. 表示以当前路径作为上下文开始构建
+docker build -t shykes/myapp:1.0.2 -t shykes/myapp:latest .  # 最后的.表示以当前路径作为上下文开始构建
 ```
 
 Dockerfile 包含一系列指令，它必须以 FROM 作为第一行，表示基于某个父镜像构建。
@@ -702,10 +702,6 @@ FROM scratch
 ADD ubuntu-focal-oci-amd64-root.tar.gz /
 CMD ["bash"]
 ```
-
-
-
-
 
 
 

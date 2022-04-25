@@ -229,6 +229,9 @@ make && make install
 
 
 
+# nginx服务配置文件，使用systemd
+# https://www.nginx.com/resources/wiki/start/topics/examples/systemd/
+
 
 # ubuntu
 
@@ -253,18 +256,6 @@ syntax on
 ### 编译 Nginx
 
 ```shell
-
-
-
-
-
-
-
-
-
-
-
-
 ./configure --help # --help 命令可以查看配置脚本支持哪些参数
 
 

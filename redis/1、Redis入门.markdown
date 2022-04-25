@@ -73,34 +73,37 @@ redis 在实际项目中的应用场景：
 ## 安装
 
 ```shell
-# 源码包安装 6.0
+# 源码包编译安装redis6.0
+
+
+# 创建好指定运行redis的用户
+groupadd redis
+useradd -r -g redis -s /bin/false redis
 
 ## 准备gcc环境
 # centos7 默认的 gcc 版本为：4.8.5 < 5.3 无法编译
-sudo yum -y install centos-release-scl tcl tclx tcl-devel  
+sudo yum -y install centos-release-scl tcl tclx tcl-devel   systemd-devel 
 sudo yum -y install devtoolset-9-gcc devtoolset-9-gcc-c++ devtoolset-9-binutils 
 # 临时有效，退出 shell 或重启会恢复原 gcc 版本
 sudo scl enable devtoolset-9 bash
 # 长期有效
 sudo echo "source /opt/rh/devtoolset-9/enable" >>/etc/profile
 
-# ubuntu
+# ubuntu准备相关工具
 $ sudo apt-get install  gcc g++ libxml2  pkg-config  libxml2-dev libsqlite3-dev tcl tk make
-
 
 # 下载源代码包
 git clone -b 6.0 https://github.com/redis/redis.git  /usr/local/src/redis/
-wget https://onedrive.fengzhao.ml/%E8%BD%AF%E4%BB%B6%E5%8C%85/%E6%95%B0%E6%8D%AE%E5%BA%93/redis/redis-6.0.6.tar.gz
 wget http://download.redis.io/releases/redis-6.0.5.tar.gz  -O  /usr/local/src/redis-6.0.5.tar.gz
 
+# 解压
+tar xf redis-6.0.5.tar.gz  && cd redis-6.0.5
 
-# 编译安装，编译安装后，二进制文件会被复制到/usr/local/bin目录下
-tar xf redis-6.0.5.tar.gz
-cd redis-6.0.5
-# 编译参数 USE_SYSTEMD=yes BUILD_TLS=yes # 在ubuntu使用这个参数 MALLOC=libc
-
-make  
-# 默认会把二进制文件安装到 /usr/local/bin 。也可以 make PREFIX=/some/other/directory install 指定不同目录
+# 编译安装，编译安装后，二进制文件会被复制到/usr/local/bin目录下，具体编译参数：
+# USE_SYSTEMD=yes  支持以systemd系统服务方式来管理redis，需要包的支持：libsystemd-dev on Debian/Ubuntu or systemd-devel on CentOS
+# PREFIX=/some/other/directory 指定将redis可执行文件安装到不同目录下
+# BUILD_TLS=yes  开启TLS通讯，一般也不需要
+# MALLOC=libc   在ubuntu使用这个参数 MALLOC=libc，一般不需要设置这个
 sudo make install
 
 
@@ -112,12 +115,28 @@ grep -v '^#' redis.conf | grep -v '^$' >  /etc/redis/6379.conf
 
 cp utils/redis_init_script 
 
-
 # 源代码包解压之后的./utils/redis_init_script 可以做为一个简单的启停脚本
 # https://github.com/redis/redis/blob/unstable/utils/redis_init_script
 
 # 源代码包解压之后的./utils/install_server.sh 可以进行一个交互式的引导用户生成配置文件，并注册成系统服务
 # https://github.com/redis/redis/blob/unstable/utils/install_server.sh
+
+
+# /usr/lib/systemd/system/redis.service
+[Unit]
+Description=Redis persistent key-value database
+Wants=network-online.target
+After=network.target
+[Service]
+ExecStart=/usr/local/bin/redis-server /etc/redis.conf --supervised systemd
+ExecStop=/bin/kill -s QUIT $MAINPID
+Type=notify
+User=redis
+Group=redis
+RuntimeDirectory=redis
+RuntimeDirectoryMode=0755
+[Install]
+WantedBy=multi-user.target
 
 
 
