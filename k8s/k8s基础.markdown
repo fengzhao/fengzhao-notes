@@ -95,7 +95,7 @@ k8s集群分为两类节点
 这些组件可以运行在单个 master 节点上，**也可以通过副本运行在多个 master 节点上以确保高可用性。**
 
 - etcd 是兼具一致性和高可用性的键值数据库，可以作为保存 Kubernetes 所有集群数据的后台数据库。可以内置在 master 中，也可以放到外面。
-  - 用来注册节点，持久化存储集群配置。
+  - etcd 用来注册节点，持久化存储集群配置。
 
 - kube-apiserver : 集群控制的入口，提供 HTTP REST 服务，主节点上负责提供 Kubernetes API 服务的组件；它是 Kubernetes 控制面的前端。
 - kube-scheduler : 负责 Pod 的调度，该组件监视那些新创建的未指定运行节点的 Pod，并选择节点让 Pod 在上面运行。
@@ -1167,3 +1167,21 @@ Ingress
 
 
 
+# 部署k8s集群
+
+
+
+生产环境部署k8s集群
+
+
+
+- kubeadm
+- 二进制
+
+
+
+
+
+### kubeadm 简介
+
+[kubeadm](https://github.com/kubernetes/kubernetes/tree/master/cmd/kubeadm)是 一位17岁的芬兰高中生Lucas Kaldstrom的作品，他用业余时间完成的一个社区项目。
