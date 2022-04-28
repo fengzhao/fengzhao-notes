@@ -79,6 +79,8 @@ redis 在实际项目中的应用场景：
 # 创建好指定运行redis的用户
 groupadd redis
 useradd -r -g redis -s /bin/false redis
+sudo mkdir -p  /home/redis/{run,dbdata}
+chown -R redis:redis /home/redis/
 
 ## 准备gcc环境
 # centos7 默认的 gcc 版本为：4.8.5 < 5.3 无法编译
@@ -99,19 +101,22 @@ wget http://download.redis.io/releases/redis-6.0.5.tar.gz  -O  /usr/local/src/re
 # 解压
 tar xf redis-6.0.5.tar.gz  && cd redis-6.0.5
 
-# 编译安装，编译安装后，二进制文件会被复制到/usr/local/bin目录下，具体编译参数：
+# 编译，，具体编译参数：
 # USE_SYSTEMD=yes  支持以systemd系统服务方式来管理redis，需要包的支持：libsystemd-dev on Debian/Ubuntu or systemd-devel on CentOS
 # PREFIX=/some/other/directory 指定将redis可执行文件安装到不同目录下
 # BUILD_TLS=yes  开启TLS通讯，一般也不需要
 # MALLOC=libc   在ubuntu使用这个参数 MALLOC=libc，一般不需要设置这个
+sudo make USE_SYSTEMD=yes
+
+# 安装，安装后，二进制文件会被复制到/usr/local/bin目录下
 sudo make install
 
 
-# 创建配置目录
+# 创建配置目录，如果多个实例，可以用/etc/redis/6379.conf,/etc/redis/6380.conf这样来配置
 sudo mkdir /etc/redis
 
-# 配置文件去掉空格
-grep -v '^#' redis.conf | grep -v '^$' >  /etc/redis/6379.conf
+# 配置文件去掉空格和注释
+grep -v '^#' redis.conf | grep -v '^$' >  /etc/redis.conf
 
 cp utils/redis_init_script 
 

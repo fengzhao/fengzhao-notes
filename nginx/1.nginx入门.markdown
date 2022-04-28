@@ -158,6 +158,11 @@ enabled=1
 在 <http://nginx.org/en/download.html> 里面可以直接下载 Nginx 源代码。包含以下目录：
 
 ```shell
+# 添加运行nginx的用户
+groupadd nginx
+useradd -r -g nginx -s /bin/false nginx
+
+
 # 安装依赖环境，确保编译正常
 sudo yum install gcc gcc-c++ make automake autoconf libtool pcre* zlib openssl openssl-devel  pcre pcre-devel
 
