@@ -616,7 +616,7 @@ https://blog.csdn.net/qq_35246620/article/details/79345359
 
 
 
-
+undo log是mysql中比较重要的事务日志之一，顾名思义，undo log是一种用于撤销回退的日志，在事务没提交之前，MySQL会先记录更新前的数据到 undo log日志文件里面，当事务回滚时或者数据库崩溃时，可以利用 undo log来进行回退。
 
 
 
