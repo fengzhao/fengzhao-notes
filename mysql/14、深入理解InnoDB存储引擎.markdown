@@ -498,12 +498,12 @@ MySQL 每执行一条 DML 语句，先将记录写入 redo log buffer ，后续�
 ### redo log 关键参数
 
 redo-log 默认是在 datadir 目录下，名为 `ib_logfile1` 和 `ib_logfile2` 这样的两个文件。
-# 指定redo-log的存放目录，默认是"./"，即在datadir目录下，一般不建议放在datadir下，防止IO争用
+# 指定redo-log的存放目录，默认是"./"，即在datadir目录下，条件允许的话，一般不建议放在跟datadir同一块磁盘下，防止IO争用
 # 注意这个目录要提前创建好，并设置好正确的权限
 innodb_log_group_home_dir=/data/mysql_redo_log/
 
 # 单个redolog文件的大小，默认是48MB，最大值为512G，注意最大值指的所有redo-log文件之和
-# redo-log应该尽量设置的足够大，
+# 如果数据库事务较大的话，redo-log应该尽量设置的稍微大点
 innodb_log_file_size=48MB
 
 # rego-log是以一组文件的形式出现。这个参数了指定了一组里面有多少个redo log文件
