@@ -878,7 +878,7 @@ https://blog.k4nz.com/7bbf69045e0da119a1a892e054c6d145/
 
 
 
-
+InnoDB 表空间（Tablespace）可以看做一个逻辑概念，InnoDB 把数据保存在表空间，本质上是一个或多个磁盘文件组成的虚拟文件系统。
 
 ### 系统表空间
 
@@ -894,7 +894,7 @@ https://blog.k4nz.com/7bbf69045e0da119a1a892e054c6d145/
 # 文件路径，默认是 datadir 下，也可以自定义路径
 innodb_data_home_dir=/myibdata/
 
-# 参数语法:文件名:文件初始大小:自增长属性：最大属性（初始大小不低于12M）
+# 参数语法:文件名:文件初始大小（初始大小不低于12M）:自增长属性：最大属性
 innodb_data_file_path=file_name:file_size[:autoextend[:max:max_file_size]]
 
 # 每次自动扩展的增量大小，由innodb_autoextend_increment控制，单位为M，默认是64M
@@ -929,25 +929,31 @@ innodb_data_file_path=ibdata1:50M;ibdata2:50M:autoextend
 
 
 
-每个表一个单独的表空间，都会
+MySQL 5.6.6之前的版本，InnoDB 默认会将所有的数据库InnoDB引擎的表数据存储在一个共享空间中：ibdata1，这样就会让管理感觉很难受，增删数据库的时候，ibdata1文件不会自动收缩。
+
+单个数据库的备份也将成为问题。通常只能将数据使用mysqldump 导出，然后再导入解决这个问题。
+
+在之后的版本，为了优化上述问题，独立表空间innodb_file_per_table参数默认开启
+
+```shell
+mysql> show variables like 'innodb_file_per_table';
++-----------------------+-------+
+| Variable_name         | Value |
++-----------------------+-------+
+| innodb_file_per_table | ON    |
++-----------------------+-------+
+1 row in set, 1 warning (0.05 sec)
+```
 
 
 
+独立表空间就是每个表单独创建一个 *.ibd* 文件，该文件存储着该表的索引和数据。由 *innodb_file_per_table* 变量控制。禁用 *innodb_file_per_table* 会导致InnoDB在系统表空间中创建表。
 
 
 
+InnoDB 表空间文件 .ibd 初始大小为 96K，而InnoDB默认页大小为 16K，页大小也可以通过 innodb_page_size 配置。在ibd文件中，0-16KB偏移量即为0号数据页，16KB-32KB的为1号数据页，以此类推。
 
-
-
-
-
-
-
-对于 
-
-
-
-
+页的头尾除了一些元信息外，还有C hecksum 校验值，这些校验值在写入磁盘前计算得到，当从磁盘中读取时，重新计算校验值并与数据页中存储的对比，如果发现不同，则会导致 MySQL 崩溃。
 
 
 
