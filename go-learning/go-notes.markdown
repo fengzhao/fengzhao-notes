@@ -1752,7 +1752,7 @@ var array [5]int
 // 声明并初始化，使用字面量来初始化数组
 array1 := [5] int {10, 20, 30, 40, 50}
 
-// ...表示数组长度，数组的容量由后面初始化的字面值的数量计算出来
+// ...代表数组长度，由后面初始化的字面值的数量计算出来
 array2 := [...]int{10, 20, 30, 40, 50}
 
 // 特定元素初始化，其余元素零值。
@@ -1768,7 +1768,7 @@ array4 := [5]*int { 0: new(int), 1: new(int)}
 *array4[1] = 20
 
 
-
+// 因为内存布局是连续的，所以数组是效率很高的数据结构。在访问数组里任意元素的时候，这种高效都是数组的优势。
 // 元素访问，数组遍历
 // 与C语言相同，数组下标从0开始， len(array)-1 则表示最后一个元素的下标
 
@@ -1932,7 +1932,7 @@ func foo(array *[1e6]int) {
 
 ```go
 //  
-type slice struct {
+type SliceHeader  struct {
   	array unsafe.Pointer
   	length int
   	capcity int
