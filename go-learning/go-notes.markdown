@@ -1957,7 +1957,7 @@ type SliceHeader  struct {
 // 从第x个元素开始，第z个元素止，z-x是容量，如果z=y，可以省略
 
 
-// 直接创建切片
+// 基于内置的make函数直接创建切片
 
 // make(元素类型,切片长度,切片容量)
 mySlice2 := make([]int, 5, 10)
