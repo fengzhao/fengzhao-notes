@@ -88,7 +88,9 @@ https://gnometerminator.blogspot.com/p/introduction.html
 rename 's/\.tpl$/\.blade.php/' ./**/*.tpl
 ```
 
+### POSIX
 
+早期的Linux可谓是"狂野的西部"，各个公司不断推陈出新，将操作系统引往不同的发展方向。
 
 ### SHELL
 
@@ -2188,3 +2190,4 @@ __ARCHIVE_BELOW__
 
 
 
+# 文件锁定
