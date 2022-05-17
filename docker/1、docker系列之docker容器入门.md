@@ -2421,7 +2421,9 @@ Kubernetes 在 1.24 版本里弃用并移除 docker shim，这导致 1.24 版本
 
 ## 开放容器计划
 
-**开放容器计划 (OCI)** 是一个轻量级、开放的治理结构（项目），在 Linux 基金会的支持下，由于 2015 年 6 月 22 日由 Docker、CoreOS 和其他容器行业的领导者推出成立。旨在围绕容器格式和运行时创建开放的行业标准。
+**开放容器计划 (OCI)** 是一个轻量级、开放的治理结构（项目）
+
+在 Linux 基金会的支持下，由于 2015 年 6 月 22 日由 Docker、CoreOS 和其他容器行业的领导者推出成立。旨在围绕容器格式和运行时创建开放的行业标准。
 
 OCI标准规范的诞生，抛开它成立的商业目的不提，OCI本身存在的意义在于为社区提供一套围绕着容器镜像规范和runtime规范的工业级标准。
 
@@ -2430,6 +2432,14 @@ OCI标准规范的诞生，抛开它成立的商业目的不提，OCI本身存�
 - **运行时规范** [runtime-spec](https://github.com/opencontainers/runtime-spec) 
 - **镜像规范** [image-spec](https://www.github.com/opencontainers/image-spec) 
 - **镜像仓库规范** [distribution-spec](https://github.com/opencontainers/distribution-spec) 
+
+
+
+OCI 开放容器倡议，是一个由科技公司组成的团体，其目的是围绕容器镜像和运行时创建开放的行业标准。他们维护容器镜像格式的规范，以及容器应该如何运行。
+
+OCI 背后的想法是，你可以选择符合规范的不同运行时，这些运行时都有不同的底层实现。
+
+例如，你可能有一个符合 OCI 的运行时用于你的 Linux 主机，另一个用于你的 Windows 主机。这就是拥有一个可以由许多不同项目实施的标准的好处。这种同样的 "一个标准，多种实现" 的方法其实还有很多都在使用，从蓝牙设备到 Java APIs
 
 # podman学习
 
