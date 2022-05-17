@@ -50,6 +50,8 @@ OpenSSL 代码库的地址是 https://github.com/openssl/openssl
 
 ```shell
 wget https://www.openssl.org/source/openssl-1.1.1d.tar.gz 
+
+
 ```
 
 
@@ -71,6 +73,10 @@ wget https://www.openssl.org/source/openssl-1.1.1d.tar.gz
 OpenSSL 3.0 是下一代的 OpenSSL 发布版，目前仍然在开发中。
 
 https://wiki.openssl.org/index.php/OpenSSL_3.0
+
+历时三年的开发，17次 alpha releases，2 次 beta releases
+
+
 
 
 

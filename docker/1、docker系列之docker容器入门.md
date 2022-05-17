@@ -2395,7 +2395,41 @@ json-file 日志的路径位于 `/var/lib/docker/containers/container_id/contain
 
 
 
+# 容器标准规范
 
+
+
+在几年之前 Docker 公司在容器技术领域强势崛起一家独大，Google、RedHat 这样的巨头们都产生了很大的危机感，因此他们想与 Docker 公司一起联合研发推进一个开源的容器运行时作为 Docker 技术的核心依赖。然而 Docker 公司很高冷的表示：我不干！巨头们听到这个反馈就很不爽啊，因此通过一些手段对 Docker 公司软硬兼施，使其将 libcontainer 捐给了开源社区，也就是现在的 runc，一个 low level 的容器运行时。此外巨头们又成立了 CNCF 去对抗 Docker 公司的一家独大，CNCF 成立的思路很明确：在容器领域干不过 Docker，那就搞容器上层的建设——容器编排，从此 K8s 诞生了。虽然 Docker 公司也尝试使用 Swarm 去对抗 K8s但最终也失败了。
+
+自此K8s慢慢成为云原生领域的标配，其生态也越做越大、越做越完善。Docker 公司为了融入生态，开源了 Docker 的核心依赖 containerd 。
+
+2019年2月28日containerd正式成为云原生计算基金会(Cloud Native Computing Foundation -CNCF)的一个毕业项目，
+
+紧随`Kubernetes、Prometheus、Envoy和CoreDNS`之后,在从containerd1.5开始，Kubernetes容器运行时接口（CRI）的containerd插件已经合并到containerd中。
+
+此外 K8s 为了对接下一层的容器，也因为其中立性搞了一个运行时接口，也就是 `CRI(Container Runtime Interface)`，runc、containerd 等运行时都去支持此接口。由于当时确实没有啥 high level 的 runtime，oci-o 虽然支持 CRI 接口，但其功能太弱；containerd 也尚未成熟，而且其当时的定位是嵌入到系统中，并非给终端用户使用；rkt 有自己的一套体系后来这个项目也失败了。只能暂时为了适配 Docker 搞了个 shim，将 CRI 转换为 Docker API。K8s 和 Docker 进入了冷静期，双方都在各自优化自己，互不干扰。然而平静之下仍是暗潮汹涌，CNCF 社区一直在不断完善 containerd，其定位也发生了改变，由原来的系统嵌入组件，变成了今天的`"工业标准容器运行时"`，并提供给终端用户使用。
+
+直到2020年12月 K8s 宣布废弃使用 Docker，而改用 Containerd。
+
+Kubernetes 在 1.24 版本里弃用并移除 docker shim，这导致 1.24 版本开始不在支持 docker 运行时。
+
+此时大部分用户会选择使用 Containerd 做为Kubernetes运行时。
+
+总结: 其实kubernetes宣布废弃dockershim，一方面是因为商业因素，而另一方面 K8s 已经提供了标准接口对接底层容器运行时，不再想单独维护一个类似于`Dockershim`的适配层去迎合不同的运行时。
+
+
+
+## 开放容器计划
+
+**开放容器计划 (OCI)** 是一个轻量级、开放的治理结构（项目），在 Linux 基金会的支持下，由于 2015 年 6 月 22 日由 Docker、CoreOS 和其他容器行业的领导者推出成立。旨在围绕容器格式和运行时创建开放的行业标准。
+
+OCI标准规范的诞生，抛开它成立的商业目的不提，OCI本身存在的意义在于为社区提供一套围绕着容器镜像规范和runtime规范的工业级标准。
+
+目前 OCI 主要有三个规范：
+
+- **运行时规范** [runtime-spec](https://github.com/opencontainers/runtime-spec) 
+- **镜像规范** [image-spec](https://www.github.com/opencontainers/image-spec) 
+- **镜像仓库规范** [distribution-spec](https://github.com/opencontainers/distribution-spec) 
 
 # podman学习
 
