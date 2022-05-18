@@ -565,7 +565,34 @@ $ docker build -f /path/to/a/Dockerfile
 
 ```shell
 docker build -t shykes/myapp:1.0.2 -t shykes/myapp:latest .  # 最后的.表示以当前路径作为上下文开始构建
+# 当我们使用 docker build 命令构建一个镜像的时候第一行日志就是 Sending build context to Docker daemon xx MB。
+# 这一步是 docker cli 这个命令行客户端将我们当前目录（即构建上下文） build context 打包发送 Docker daemon 守护进程 （即 dockerd）的过程。
 ```
+
+
+
+docker build 构建镜像的流程大概就是：
+
+- 执行 `docker build -t <imageName:Tag> .`，可以使用 `-f` 参数来指定 Dockerfile 文件；
+- docker 客户端会将构建命令后面指定的路径(`.`)下的所有文件打包成一个 tar 包，发送给 Docker 服务端;
+- docker 服务端收到客户端发送的 tar 包，然后解压，接下来根据 Dockerfile 里面的指令进行镜像的分层构建；
+- docker 下载 FROM 语句中指定的基础镜像，然后将基础镜像的 layer 联合挂载为一层，并在上面创建一个空目录；
+- 接着启动一个临时的容器并在 chroot 中启动一个 bash，运行 `RUN` 语句中的命令：`RUN: chroot . /bin/bash -c "apt get update……"`；
+- 一条 `RUN` 命令结束后，会把上层目录压缩，形成新镜像中的新的一层；
+- 如果 Dockerfile 中包含其它命令，就以之前构建的层次为基础，从第二步开始重复创建新层，直到完成所有语句后退出；
+- 构建完成之后为该镜像打上 tag；
+
+以上就是构建镜像的大致流程，我们也可以通过 `docker history <imageName:Tag>` 命令来逆向推算出 docker build 的过程。
+
+
+
+
+
+
+
+
+
+
 
 Dockerfile 包含一系列指令，它必须以 FROM 作为第一行，表示基于某个父镜像构建。
 
@@ -633,13 +660,43 @@ https://blog.csdn.net/boling_cavalry/article/details/93380447
 
 默认情况下，容器中的进程以 root 用户权限运行，并且这个 root 用户和宿主机中的 root 是同一个用户。
 
-听起来是不是很可怕，因为这就意味着**一旦容器中的进程有了适当的机会，它就可以控制宿主机上的一切！**
+> 虽然Linux有user namespace，但是docker默认没有开启namespace
+
+
+
+##### 深入理解Linux用户权限
+
+uid 和 gid 由 Linux 内核负责管理，并通过内核级别的系统调用来决定是否应该为某个请求授予特权。比如当进程试图写入文件时，内核会检查创建进程的 uid 和 gid，以确定它是否有足够的权限修改文件。
+
+注意，**内核使用的是 uid 和 gid，而不是用户名和组名**。
+
+
+
+
+
+很多同学简单地把 docker 容器理解为轻量的虚拟机，虽然这简化了理解容器技术的难度但是也容易带来很多的误解。事实上，与虚拟机技术不同：同一主机上运行的所有容器共享同一个内核(主机的内核)。
+
+容器化带来的巨大价值在于所有这些独立的容器(其实是进程)可以共享一个内核。这意味着即使由成百上千的容器运行在 docker 宿主机上，但**内核控制的 uid 和 gid 则仍然只有一套**。
+
+所以同一个 uid 在宿主机和容器中代表的是同一个用户(即便在不同的地方显示了不同的用户名)。
+
+
+
+
+
+
+
+听起来是不是很可怕，虽然容器有所谓的隔离。因为这就意味着**一旦容器中的进程有了适当的机会，它就可以控制宿主机上的一切！这就是权限的溢出。**
 
 docker 容器中运行的进程，如果以 root 身份运行的会有安全隐患，该进程拥有容器内的全部权限，更可怕的是如果有数据卷映射到宿主机。
 
 那么通过该容器就能操作宿主机的文件夹了，一旦该容器的进程有漏洞被外部利用后果是很严重的。
 
+
+
 **因此，容器内使用非 root 账号运行进程才是安全的方式，这也是我们在制作镜像时要注意的地方。**
+
+**对于容器而言，阻止权限提升攻击(privilege-escalation attacks)的最好方法就是使用普通用户权限运行容器的应用程序。**
 
 
 
@@ -649,10 +706,11 @@ https://github.com/docker-library/redis/blob/master/6.2/Dockerfile
 
 
 
-可见 redis 官方镜像使用 groupadd 和 useradd 创建了名为 redis 的组合账号，接下来就是用 redis 账号来启动服务了，理论上应该是以下套路：
+可见 redis 官方镜像第二行指令就是使用 groupadd 和 useradd 创建了名为 redis 的组合账号，接下来就是用 redis 账号来启动服务了，理论上应该是以下套路：
 
 用 USER redis 将账号切换到 redis ；
 在 docker-entrypoint.sh 执行的时候已经是 redis 身份了，如果遇到权限问题，例如一些文件只有 root 账号有读、写、执行权限，用 sudo xxx 命令来执行即可；
+
 但事实并非如此！
 在 Dockerfile 脚本中未发现 USER redis 命令，这意味着执行 docker-entrypoint.sh 文件的身份是 root；
 其次，在 docker-entrypoint.sh 中没有发现 su - redis 命令，也没有 sudo 命令；
@@ -663,11 +721,21 @@ https://github.com/docker-library/redis/blob/master/6.2/Dockerfile
 
 
 
-Rootless 模式允许以非 root 用户身份运行 **Docker 守护进程（dockerd）和容器**，以缓解 Docker 守护进程和容器运行时中潜在的漏洞。Rootless 模式是在 Docker v19.03 版本作为实验性功能引入的，在 Docker v20.10 版本 GA。
 
-Rootless 模式目前对 Cgroups 资源控制，Apparmor 安全配置，Overlay 网络，存储驱动等还有一定的限制，暂时还不能完全取代 “Rootful” Docker。关于 Docker Rootless 的详细信息参见 Docker 官方文档 [ Run the Docker daemon as a non-root user (Rootless mode)] (https://docs.docker.com/engine/security/rootless/#limiting-resources)
 
-Rootless 模式利用 user namespaces 将容器中的 root 用户和 Docker 守护进程（dockerd）用户映射到[宿主机](https://cloud.tencent.com/product/cdh?from=10680)的非特权用户范围内。Docker 此前已经提供了 `--userns-remap` 标志支持了相关能力，提升了容器的安全隔离性。Rootless 模式在此之上，让 Docker 守护进程也运行在重映射的用户名空间中。
+
+
+Rootless 模式允许以非 root 用户身份运行 **Docker 守护进程（dockerd）和容器**，以缓解 Docker 守护进程和容器运行时中潜在的漏洞。
+
+Rootless 模式是在 Docker v19.03 版本作为实验性功能引入的，在 Docker v20.10 版本 GA。
+
+Rootless 模式目前对 Cgroups 资源控制，Apparmor 安全配置，Overlay 网络，存储驱动等还有一定的限制，暂时还不能完全取代 “Rootful” Docker。
+
+关于 Docker Rootless 的详细信息参见 Docker 官方文档 [[ Run the Docker daemon as a non-root user (Rootless mode)]](https://docs.docker.com/engine/security/rootless/#limiting-resources) 
+
+Rootless 模式利用 user namespaces 将容器中的 root 用户和 Docker 守护进程（dockerd）用户映射到[宿主机](https://cloud.tencent.com/product/cdh?from=10680)的非特权用户范围内。
+
+Docker 此前已经提供了 `--userns-remap` 标志支持了相关能力，提升了容器的安全隔离性。Rootless 模式在此之上，让 Docker 守护进程也运行在重映射的用户名空间中。
 
 
 
@@ -695,13 +763,36 @@ Rootless 模式利用 user namespaces 将容器中的 root 用户和 Docker 守�
 
 除了选择现有镜像为基础镜像外，Docker 还存在一个特殊的镜像，名为 `scratch`。这个镜像是虚拟的概念，并不实际存在，它表示一个空白的镜像。
 
-对于 ubuntu 等最底层的基镜像，其 Dockerfile 就类似这样：
+**当你使用 `docker pull scratch` 命令来拉取这个镜像的时候会翻车哦**
+
+对于 ubuntu 等最底层的基镜像，其 [Dockerfile](https://github.com/debuerreotype/docker-debian-artifacts/blob/dist-amd64/buster/Dockerfile) 就类似这样：
 
 ```dockerfile
+# 第一行指令基镜像，表示空白镜像
 FROM scratch
+
+# 第二行的 ADD rootfs.tar.xz / 会自动把 rootfs.tar.xz 解压到 / 目录下，由此产生的一层镜像就是最终构建的镜像真实的 layer 内容
 ADD ubuntu-focal-oci-amd64-root.tar.gz /
+
+# 第三行 CMD ["bash"] 指定这镜像在启动容器的时候执行的应用程序，一般基础镜像的 CMD 默认为 bash 或者 sh
 CMD ["bash"]
 ```
+
+`ADD rootfs.tar.xz /` 中，这个 `rootfs.tar.xz` 就是经过一系列骚操作（一般是发行版源码编译，在这个例子中就是ubuntu）搓出来的根文件系统。
+
+对这个过程感兴趣可以去看一下构建 debian 基础镜像的 Jenkins 流水线任务 [debuerreotype](https://doi-janky.infosiftr.net/job/tianon/job/debuerreotype/)，上面有构建这个 `rootfs.tar.xz` 完整过程。
+
+或者参考 Debian 官方的 [docker-debian-artifacts](https://github.com/debuerreotype/docker-debian-artifacts) 这个 repo 里的 shell 脚本。
+
+
+
+在这里往镜像里添加 `rootfs.tar.xz` 时使用的是 `ADD` 而不是 `COPY` ，因为在 Dockerfile 中的 ADD 指令 src 文件如果是个 tar 包，在构建的时候 docker 会帮我们把 tar 包解开到指定目录，使用 copy 指令则不会解开 tar 包。另外一点区别就是 ADD 指令是添加一个文件，这个文件可以是构建上下文环境中的文件，也可以是个 URL，而 COPY 则只能添加构建上下文中的文件，所谓的构建上下文就是我们构建镜像的时候最后一个参数啦。
+
+
+
+Debian 发行版的 `rootfs.tar.xz` 可以在 [docker-debian-artifacts](https://github.com/debuerreotype/docker-debian-artifacts) 这个 repo 上找到，根据不同处理器 arch 选择相应的 branch ，然后这个 branch 下的目录就对应着该发行版的不同的版本的代号。
+
+ Debian 官方是将所有 arch 和所有版本的 `rootfs.tar.xz` 都放在这个 repo 里的，以至于这个 repo 的大小接近 2.88 GiB。
 
 
 
@@ -711,15 +802,62 @@ Dockerfile 里面的 ARG 指令定义了一个变量，在运行 `docker build` 
 
 ```Dockerfile
 ARG <name>[=<default value>]
+
+#　比如说在jenkins的dockerfile中，就可以容器中运行jenkins进程的用户名，暴露端口等等。
+ARG user=jenkins
+ARG group=jenkins
+ARG uid=1000
+ARG gid=1000
+ARG http_port=8080
+ARG agent_port=50000
+ARG JENKINS_HOME=/var/jenkins_home
+ARG REF=/usr/share/jenkins/ref
 ```
 
-这种变量只存在于镜像构建的时候，一旦镜像构建完成就失效了，不要使用构建时变量来传递诸如 github 密钥，用户凭据等机密数据，构建时变量值可以使用 docker history 命令查看。`ARG` 就是专门为构建镜像而生的。
+这种变量只存在于镜像构建的时候，一旦镜像构建完成就失效了，不要使用构建时变量来传递诸如 github 密钥，用户凭据等机密数据，构建时变量值可以使用 docker history 命令查看。
+
+**`ARG` 就是专门为构建镜像而生的。**
 
 
 
 **ENV**
 
 Dockerfile 里面的 ENV 指令将环境变量设置为值 ，这个变量将在构建阶段中所有后续指令的环境中使用。
+
+
+
+**RUN**
+
+RUN 表示在构建镜像时，执行命令。有以下两种格式
+
+- RUN <command>   :  shell风格，
+
+
+
+比如说，在jenkins的[dockefile](https://github.com/jenkinsci/docker/blob/master/8/alpine/hotspot/Dockerfile)中，就有如下命令：
+
+```dockerfile
+#　在构建镜像时执行相关命令
+RUN mkdir -p $JENKINS_HOME \
+  && chown ${uid}:${gid} $JENKINS_HOME \
+  && addgroup -g ${gid} ${group} \
+  && adduser -h "$JENKINS_HOME" -u ${uid} -G ${group} -s /bin/bash -D ${user}
+```
+
+
+
+```dockerfile
+RUN  COMMAND 1 ; COMMAND 2 
+# 当 COMMAND 1 运行失败时会继续运行 COMMAND2 ，并不会退出。
+
+RUN  COMMAND 1&& COMMAND 2
+# 当 COMMAND 1 运行成功时才接着运行 COMMAND 2 ，COMMAND 1 运行失败会退出。
+# 如果没有十足的把握保证每一行 shell 都能每次运行成功建议用 && ，这样失败了就退出构建镜像，不然构建出来的镜像会有问题。
+
+# 如果一个RUN指令中要执行多次shell命令，可以用\换行
+```
+
+
 
 
 
@@ -2022,6 +2160,18 @@ ip netns exec nstest ip link
 
 
 
+User namespace 是 Linux 3.8 新增的一种 namespace，用于隔离安全相关的资源，包括 **user IDs and group IDs**，**keys**, 和 **capabilities**。
+
+同样一个用户的 user ID 和 group ID 在不同的 user namespace 中可以不一样(与 PID nanespace 类似)。
+
+换句话说，一个用户可以在一个 user namespace 中是普通用户，但在另一个 user namespace 中是超级用户。
+
+
+
+
+
+
+
 ### cgroups 资源限制
 
 
@@ -2421,7 +2571,7 @@ Kubernetes 在 1.24 版本里弃用并移除 docker shim，这导致 1.24 版本
 
 ## 开放容器计划
 
-**开放容器计划 (OCI)** 是一个轻量级、开放的治理结构（项目）
+**[开放容器计划 (OCI)](https://opencontainers.org/)** 是一个轻量级、开放的治理结构（项目）
 
 在 Linux 基金会的支持下，由于 2015 年 6 月 22 日由 Docker、CoreOS 和其他容器行业的领导者推出成立。旨在围绕容器格式和运行时创建开放的行业标准。
 
@@ -2429,7 +2579,7 @@ OCI标准规范的诞生，抛开它成立的商业目的不提，OCI本身存�
 
 目前 OCI 主要有三个规范：
 
-- **运行时规范** [runtime-spec](https://github.com/opencontainers/runtime-spec) 
+- **运行时规范** [runtime-spec](https://github.com/opencontainers/runtime-spec) ：运行时规范
 - **镜像规范** [image-spec](https://www.github.com/opencontainers/image-spec) 
 - **镜像仓库规范** [distribution-spec](https://github.com/opencontainers/distribution-spec) 
 
@@ -2439,7 +2589,107 @@ OCI 开放容器倡议，是一个由科技公司组成的团体，其目的是�
 
 OCI 背后的想法是，你可以选择符合规范的不同运行时，这些运行时都有不同的底层实现。
 
-例如，你可能有一个符合 OCI 的运行时用于你的 Linux 主机，另一个用于你的 Windows 主机。这就是拥有一个可以由许多不同项目实施的标准的好处。这种同样的 "一个标准，多种实现" 的方法其实还有很多都在使用，从蓝牙设备到 Java APIs
+例如，你可能有一个符合 OCI 的运行时用于你的 Linux 主机，另一个用于你的 Windows 主机。这就是拥有一个可以由许多不同项目实施的标准的好处。
+
+这种同样的 "一个标准，多种实现" 的方法其实还有很多都在使用，从蓝牙设备到 Java APIs
+
+
+
+### OCI镜像规范
+
+OCI镜像规范主要是[这个文件](https://github.com/opencontainers/image-spec/blob/main/spec.md)
+
+
+
+- [Image Manifest](https://github.com/opencontainers/image-spec/blob/main/manifest.md)    
+- [Image Index](https://github.com/opencontainers/image-spec/blob/main/image-index.md) 
+- [Image Layout](https://github.com/opencontainers/image-spec/blob/main/image-layout.md) 
+- [Filesystem Layer](https://github.com/opencontainers/image-spec/blob/main/layer.md) 
+- [Image Configuration](https://github.com/opencontainers/image-spec/blob/main/config.md) 
+
+
+
+```shell
+root@fengzhao-ubuntu ~/docker-image#
+root@fengzhao-ubuntu ~/docker-image# docker save ghcr.io/fengzhao/jenkins:2.3 -o jenkins.tar
+root@fengzhao-ubuntu ~/docker-image#
+root@fengzhao-ubuntu ~/docker-image#
+root@fengzhao-ubuntu ~/docker-image# ls -al jenkins.tar
+-rw------- 1 root root 349394432  5月 18 23:05 jenkins.tar
+root@fengzhao-ubuntu ~/docker-image#
+root@fengzhao-ubuntu ~/docker-image# tar -xf jenkins.tar
+root@fengzhao-ubuntu ~/docker-image#
+root@fengzhao-ubuntu ~/docker-image#
+root@fengzhao-ubuntu ~/docker-image# ls -al
+total 341308
+drwxr-xr-x 19 root root      4096  5月 18 23:05 .
+drwx------ 23 root root      4096  5月 18 23:02 ..
+drwxr-xr-x  2 root root      4096  2月  7 02:06 00b42a0559af21eb4600f3d0f18b270a30a17dc4f61dfb1d3f2d39187266d5d4
+drwxr-xr-x  2 root root      4096  2月  7 02:06 0594403923aad62dbf31e6fbefb4c067a798573edb80b2ed707cb201d4ecc805
+drwxr-xr-x  2 root root      4096  2月  7 02:06 1a58e6937db044ef6f2e2962a0dc7bef16a6c33fdfc5a0318c39092612a1bd1a
+drwxr-xr-x  2 root root      4096  2月  7 02:06 2d0935b43d8b22383b71a8734a9675a402d8306ccac15948a18745449670270a
+drwxr-xr-x  2 root root      4096  2月  7 02:06 32e409b6511e33bf680acd8e74b8f9d00e2df1a19e94fe7e2bf95ed6c8dbebb4
+drwxr-xr-x  2 root root      4096  2月  7 02:06 3be0c3039e188d65d9e0aaf5f9c078238583d97d2981a8cdd3cf65bcdc4b8419
+drwxr-xr-x  2 root root      4096  2月  7 02:06 566ad6d99a2cf977ef8a25523c27fb42c7a5ab48168c910b36e8911ddcda7141
+drwxr-xr-x  2 root root      4096  2月  7 02:06 794a0e75e9b54a16f36db81e71c27cafca3d886edfd907459f8f8df4b840cd97
+drwxr-xr-x  2 root root      4096  2月  7 02:06 815921338a5f15cafc49e84a3b8ba74e77b68e26f66684675ec78d92b48f2a54
+drwxr-xr-x  2 root root      4096  2月  7 02:06 8e7bcb15fe00312fbc67b4fb77a981c5d6342e63204246675a4ee3ad33c0d846
+drwxr-xr-x  2 root root      4096  2月  7 02:06 98867178f60349f16652222772d086159a6d087fcd50bc32b9d75c23cd01ed8d
+-rw-r--r--  1 root root     14902  2月  7 02:06 a669e88f84b927f9db853e6e118c9f0bec6b5d3d1d5c5abea0a1293afe957203.json
+drwxr-xr-x  2 root root      4096  2月  7 02:06 a8ee30602eb07f8a63b1ab66e73c511bab67b539a9f91a4392baea160752fd7d
+drwxr-xr-x  2 root root      4096  2月  7 02:06 bb9e0739b93d623e74909bc46434f0b27edf9b089437dfccb759a264b2c3fb48
+drwxr-xr-x  2 root root      4096  2月  7 02:06 c12f86d2a60fc27a1d93d555944262fda4ed66e3a3172ac45cd861151a0dc6c1
+drwxr-xr-x  2 root root      4096  2月  7 02:06 c3536d926535cc67cf3db2084f1aeb713bc3c5eb98550c71a647f494fd72b3fb
+drwxr-xr-x  2 root root      4096  2月  7 02:06 d4744a6398dac17d197914022bdf3719075e75f35ad41486e6d6edbdfee1f33c
+drwxr-xr-x  2 root root      4096  2月  7 02:06 e54bef723ddf73c174aca15d61c1886b0dcc9591fdfb0e66a216ab926484ca36
+-rw-------  1 root root 349394432  5月 18 23:05 jenkins.tar
+-rw-r--r--  1 root root      1449  1月  1  1970 manifest.json
+-rw-r--r--  1 root root       104  1月  1  1970 repositories
+root@fengzhao-ubuntu ~/docker-image#
+
+
+# manifest.json 包含了镜像的顶层配置，它是一系列配置按顺序组织而成的。
+root@fengzhao-ubuntu ~/docker-image# cat manifest.json | jq
+[
+  {
+    "Config": "a669e88f84b927f9db853e6e118c9f0bec6b5d3d1d5c5abea0a1293afe957203.json",
+    "RepoTags": [
+      "ghcr.io/fengzhao/jenkins:2.3"
+    ],
+    "Layers": [
+      "1a58e6937db044ef6f2e2962a0dc7bef16a6c33fdfc5a0318c39092612a1bd1a/layer.tar",
+      "c12f86d2a60fc27a1d93d555944262fda4ed66e3a3172ac45cd861151a0dc6c1/layer.tar",
+      "98867178f60349f16652222772d086159a6d087fcd50bc32b9d75c23cd01ed8d/layer.tar",
+      "566ad6d99a2cf977ef8a25523c27fb42c7a5ab48168c910b36e8911ddcda7141/layer.tar",
+      "d4744a6398dac17d197914022bdf3719075e75f35ad41486e6d6edbdfee1f33c/layer.tar",
+      "32e409b6511e33bf680acd8e74b8f9d00e2df1a19e94fe7e2bf95ed6c8dbebb4/layer.tar",
+      "a8ee30602eb07f8a63b1ab66e73c511bab67b539a9f91a4392baea160752fd7d/layer.tar",
+      "e54bef723ddf73c174aca15d61c1886b0dcc9591fdfb0e66a216ab926484ca36/layer.tar",
+      "00b42a0559af21eb4600f3d0f18b270a30a17dc4f61dfb1d3f2d39187266d5d4/layer.tar",
+      "3be0c3039e188d65d9e0aaf5f9c078238583d97d2981a8cdd3cf65bcdc4b8419/layer.tar",
+      "0594403923aad62dbf31e6fbefb4c067a798573edb80b2ed707cb201d4ecc805/layer.tar",
+      "8e7bcb15fe00312fbc67b4fb77a981c5d6342e63204246675a4ee3ad33c0d846/layer.tar",
+      "c3536d926535cc67cf3db2084f1aeb713bc3c5eb98550c71a647f494fd72b3fb/layer.tar",
+      "bb9e0739b93d623e74909bc46434f0b27edf9b089437dfccb759a264b2c3fb48/layer.tar",
+      "2d0935b43d8b22383b71a8734a9675a402d8306ccac15948a18745449670270a/layer.tar",
+      "815921338a5f15cafc49e84a3b8ba74e77b68e26f66684675ec78d92b48f2a54/layer.tar",
+      "794a0e75e9b54a16f36db81e71c27cafca3d886edfd907459f8f8df4b840cd97/layer.tar"
+    ]
+  }
+]
+root@fengzhao-ubuntu ~/docker-image#
+root@fengzhao-ubuntu ~/docker-image#
+
+
+```
+
+
+
+
+
+
+
+- manifest.json 文件，Manifest 是一个 JSON 文件，其定义包括两个部分，分别是 [Config](https://github.com/opencontainers/image-spec/blob/master/config.md) 和 [Layers](https://github.com/opencontainers/image-spec/blob/master/layer.md)。Config 是一个 JSON 对象，Layers 是一个由 JSON 对象组成的数组。可以看到，Config 与 Layers 中的每一个对象的结构相同，都包括三个字段，分别是 digest、mediaType 和 size。其中 digest 可以理解为是这一对
 
 # podman学习
 
