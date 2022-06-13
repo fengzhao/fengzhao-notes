@@ -801,9 +801,10 @@ Debian 发行版的 `rootfs.tar.xz` 可以在 [docker-debian-artifacts](https://
 Dockerfile 里面的 ARG 指令定义了一个变量，在运行 `docker build` 命令时使用 `--build-arg <varname> = <value>` 参数将其传递给构建器。
 
 ```Dockerfile
-ARG <name>[=<default value>]
+# ARG格式，定义构建过程中的变量。后面为默认值，也可以在build构建过程中传参重写覆盖
+# ARG <name>[=<default value>]
 
-#　比如说在jenkins的dockerfile中，就可以容器中运行jenkins进程的用户名，暴露端口等等。
+#　比如说在jenkins的dockerfile中，就可以定义镜像中的要运行行jenkins进程的用户名，暴露端口等。
 ARG user=jenkins
 ARG group=jenkins
 ARG uid=1000
@@ -814,15 +815,30 @@ ARG JENKINS_HOME=/var/jenkins_home
 ARG REF=/usr/share/jenkins/ref
 ```
 
-这种变量只存在于镜像构建的时候，一旦镜像构建完成就失效了，不要使用构建时变量来传递诸如 github 密钥，用户凭据等机密数据，构建时变量值可以使用 docker history 命令查看。
 
-**`ARG` 就是专门为构建镜像而生的。**
+
+不要使用构建时变量来传递诸如 github 密钥，用户凭据等机密数据，构建时变量值可以使用 docker history 命令查看。
+
+
+
+**ARG定义的变量只能作用在镜像构建阶段，一旦镜像构建完成就失效了，在image被创建和container启动之后，无效。**
+
+**`ARG` 就是专门为构建镜像而生的。主要是用于构建镜像过程中的变量。**
+
+- 比如依赖的python版本，go版本，运行时版本。
+- 工作目录等
 
 
 
 **ENV**
 
-Dockerfile 里面的 ENV 指令将环境变量设置为值 ，这个变量将在构建阶段中所有后续指令的环境中使用。
+ENV 指令中定义的环境变量，在 build 过程中有效，在image被创建和container启动后作为环境变量依旧也有效，并且可以被重写覆盖。
+
+
+
+ENV 中定义的变量
+
+
 
 
 
@@ -851,11 +867,15 @@ RUN  COMMAND 1 ; COMMAND 2
 # 当 COMMAND 1 运行失败时会继续运行 COMMAND2 ，并不会退出。
 
 RUN  COMMAND 1&& COMMAND 2
-# 当 COMMAND 1 运行成功时才接着运行 COMMAND 2 ，COMMAND 1 运行失败会退出。
+# 当 COMMAND 1 运行成功时才接着运行 COMMAND 2 ，如果 COMMAND 1 运行失败，则会直接退出。
 # 如果没有十足的把握保证每一行 shell 都能每次运行成功建议用 && ，这样失败了就退出构建镜像，不然构建出来的镜像会有问题。
 
 # 如果一个RUN指令中要执行多次shell命令，可以用\换行
 ```
+
+
+
+**CMD**
 
 
 
@@ -891,7 +911,7 @@ WORKDIR指令设置 Dockerfile 中的任何 RUN，CMD，ENTRPOINT，COPY 和 ADD
 
 
 
-**CMD**
+
 
 
 
