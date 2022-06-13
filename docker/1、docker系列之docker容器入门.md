@@ -895,22 +895,7 @@ WORKDIR指令设置 Dockerfile 中的任何 RUN，CMD，ENTRPOINT，COPY 和 ADD
 
 
 
-
-#### dockerfile多阶段构建
-
-
-
-
-
-
-
-#### docker镜像制作教程
-
-https://fuckcloudnative.io/posts/docker-images-part1-reducing-image-size/
-
-https://fuckcloudnative.io/posts/docker-images-part2-details-specific-to-different-languages/
-
-[编写高效的Dockerfile_容器镜像服务 SWR_最佳实践_华为云 (huaweicloud.com)](https://support.huaweicloud.com/bestpractice-swr/swr_bestpractice_0002.html)
+https://support.huaweicloud.com/bestpractice-swr/swr_bestpractice_0002.html)
 
 
 
@@ -974,7 +959,38 @@ docker pull 就像我们使用 git pull 一样，将远程的镜像拉拉取本�
 
 
 
+#### 镜像体积瘦身
 
+构建镜像最具挑战性的一点是使镜像大小尽可能的小。
+
+Dockerfile中的每条指令都为图像添加了一个图层，您需要记住在移动到下一层之前清理任何不需要的工件。
+
+**为了编写一个真正高效的Dockerfile，传统上需要使用shell技巧和其他逻辑来保持层尽可能小，并确保每个层都具有前一层所需的工件而不是其他任何东西。**
+
+
+
+
+
+
+
+#### dockerfile多阶段构建
+
+在 Docker 17.05 版本之前，我们构建 Docker 镜像时，通常会采用两种方式：
+
+- 一种方式是将所有的构建过程编包含在一个 `Dockerfile` 中，包括项目及其依赖库的编译、测试、打包等流程。
+- 
+
+
+
+
+
+#### docker镜像制作教程
+
+https://fuckcloudnative.io/posts/docker-images-part1-reducing-image-size/
+
+https://fuckcloudnative.io/posts/docker-images-part2-details-specific-to-different-languages/
+
+[编写高效的Dockerfile](https://support.huaweicloud.com/bestpractice-swr/swr_bestpractice_0002.html)
 
 ## docker 文件系统
 
