@@ -245,12 +245,13 @@ docker exec -it  gitlab-runner  register
 
 .gitlab-ci.yml 是在仓库项目根目录中的一个 yaml 格式的文件，它定义了 cicd 的主要任务。在这个文件中：
 
-- 定义了 runner 需要执行的步骤和任务顺序。
+- 定义了 runner 需要执行的步骤和任务（顺序）。
 - 当特定条件满足时，runner需要执行的任务。
 
 例如，你需要定义一个任务（当有提交到任意分支（非默认分支）时，执行一系列构建测试。当提交到默认分支时，执行构建测试并发布到项目测试环境中）
 
 ```yaml
+#  按照下面，一共4个job，3个stage
 build-job:
   stage: build
   script:
@@ -261,18 +262,20 @@ test-job1:
   script:
     - echo "This job tests something"
 
+
+deploy-prod:
+  stage: deploy
+  script:
+    - echo "This job deploys something from the $CI_COMMIT_BRANCH branch."
+    
+
 test-job2:
   stage: test
   script:
     - echo "This job tests something, but takes more time than test-job1."
     - echo "After the echo commands complete, it runs the sleep command for 20 seconds"
     - echo "which simulates a test that runs 20 seconds longer than test-job1"
-    - sleep 20
-
-deploy-prod:
-  stage: deploy
-  script:
-    - echo "This job deploys something from the $CI_COMMIT_BRANCH branch."
+    - sleep 20    
 ```
 
 ## .gitlab-ci.yml 语法检查
@@ -475,11 +478,15 @@ script, after_script, allow_failure, artifacts, before_script, cache, coverage, 
 任务要执行的shell脚本内容，内容会被runner执行，在这里，你不需要使用git clone ....克隆当前的项目，来进行操作，因为在流水线中，每一个的job的执行都会将项目下载，恢复缓存这些流程，不需要你再使用脚本恢复。你只需要在这里写你的项目安装，编译执行，如
 npm install 另外值得一提的是，脚本的工作目录就是当前项目的根目录，所有可以就像在本地开发一样。此外script可以是单行或者多行。
 
+
+
+
+
 **stage**
 
 - 
 
-官方默认提供了五个阶段，按照先后顺序执行
+官方默认提供了五个阶段，可以保证按照先后顺序执行（同一个阶段中的任务可以并行执行，不同阶段的任务必须线性顺序执行）
 
 - .pre            pre 这个stage被保证为是第一个stage，最先执行
 - build
