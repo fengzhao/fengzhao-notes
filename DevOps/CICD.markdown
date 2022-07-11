@@ -645,11 +645,16 @@ wget https://mirrors.tuna.tsinghua.edu.cn/gitlab-ce/debian/pool/buster/main/g/gi
 
 ```shell
 # https://www.cnblogs.com/hellxz/p/install_jenkins.html
-
+# jenkins官方镜像源
+http://mirrors.jenkins.io/
+# 清华大学jenkins镜像源
+https://mirrors.tuna.tsinghua.edu.cn/jenkins/
+# 中文社区
+# https://jenkins-zh.cn/tutorial/management/mirror/
 
 # centos7 安装 jenkins
 
-# 安装jdk1.8
+# 安装jdk1.8，直接安装rpm，或者下载二进制包并配置环境变量，安装maven，推荐都用二进制包安装
 wget  https://repo.huaweicloud.com/java/jdk/8u181-b13/jdk-8u181-linux-x64.tar.gz
 rpm -ivh https://repo.huaweicloud.com/java/jdk/8u181-b13/jdk-8u181-linux-x64.rpm
 yum -y install git
@@ -662,32 +667,28 @@ sudo yum upgrade
 sudo yum install jenkins java-1.8.0-openjdk-devel
 sudo systemctl daemon-reload
 
-# jenkins官方镜像源
-http://mirrors.jenkins.io/
-# 清华大学jenkins镜像源
-https://mirrors.tuna.tsinghua.edu.cn/jenkins/
-
-# tomcat方式安装Jenkins，注意，用tomcat9
-wget  https://mirrors.cnnic.cn/apache/tomcat/tomcat-9/v9.0.41/bin/apache-tomcat-9.0.41.tar.gz
-wget --no-check-certificate https://dlcdn.apache.org/tomcat/tomcat-10/v10.0.13/bin/apache-tomcat-10.0.13.tar.gz
-wget https://mirrors.cnnic.cn/apache/tomcat/tomcat-9/v9.0.55/bin/apache-tomcat-9.0.55.tar.gz
-
-# jenkins-war包下载
-# wget http://mirrors.jenkins.io/war-stable/latest/jenkins.war
-wget https://mirrors.huaweicloud.com/jenkins/war/latest/jenkins.war
-# 中文社区
-# https://jenkins-zh.cn/tutorial/management/mirror/
-
-# rpm包下载
+# rpm包下载，然后ivh安装
 http://mirrors.jenkins.io/redhat-stable/jenkins-2.235.3-1.1.noarch.rpm
 # 所以也可以下载rpm包后，rpm -ivh 去安装
 
-# jenkins进程通过systemctl start jenkins的方式启动
-
+# 如果是rpm安装的，则jenkins进程通过systemctl start jenkins的方式启动，相关路径如下
 # /usr/lib/jenkins/jenkins.war    　　　　　WAR包 
 # /etc/sysconfig/jenkins       　　　　　　　配置文件
-# /var/lib/jenkins/        　　　　　　　　　默认的JENKINS_HOME目录
-#　/var/log/jenkins/jenkins.log    　　　　Jenkins日志文件
+# /var/lib/jenkins/        　　　　　　　　　 默认的JENKINS_HOME目录
+#　/var/log/jenkins/jenkins.log    　　　　 Jenkins日志文件
+
+
+# tomcat方式安装Jenkins，注意，用tomcat9
+wget  https://mirrors.cnnic.cn/apache/tomcat/tomcat-9/v9.0.41/bin/apache-tomcat-9.0.41.tar.gz
+wget https://mirrors.tuna.tsinghua.edu.cn/apache/tomcat/tomcat-9/v9.0.64/bin/apache-tomcat-9.0.64.tar.gz
+wget --no-check-certificate https://dlcdn.apache.org/tomcat/tomcat-10/v10.0.13/bin/apache-tomcat-10.0.13.tar.gz
+wget https://mirrors.cnnic.cn/apache/tomcat/tomcat-9/v9.0.55/bin/apache-tomcat-9.0.55.tar.gz
+
+# jenkins-war包下载，一般推荐war包并放到tomcat的webapp中来安装jenkins
+# wget http://mirrors.jenkins.io/war-stable/latest/jenkins.war
+wget https://mirrors.huaweicloud.com/jenkins/war/latest/jenkins.war
+
+
 
 
 # jenkins插件安装
@@ -760,7 +761,13 @@ mkdir /data/jenkins_home
 
 
 
+### jenkins 主目录结构
 
+
+
+Jenkins 的所有重要数据都存放在它的主目录中，即 `JENKINS_HOME`。它默认位于当前用户主目录下的 `.jenkins` 隐藏目录中，即 `~/.jenkins`。可通过修改环境变量 `JENKINS_HOME` 的值，来更改 jenkins 主目录。
+
+其中存储了关于构建服务器的配置信息、构建作业、构建产物、插件和其它有用的信息。**这个目录可能会占用大量的磁盘空间。**
 
 
 
@@ -768,13 +775,15 @@ mkdir /data/jenkins_home
 
 
 
-
+持续集成不是一个一蹴而就的事物。要把持续继承引入到一个公司需要通过几个不同的阶段。
 
 
 
 ## 自由风格
 
 
+
+自由风格，允许配置任何类型的构建作业：它们是高度灵活的。
 
 
 
