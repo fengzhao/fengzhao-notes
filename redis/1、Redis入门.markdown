@@ -97,7 +97,7 @@ $ sudo apt-get install  gcc g++ libxml2  pkg-config  libxml2-dev libsqlite3-dev 
 # 下载源代码包
 git clone -b 6.0 https://github.com/redis/redis.git  /usr/local/src/redis/
 wget http://download.redis.io/releases/redis-6.0.5.tar.gz  -O  /usr/local/src/redis-6.0.5.tar.gz
-
+wget http://download.redis.io/releases/redis-7.0.3.tar.gz  -O  /usr/local/src/redis-7.0.3.tar.gz
 # 解压
 tar xf redis-6.0.5.tar.gz  && cd redis-6.0.5
 
@@ -2595,13 +2595,19 @@ setRedis（Key，value，time + Math.random() * 10000）；
 
 # Redis 认证和ACL
 
+在 Redis 6.0 中引入了 ACL（Access Control List) 的支持在此前的版本中 Redis 中是没有用户的概念的。
+
+其实这样是没有办法很好的控制权限，redis 6.0 开始支持用户，可以给每个用户分配不同的权限来控制权限。
+
+
+
 同一个redis集群的所有开发都共享default用户，难免会出现误操作把别人的key删掉或者数据泄露的情况，那之前我们也可以使用rename command的方式给一些危险函数重命名或禁用，但是这样也防止不了自己的key被其他人访问。
 
-在 Redis 6.0 中引入了 ACL（Access Control List) 的支持，在此前的版本中 Redis 中是没有用户的概念的，其实没有办法很好的控制权限，redis 6.0 开始支持用户，可以给每个用户分配不同的权限来控制权限。
 
-在 6.0 之前，如果开启了密码认证，我们使用 redis-cli -h redis-19349.c60.us-west-1-2.ec2.cloud.redislabs.com -p 19349 这样的方式登录，需要使用 auth password 命令来提供密码来认证。
 
-但是没有用户这个概念的，这就导致所有的客户端相当于是使用同一个账户来操作 redis 的，redis 6.0 扩展了 AUTH 的语法:
+在 6.0 之前，如果开启了密码认证，我们需要使用 `redis-cli -h host -p port `这样的命令登录，然后再执行 `auth password` 命令来交互式提供密码来认证。
+
+**但是没有用户这个概念的，这就导致所有的客户端相当于是使用同一个账户来操作同一个 redis 实例的**，redis 6.0 扩展了 AUTH 的语法:
 
 ```shell
 AUTH <username> <password>
@@ -2625,6 +2631,7 @@ AUTH <password>
 ACL 的另一种典型用法与托管Redis实例有关。
 
 Redis通常由公司内部管理 redis 基础结构的内部团队为其所拥有的其他内部客户提供的一项托管服务，或者由云提供商在软件即服务设置中提供。
+
 在这两种设置中，我们都希望确保为客户排除配置命令。
 
 过去，通过命令重命名来完成此操作的方法是一种技巧，它使我们可以长时间不用 ACL 生存，但使用体验并不理想。
@@ -2638,8 +2645,16 @@ Redis通常由公司内部管理 redis 基础结构的内部团队为其所拥�
 配置的命令是一样的，但是两种方式只能选择其中一种，我们之前使用 requirepass 给 default 用户设置密码 默认就是使用 config 的方式。
 
 ```shell
-# redis.conf中配置default用户的密码
+# 比如常见的单机redis配置，就是在redis.conf中配置default用户的密码
 requirepass 123456
+
+
+# 当您要使用外部ACL文件时，需要在redis.conf中使用配置指令aclfile来指定外部acl文件路径
+aclfile /etc/redis/users.acl
+
+
+# 当仅在redis.conf文件内部直接指定几个用户时，可以使用CONFIG REWRITE以便通过重写将新的用户配置存储在文件中。
+
 
 ```
 
