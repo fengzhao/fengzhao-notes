@@ -356,6 +356,32 @@ schema://<user>:<password>@host:port/path;<params>?<query_string>#frag
 
 
 
+RFC3986文档规定，URL中只允许包含英文字母（a-zA-Z）、数字（0-9）、-_.~4个特殊字符以及所有保留字符。 
+
+RFC3986文档对URL的编解码问题做出了详细的建议，指出了哪些字符需要被编码才不会引起Url语义的转变，以及对为什么这些字符需要编码做出了相 应的解释。
+
+URL参数字符串中使用`key=value`键值对这样的形式来传参，键值对之间以 `&` 符号分隔，如 /s?q=abc& ie=utf-8。
+
+如果你的value字符串中包含了`=` 或者 `&`，那么势必会造成接收URL的服务器解析错误，因此必须将引起歧义的 `&` 和 `=` 符号进行转义，也就是对其进行编码。
+
+
+
+如：最常使用的空格用%20来表示
+
+```shell
+# 比如在百度搜索"nginx http"
+# 可以看到URL中的querystring就可以看到空格被编码为%20
+https://www.baidu.com/s?ie=utf-8&f=8&rsv_bp=1&rsv_idx=1&tn=baidu&wd=nginx%20http
+```
+
+
+
+[参考](https://www.cnblogs.com/liuhongfeng/p/5006341.html)
+
+
+
+
+
 # HTTP请求方法
 
 
