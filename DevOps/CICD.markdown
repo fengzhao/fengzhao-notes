@@ -641,7 +641,11 @@ wget https://mirrors.tuna.tsinghua.edu.cn/gitlab-ce/debian/pool/buster/main/g/gi
 
 
 
-# 部署 jenkins 
+# 部署安装jenkins 
+
+
+
+Jenkins 做为一个构建服务器，需要足够的处理器能力和内存等资源。构建往往是一些内存和处理器密集型的操作，Jenkins 可以配置并行地运行几个构建。
 
 ```shell
 # https://www.cnblogs.com/hellxz/p/install_jenkins.html
