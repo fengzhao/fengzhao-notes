@@ -461,7 +461,7 @@ SET GLOBAL innodb_buffer_pool_dump_now=ON;
 
 具体来说，当有一条记录需要更新的时候，InnoDB 引擎就会先把记录写到 redo log （磁盘中的物理文件）里面，并更新内存，这个时候更新就算完成了。
 
-（严格说还没有 commit 成功，客户端还看不到返回成功）
+（后面会讲，这时严格说还不算事务 commit 成功，客户端还看不到返回成功）
 
 **由于 redo-log 是顺序写的，所以速度比较快。redo-log 是物理日志，记录的是 “在某个数据页上做了什么修改”。**
 
@@ -495,22 +495,22 @@ MySQL 每执行一条 DML 语句，先将记录写入 redo log buffer ，后续�
 
 ```shell
 
-### redo log 关键参数
+### redolog 关键参数
 
-redo-log 默认是在 datadir 目录下，名为 `ib_logfile1` 和 `ib_logfile2` 这样的两个文件。
-# 指定redo-log的存放目录，默认是"./"，即在datadir目录下，条件允许的话，一般不建议放在跟datadir同一块磁盘下，防止IO争用
+# redo-log 默认是在 datadir 目录下，名为 `ib_logfile1` 和 `ib_logfile2` 这样的两个文件。
+# 指定redolog的存放目录，默认是"./"，即在datadir目录下，条件允许的话，一般不建议放在跟datadir同一块磁盘下，防止IO争用
 # 注意这个目录要提前创建好，并设置好正确的权限
 innodb_log_group_home_dir=/data/mysql_redo_log/
 
 # 单个redolog文件的大小，默认是48MB，最大值为512G，注意最大值指的所有redo-log文件之和
-# 如果数据库事务较大的话，redo-log应该尽量设置的稍微大点
+# 如果数据库单个事务较大的话，redolog应该尽量设置的稍微大点
 innodb_log_file_size=48MB
 
-# rego-log是以一组文件的形式出现。这个参数了指定了一组里面有多少个redo log文件
+# regolog是以一组文件的形式出现。这个参数了指定了一组里面有多少个redo log文件
 innodb_log_files_in_group=2  # 默认值是2
 # regolog文件的总大小就是等于 innodb_log_file_size*innodb_log_files_in_group
 
-# redo log buffer 大小，默认16M。延迟事务日志写入磁盘，把 redo log 放到该缓冲区
+# redo_log_buffer 大小，默认16M。延迟事务日志写入磁盘，把 redo log 放到该缓冲区
 # 然后根据 innodb_flush_log_at_trx_commit 参数的设置，再把日志从buffer中flush到磁盘
 # innodb_log_buffer_size是会话级的，所有整个redolog buffer占用的空间应该是innodb_log_buffer_size * connections 
 innodb_log_buffer_size=16M  
@@ -598,7 +598,17 @@ SHOW GLOBAL STATUS LIKE 'Innodb_redo_log_enabled';
 
 就会导致备份失败。
 
-在 MySQL 8.017 中引入了 redolog 归档功能。即写 redolog 的时候，
+
+
+ MySQL8.0.17中引入了redo log的归档功能，如果我们开启归档功能，redo log会持续不断的生成，而不会覆盖掉之前的redo log。
+
+
+
+ 试想这样一种情况，在对一个高并发的数据库进行热备份的时候，备份速度很慢而redo log生成的速度很快，备份的速度跟不上redo log的生成速度，导致redo log被覆盖了，此时备份的一致性就无法得到保证了。
+
+有了redo log的归档功能，就可以在备份启动的时候同步启动redo log 归档，而在备份结束的时候同步停止redo log归档，这样就可以避免这个备份的问题了。
+
+备份结束之后，依旧可以利用这个期间产生的redo log进行数据恢复。
 
 
 
@@ -609,14 +619,6 @@ SHOW GLOBAL STATUS LIKE 'Innodb_redo_log_enabled';
 https://blog.csdn.net/qq_35246620/article/details/79345359
 
 
-
-
-
-### 回滚日志undolog
-
-
-
-undo log是mysql中比较重要的事务日志之一，顾名思义，undo log是一种用于撤销回退的日志，在事务没提交之前，MySQL会先记录更新前的数据到 undo log日志文件里面，当事务回滚时或者数据库崩溃时，可以利用 undo log来进行回退。
 
 
 
@@ -707,6 +709,14 @@ https://www.cnblogs.com/xibuhaohao/p/10899586.html
 
 
 
+
+
+
+### 回滚日志undolog
+
+
+
+undo log是mysql中比较重要的事务日志之一，顾名思义，undo log是一种用于撤销回退的日志，在事务没提交之前，MySQL会先记录更新前的数据到 undo log日志文件里面，当事务回滚时或者数据库崩溃时，可以利用 undo log来进行回退。
 
 
 
