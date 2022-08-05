@@ -493,17 +493,32 @@ OK
 
 ### LIST类型
 
-redis 中的 list 是一个**有序数组，按照插入顺序排序。可以添加一个元素到列表的头部（左边）或者尾部（右边）**
+redis 中的 list 是一个**有序数组（元素都是string类型），按照插入顺序排序。可以直接插入语一个元素到列表的头部（左边）或者尾部（右边）**
 
-
+-  [LPUSH](https://redis.io/commands/lpush)  命令在头部插入一个元素
+-  [RPUSH](https://redis.io/commands/rpush) 命令在尾部插入一个元素
 
 ```shell
-# 声明一个list
+# 声明一个list, list的元素最大数量为 2^32 - 1 个 (即4294967295)
 127.0.0.1:6379> rpush mylist A B C D
 (integer) 4
 127.0.0.1:6379>
 
-# 取第一个到最后一个元素，有点像数组切片
+
+# 插入
+# 从头部插入元素
+lpush [key] [value1] [value2] [value3] ...
+# 往尾部插入元素
+rpush [key] [value1] [value2] [value3] ...
+
+# 删除元素
+lpop # 删除index最小的元素 或者可以理解为删除栈底元素
+rpop # 删除index最大的元素,或者可以理解为删除栈顶元素
+
+# 按下标取元素 
+lindex [list] [index]
+
+# 取全部元素，第一个到最后一个元素，有点像数组切片
 127.0.0.1:6379> lrange mylist 0 -1
 1) "A"
 2) "B"
@@ -511,8 +526,10 @@ redis 中的 list 是一个**有序数组，按照插入顺序排序。可以添
 4) "D"
 127.0.0.1:6379>
 
-# 继续在后面插入其他类型的元素
-127.0.0.1:6379> rpush mylist 1 2 3 4 5 "foo bar"
+# 遍历list
+lrange [key] [startIndex] [endIndex]
+# 遍历key这个list,从下表为startIndex开始,遍历到下标为endIndex的元素
+# 如果endIndex=-1就表示遍历到最后一位
 
 
 ```
