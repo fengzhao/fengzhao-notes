@@ -1692,14 +1692,14 @@ Linux namespaces 是对全局系统资源的一种封装隔离，使得处于不
 
 
 
-| namespace |      | 隔离内容                   |
-| --------- | ---- | -------------------------- |
-| UTS       |      | 主机名和域                 |
-| IPC       |      | 信号量，消息队列，共享内存 |
-| PID       |      | 进程编号                   |
-| Network   |      | 网络设备，网络栈，端口等   |
-| Mount     |      | 挂载点，（文件系统）       |
-| User      |      | 用户和用户组               |
+| namespace |      | 隔离内容                                 |
+| --------- | ---- | ---------------------------------------- |
+| UTS       |      | 主机名和域                               |
+| IPC       |      | 信号量，消息队列，共享内存               |
+| PID       |      | 进程编号数字空间                         |
+| Network   |      | 网络设备，网络栈，IP地址，端口，路由表等 |
+| Mount     |      | 挂载点，（文件系统）                     |
+| User      |      | 用户和用户组                             |
 
 
 
@@ -1707,28 +1707,31 @@ Linux namespaces 是对全局系统资源的一种封装隔离，使得处于不
 
 ####  namespace API 
 
-Linux 对 namespace 提供了四种API：
+Linux 对各种 namespace 提供了四种API：
 
-- 通过 clone() 在创建新进程的同时创建 namespace。
+- 通过 clone() 这个系统调用在创建新进程的同时创建 namespace。把进程放到对应的 namespace 中
 - 查看 /proc/pid/ns 目录，具体可以看内核文档  <https://linux.die.net/man/5/proc>
   -  /proc/pid/ns 里面其实是几个链接文件，其实就是指向不同 namespace 号的文件。
   -  如果两个进程指向的 namespace 号相同，那就说明它们在同一个 namespace 中。
   -  链接文件的作用是只要文件描述符存在，就算该 namespace 下的所有进程都结束，这个 namespace 也一直存在，也可以被其他进程加入进来。
   -  在 docker 中，通过文件描述符定位和加入一个存在的 namespace 是最基本的使用方式。
-- 通过 setns() 加入一个已经存在的 namespace 
+- 通过 setns() 让进程加入到一个已经存在的 namespace 
 
 
 
 可以通过一个小例子，来验证一下这段话：
 
 ```shell
-# 启动两个基于appine的docker容器，执行ash
+# 每个Linux进程都拥有一个属于自己的/proc/PID/ns/ ，这个目录中的每个文件都代表着一个类型的namespace
+# 在Linux内核3.8以前，这些都是硬链接，
+
+
+# 启动两个基于alpine的docker容器，执行ash
 
 root@pve /tmp# docker run -dit --name alpine1 alpine ash  
 root@pve /tmp# docker run -dit --name alpine2 alpine ash  
 
 # 然后在宿主机上 ps -ef | grep ash ,发现依然可以看到容器中执行的ash进程和进程号
-root@pve /tmp#
 root@pve /tmp# ps -ef | grep ash
 root       724     1  0 Sep15 ?        00:00:15 /bin/bash /usr/sbin/ksmtuned
 root     12569 12553  0 19:49 pts/0    00:00:00 ash
@@ -1736,8 +1739,7 @@ root     12692 12674  0 19:49 pts/0    00:00:00 ash
 root     14659 27226  0 20:00 pts/0    00:00:00 grep --color=auto ash
 root@pve /tmp#
 
-# 然后在宿主机上查看当前shell的进程号
-root@pve /tmp#
+# 然后在宿主机上查看当前shell的进程号（这里我的宿主机是fish），为27226
 root@pve /tmp# ps -ef | grep fish
 root     14837 27226  0 20:01 pts/0    00:00:00 grep --color=auto fish
 root     27226 27192  0 17:54 pts/0    00:00:02 -fish
@@ -2148,50 +2150,68 @@ Linux系统启动即创建一个初始的网络命名空间（default），创�
 
 
 
+##### veth pair
+
+
+
 ```shell
 # 管理 Linux network namespace
+# ip命令的netns子命令可以实现对network namespace的增删改查
 
-# 创建一个networkspace，
+
+# 创建一个network namespace
 $ ip netns add nstest
-# 删除
-$ ip netns delete nstestnstest
+# 删除一个network namespace
+$ ip netns delete nstest
 # 查看所有ns
 $ ip netns list
 nstest
 nstest2
 # 在新建的namespace中执行命令 ip netns exec <namespace> <command>
 $ ip netns exec nstest commad
+
+
 # 例如:在nstest namespace 中显示网卡信息
+# 每个 namespace 在创建的时候会自动创建一个回环接口 lo ，默认不启用，可以通过 ip link set lo up 启用。
 $ ip netns exec nstest ip addr
 1: lo: <LOOPBACK> mtu 65536 qdisc noop state DOWN group default qlen 1000 
 	link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
 $ exit # 退出nstest
 
-# 每个 namespace 在创建的时候会自动创建一个回环接口 lo ，默认不启用，可以通过 ip link set lo up 启用。
 
-
-
-# 在name space中启动一个shell方便
+# 在name space中启动一个交互式shell
 ip netns exec nstest bash 
 
 
 
 # 为Linux network namespace配置网络
 
-# 当使用ip命令创建一个network space后，默认创建一个回环设备lo，该设备默认不启动，用户最好将其启动
+# 当使用ip命令创建一个network space后，默认它会自己创建一个环回网络设备lo，该设备默认不启动，用户最好将其启动
 ip netns exec nstest ip link set dev lo up
 
-# 在主机上创建两张虚拟网卡，veth-a和veth-b
+
+# veth pair总是承兑出现
+# 在宿主机上创建两张虚拟网卡，veth-a和veth-b，默认情况下它们都是在宿主机的根network namespace中
 ip link add veth-a type veth peer name veth-b
 
-# 将 veth-b 设备添加到nstest这个network namespace中
+# 将 veth-b 设备添加到nstest这个network namespace中，此时veth-b设备还在宿主机的根network namespace中
 ip link set veth-b netns nstest
 
 # 现在 nstest这个network namespace就有了两块网卡 lo和veth-b，验证一下
 ip netns exec nstest ip link  
 
-# 为网卡分配IP并启动网卡
-# 在 
+# 为netsh中的veth-b添加IP并启动
+ip netns exec nstest ifconfig veth-b  10.1.1.1/24 up
+
+# 为宿主机中的veth-a添加IP并启动
+ifconfig veth-a  10.1.1.2/24 up
+
+# 这时宿主机中的veth-a可以和netsh1 network namespace中的veth-b互相通信了，可以互ping
+# 另外，不同namespace之间的路由表和防火墙规则等都是隔离的。
+
+# 用户可以随意将虚拟网络设备分配到自定义的name space中，连接真实硬件的物理设备只能放在系统的根name space中
+# 并且，任何一个网络设备最多只能存在于一个network namespace中
+
 ```
 
 
