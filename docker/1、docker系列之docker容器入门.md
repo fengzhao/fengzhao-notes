@@ -2152,6 +2152,10 @@ Linux系统启动即创建一个初始的网络命名空间（default），创�
 
 ##### veth pair
 
+veth 是虚拟以太网卡的缩写，veth设备总是成对出现的，因此又称之为 veth pair。veth pair 一段发送的数据会在另一端接收。非常像 Linux 中的管道通信。
+
+根据这一特性，veth pair 常被用于跨 network namespace 之间的通讯。在跑了 docker 容器的主机上执行 ip addr 就会看到这些 docker 创建的虚拟机网卡(veth pair在宿主机的这一端)
+
 
 
 ```shell
@@ -2216,9 +2220,48 @@ ifconfig veth-a  10.1.1.2/24 up
 
 
 
+经典的容器组网模型就是 veth pair 和 bridge 模式。容器中的 eth0 实际上和外面 host 的某个 veth 是成对关系。如何查看这种成对关系：
+
+```shell
+
+# 在一个桥接网络的容器内执行ip link show查看网卡
+root@gitlab:/# ip link show
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+18: eth0@if19: <BROADCAST,MULTICAST,UP,LOWER_UP,M-DOWN> mtu 1500 qdisc noqueue
+    link/ether 02:42:ac:15:00:03 brd ff:ff:ff:ff:ff:ff
+root@gitlab:/#
+
+# 可以看到 18: eth0@if19 ，其中18是容器自己的eth0的index，19是宿主机上对应的虚拟网卡index
+
+# 在宿主机上ip link show再grep一些就可以找到
+root@fengzhao-ubuntu ~# ip link show | grep 19
+19: vethd017a3f@if18: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master br-3d333503a082 state UP mode DEFAULT group default
+root@fengzhao-ubuntu ~#
+```
+
+ 
+
+两个 network namespace 之间可以通过 veth pair 连接，但是两个以上就显得捉襟见肘了。这个就需要用到 Linux brige 了。
+
+顾名思义，Linux bridge 就是 Linux 网桥，更像是一台虚拟交换机。任意真实的物理设备（eth0物理网卡），虚拟机网卡（veth pair等）都可以连接到网桥上。
+
+需要注意的是，Linux bridge 不能跨物理机连接网络设备。
+
+```shell
 
 
-在 network namespace 中，
+
+# 创建一对veth pair
+ip link add veth-xxxxxxxxxx type veth peer name veth-yyyyyyy
+
+ip addr add  10.1.1.1/24   dev  veth-xxxxxxxxxx
+ip addr add  10.1.1.1/24   dev  veth-yyyyyyy
+```
+
+
+
+
 
 
 
