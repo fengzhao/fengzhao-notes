@@ -2100,9 +2100,9 @@ mount namespace 通过隔离文件系统挂载点对隔离文件系统提供支�
 
 #### network namespace
 
-network namespace 是实现网络虚拟化的重要功能，它能创建多个隔离的网络空间，它们有独自的网络栈信息。
+network namespace 是实现网络虚拟化的重要功能，它能创建多个隔离的网络空间，它们有独自的网络栈信息。Linux内核2.6版本引入 network namespace。
 
-容器在运行的时候仿佛自己就在独立的网络中。
+容器在运行时仿佛自己就在独立的网络栈中。有自己的IP地址，端口等。
 
 network namespace 主要提供了关于网络资源的隔离。能够隔离的Linux内核网络资源如下：
 
@@ -2116,19 +2116,21 @@ network namespace 主要提供了关于网络资源的隔离。能够隔离的Li
 
 
 
-**与其他namespace需要读者自己写C语言代码调用系统API才能创建不同，network namespace的增删改查功能已经集成到Linux的ip工具的netns子命令中，因此大大降低了初学者的体验门槛。**
+**与其他namespace需要用户自己写C语言代码调用系统API才能创建不同，network namespace的增删改查功能已经集成到Linux的ip工具的netns子命令中，因此大大降低了初学者的体验门槛。**
 
 
 
 
 
-**一个物理的网络设备最多存在于一个 network namespace 中，可以通过创建 veth pair 在不同的 network space 间建立通道并通讯。**
+**一个物理的网络设备最多存在于一个 network namespace 中，可以通过创建 veth pair 在不同的 network namespace 间建立通道并通讯。**
 
-**一般情况下，物理网络设备都分配在最初的 network namespace 中（即系统默认的 namespace）。**
+**一般情况下，物理网络设备都分配在最初的 network namespace 中（表示即系统默认的 namespace）。**
 
-**Linux 系统启动即创建一个初始的网络命名空间（default），创建的任何进程默认都从属于该网络命名空间。用户可以使用 ip netns add ... 创建新的网络命名空间，该命令即是在/var/run/netns目录下创建同名的文件。**
+**Linux 系统启动即创建一个初始的网络命名空间（default），创建的任何进程默认都从属于该网络命名空间（宿主机操作系统内核中的network namespace）。**
 
-它在网络段之间转发流量。网桥可以是运行在主机内核中的硬件设备或软件设备。
+**用户可以使用 ip netns add ... 创建新的网络命名空间，该命令即是在/var/run/netns目录下创建同名的文件。**
+
+
 
 
 
@@ -2148,7 +2150,7 @@ Linux系统启动即创建一个初始的网络命名空间（default），创�
 
 
 
-
+它在网络段之间转发流量。网桥可以是运行在主机内核中的硬件设备或软件设备。
 
 ##### veth pair
 
@@ -2180,28 +2182,29 @@ $ ip netns exec nstest commad
 $ ip netns exec nstest ip addr
 1: lo: <LOOPBACK> mtu 65536 qdisc noop state DOWN group default qlen 1000 
 	link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
-$ exit # 退出nstest
 
 
-# 在name space中启动一个交互式shell
-ip netns exec nstest bash 
+
+# 在这个namespace中ping 127.0.0.1回环地址，发现ping不通。因为自带的lo设备状态是down
+ip netns exec nstest ping 127.0.0.1
 
 
 
 # 为Linux network namespace配置网络
 
-# 当使用ip命令创建一个network space后，默认它会自己创建一个环回网络设备lo，该设备默认不启动，用户最好将其启动
+# 当使用ip命令创建一个network space后，默认它会自己创建一个环回网络设备lo，该设备默认不启动，用户可以将其启动，再ping回环地址就可以ping通了
 ip netns exec nstest ip link set dev lo up
 
 
-# veth pair总是承兑出现
+# 仅仅本地回环地址不太够，希望与其他的network namespace进行网络通讯，引入 veth pair，可以理解成网卡对
+# veth pair总是成对出现
 # 在宿主机上创建两张虚拟网卡，veth-a和veth-b，默认情况下它们都是在宿主机的根network namespace中
 ip link add veth-a type veth peer name veth-b
 
-# 将 veth-b 设备添加到nstest这个network namespace中，此时veth-b设备还在宿主机的根network namespace中
+# 将 veth-b 设备添加到nstest这个network namespace中，此时veth-a设备还在宿主机的根network namespace中
 ip link set veth-b netns nstest
 
-# 现在 nstest这个network namespace就有了两块网卡 lo和veth-b，验证一下
+# 现在 nstest这个network namespace就有了两块网卡 lo和veth-b，验证一下。但是还未配置IP和启动
 ip netns exec nstest ip link  
 
 # 为netsh中的veth-b添加IP并启动
@@ -2213,10 +2216,22 @@ ifconfig veth-a  10.1.1.2/24 up
 # 这时宿主机中的veth-a可以和netsh1 network namespace中的veth-b互相通信了，可以互ping
 # 另外，不同namespace之间的路由表和防火墙规则等都是隔离的。
 
-# 用户可以随意将虚拟网络设备分配到自定义的name space中，连接真实硬件的物理设备只能放在系统的根name space中
+# 在宿主机的ns中 ping 为nstest中的veth-b网卡
+ ping 10.1.1.1
+
+# 在nstest中 ping 宿主机中ns的veth-a网卡
+ip netns exec nstest ping 10.1.1.2
+
+# 此时，在nstest中还是无法直接访问互联网，因为它还没有路由表和iptales规则。（network namespace中的路由表隔离，iptable隔离） 
+
+# 用户可以随意将虚拟网络设备分配到自定义的namespace中，连接真实硬件的物理设备只能放在系统的根namespace中
 # 并且，任何一个网络设备最多只能存在于一个network namespace中
 
 ```
+
+
+
+
 
 
 
