@@ -171,7 +171,20 @@ SecRule REQUEST_HEADERS:Content-Length "!@rx ^\d+$" \
 
 
 
+# ModSecurity-nginx
 
+
+
+
+
+```shell
+# centos
+yum install gcc gcc-c++ make automake autoconf libtool pcre* zlib openssl openssl-devel  gd gd-devel GeoIP GeoIP-devel GeoIP-data  libmaxminddb-devel
+
+# ubuntu
+apt-get install build-essential libpcre3 libpcre3-dev zlib1g zlib1g-dev libssl-dev libgd-dev libxml2 libxml2-dev uuid-dev libgeoip-dev   geoip-database geoipupdate  libmaxminddb-dev
+
+```
 
 
 
@@ -199,6 +212,8 @@ lua_shared_dict limit 50m;
 lua_package_path "/usr/local/openresty/nginx/conf/waf/?.lua";
 init_by_lua_file "/usr/local/openresty/nginx/conf/waf/init.lua";
 access_by_lua_file "/usr/local/openresty/nginx/conf/waf/access.lua";
+
+
 
 
 ```
