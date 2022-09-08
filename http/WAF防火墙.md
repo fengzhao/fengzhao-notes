@@ -179,10 +179,36 @@ SecRule REQUEST_HEADERS:Content-Length "!@rx ^\d+$" \
 
 ```shell
 # centos
-yum install gcc gcc-c++ make automake autoconf libtool pcre* zlib openssl openssl-devel  gd gd-devel GeoIP GeoIP-devel GeoIP-data  libmaxminddb-devel
+yum install gcc gcc-c++ make automake autoconf libtool pcre  pcre-devel zlib openssl openssl-devel  gd gd-devel GeoIP GeoIP-devel GeoIP-data  libmaxminddb-devel
 
 # ubuntu
 apt-get install build-essential libpcre3 libpcre3-dev zlib1g zlib1g-dev libssl-dev libgd-dev libxml2 libxml2-dev uuid-dev libgeoip-dev   geoip-database geoipupdate  libmaxminddb-dev
+
+
+
+
+
+
+# 下载编译安装
+mkdir -p /usr/local/nginx
+useradd nginx -s /sbin/nologin -M
+# 永远去官网找最新版来编译 http://nginx.org/download/nginx-1.19.8.tar.gz
+wget -P /usr/local/src/  http://nginx.org/download/nginx-1.22.0.tar.gz  
+cd /usr/local/src/ &&  tar -zxvf nginx-1.22.0.tar.gz
+cd  nginx-1.22.0
+mkdir -p ~/.vim/  && cp -r contrib/vim/* ~/.vim/
+
+
+
+
+
+./configure  --user=nginx  --group=nginx  \
+    --prefix=/usr/local/nginx/  \
+    --with-http_stub_status_module \
+    --with-http_ssl_module  \
+    --with-http_image_filter_module=dynamic \
+    --with-http_geoip_module=dynamic \
+    --add-module=/usr/local/ngx_http_geoip2_module
 
 ```
 
