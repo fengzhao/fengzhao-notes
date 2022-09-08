@@ -11,9 +11,9 @@ currTime=`date +"%Y-%m-%d %H:%M:%S"`
 # touch /qhdata/monitor_log/docker_monitor.log
 
 # 查看进程是否存在
-for i in $ContainerName
+for i in ${ContainerName}
 do
-    exist=`docker inspect --format '{{.State.Running}}' $i`
+    exist=`docker inspect --format '{{.State.Running}}' ${i}`
     if [ "${exist}" != "true" ]; then
         docker start ${i}
         echo "${currTime} 重启docker容器，容器名称：${i}"  >>  /qhdata/monitor_log/docker_monitor.log

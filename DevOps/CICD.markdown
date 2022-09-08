@@ -245,12 +245,13 @@ docker exec -it  gitlab-runner  register
 
 .gitlab-ci.yml 是在仓库项目根目录中的一个 yaml 格式的文件，它定义了 cicd 的主要任务。在这个文件中：
 
-- 定义了 runner 需要执行的步骤和任务顺序。
+- 定义了 runner 需要执行的步骤和任务（顺序）。
 - 当特定条件满足时，runner需要执行的任务。
 
 例如，你需要定义一个任务（当有提交到任意分支（非默认分支）时，执行一系列构建测试。当提交到默认分支时，执行构建测试并发布到项目测试环境中）
 
 ```yaml
+#  按照下面，一共4个job，3个stage
 build-job:
   stage: build
   script:
@@ -261,18 +262,20 @@ test-job1:
   script:
     - echo "This job tests something"
 
+
+deploy-prod:
+  stage: deploy
+  script:
+    - echo "This job deploys something from the $CI_COMMIT_BRANCH branch."
+    
+
 test-job2:
   stage: test
   script:
     - echo "This job tests something, but takes more time than test-job1."
     - echo "After the echo commands complete, it runs the sleep command for 20 seconds"
     - echo "which simulates a test that runs 20 seconds longer than test-job1"
-    - sleep 20
-
-deploy-prod:
-  stage: deploy
-  script:
-    - echo "This job deploys something from the $CI_COMMIT_BRANCH branch."
+    - sleep 20    
 ```
 
 ## .gitlab-ci.yml 语法检查
@@ -475,11 +478,15 @@ script, after_script, allow_failure, artifacts, before_script, cache, coverage, 
 任务要执行的shell脚本内容，内容会被runner执行，在这里，你不需要使用git clone ....克隆当前的项目，来进行操作，因为在流水线中，每一个的job的执行都会将项目下载，恢复缓存这些流程，不需要你再使用脚本恢复。你只需要在这里写你的项目安装，编译执行，如
 npm install 另外值得一提的是，脚本的工作目录就是当前项目的根目录，所有可以就像在本地开发一样。此外script可以是单行或者多行。
 
+
+
+
+
 **stage**
 
 - 
 
-官方默认提供了五个阶段，按照先后顺序执行
+官方默认提供了五个阶段，可以保证按照先后顺序执行（同一个阶段中的任务可以并行执行，不同阶段的任务必须线性顺序执行）
 
 - .pre            pre 这个stage被保证为是第一个stage，最先执行
 - build
@@ -634,15 +641,24 @@ wget https://mirrors.tuna.tsinghua.edu.cn/gitlab-ce/debian/pool/buster/main/g/gi
 
 
 
-# 部署 jenkins 
+# 部署安装jenkins 
+
+
+
+Jenkins 做为一个构建服务器，需要足够的处理器能力和内存等资源。构建往往是一些内存和处理器密集型的操作，Jenkins 可以配置并行地运行几个构建。
 
 ```shell
 # https://www.cnblogs.com/hellxz/p/install_jenkins.html
-
+# jenkins官方镜像源
+http://mirrors.jenkins.io/
+# 清华大学jenkins镜像源
+https://mirrors.tuna.tsinghua.edu.cn/jenkins/
+# 中文社区
+# https://jenkins-zh.cn/tutorial/management/mirror/
 
 # centos7 安装 jenkins
 
-# 安装jdk1.8
+# 安装jdk1.8，直接安装rpm，或者下载二进制包并配置环境变量，安装maven，推荐都用二进制包安装
 wget  https://repo.huaweicloud.com/java/jdk/8u181-b13/jdk-8u181-linux-x64.tar.gz
 rpm -ivh https://repo.huaweicloud.com/java/jdk/8u181-b13/jdk-8u181-linux-x64.rpm
 yum -y install git
@@ -655,32 +671,28 @@ sudo yum upgrade
 sudo yum install jenkins java-1.8.0-openjdk-devel
 sudo systemctl daemon-reload
 
-# jenkins官方镜像源
-http://mirrors.jenkins.io/
-# 清华大学jenkins镜像源
-https://mirrors.tuna.tsinghua.edu.cn/jenkins/
-
-# tomcat方式安装Jenkins，注意，用tomcat9
-wget  https://mirrors.cnnic.cn/apache/tomcat/tomcat-9/v9.0.41/bin/apache-tomcat-9.0.41.tar.gz
-wget --no-check-certificate https://dlcdn.apache.org/tomcat/tomcat-10/v10.0.13/bin/apache-tomcat-10.0.13.tar.gz
-wget https://mirrors.cnnic.cn/apache/tomcat/tomcat-9/v9.0.55/bin/apache-tomcat-9.0.55.tar.gz
-
-# jenkins-war包下载
-# wget http://mirrors.jenkins.io/war-stable/latest/jenkins.war
-wget https://mirrors.huaweicloud.com/jenkins/war/latest/jenkins.war
-# 中文社区
-# https://jenkins-zh.cn/tutorial/management/mirror/
-
-# rpm包下载
+# rpm包下载，然后ivh安装
 http://mirrors.jenkins.io/redhat-stable/jenkins-2.235.3-1.1.noarch.rpm
 # 所以也可以下载rpm包后，rpm -ivh 去安装
 
-# jenkins进程通过systemctl start jenkins的方式启动
-
+# 如果是rpm安装的，则jenkins进程通过systemctl start jenkins的方式启动，相关路径如下
 # /usr/lib/jenkins/jenkins.war    　　　　　WAR包 
 # /etc/sysconfig/jenkins       　　　　　　　配置文件
-# /var/lib/jenkins/        　　　　　　　　　默认的JENKINS_HOME目录
-#　/var/log/jenkins/jenkins.log    　　　　Jenkins日志文件
+# /var/lib/jenkins/        　　　　　　　　　 默认的JENKINS_HOME目录
+#　/var/log/jenkins/jenkins.log    　　　　 Jenkins日志文件
+
+
+# tomcat方式安装Jenkins，注意，用tomcat9
+wget  https://mirrors.cnnic.cn/apache/tomcat/tomcat-9/v9.0.41/bin/apache-tomcat-9.0.41.tar.gz
+wget https://mirrors.tuna.tsinghua.edu.cn/apache/tomcat/tomcat-9/v9.0.64/bin/apache-tomcat-9.0.64.tar.gz
+wget --no-check-certificate https://dlcdn.apache.org/tomcat/tomcat-10/v10.0.13/bin/apache-tomcat-10.0.13.tar.gz
+wget https://mirrors.cnnic.cn/apache/tomcat/tomcat-9/v9.0.55/bin/apache-tomcat-9.0.55.tar.gz
+
+# jenkins-war包下载，一般推荐war包并放到tomcat的webapp中来安装jenkins
+# wget http://mirrors.jenkins.io/war-stable/latest/jenkins.war
+wget https://mirrors.huaweicloud.com/jenkins/war/latest/jenkins.war
+
+
 
 
 # jenkins插件安装
@@ -753,7 +765,13 @@ mkdir /data/jenkins_home
 
 
 
+### jenkins 主目录结构
 
+
+
+Jenkins 的所有重要数据都存放在它的主目录中，即 `JENKINS_HOME`。它默认位于当前用户主目录下的 `.jenkins` 隐藏目录中，即 `~/.jenkins`。可通过修改环境变量 `JENKINS_HOME` 的值，来更改 jenkins 主目录。
+
+其中存储了关于构建服务器的配置信息、构建作业、构建产物、插件和其它有用的信息。**这个目录可能会占用大量的磁盘空间。**
 
 
 
@@ -761,13 +779,15 @@ mkdir /data/jenkins_home
 
 
 
-
+持续集成不是一个一蹴而就的事物。要把持续继承引入到一个公司需要通过几个不同的阶段。
 
 
 
 ## 自由风格
 
 
+
+自由风格，允许配置任何类型的构建作业：它们是高度灵活的。
 
 
 

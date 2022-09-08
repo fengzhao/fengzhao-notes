@@ -228,7 +228,7 @@ https://www.cloudflare.com/zh-cn/learning/cdn/glossary/anycast-network/
 
 
 
-这里分享一个 CDN 防护技巧，通过中间件配置只允许域名访问，禁止 ip 访问。
+这里分享一个 CDN 防护技巧，通过中间件配置只允许域名访问，禁止 ip 访问。比如nginx配置成禁止IP访问，只允许域名访问。
 
 这样处理的话，所有直接访问站点真实 IP 的请求将会被拒绝。
 

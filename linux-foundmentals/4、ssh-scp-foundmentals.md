@@ -50,6 +50,8 @@ OpenSSL 代码库的地址是 https://github.com/openssl/openssl
 
 ```shell
 wget https://www.openssl.org/source/openssl-1.1.1d.tar.gz 
+
+
 ```
 
 
@@ -71,6 +73,10 @@ wget https://www.openssl.org/source/openssl-1.1.1d.tar.gz
 OpenSSL 3.0 是下一代的 OpenSSL 发布版，目前仍然在开发中。
 
 https://wiki.openssl.org/index.php/OpenSSL_3.0
+
+历时三年的开发，17次 alpha releases，2 次 beta releases
+
+
 
 
 
@@ -1221,3 +1227,66 @@ tap模拟的是二层设备，收发的是以为网数据帧，更接近物理�
 
 我们日常用的wmware虚拟机中的nat网络，对应的就是tun，桥接网络对应的就是tap。
 
+
+
+
+
+
+
+# 反弹shell
+
+
+
+
+
+
+
+正常情况，我们登陆服务器获取 Shell 会话是这个步骤，客户端在终端软件（Terminal）中输入 `ssh root@ip` 登陆目标机器，登陆成功后即可以开始Shell操作。
+
+
+
+反弹Shell（Reverse Shell），顾名思义是指与正常的 sshd 服务相反，由控制端监听，被控制端发起请求到监听端口，并将其命令行的输入输出转到控制端。
+
+
+
+
+
+
+
+
+
+# X11转发
+
+
+
+在 Linux 中可以通过SSH转发X以远程运行图形应用程序，这种机制称为 **X11转发**。
+
+
+
+X11转发是允许用户启动安装在远程Linux系统上的图形应用程序并将该应用程序窗口（屏幕）转发到本地系统的方法。
+
+远程系统不必具有X服务器或图形桌面环境。因此，使用SSH配置X11转发使用户可以通过SSH会话安全地运行图形应用程序。
+
+
+
+从原理来讲。
+
+- 对于用户login来说，本地主机是客户端（SSH Client），远程主机是服务端（SSH Server）；
+- 对于X11程序来说，本地主机是服务端(X Server)，远程主机是客户端(X Client)。
+
+从实际使用体验来说，是用户在本地主机通过 SSH Client 登录到启用了 X11 转发功能的远程主机的 SSH Server 上执行 GUI 图形界面程序，此时本地主机的显示器(X Server DISPLAY)上会呈现远程主机的GUI程序的图形界面。
+
+## 预准备
+
+| Linux             | SSH协议中的角色 | X协议中的角色 | OS        | IP            |
+| ----------------- | --------------- | ------------- | --------- | ------------- |
+| 本地Linux操作系统 | SSH Client      | X Server      | ArchLinux | 172.18.253.70 |
+| 远程Linux操作系统 | SSH Server      | X Client      | CentOS    | 172.18.253.19 |
+
+
+
+
+
+参考 
+
+https://blog.csdn.net/yanggleyang/article/details/104727065
