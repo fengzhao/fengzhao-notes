@@ -1977,7 +1977,185 @@ https://www.cnblogs.com/ranyonsue/p/8615824.html
 
 
 
+# 深入浅出HTTPS
 
+
+
+- 为什么用了 HTTPS 就是安全的？
+- HTTPS 的底层原理如何实现？
+- 用了 HTTPS 就一定安全吗？
+- 什么是TLS双向认证？
+- 客户端是如何确保服务端身份？
+- 服务端如何确保客户端身份？HTTPS报文在传输过程被篡改了怎么办？
+- 如何保证安全呢？你说安全就安全吗，究竟是怎么实现的呢？绝对安全吗？
+
+
+
+
+
+### CA 机构
+
+CA: 证书授权中心 (certificate authority)
+
+类似于国家出入境管理处一样，给别人颁发护照；也类似于国家工商管理局一样，给公司/企业颁发营业执照。
+
+为了让服务端的公钥被大家信任，各种网站的HTTPS服务端的证书都是由 CA （Certificate Authority，证书认证机构）签发的。
+
+CA 就是网络世界里的公安局、公证中心，具有极高的可信度，所以由它来给各个公钥签名，信任的一方签发的证书，那必然证书也是被信任的。
+
+CA（Certificate Authority）即数字证书颁发机构，主要负责发放和管理数字证书，SSL证书就是CA机构颁发的。
+
+
+
+- 认证CA，只有通过WebTrust国际安全审计认证，根证书才能预装到主流的操作系统和浏览器中，成为全球可信的ssl证书颁发机构。
+- 自建CA，在一些内部或测试场景中，也可以自签CA
+
+
+
+目前市场上大部分用户使用的SSL证书都是国外品牌。常见CA机构：
+
+- 沃通CA 
+- DigiCert
+- GlobalSign
+- letsencrypt
+
+默认地，这些
+
+在 HTTP 里面，各种网站的**HTTPS证书**都是要向**CA**来申请，验证之后签发的。
+
+
+
+申请证书的过程，也可存在着信任链问题：
+
+
+
+第一个问题：我是 google.com 的域名持有者，我要向CA机构申请一个 https://www.google.com 的 https 证书。我如何证明我持有这个域名？
+
+>  即，域名持有者向CA申请时，如何自证自己是真正持有域名？				
+
+第二个问题：域名持有者，向CA机构申请HTTPS证书，如何确认通讯过程是真正的CA。
+
+>  即，CA签发证书给网站持有者，如何自证是真正的CA？
+
+
+
+CA 签发证书的过程：
+
+1）申请者准备CSR文件：
+
+我自己的网站，需要使用 https 通信，那么我向“证书CA机构”申请数字证书的时候，就需要向他们提供相应的信息，这些信息要以特定文件格式(.csr)提供的。
+
+这个文件就是“证书请求文件”；
+
+x首先在本地生成一个密钥对，利用这个私钥对"我们需要提供的信息（域名）"进行加密，从而生成证书请求文件(.csr)，这个证书请求文件其实就是私钥对应的公钥证书的原始文件，里面含有对应的公钥信息；
+
+同时根据 pub_svr 生成请求文件 csr，提交给 CA 机构，csr 中含有申请者的公钥、组织信息、个人信息（域名）等信息。（注意：只提交公钥。不提交私钥）
+
+[什么是CSR文件](https://cloud.tencent.com/document/product/400/5367)
+
+[如何制作CSR文件](https://support.huaweicloud.com/scm_faq/scm_01_0059.html)
+
+[在线制作CSR](https://myssl.com/csr_create.html)
+
+> 备注：
+>
+> 手动CSR：上述过程用户自己生成。
+>
+> 自动CSR：在很多公有云中申请SSL证书，它们都自动在线帮你生成CSR文件了。大大简化操作。
+>
+> 大部分公有云会帮你生成这个密钥对，并用公钥
+
+
+
+2)  [域名验证](https://support.huaweicloud.com/ccm_faq/ccm_01_0135.html)：按照CA中心的规范，申请数字证书，必须配合完成域名授权验证来证明您对所申请绑定的域名的所有权。
+
+- DNS验证：CA指定一条DNS记录，你去你的域名商处添加一条DNS解析，CA来验证。
+
+- 文件验证：将CA指定的txt文件部署到你的域名下，CA来验证。
+
+- 邮箱验证：邮箱验证指通过回复邮件的方式来验证域名所有权。
+
+  [域名验证方式](https://cloud.tencent.com/document/product/400/4142)
+
+2）审核信息：CA 机构通过线上、线下等多种手段验证申请者提供信息的真实性，如组织是否存在、企业是否合法，是否拥有域名的所有权等。
+
+3）签发证书：如信息审核通过，CA 机构会向申请者签发认证文件：HTTPS证书。
+
+- HTTPS证书包含以下信息：
+
+  - 申请者公钥、申请者的组织信息和个人信息、签发机构 CA 的信息、有效时间、证书序列号等信息的明文。
+  - 同时包含一个签名（CA自证这个证书是这个CA签发的）
+
+- 这个签名算法：
+
+  - 首先，使用散列函数计算公开的明文信息的信息摘要，得到HASH值，然后用 **CA 的私钥** 对信息摘要进行加密，密文即签名。
+
+    
+
+> 我们可以拿到证书之后，可以在线查看证书的信息。
+>
+> [证书信息查看](https://myssl.com/cert_decode.html)
+
+
+
+
+
+### 数字证书
+
+- 证书文件（server.crt）：CA机构返回的证书文件，包含很多种格式和形式。包括 nginx , tomcat , apache 等等。
+
+  
+
+- 证书私钥文件（server.crt）
+  - 自动CSR：自动CSR，直接从签发方处下载证书私钥文件
+  - 手动CSR：自己要保留好自己的证书私钥文件。
+
+
+
+对应的nginx配置：
+
+```nginx
+ssl_certificate      cert/server.crt; # 替换成您的证书文件的路径。
+ssl_certificate_key  cert/server.key; # 替换成您的私钥文件的路径。
+```
+
+### SSL证书类型
+
+**根据证书的安全性不同**
+
+DV类型证书：中文全称是域名验证型证书，证书审核方式为通过验证域名所有权即可签发证书。
+
+此类型证书适合个人和小微企业申请，价格较低，申请快捷，但是证书中无法显示企业信息，安全性较差。在浏览器中显示锁型标志。
+
+DV SSL证书是只验证网站域名所有权的简易型（Class 1级）SSL证书，可10分钟快速颁发，能起到加密传输的作用。
+
+证书信息里面只有域名一项（Common Name 字段）
+
+OV类型证书：中文全称是企业验证型证书(Organization validated)，证书审核方式为通过验证域名所有权和申请企业的真实身份信息才能签发证书。
+
+目前OV类型证书是全球运用最广，兼容性最好的证书类型。此证书类型适合中型企业和互联网业务申请。
+
+在浏览器中显示锁型标志，并能通过点击查看到企业相关信息。支持ECC高安全强度加密算法，加密数据更加安全，加密性能更高。
+
+常见的企业网站都是这种，比如 www.zhihu.com  , www.huawei.com  ，证书里除了注明了域名之外还添加了公司名（Organization）等信息。
+
+ EV类型证书，全称 Extended validation，也就是扩展认证。CA 会对证书持有人进行更加全面的认证。~~如果浏览器会在网址左边显示组织机构信息~~。用户看到这些信息会更加放心。
+
+从认证效力上看，DV 小于 OV 小于 EV。价格显然是 EV 大于 OV 大于 DV 了。随着 [Let's Encrypt](https://letsencrypt.org/) 的上线，DV 证书几乎可以免费获取，大大加快了 https 的普及速度。
+
+浏览器厂商也在不断调整 https 的展示策略。其趋势就是**不断推动 https 的普级，不断弱化用户对 https 的感知，最终让 https 完全取代 http 而用户完全无法感知的效果**。为了达到这个效果，浏览器会将 http 网站标记为不安全站点，比如我国的政府网站。
+
+反过来，对于使用 https 的安全网站，则不再提示。Chrome 最新开发版甚至连 EV 认证信息都不再展示。
+
+**在最新版本的 Firefox 和 Chrome 中，访问使用 EV 证书的 https 站点时，地址栏不显示绿色的锁头图标和公司信息，取而代之的是和 DV 证书站点相同的灰色锁头图标。**
+
+具体参考
+
+[ why-firefox-chrome-kill-ev](https://dallas.lu/why-firefox-chrome-kill-ev)
+
+https://blog.skk.moe/post/chrome-omnibox-www/
+
+https://taoshu.in/ssl-ev-is-dead.html
 
 # WEB性能优化最佳实践
 
@@ -2602,7 +2780,13 @@ Strict-Transport-Security: <max-age=>[; includeSubDomains][; preload]
 
 只要在服务器返回给浏览器的响应头中，增加Strict-Transport-Security这个HTTP Header（下文简称HSTS Header），例如：
 
+```http
 Strict-Transport-Security: max-age=31536000; includeSubDomains
+
+比如nginx设置，
+add_header Strict-Transport-Security "max-age=31536000; includeSubdomains; preload";
+
+```
 
 就可以告诉浏览器，在接下来的31536000秒内（1年），对于当前域名及其子域名的后续通信应该强制性的只使用HTTPS，直到超过有效期为止。
 
