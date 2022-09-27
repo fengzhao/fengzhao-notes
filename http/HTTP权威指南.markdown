@@ -54,11 +54,9 @@ HTTPS 的默认端口是443
 
 ### User-Agent
 
-用户不能直接去互联网上获取信息，需要一个软件去代表用户的行为，这个软件就是 User-Agent （用户代理）
+用户不能直接去互联网上获取信息，需要一个软件去代表用户的行为，这个软件就是 User-Agent （用户代理）浏览器就是一种典型的 User-Agent 。
 
-浏览器就是一种 User-Agent 。用户使用不同的软件去用统一的协议去做相同的事情。
-
-这也是定义在 http 请求里的，每一条 http 请求一定会携带 User-Agent 头
+用户使用不同的软件去用统一的协议去做相同的事情。这也是定义在 http 请求里的，每一条 http 请求一定会携带 User-Agent 头
 
 网站的服务者可以通过 User-Agent 头来判断用户使用了什么浏览器，当然也可以根据 User-Agent 的内容来提供差异化的服务
 
@@ -72,9 +70,21 @@ User-Agent: <product> / <product-version> <comment>
 
 
 
-因为可以根据 User-Agent 的内容来提供差异化的服务，所以当年在浏览器大战时期，浏览器的实现各不相同。 
+因为服务端可以根据客户端在请求体提供的不同的 User-Agent 的内容来提供差异化的服务，所以当年在浏览器大战时期，浏览器的实现各不相同。 
 
-当年 Mozilla （Firefox 的前身）浏览器最强的，很多网站都只对 Mozilla 提供高质量的服务，后来有人把自己伪装成了 Mozilla （没错，就是 IE 先开始的）。 从此 `Mozilla/5.0` 就变成了 User-Agent 的第一段：
+当年 Mozilla （Firefox 的前身）浏览器最强的，很多网站都只对 Mozilla 提供高质量的服务，后来有人把自己伪装成了 Mozilla （没错，就是 IE 先开始的）。
+
+ 从此 `Mozilla/5.0` 就变成了 User-Agent 的第一段：
+
+```http
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:104.0) Gecko/20100101 Firefox/104.0
+
+User-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/105.0.0.0 Safari/537.36
+```
+
+
+
+
 
 
 
