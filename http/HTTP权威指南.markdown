@@ -78,6 +78,17 @@ User-Agent: <product> / <product-version> <comment>
 
 
 
+### Sec-Fetch-*安全请求头
+
+如果你使用76+版本的chrome浏览器，通过开发者面板查看每个网络请求，会发现都有几个Sec-Fetch开头的请求头：
+
+```http
+Sec-Fetch-Dest: document
+Sec-Fetch-Mode: navigate
+Sec-Fetch-Site: none
+Sec-Fetch-User: ?1
+```
+
 
 
 
