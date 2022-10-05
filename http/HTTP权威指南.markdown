@@ -362,6 +362,14 @@ schema://<user>:<password>@host:port/path;<params>?<query_string>#frag
 
 
 
+
+
+## URL与URI区别
+
+
+
+
+
 # URL编码
 
 
@@ -376,9 +384,15 @@ schema://<user>:<password>@host:port/path;<params>?<query_string>#frag
 
 但你真的深入了解过，为什么要进行这种转义编码吗？编码的原理又是什么？
 
-例如，浏览器中进行百度搜索“你好”时，链接地址会被自动编码：
-（编码前）`https://www.baidu.com/s?wd=你好`
-（编码后）`https://www.baidu.com/s?wd=%E4%BD%A0%E5%A5%BD`
+例如，浏览器中进行百度搜索 "你好" 时，链接地址会被自动编码：
+
+```
+（编码前） https://www.baidu.com/s?wd=你好
+（编码后）https://www.baidu.com/s?wd=%E4%BD%A0%E5%A5%BD
+```
+
+
+
 出现以上情况是网络请求前，浏览器对请求URL进行了`URL编码（URL Encoding）`。
 
 
@@ -2219,11 +2233,9 @@ https://taoshu.in/ssl-ev-is-dead.html
 
 
 
-> 
->
+
+
 > tracert 路由跟踪
->
-> 
 >
 > http://einverne.github.io/post/2017/06/traceroute.html
 
