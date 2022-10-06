@@ -392,7 +392,6 @@ schema://<user>:<password>@host:port/path;<params>?<query_string>#frag
 ```
 
 
-
 出现以上情况是网络请求前，浏览器对请求URL进行了`URL编码（URL Encoding）`。
 
 
@@ -438,6 +437,25 @@ URL的基本结构是：[协议]://[域名]/[路径]
 有的网站，不区分，
 
 **有的网站，有意将目录和文件名强制小写，比如新浪微博斜杠后面的用户名。** 
+
+
+
+### 图片base64编码
+
+图片的 base64 编码就是可以将一副图片数据编码成一串字符串，使用该字符串代替图像地址。
+
+这样做有什么意义呢？我们知道，我们所看到的网页上的每一个图片，都是需要消耗一个 http 请求下载而来的。
+
+不管如何，图片的下载始终都要向服务器发出请求，要是图片的下载不用向服务器发出请求，而可以随着 HTML 的下载同时下载到本地那就太好了，而 base64 正好能解决这个问题。
+
+
+
+```
+<img src="data:image/gif;base64,R0lGODlhHAAmAKIHAKqqqsvLy0hISObm5vf394uLiwAAAP///yH5B…EoqQqJKAIBaQOVKHAXr3t7txgBjboSvB8EpLoFZywOAo3LFE5lYs/QW9LT1TRk1V7S2xYJADs=">
+
+```
+
+
 
 
 
