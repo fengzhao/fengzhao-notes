@@ -38,7 +38,7 @@ HTTPS 的默认端口是443
 
 ### 通用信息头部
 
-
+#### 
 
 
 
@@ -109,7 +109,236 @@ Sec-Fetch-User: ?1
 
 ## 实体头部
 
+有很多首部可以用来描述 HTTP 报文的负荷。由于请求和响应报文中都可能包含实体部分，所以在这两种类型的报文中都可能出现这些首部。
 
+HTTP 实体首部描述了 HTTP 报文的内容。HTTP/1.1 版定义了以下 10 个基本字体首部字段：
+
+- Content-Type 
+- Content-Length 
+- Content-Language 
+- Content-Encoding 
+- Content-Location
+- Content-Range 
+
+
+
+
+
+### content-length
+
+Content-Length 首部指示出报文中实体主体的字节大小。**这个大小是包含了所有内容编码的，比如，对文本文件进行了 gzip 压缩的话， Content-Length 首部就是压缩后的大小，而不是原始大小。**
+
+Content-Length 首部对于持久连接是必不可少的。如果响应通过持久连接传送，就可能有另一条 HTTP 响应紧随其后。客户端通过 Content-Length 首部就可以知道报文在何处结束，下一条报文从何处开始。
+
+因为连接是持久的，客户端无法依赖连接关闭来判别报文的结束。
+
+**HTTP/1.1 规范中建议对于带有主体但没有 Content-Length 首部的请求，服务器如果无法确定报文的长度，就应当发送 400 Bad Request 响应或 411 Length Required响应。**
+
+后一种情况表明服务器要求收到正确的 Content-Length 首部。
+
+
+
+#### 定长包体与不定长包体
+
+定长包体，在构造报文的时候，明确了报文包体的长度。这时需要在头部携带 Content-Length 来指明报文包体的字节数。
+
+不定长包体：
+
+- 边压缩边发送。
+
+
+
+```
+transfer-encoding: 
+
+```
+
+
+
+### 实体摘要
+
+尽管 HTTP 通常都是在像 TCP/IP 这样的可靠传输协议之上实现的，但仍有很多因素会导致报文的一部分在传输过程中被修改，比如有不兼容的转码代理，或者中间代理有误等等。
+
+为检测实体主体的数据是否被不经意（或不希望有）地修改，发送方可以在生成初始的主体时，生成一个数据的校验和，这样接收方就可以通过检查这个校验和来捕获所有意外的实体修改了。
+
+
+
+服务器使用 Content-MD5 首部发送对实体主体运行 MD5 算法的结果。只有产生响应的原始服务器可以计算并发送 Content-MD5 首部。
+
+中间代理和缓存不应当修改或添加这个首部，否则就会与验证端到端完整性的这个最终目的相冲突。 Content-MD5首部是在对内容做了所有需要的内容编码之后，还没有做任何传输编码之前，计算出来的。
+
+为了验证报文的完整性，客户端必须先进行传输编码的解码，然后计算所得到的未进行传输编码的实体主体的 MD5。
+
+举个例子吧，如果一份文档使用 gzip 算法进行压缩，然后用分块编码发送，那么就对整个经 gzip 压缩的主体进行 MD5 计算。
+
+```
+HTTP/2 200 OK
+server: Tengine
+content-type: application/javascript
+content-length: 1172
+date: Fri, 07 Oct 2022 08:16:11 GMT
+vary: Accept-Encoding
+x-oss-request-id: 633FE04B76A944323882BED3
+x-oss-object-type: Normal
+x-oss-hash-crc64ecma: 782727689174376310
+x-oss-storage-class: Standard
+cache-control: max-age=900,s-maxage=900
+content-md5: kbTSVioIE5MtPDEKNEpn5g==
+x-oss-server-time: 2
+access-control-allow-origin: *
+x-source-scheme: https
+content-encoding: gzip
+ali-swift-global-savetime: 1665130571
+via: cache41.l2cn1851[70,70,200-0,M], cache41.l2cn1851[71,0], cache41.l2cn1851[71,0], cache13.cn2967[0,0,200-0,H], cache13.cn2967[1,0]
+age: 564
+x-cache: HIT TCP_MEM_HIT dirn:12:745548673
+x-swift-savetime: Fri, 07 Oct 2022 08:16:11 GMT
+x-swift-cachetime: 900
+timing-allow-origin: *
+eagleid: b6f2592116651311359134856e
+X-Firefox-Spdy: h2
+```
+
+
+
+### 媒体类型Content-Type
+
+Content-Type 首部说明的是原始实体主体的媒体类型。例如，如果实体经过内容编码的话， Content-Type 首部说明的仍是编码之前的实体主体的类型。
+
+MIME 类型由一个主媒体类型（比如：text、image 或 audio 等）后面跟一条斜线以及一个子类型组成，子类型用于进一步描述媒体类型。
+
+
+
+### 内容编码
+
+HTTP 应用程序有时在发送之前需要对内容进行编码。例如，在把很大的 HTML 文档发送给通过慢速连接连上来的客户端之前 , 服务器可能会对它进行压缩，这样有助于减少传输实体的时间。
+
+这种类型的编码是在发送方应用到内容之上的。当内容经过内容编码之后，编好码的数据就放在实体主体中，像往常一样发送给接收方。
+
+
+
+内容编码过程：
+
+- 网站服务器生成原始响应报文，其中有原始的 Content-Type 和 Content-Length 首部。
+- 内容编码服务器（也可能是原始的服务器或缓存代理等）创建编码后的报文。编码后的报文有同样的 Content-Type 但 Content-Length 可能不同（比如主体被压缩了）。
+  - 内容编码服务器在编码后的报文中增加 Content-Encoding首部，这样接收的应用程序就可以进行解码了。
+- 客户端接收程序得到编码后的报文，进行解码，获得原始报文。
+
+通过 gzip 内容编码函数对 HTML 页面处理之后，得到一个更小的、压缩的主体。经过网络发送的是压缩的主体，并打上了 gzip 压缩的标志。
+
+接收的客户端使用 gzip 解码器对实体进行解压缩。
+
+```http
+HTTP/2 200 OK
+server: Tengine
+content-type: application/javascript
+content-length: 1172
+date: Fri, 07 Oct 2022 08:16:11 GMT
+vary: Accept-Encoding
+x-oss-request-id: 633FE04B76A944323882BED3
+x-oss-object-type: Normal
+x-oss-hash-crc64ecma: 782727689174376310
+x-oss-storage-class: Standard
+cache-control: max-age=900,s-maxage=900
+content-md5: kbTSVioIE5MtPDEKNEpn5g==
+x-oss-server-time: 2
+access-control-allow-origin: *
+x-source-scheme: https
+content-encoding: gzip
+ali-swift-global-savetime: 1665130571
+via: cache41.l2cn1851[70,70,200-0,M], cache41.l2cn1851[71,0], cache41.l2cn1851[71,0], cache13.cn2967[0,0,200-0,H], cache13.cn2967[1,0]
+age: 564
+x-cache: HIT TCP_MEM_HIT dirn:12:745548673
+x-swift-savetime: Fri, 07 Oct 2022 08:16:11 GMT
+x-swift-cachetime: 900
+timing-allow-origin: *
+eagleid: b6f2592116651311359134856e
+X-Firefox-Spdy: h2
+```
+
+
+
+**内容编码类型**
+
+HTTP 定义了一些标准的内容编码类型，并允许用扩展编码的形式增添更多的编码。由互联网号码分配机构（IANA）对各种编码进行标准化，它给每个内容编码算法分配了唯一的代号：
+
+- gzip 表明实体采用 GNU zip 编码
+
+- compress 表明实体采用 Unix 的文件压缩程序，这种内容编码方式已经被大部分浏览器弃用，部分因为专利问题
+
+- deflate 表明实体是用 zlib 的格式压缩的
+
+- br 表示采用 [Brotli](https://zh.wikipedia.org/wiki/Brotli) 算法的编码方式。
+
+- identity 表明没有对实体进行编码。当没有 Content-Encoding 首部时，就默认为这种情况
+
+  
+
+[Content-Encoding](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Content-Encoding)
+
+**`Content-Encoding`** 列出了对当前实体消息（消息荷载）应用的任何编码类型，以及编码的顺序。它让接收者知道需要以何种顺序解码该实体消息才能获得原始荷载格式。
+
+Content-Encoding 主要用于在不丢失原媒体类型内容的情况下压缩消息数据。
+
+
+
+[Accept-Encoding](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept-Encoding)
+
+为了避免服务器使用客户端不支持的编码方式，客户端就把自己支持的内容编码方式列表放在请求的 Accept-Encoding 首部里发出去。
+
+如果 HTTP 请求中没有包含 Accept-Encoding 首部，服务器就可以假设客户端能够接受任何编码方式（等价于发送 Accept-Encoding: * ）。
+
+
+
+#### 字符编码
+
+HTTP 报文中可以承载以任何语言表示的内容，就像它能承载图像、影片，或任何类型的媒体那样。对 HTTP 来说，实体主体只是二进制信息的容器而已。
+
+服务器需要告知客户端每个文档的字母表和语言，这样客户端才能正确地把文档中的信息解包为字符并把内容呈现给用户。
+
+服务器通过 HTTP 协议的 Content-Type 首部中的 charset 参数和 Content-Language 首部告知客户端文档的字母表和语言。
+
+这些首部描述了实体主体的“信息盒子”里面装的是什么，如何把内容转换成合适的字符以便显示在屏幕上以及里面的词语表示的是哪种语言。
+
+
+
+同时，客户端需要告知服务器用户理解何种语言，浏览器上安装了何种字母表编码算法。
+
+客户端发送 Accept-Charset 首部和 Accept-Language 首部，告知服务器它理解哪些字符集编码算法和语言以及其中的优先顺序。
+
+下面的 Content-Type 首部告知接收者，传输的内容是一份 HTML 文件，用 charset 参数告知接收者使用 utf-8 字符集的解码算法把内容中的二进制码转换为字符：
+
+```
+Content-Type: text/html; charset=uft-8
+```
+
+如果没有显式地列出字符集，接收方可能就要设法从文档内容中推断出字符集。对于 HTML 内容来说，可以在描述 charset 的 <META HTTP-EQUIV="Content-Type"> 标记中找到字符集。
+
+
+
+在过去的几十年间，人们开发了成千上万种字符编解码方法。大多数客户端不可能支持所有这些不同的字符编码和映射系统。
+
+HTTP 客户端可以使用 Accept-Charset 请求首部来明确告知服务器它支持哪些字符系统。 Accept-Charset 首部的值列出了客户端支持的字符编码方案。
+
+例如，下面的 HTTP 请求首部表明，客户端接受西欧字符系统 iso-8859-1 和 UTF-8 变长的Unicode 兼容系统。服务器可以随便选择这两种字符编码方案之一来返回内容。
+
+
+
+### 传输编码和分块编码
+
+
+
+
+
+分块编码把报文分割为若干个大小已知的块。块之间是紧挨着发送的，这样就不需要在发送之前知道整个报文的大小了。
+
+
+
+若客户端和服务器之间不是持久连接，客户端就不需要知道它正在读取的主体的长度，而只需要读到服务器关闭主体连接为止。
+
+
+
+当使用持久连接时，在服务器写主体之前，必须知道它的大小并在 Content-Length 首部中发送。如果服务器动态创建内容，就可能在发送之前无法知道主体的长度。
 
 
 
@@ -319,13 +548,29 @@ func main() {
 
 
 
+# 内容编码
+
+HTTP 应用程序有时在发送之前需要对内容进行编码。例如，在把很大的 HTML 文档发送给通过慢速连接连上来的客户端之前 , 服务器可能会对它进行压缩，这样有助于减少传输实体的时间。
+
+服务器还可以把内容搅乱或加密，以此来防止未经授权的第三方看到文档的内容。
+
+
+
+## 内容编码类型
+
+HTTP 定义了一些标准的内容编码类型，并允许用扩展编码的形式增添更多的编码。由互联网号码分配机构（IANA）对各种编码进行标准化，它给每个内容编码算法分配了唯一的代号。
+
+ Content-Encoding 首部就用这些标准化的代号来说明编码时使用的算法。
+
+```
+Content-Encoding: gzip,compress,deflate,identity
+```
+
 
 
 
 
 # HTTP报文
-
-
 
 HTTP 报文是服务器和客户端之间交换数据的方式，有两种类型的消息︰
 
@@ -2902,4 +3147,38 @@ add_header Strict-Transport-Security "max-age=31536000; includeSubdomains; prelo
 当浏览器找到资产时，就会按照预先确定的优先级把它们加到网络队列中。
 
 
+
+
+
+
+
+
+
+# webhook钩子详解
+
+
+
+webhooks是一个api概念，是微服务api的使用范式之一，也被成为反向api，即：前端不主动发送请求，完全由后端推送。 举个常用例子，比如你的好友发了一条朋友圈，后端将这条消息推送给所有其他好友的客户端，就是 Webhooks 的典型场景。
+
+简单来说，WebHook就是一个接收HTTP POST（或GET，PUT，DELETE）的URL。一个实现了WebHook的API提供商就是在当事件发生的时候会向这个配置好的URL发送一条信息。
+
+与请求-响应式不同，使用WebHooks，你可以实时接受到变化。
+
+这又是一种对客户机-服务器模式的逆转，在传统方法中，客户端从服务器请求数据，然后服务器提供给客户端数据（客户端是在拉数据）。
+
+在Webhook范式下，服务器更新所需提供的资源，然后自动将其作为更新发送到客户端（服务器是在推数据），客户端不是请求者，而是被动接收方。
+
+这种控制关系的反转可以用来促进许多原本需要在远程服务器上进行更复杂的请求和不断的轮询的通信请求。
+
+通过简单地接收资源而不是直接发送请求，我们可以更新远程代码库，轻松地分配资源，甚至将其集成到现有系统中来根据API的需要来更新端点和相关数据，唯一的缺点是初始建立困难。
+
+
+
+
+
+webhook是在特定情况下触发的一种api（回调），用于在项目发生相关事件时通知外部服务器。
+
+这些回调由第三方的用户、开发人员自己定义、维护、管理，就好像允许别人挂载一条网线到你的Web网站或者应用程序的钩子上，来实时地收到你的推送信息。
+
+比如 github  gitlab  jenkins dingding 机器人等，都支持自定义webhook
 
