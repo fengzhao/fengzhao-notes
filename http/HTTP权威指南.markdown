@@ -26,6 +26,10 @@ HTTPS 的默认端口是443
 
 
 
+# [HTTP规范](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Resources_and_specifications)
+
+
+
 # HTTP头部
 
 
@@ -584,6 +588,33 @@ HTTP 报文是服务器和客户端之间交换数据的方式，有两种类型
 HTTP消息由采用 ASCII 编码的多行文本构成。在HTTP/1.1及早期版本中，这些消息通过连接公开地发送。
 
 在HTTP/2中，为了优化和性能方面的改进，HTTP报文被分到多个HTTP帧中。
+
+
+
+
+
+# [HTTTP请求方法](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Methods)
+
+
+
+HTTP 定义了一组**请求方法**，以表明要对给定资源执行的操作。指示针对给定资源要执行的期望动作。虽然他们也可以是名词，但这些请求方法有时被称为 HTTP 动词。
+
+
+
+
+
+| 方法    | 描述                 |      |
+| ------- | -------------------- | ---- |
+| GET     | 主要的资源获取方法， |      |
+| HEAD    | 类似GET方法，        |      |
+| POST    |                      |      |
+| PUT     |                      |      |
+| DELETE  |                      |      |
+| CONNECT |                      |      |
+| OPTIONS |                      |      |
+| TRACE   |                      |      |
+
+
 
 
 
