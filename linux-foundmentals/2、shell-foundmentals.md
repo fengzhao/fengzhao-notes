@@ -387,11 +387,11 @@ root@vpsServer:~#
 ```shell
 # 变量声明，变量名大写，变量值用引号括起来，防止值中有空格
 
-# 单引号声明变量 NAME='VALUE'，单引号不能识别特殊语法，即raw string
+# 单引号声明变量 NAME='VALUE'  单引号不能识别特殊语法，即raw string
 
-# 双引号声明变量 NAME="VALUE"，双引号不能识别特殊语法，可以实现变量插值
+# 双引号声明变量 NAME="VALUE"  双引号不能识别特殊语法，可以实现变量插值
 
-
+# 单引号变量，raw string
 root@vpsServer:~# NAME='fengzhao'
 root@vpsServer:~# echo ${NAME}
 fengzhao
@@ -1949,19 +1949,47 @@ https://yanbin.blog/bash-zsh-call-emacs-vim-edit-current-command/
 
 https://aidear.blog.csdn.net/article/list/3?t=1
 
-
-
-
-
-
-
 https://cjiayang.github.io/2020/07/13/linux-bash%E5%8D%87%E7%BA%A7/
 
+没接触过的人和新手可能没有意识到 [bash](https://tiswww.case.edu/php/chet/bash/bashtop.html) shell 的默认输入模式是 [Emacs](https://www.gnu.org/software/emacs/) 模式，也就是说命令行中所用的行编辑功能都将使用 [Emacs 风格的“键盘快捷键”](https://en.wikipedia.org/wiki/GNU_Readline#Emacs_keyboard_shortcuts)。
+
+什么是 bash 的键绑定(keybindings) 呢? 就是在 Bash 中的快捷键方案，即相当于某个 IDE 的快捷键配置，或者叫  Keymap。
+
+比如说 IntelliJ IDEA 中可选择的 Keymap 有 Eclipse, Emacs, JBuilder, Mac OS X, Mac OS X 10.5+, NetBean, Visual Studio, 以满足不同使用者的习惯。
 
 
 
+相应的， Bash 也为我们提供了两种键绑定的方案，即 emacs(默认) 和 vi 键绑定类型。
 
 
+
+我们大多数天天在 Bash 下无意识中使用着 Emacs 键绑定类型，即使可能从未用过 Emacs 本身。比如我们在 Bash 下的按键组合：
+
+```
+ctrl + a     跳到命令行的开始
+ctrl + e     跳到命令行末尾
+!!           重复最后一个命令
+ctrl + l     清屏操作，类似于  clear 命令
+ctrl + c     中断/杀掉当前运行的进程 (SIGINT)
+ctrl + d     发送 EOF 标记，这会关掉当前的 shell (EXIT)
+ctrl + z     发送 SIGTSTP 给当前任务，使其挂起送到后台。(所以如果 vi 未正常退出，而是按 ctrl + z 的话，vi 进程还呆在后台
+```
+
+它们其实都是来自于 Emacs 键绑定。是不是那么的熟悉啊？
+
+
+
+Bash 默认的键绑定是 Emacs，基本上在终端中按下 `ctrl + l` 看是否能成功清屏就知道是否是 Emacs 键绑定，当然 Vi 键绑定也可以自定义 `ctrl + l` 来清屏。
+
+更准确的办法是用 `bind` 命令，这是一个 Bash 内置的命令。`bind -V` 可以看到所有设置，`bind -V | grep -e editing -e keymap` 显示编辑模式与键映射：
+
+```shell
+[root@openvpn_server ~]# bind -V | grep -e editing -e keymap
+editing-mode is set to `emacs'
+keymap is set to `emacs'
+[root@openvpn_server ~]#
+[root@openvpn_server ~]#
+```
 
 
 
@@ -2132,13 +2160,13 @@ motd 本身是纯文本，传统的 motd 只能是纯文本。当然，我们可
 
 # BASH 常识
 
-
-
-
-
 ——标准
 
-Bash遵循IEEE POSIX标准，IEEE即Institute of Electrical and Electronics Engineers，电气与电子工程师协会，POSIX即Portable Operating System Interface，可移植的操作系统接口。
+Bash遵循IEEE POSIX标准。
+
+IEEE即Institute of Electrical and Electronics Engineers，电气与电子工程师协会。
+
+POSIX即Portable Operating System Interface，可移植的操作系统接口。
 
 
 
@@ -2262,3 +2290,183 @@ __ARCHIVE_BELOW__
 
 
 # 文件锁定
+
+
+
+
+
+
+
+# 终极 Bash 脚本指南
+
+
+
+还有人记得 IPython Shell 么？曾经想利用 Python 的便利性在 Shell 领域代替 bash/zsh，Python 当然是一门足够强大的通用语言，但在 shell 这个领域，它怎么着都干不过 bash/zsh ，为啥呢？因为 bash/zsh 就是为了操作各种命令和文件而设计的，命令/文件是里面的一等公民，最方便最有力的表达方式都让给了命令以及文件操作，那么做这些事情 bash/zsh 当让比 python 的描述能力更强，更清晰。
+
+当年 IPython Shell 出来的时候，一副秒天秒地秒空气的架势要来做下一代 shell，最后也凉了。
+
+所谓“shell”，首先得是**操作系统界面**(这也是 shell 的原义)，其次才是一个编程语言。而操作系统的职能中，文件系统和进程管理是两块很重要的地方。
+
+因此 shell 十分强调**文件**和**命令**，这是其他脚本语言所不具备的。具体强调的方式，有语义上的，也有语法上的。
+
+
+
+在开发的过程中，经常需要处理一些重复的工作，或者逻辑相当简单但耗时的功能，这时我们可能会考虑到用脚本来自动化完成这些工作。
+
+而 Bash 脚本是我们最容易接触到和上手的脚本语言。这里博客汇总一些常用的 Bash 语法，方便日后查阅学习。
+
+
+
+## hello world
+
+不管写啥，上来先输出个`hello world`。
+
+```shell
+#!/bin/bash
+
+echo "hello world"
+```
+
+创建一个文件`hello.sh` 包含以上内容，同时赋予执行权限，然后执行，一个`hello world` 就好了。
+
+```shell
+# 添加执行权限
+$ chmod +x hello.sh
+
+$ ./hello.sh
+hello world
+```
+
+
+
+## 变量声明
+
+
+
+
+
+## set命令
+
+set 命令是 bash 脚本的重要环节，却常常被忽视，导致脚本的安全性和可维护性出问题。
+
+```shell
+# bash 执行脚本的时候，会创建一个新的 shell 进程
+$ bash script.sh
+```
+
+上面代码中，script.sh是在一个新的 shell 里面执行。这个 shell 就是脚本的执行环境，bash 默认给定了这个环境的各种参数和环境变量
+
+set命令用来修改 shell 环境的运行参数，也就是可以定制环境。一共有十几个参数可以定制，官方手册有[完整清单](https://www.gnu.org/software/bash/manual/html_node/The-Set-Builtin.html)
+
+### set -u
+
+执行脚本的时候，如果遇到不存在的变量，bash 默认忽略它，并继续执行后面的语句。
+
+```shell
+#!/usr/bin/env bash
+echo $a
+echo bar
+```
+
+
+
+
+
+## 函数
+
+在`Bash`中，你可以使用`function`关键字或者直接定义一个函数。
+
+```
+function function-name(){
+	...
+}
+
+function-name(){
+	...
+}
+```
+
+
+
+
+
+## 批处理利器xargs
+
+https://www.cnblogs.com/wangqiguo/p/6464234.html
+
+标准输入：一个程序运行时需要读取的数据
+
+标准输出：
+
+管道符：把上一个命令的标准输出做为下一个命令的标准输入
+
+
+
+Linux命令可以从两个地方读取要处理的内容，一个是通过命令行参数，一个是标准输入。
+
+```shell
+
+[root@open_server ~]# cat abc.txt
+main
+main
+[root@open_server ~]#
+[root@open_server ~]# echo "main in echo"  | cat abc.txt
+main
+main
+[root@open_server ~]# echo "main in echo"  | cat abc.txt -
+main
+main
+main in echo
+[root@open_server ~]# echo "main in echo"  | cat - abc.txt
+main in echo
+main
+main
+[root@open_server ~]#
+
+[root@open_server ~]#
+[root@open_server ~]# echo 'main in echo' | grep 'main' abc.txt
+main
+main
+[root@open_server ~]#
+[root@open_server ~]#
+[root@open_server ~]# echo 'main' | grep 'main' abc.txt
+main
+main
+[root@open_server ~]# echo 'main in echo' | grep 'main' abc.txt -
+abc.txt:main
+abc.txt:main
+(standard input):main in echo
+[root@open_server ~]#
+```
+
+
+
+
+
+这两个命令只接受命令行参数中指定的处理内容，不从标准输入中获取处理内容。
+
+想想也很正常，kill  是结束进程，rm是删除文件，如果要结束的进程pid和要删除的文件名需要从标准输入中读取，这个也很怪异吧。
+
+ 但是像  cat与grep这些文字处理工具从标准输入中读取待处理的内容则很自然。
+
+
+
+但是有时候我们的脚本却需要 echo '516' | kill 这样的效果，例如 ps -ef | grep 'ddd' | kill  这样的效果，筛选出符合某条件的进程pid然后结束。
+
+这种需求对于我们来说是理所当然而且是很常见的，那么应该怎样达到这样的效果呢。有几个解决办法：
+
+```shell
+ kill `ps -ef | grep 'ddd'`    
+ # 这种形式，这个时候实际上等同于拼接字符串得到的命令，其效果类似于  kill $pid
+ 
+ 
+ 
+ ps -ef | grep 'ddd' | xargs kill  
+# 使用了xargs命令，铺垫了这么久终于铺到了主题上。
+# xargs命令可以通过管道接受字符串，并将接收到的字符串通过空格分割成许多参数(默认情况下是通过空格分割) 然后将参数传递给其后面的命令，作为后面命令的命令行参数
+```
+
+
+
+
+
