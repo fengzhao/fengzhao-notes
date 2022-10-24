@@ -322,6 +322,12 @@ find is /usr/bin/find
 - 交互式（Interactive）：解释执行用户的命令，用户输入一条命令，Shell就解释执行一条。
 - 批处理（Batch）：用户事先写一个 Shell 脚本(Script)，其中有很多条命令，让Shell一次把这些命令执行完。
 
+
+
+
+
+
+
 ### SHELL脚本
 
 SHELL 脚本，其实就是将一大堆可执行命令放在一个文本文件中，其中也可以包含一些逻辑判断，循环遍历等，就类似一种批处理。
@@ -2413,6 +2419,12 @@ main
 [root@open_server ~]# echo "main in echo"  | cat abc.txt
 main
 main
+[root@open_server ~]#
+
+# With no FILE, or when FILE is -, read standard input.
+[root@open_server ~]# echo "main in echo"  | cat -
+main in echo
+[root@open_server ~]#
 [root@open_server ~]# echo "main in echo"  | cat abc.txt -
 main
 main
@@ -2422,7 +2434,6 @@ main in echo
 main
 main
 [root@open_server ~]#
-
 [root@open_server ~]#
 [root@open_server ~]# echo 'main in echo' | grep 'main' abc.txt
 main
@@ -2441,9 +2452,9 @@ abc.txt:main
 
 
 
+我们看到当命令行参数与标准输入同时存在的时候grep和cat是会同时处理这两个输入的，但是有很多命令并不是都处理。大多命令一般情况下是首先在命令行中查找要处理的内容的来源(是从文件还是从标准输入，还是都有)，如果在命令行中找不到与要处理的内容的来源相关的参数则默认从标准输入中读取要处理的内容了，当然这取决于命令程序的内部实现，就像cat命令，加不加 - 参数他的表现又不同。
 
-
-这两个命令只接受命令行参数中指定的处理内容，不从标准输入中获取处理内容。
+这两个命令默认是只接受命令行参数中指定的处理内容，不从标准输入中获取处理内容。
 
 想想也很正常，kill  是结束进程，rm是删除文件，如果要结束的进程pid和要删除的文件名需要从标准输入中读取，这个也很怪异吧。
 
