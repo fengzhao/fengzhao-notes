@@ -10,22 +10,50 @@ Linux操作系统时间的显示会和实际不同步不一致，这里面经常
 | 系统时钟：System Clock     | linux OS的时间，date命令可查看                               |
 | 硬件时钟：RTC：            | Real Time Clock	主板上由电池供电的BIOS时间，hwclock -r可查看 |
 | NTP: Network Time Protocol | 本机时间和实际的时间之间的经常会有差别，一般使用NTP服务器进行时间校准 |
+| **时间戳**                 | **时间戳** 指的就是Unix时间戳(Unix timestamp)。              |
 
  在Linux计算机上，有两个时间，一个是硬件时间（BIOS中记录的时间，称为hwclock），另一个是操作系统时间（osclock）。
 
 硬件时钟由主板BIOS电池供电，当计算机关机后，会继续运行，BIOS电池一般可使用几年，如果没电了，那BIOS中的数据会恢复出厂设置。
 
-硬件时钟
 
 
 
-操作系统时间
+
+### 硬件时钟
+
+硬件时钟，又称实时时钟（Real Time Clock，RTC）或CMOS时钟，是独立的硬件设备（电池、电容元件等），保存的时间包括年、月、日、时、分、秒。
+
+2016年之后的UEFI固件还能保存时区和是否使用夏令时。操作硬件时钟的工具是`hwclock`，用于查询、设置硬件时钟等。
+
+```shell
+# 读取硬件时钟：
+hwclock --show
+
+# 使用系统时钟设置硬件时钟,更新硬件时钟后，/etc/adjtime随之更新。
+hwclock --systohc
+
+```
+
+
+
+
+
+### 系统时钟
+
+系统时钟，又称软件时钟，是Linux内核的一部分，包括时间、时区、夏令时（如果适用）。
+
+系统启动时，系统时钟的初始值根据硬件时钟设定（依赖于`/etc/adjtime`）；系统启动后，Linux内核利用定时器中断维护系统时钟 ，与硬件时钟无关。
+
+操作系统时钟的工具是`timedatectl`，用于查询/设置时间、设置时区、设置时间同步等。
 
 osclock的时区配置文件为/etc/timezone，如果你想修改系统时区，那最好使用sudo dpkg-reconfigure tzdata来修改时区，不建议直接修改/etc/timezone文件，
 
 如果你想修改为UTC时间，那执行 sudo dpkg-reconfigure tzdata 命令时，选择 None of the above->UTC  即可
 
 ```shell
+
+
 # 查看所有时区
 sudo timedatectl list-timezones
 # 设置为中国上海

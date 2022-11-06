@@ -322,6 +322,29 @@ find is /usr/bin/find
 - 交互式（Interactive）：解释执行用户的命令，用户输入一条命令，Shell就解释执行一条。
 - 批处理（Batch）：用户事先写一个 Shell 脚本(Script)，其中有很多条命令，让Shell一次把这些命令执行完。
 
+
+
+
+
+#### eval命令
+
+当我们在命令行前加上eval时，shell就会在执行命令之前扫描它两次。eval命令将首先会先扫描命令行进行所有的置换，然后再执行该命令。
+
+该命令适用于那些一次扫描无法实现其功能的变量。该命令对变量进行两次扫描。
+
+```
+$ foo="uname | grep Linux"
+$ uname | grep Linux
+Linux
+$ $foo
+uname: extra operand ‘|’
+Try 'uname --help' for more information.
+$ eval $foo
+Linux
+```
+
+
+
 ### SHELL脚本
 
 SHELL 脚本，其实就是将一大堆可执行命令放在一个文本文件中，其中也可以包含一些逻辑判断，循环遍历等，就类似一种批处理。
@@ -923,7 +946,7 @@ ass_array[index2]=value2
 
 
 
-Shell 接收到用户输入的命令以后，会根据空格将用户的输入，拆分成一个个词元（`token`）。然后，Shell 会扩展词元里面的特殊字符，扩展完成后才会调用相应的命令。
+Shell 接收到用户输入的命令以后，会根据空格将用户的输入，拆分成一个个词元（`token`）。
 
 这种特殊字符的扩展，称为模式扩展（globbing）。其中有些用到通配符，又称为通配符扩展（wildcard expansion）。Bash 一共提供八种扩展。
 
@@ -938,9 +961,13 @@ Shell 接收到用户输入的命令以后，会根据空格将用户的输入�
 
 
 
-Bash 是先进行扩展，再执行命令。因此，扩展的结果是由 Bash 负责的，与所要执行的命令无关。命令本身并不存在参数扩展，收到什么参数就原样执行。这一点务必需要记住。
+Bash 是先进行扩展，再执行命令。因此，扩展的结果是由 Bash 负责的，与所要执行的命令无关。
 
-模块扩展的英文单词是`globbing`，这个词来自于早期的 Unix 系统有一个`/etc/glob`文件，保存扩展的模板。后来 Bash 内置了这个功能，但是这个名字就保留了下来。
+命令本身并不存在参数扩展，收到什么参数就原样执行。这一点务必需要记住。
+
+模块扩展的英文单词是`globbing`，这个词来自于早期的 Unix 系统有一个`/etc/glob`文件，保存扩展的模板。
+
+后来 Bash 内置了这个功能，但是这个名字就保留了下来。
 
 **模式扩展与正则表达式的关系是，模式扩展早于正则表达式出现，可以看作是原始的正则表达式。它的功能没有正则那么强大灵活，但是优点是简单和方便。**
 
@@ -973,7 +1000,7 @@ $ set +f
 $ echo ~
 /home/me
 
-# ~/dir表示扩展成主目录的某个子目录，dir是主目录里面的一个子目录名。
+# ~/dir 表示扩展成主目录的某个子目录，dir是主目录里面的一个子目录名。
 # 进入 /home/me/foo 目录
 $ cd ~/foo
 
@@ -1004,6 +1031,8 @@ ab.txt
 
 
 
+
+
 # SHELL脚本学习笔记
 
 Shell 是 Linux 下的命令交互程序，其实就是一个命令解释器。
@@ -1020,7 +1049,7 @@ Shell 是 Linux 下的命令交互程序，其实就是一个命令解释器。
 
 Linux 命令分为两种类型：
 
-- 一类是 shell 内建命令；
+- 一类是 [**shell 内建命令**](https://www.gnu.org/software/bash/manual/html_node/Bash-Builtins.html)；
 
 - 一类是应用程序命令。应用程序命令，一般都会有相应的二进制可执行文件，通常存在 /bin , /usr/sbin/ , /usr/bin 等目录中。
 
@@ -1032,6 +1061,10 @@ Linux 命令分为两种类型：
 
 内部命令是写在bash源码里面的，其执行速度比外部命令快，因为解析内部命令shell不需要创建子进程。比如：exit，history，cd，echo等。
 有些命令是由于其**必要性**才内建的，例如cd用来改变目录，read会将来自用户（和文件）的输入数据传给Shell外亮。
+
+```
+bash,  :,  .,  [, alias, bg, bind, break, builtin, caller, cd, command, compgen, complete, compopt, continue, declare, dirs, disown, echo, enable, eval, exec, exit, export, false, fc, fg, getopts, hash, help, history, jobs, kill, let, local, logout, mapfile, popd, printf, pushd, pwd, read, readonly, return, set, shift, shopt, source, suspend, test, times, trap, true, type, typeset,  ulimit, umask, unalias, unset, wait - bash built-in commands, see bash(1)
+```
 
 
 
@@ -2413,6 +2446,12 @@ main
 [root@open_server ~]# echo "main in echo"  | cat abc.txt
 main
 main
+[root@open_server ~]#
+
+# With no FILE, or when FILE is -, read standard input.
+[root@open_server ~]# echo "main in echo"  | cat -
+main in echo
+[root@open_server ~]#
 [root@open_server ~]# echo "main in echo"  | cat abc.txt -
 main
 main
@@ -2422,7 +2461,6 @@ main in echo
 main
 main
 [root@open_server ~]#
-
 [root@open_server ~]#
 [root@open_server ~]# echo 'main in echo' | grep 'main' abc.txt
 main
@@ -2441,9 +2479,9 @@ abc.txt:main
 
 
 
+我们看到当命令行参数与标准输入同时存在的时候grep和cat是会同时处理这两个输入的，但是有很多命令并不是都处理。大多命令一般情况下是首先在命令行中查找要处理的内容的来源(是从文件还是从标准输入，还是都有)，如果在命令行中找不到与要处理的内容的来源相关的参数则默认从标准输入中读取要处理的内容了，当然这取决于命令程序的内部实现，就像cat命令，加不加 - 参数他的表现又不同。
 
-
-这两个命令只接受命令行参数中指定的处理内容，不从标准输入中获取处理内容。
+这两个命令默认是只接受命令行参数中指定的处理内容，不从标准输入中获取处理内容。
 
 想想也很正常，kill  是结束进程，rm是删除文件，如果要结束的进程pid和要删除的文件名需要从标准输入中读取，这个也很怪异吧。
 
