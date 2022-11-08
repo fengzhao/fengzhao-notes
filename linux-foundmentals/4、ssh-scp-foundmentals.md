@@ -1290,3 +1290,8 @@ X11转发是允许用户启动安装在远程Linux系统上的图形应用程序
 参考 
 
 https://blog.csdn.net/yanggleyang/article/details/104727065
+
+
+# 常见问题排查
+
+(参考)[https://help.aliyun.com/document_detail/41470.html]
