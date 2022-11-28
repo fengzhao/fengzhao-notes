@@ -810,7 +810,40 @@ undo log是mysql中比较重要的事务日志之一，顾名思义，undo log�
 
 ## InnoDB 磁盘结构
 
+InnoDB除redo外均使用统一的结构进行管理，包括**系统表空间、用户表空间、undo以及临时表空间。这个结构统称空间文件**。
 
+
+
+### InnoDB空间文件基本结构
+
+InnoDB空间文件管理整个InnoDB文件系统。基本结构如下：
+
+- 页
+
+  在InnoDB中，16 KB大小的页（page）是最小的原子单元。其他的大小都在页之上，因此：
+
+  1 page=16 KB=16384 bytes
+
+  1 extent=64 pages=1 MB
+
+  FSP_HDR page=256 extents=16384 pages=256 MB
+
+  Page有最基础的38字节的FIL Header和8字节的FIL Trailer
+
+
+
+主要内容有：
+
+1. **Checksum**：当前页面的checksum，用来判断页面是否有损坏。
+2. **Page Number**：Page Number可以计算出页面在文件上的偏移量。也可以参考Page Number值来判断一个页面是否被初始化。
+3. **Previous Page/Next Page**：该字段只有在索引页面才有意义，而且只有在叶子页时才有用，在非叶子页时没有意义。
+4. **LSN for last page modification**：最后一次修改页面的64位日志序列号LSN。
+5. **Page Type**：当前页的具体类型。例如：btree index leaf-page、undo log page、btree index non-leaf page、insert buffer、fresh allocated page、属于ibdata1的系统页等。页类型决定当前页的用途。
+6. Flush LSN: 保存的是已经刷到磁盘的页面的最大LSN信息。只有在space 0 page 0这个页面中有意义。
+   - **用途**：在实例启动时读取Flush LSN，可以确保在Flush LSN之前的页面已经刷入磁盘。Flush LSN之后的重做日志是没有检查点的日志，但其实重做日志里面已经存在检查点信息。
+   - **写入**：在进行宕机或强制执行检查点（checkpoint）时，通过`fil_write_flushed_lsn_to_data_files`写入。
+   - **读取**：在实例启动时，fil_read_first_page会读取LSN信息， 用于更新启动时的**min_flushed_lsn**和**max_flushed_lsn**。因为重做日志模块还没有初始化，可以参考这两个LSN做一些简单的判断。
+7. **Space ID**：存储当前页所在的空间ID（MySQL 8.0已经将该字段删除）。
 
 #### 表
 
