@@ -253,7 +253,13 @@ kubectl describe pod kubia-hczji
 
 
 
+为什么是pod？
 
+对于由多个进程组成的应用程序。
+
+
+
+同一pod中容器之间的部分隔离
 
 ### 通过 pod 合理管理容器
 
