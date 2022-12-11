@@ -656,7 +656,7 @@ CMD ["/usr/lib/postgresql/9.3/bin/postgres", "-D", "/var/lib/postgresql/9.3/main
 
 https://blog.csdn.net/boling_cavalry/article/details/93380447
 
-
+https://guide.daocloud.io/dcs/docker-root-9153994.html
 
 默认情况下，容器中的进程以 root 用户权限运行，并且这个 root 用户和宿主机中的 root 是同一个用户。
 
@@ -674,9 +674,15 @@ uid 和 gid 由 Linux 内核负责管理，并通过内核级别的系统调用�
 
 
 
-很多同学简单地把 docker 容器理解为轻量的虚拟机，虽然这简化了理解容器技术的难度但是也容易带来很多的误解。事实上，与虚拟机技术不同：同一主机上运行的所有容器共享同一个内核(主机的内核)。
+很多同学简单地把 docker 容器理解为轻量的虚拟机，虽然这简化了理解容器技术的难度但是也容易带来很多的误解。
 
-容器化带来的巨大价值在于所有这些独立的容器(其实是进程)可以共享一个内核。这意味着即使由成百上千的容器运行在 docker 宿主机上，但**内核控制的 uid 和 gid 则仍然只有一套**。
+事实上，与虚拟机技术不同：同一主机上运行的所有容器共享同一个内核(主机的内核)。
+
+
+
+容器化带来的巨大价值在于所有这些独立的容器(其实是进程)可以共享一个内核。
+
+这意味着即使由成百上千的容器运行在 docker 宿主机上，但**内核控制的 uid 和 gid 则仍然只有一套**。
 
 所以同一个 uid 在宿主机和容器中代表的是同一个用户(即便在不同的地方显示了不同的用户名)。
 
@@ -711,8 +717,8 @@ https://github.com/docker-library/redis/blob/master/6.2/Dockerfile
 用 USER redis 将账号切换到 redis ；
 在 docker-entrypoint.sh 执行的时候已经是 redis 身份了，如果遇到权限问题，例如一些文件只有 root 账号有读、写、执行权限，用 sudo xxx 命令来执行即可；
 
-但事实并非如此！
-在 Dockerfile 脚本中未发现 USER redis 命令，这意味着执行 docker-entrypoint.sh 文件的身份是 root；
+但事实并非如此！在 Dockerfile 脚本中未发现 USER redis 命令，这意味着执行 docker-entrypoint.sh 文件的身份是 root；
+
 其次，在 docker-entrypoint.sh 中没有发现 su - redis 命令，也没有 sudo 命令；
 
 这是怎么回事呢？难道容器内的 redis 服务是用 root 账号启动的？
@@ -725,11 +731,13 @@ https://github.com/docker-library/redis/blob/master/6.2/Dockerfile
 
 
 
+##### rootless模式
+
 Rootless 模式允许以非 root 用户身份运行 **Docker 守护进程（dockerd）和容器**，以缓解 Docker 守护进程和容器运行时中潜在的漏洞。
 
 Rootless 模式是在 Docker v19.03 版本作为实验性功能引入的，在 Docker v20.10 版本 GA。
 
-Rootless 模式目前对 Cgroups 资源控制，Apparmor 安全配置，Overlay 网络，存储驱动等还有一定的限制，暂时还不能完全取代 “Rootful” Docker。
+Rootless 模式目前对 cgroups 资源控制，Apparmor 安全配置，Overlay 网络，存储驱动等还有一定的限制，暂时还不能完全取代 “Rootful” Docker。
 
 关于 Docker Rootless 的详细信息参见 Docker 官方文档 [[ Run the Docker daemon as a non-root user (Rootless mode)]](https://docs.docker.com/engine/security/rootless/#limiting-resources) 
 

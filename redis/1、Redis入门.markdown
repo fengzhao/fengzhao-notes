@@ -8,6 +8,34 @@ http://redisguide.com/
 
 
 
+redis labs创立于2011年，公司致力于为Redis、Memcached等流行的NoSQL开源数据库提供云托管服务。可以算是专门致力于redis云的一家专业公司。
+
+他们的提供的软件中，除了可以连接企业私有的redis服务，也可以连接他们的redis云。
+
+2021年8月12日，Redis Labs 宣布该公司现已注册为Redis，从其名称中删除了“Labs”。这一变化标志着该公司和 Redis 开源项目的成熟，该项目自 2011 年开始贡献并自 2015 年起赞助。
+
+https://redislabs.com/ 网站也重定向到 https://redis.com/
+
+更名也反映了公司继续将 Redis 作为实时数据平台发展的使命。
+
+该公司专注于领导和指导整个社区（包括个人贡献者、客户和合作伙伴）的一致性，以提供应对技术挑战的解决方案并保持其经久不衰的受欢迎程度。
+
+公司更名不会影响Redis开源项目的许可，它一直是并将继续是BSD许可的，也不会影响去年引入的[治理模型](https://cts.businesswire.com/ct/CT?id=smartlink&url=https%3A%2F%2Fredis.io%2Ftopics%2Fgovernance%3F_ga%3D2.186287273.1669130961.1627496529-1468736442.1609999893&esheet=52475264&newsitemid=20210811005299&lan=en-US&anchor=governance+model&index=4&md5=07bccbdea7c12e06525eaef89b3367bc)。
+
+Redis 由 Salvatore Sanfilippo（又名antirez）于 2009 年创建，由于其速度和简单性，它很快在开发人员中流行起来。
+
+redis labs公司在 2011 年成立后不久就开始为开源项目做出贡献。 2015 年，Sanfilippo 加入公司，成为该项目的发起人，并于 2018 年将 Redis 项目的知识产权和商标权转让给了公司。
+
+Sanfilippo 于 2020 年 6 月不再担任该开源项目的唯一维护者，同时仍留在公司咨询委员会。
+
+Redis 通过治理模型进行维护，该模型由公司核心人员以及对 Redis 做出长期承诺并做出重大贡献的社区成员组成。
+
+核心团队负责主 Redis 存储库。他们还与组成 Redis 生态系统的其他项目进行协调和协作，包括客户端库、卫星项目和依赖 Redis 的主要中间件。
+
+
+
+
+
 > Redis is an open source (BSD licensed), in-memory data structure store, used as database, cache and message broker.
 
 这是 redis 的官方的定义，它是一个数据库，且是把数据存到内存中，能用作 cache (缓存) 和消息队列。

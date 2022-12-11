@@ -110,13 +110,11 @@ https://docs.gitlab.com/ee/ci/introduction/img/gitlab_workflow_example_extended_
 
 ## gitlab CICD 基本概念
 
-CI/CD 是一种通过在应用开发阶段引入[自动化](https://www.redhat.com/zh/topics/automation/whats-it-automation)来频繁向客户交付应用的方法。
+CI/CD 是一种通过在应用开发阶段引入[自动化](https://www.redhat.com/zh/topics/automation/whats-it-automation)来频繁向客户交付应用的方法。CI/CD 的核心概念是持续集成、[持续交付](https://www.redhat.com/zh/topics/devops/what-is-continuous-delivery)和持续部署。
 
-CI/CD 的核心概念是持续集成、[持续交付](https://www.redhat.com/zh/topics/devops/what-is-continuous-delivery)和持续部署。作为一个面向开发和运营团队的解决方案，CI/CD 主要针对在集成新代码时所引发的问题（亦称：“[集成地狱](https://www.solutionsiq.com/agile-glossary/integration-hell/)”）。
+作为一个面向开发和运营团队的解决方案，CI/CD 主要针对在集成新代码时所引发的问题（亦称：“[集成地狱](https://www.solutionsiq.com/agile-glossary/integration-hell/)”）。
 
-通过软件开发的持续方法，您可以持续构建、测试和部署迭代代码更改。
-
-这种迭代过程有助于减少您基于有缺陷或失败的先前版本开发新代码的机会。
+通过软件开发的持续方法，您可以持续构建、测试和部署迭代代码更改。这种迭代过程有助于减少您基于有缺陷或失败的先前版本开发新代码的机会。
 
 使用这种方法，您可以努力减少从开发新代码到部署的人工干预，甚至根本不需要干预。
 
@@ -225,10 +223,6 @@ docker exec -it  gitlab-runner  register
 
 
 
-
-
-
-
 ### runner 类型
 
 - [Shared runners](https://docs.gitlab.com/ee/ci/runners/#shared-runners)    全局 runner ，对于整个 gitlab 实例里面的每个组和每个项目都适用。
@@ -287,6 +281,9 @@ GitLab CI / CD 的每个实例都有一个称为Lint的嵌入式调试工具，�
 例如，https://git.lug.ustc.edu.cn/fengzhao/fengzhao-notes/-/ci/lint 
 
 
+
+
+
 ## .gitlab-ci.yml 文件参考
 
 使用GitLab自带的流水线，必须要定义流水线的内容，而定义内容的文件默认叫做.gitlab-ci.yml，使用yml的语法进行编写。
@@ -302,7 +299,7 @@ GitLab CI / CD 的每个实例都有一个称为Lint的嵌入式调试工具，�
 
 - stages
 
-  stages 是流水线的阶段，主要是用于定义阶段（每个stages阶段里面有一组任务），在流水线的最顶层定义。
+  stages 是流水线的阶段，主要是用于定义阶段（每个stages阶段里面有一组任务），**在流水线的最顶层定义。**
 
   stages 定义的先后顺序决定了任务的先后顺序：
 
