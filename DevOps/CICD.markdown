@@ -259,6 +259,12 @@ GitLab Runner 实现了很多可用于在不同场景中运行构建的执行器
 
 例如，你需要定义一个任务（当有提交到任意分支[非默认分支]时，执行一系列构建测试。当提交到默认分支时，执行构建测试并发布到项目测试环境中）
 
+脚本被分组到`job`中，并且作业作为更大的 **流水线** 的一部分运行。您可以将多个独立作业分组到按定义顺序运行的**阶段**。 CI/CD 配置至少需要一项非隐藏的作业。
+
+当您将 `.gitlab-ci.yml` 文件添加到仓库时，GitLab 会检测到它，并且 GitLab Runner 应用程序会运行作业中定义的脚本。
+
+
+
 ```yaml
 #  按照下面，一共4个job，3个stage
 build-job:
@@ -287,6 +293,14 @@ test-job2:
     - sleep 20    
 ```
 
+
+
+### jobs
+
+流水线配置从`job`  开始。作业是 `.gitlab-ci.yml` 文件中最基本的元素。
+
+
+
 ## .gitlab-ci.yml 语法检查
 
 可以使用 CI Lint tool 检查器检查 .gitlab-ci.yml 文件格式。
@@ -310,7 +324,7 @@ https://docs.gitlab.cn/jh/ci/yaml/
 
 **全局关键词**
 
-有些关键词不是在一个job中定义的，这些关键词控制着整个流水线的行为或者导入附加的流水线配置。
+有些关键词不是在`job`中定义的，这些关键词控制着整个流水线的行为或者导入附加的流水线配置。
 
 - stages
 
@@ -538,11 +552,13 @@ pipeline流水线是CICD的顶层组件，流水线定义了如下：
 - jobs（任务），job定义了需要做什么，比如编译代码等，任务是流水线的最基本的单位。
 - stages（阶段），stages定义了什么时候执行什么job，比如test测试的job要在编译的job后面执行。
 
-job 是通过 runner 执行，多个job也可以在一个stage中并行执行（如果有足够多的runner）
+job 是通过 runner 执行，多个 job 也可以在一个 stage 中并行执行（如果有足够多的runner）
 
-如果一个stage中的job都执行完成，流水线就会跳到下一个job。
+如果一个 stage 中的 job 都执行完成，流水线就会跳到下一个 stage 中执行。
 
-如果任意一个job失败，通常剩下的stage都不会执行。
+如果任意一个job失败，通常剩下的stage都不会执行并且流水线提前结束。
+
+一般来说，流水线是自动执行的，一旦创建就不需要干预。但是，有时您也可以手动与流水线交互。
 
 
 
@@ -580,9 +596,31 @@ job 是通过 runner 执行，多个job也可以在一个stage中并行执行（
 - Every month on the 22nd for a certain branch.
 - Once every day
 
+使用计划流水线定期运行 GitLab CI/CD 流水线，在**CI/CD > 计划**
+
+
+
 
 
 触发器流水线
+
+
+
+
+
+
+
+# 配置gitlab runner
+
+
+
+当 gitlab runner安装并注册好后，如果使用 docker 执行器，在第一次启动流水线时，runner需要拉取 `gitlab-runner-helper` 镜像。
+
+
+
+
+
+
 
 
 
