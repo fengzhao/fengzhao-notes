@@ -54,7 +54,9 @@ GitLab CI/CD 由一个名为 .gitlab-ci.yml 的文件进行配置，改文件位
 
 
 
-GitLab CI/CD 是一款免费且自托管的内置于 GitLab CI/CD 的持续集成工具。GitLab CI/CD 有一个社区版本，提供了 git 仓库管理、问题跟踪、代码评审、wiki 和活动订阅。
+GitLab CI/CD 是一款免费且自托管的内置于 GitLab CI/CD 的持续集成工具。
+
+GitLab CI/CD 有一个社区版本，提供了 git 仓库管理、问题跟踪、代码评审、wiki 和活动订阅。
 
 许多公司在本地安装 GitLab CI/CD，并将它与 Active Directory 和 LDAP 服务器连接来进行安全授权和身份验证。
 
@@ -62,11 +64,13 @@ GitLab CI/CD 先前是作为一个独立项目发布的，并从 2015 年 9 月�
 
 一个单独的 GitLab CI/CD 服务器可以管理 25000 多个用户，它还可以与多个活跃的服务器构成一个高可用性的配置。
 
-**GitLab CI/CD 和 GitLab 是用 Ruby 和 Go 编写的，并在 MIT 许可证下发布。**
+
+
+**GitLab CI/CD 和 GitLab 是用 Ruby 和 Go 编写的，并在 MIT 开源许可证下发布。**
 
 **除了其它 CI/CD 工具关注的 CI/CD 功能之外，GitLab CI/CD 还提供了计划、打包、源码管理、发布、配置和审查等功能。**
 
-GitLab CI/CD 还提供了仓库，因此 GitLab CI/CD 的集成非常简单直接。在使用 GitLab CI/CD 时，phase 命令包含一系列阶段，这些阶段将按照精确的顺序实现或执行。
+GitLab CI/CD 还提供了仓库，因此 GitLab CI/CD 的集成非常简单直接。在使用 GitLab CI/CD 时，可以包含一系列阶段，这些阶段将按照精确的顺序实现或执行。
 
 
 
@@ -118,6 +122,8 @@ CI/CD 是一种通过在应用开发阶段引入[自动化](https://www.redhat.c
 
 使用这种方法，您可以努力减少从开发新代码到部署的人工干预，甚至根本不需要干预。
 
+在 GitLab 中，runners 是运行 CI/CD 作业的代理。
+
 
 
 ## gitlab-runner 安装
@@ -134,9 +140,9 @@ GitLab-Runner 就是一个用来执行 .gitlab-ci.yml 脚本的工具，是 gitl
 
 可以理解成，Runner 就像 agent ，GitLab server 就是 server，所有 agent 都要在 GitLab-CI 里面注册，并且表明自己是为哪个项目服务。
 
-当相应的项目发生变化时，GitLab-CI 就会通知相应的 gitlab runner (工人) 执行对应的脚本任务。
+当相应的项目发生变化时（有代码提交到仓库时），GitLab-CI 就会通知相应的 gitlab runner (工人) 执行对应的脚本任务。
 
-分为两种方式：
+安装分为两种方式：
 
 ```shell
 # gitlab runner 安装
@@ -215,7 +221,16 @@ docker exec -it  gitlab-runner  register
 
 ```
 
+## runner executors 类型
 
+GitLab Runner 实现了很多可用于在不同场景中运行构建的执行器，执行器有如下类型：
+
+
+
+- shell：shell是一个最简单的执行器。项目构建所有依赖都需要手动在gitlab runer所在的机器上安装好
+- 虚拟机：
+- docker：docker是一个更好的选择，可以把所有依赖封装
+- custom： 
 
 ## runner 配置说明
 
@@ -242,7 +257,7 @@ docker exec -it  gitlab-runner  register
 - 定义了 runner 需要执行的步骤和任务（顺序）。
 - 当特定条件满足时，runner需要执行的任务。
 
-例如，你需要定义一个任务（当有提交到任意分支（非默认分支）时，执行一系列构建测试。当提交到默认分支时，执行构建测试并发布到项目测试环境中）
+例如，你需要定义一个任务（当有提交到任意分支[非默认分支]时，执行一系列构建测试。当提交到默认分支时，执行构建测试并发布到项目测试环境中）
 
 ```yaml
 #  按照下面，一共4个job，3个stage
@@ -289,7 +304,7 @@ GitLab CI / CD 的每个实例都有一个称为Lint的嵌入式调试工具，�
 使用GitLab自带的流水线，必须要定义流水线的内容，而定义内容的文件默认叫做.gitlab-ci.yml，使用yml的语法进行编写。
 目前任务关键词有28个，全局的关键词有10个，两者重叠的有很多。掌握这些关键词的用法，你可以编写逻辑严谨，易于扩展的流水线。
 
-
+https://docs.gitlab.cn/jh/ci/yaml/
 
 
 
@@ -319,14 +334,24 @@ stages:
 # 4.如果deploy中的所有job执行成功，这个流水线被标记为passed
 
 # 如果任意一个job执行失败，流水线被标记为failed，后续stage中的job都不会执行，同一stage中的job不会被停止，会继续执行。
-# 如果流水线中没有定义stages，那么 build,test,depoly就是默认的stages
-# 如果定义了一个stage，没有job使用它，那么这个stage在流水线中是不可见的。
+# 如果流水线中没有定义stages，那么 build,test,depoly就是默认的stages，默认各阶段顺序如下：
+#  .pre 
+#  build
+#  test
+#  deploy
+#  .post 
+
+# 如果某个job未指定 stage，则作业被分配到 test 阶段。
+
+# 如果定义了一个stage，没有job使用它，那么这个stage在流水线中是不可见的。 这对合规流水线配置很有用，因为：
+# 阶段可以在合规性配置中定义，但如果不使用则保持隐藏。
+# 当开发人员在作业定义中使用它们时，定义的阶段变得可见。
 ```
 
 
 
 ```shell
-# 对于一个前端项目，每次提交，都执行：安装依赖，执行测试用例，编译打包，测试发布，生产发布
+# 对于一个前端项目，每次提交都执行如下序列：安装依赖，执行测试用例，编译打包，测试发布，生产发布
 stages:
   - install_deps
   - test
@@ -402,30 +427,35 @@ deploy_production:
 
   ```yaml
   workflow:
-    # 规则一：
+    name: 'Pipeline name'                            
     rules:
-      # if条件判断：如果提交信息带"draft"
-      - if: $CI_COMMIT_MESSAGE =~ /-draft$/
-      # 不执行流水线
-        when: never
-      # if判断：所有的push事件都会触发流水线执行，这个流水线是严格模式，只有这个规则才会执行
-      - if: '$CI_PIPELINE_SOURCE == "push"'
+      # 规则一：if条件判断，如果commit message以"-draft"结尾，则不运行流水线
+      - if: $CI_COMMIT_MESSAGE =~ /-draft$/      when: never
+      # 规则二：if判断，所有的merge request事件都会触发流水线执行，这个流水线是严格模式，只有这个规则才会执行
+      - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      
+      # 这个例子有严格的规则，流水线在任何其他情况下都不运行。
   ```
 
   ```yaml
   workflow:
     rules:
-      - if: '$CI_PIPELINE_SOURCE == "schedule"' # 计划流水线不执行
+      - if: '$CI_PIPELINE_SOURCE == "schedule" # 计划流水线不执行
         when: never
       - if: '$CI_PIPELINE_SOURCE == "push"'     # push事件不执行
         when: never
       - when: always                            # 其他的事件都流水线
-      
+     
+     # 所有规则都可以是 when: never，最后是 when:always 规则。 匹配 when: never 规则的流水线不会运行。 所有其他流水线类型运行
   ```
 
 - include
 
   include 用于引进cicid配置文件外部的yaml配置。可以把长的 .gitlab-ci.yml 文件切割成多个文件来增加可读性，或者通过引用来避免多处重复写相同的配置。
+
+  
+
+  无论 `include` 关键字的位置如何，始终先求值，然后与 `.gitlab-ci.yml` 文件的内容合并。
 
   ```yaml
   include: 'configs/*.yml'
