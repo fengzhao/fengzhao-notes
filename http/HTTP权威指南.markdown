@@ -417,15 +417,19 @@ HTTP 连接基于 TCP 连接，Remote Address 来自 TCP 连接，表示与服�
 
 > 铁律：当多层代理或使用CDN时，如果代理服务器不把用户的真实IP传递下去，那么业务服务器将永远不可能获取到用户的真实IP。
 
+在大部分实际业务场景中，网站访问请求并不是简单地从客户端（访问者）的浏览器直接到达网站的源站服务器，而是在客户端和服务器之前经过了根据业务需要部署的Web应用防火墙、DDoS高防、CDN等代理服务器。
+
+这种情况下，访问请求在到达源站服务器之前可能经过了多层安全代理转发或加速代理转发，源站服务器该如何获取发起请求的真实客户端IP？
 
 
-在大部分实际业务场景中，网站访问请求并不是简单地从客户端（访问者）的浏览器直接到达网站的源站服务器，而是在客户端和服务器之前经过了根据业务需要部署的Web应用防火墙、DDoS高防、CDN等代理服务器。这种情况下，访问请求在到达源站服务器之前可能经过了多层安全代理转发或加速代理转发，源站服务器该如何获取发起请求的真实客户端IP？
+
+
 
 
 
 **X-Real-IP**
 
-这是一个自定义 HTTP 头部。
+这也是一个自定义 HTTP 头部。
 
 `X-Real-IP` 通常被 HTTP 代理用来表示与它产生 TCP 连接的设备 IP 。这个设备可能是其他代理，也可能是真正的请求端。
 
@@ -448,15 +452,14 @@ Remote Address 无法伪造，因为建立 TCP 连接需要三次握手，如果
 在 nginx 中，通常可以这样配置
 
 ```nginx
-
-    location /proxy {                                                                                                               	 proxy_http_version 1.1;                                                                                                     	  proxy_set_header Connection "";
-    	# 协议升级头部
-    	proxy_set_header Upgrade $http_upgrade; 
-    	 # 协议升级头部 
-    	proxy_set_header Connection "upgrade";                                                                       					proxy_set_header Host $host;                                                                                           		 proxy_set_header X-Real-IP $remote_addr;                                                                               		 proxy_set_header REMOTE-HOST $remote_addr; 
-    	 # 
-    	 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;                                                           			
-    	 proxy_pass http://localhost/index.html;  
+location /proxy {                                                                                                               	 proxy_http_version 1.1;                                                                                                     	  proxy_set_header Connection "";
+     # 协议升级头部
+     proxy_set_header Upgrade $http_upgrade; 
+     # 协议升级头部 
+     proxy_set_header Connection "upgrade";                                                                       					 proxy_set_header Host $host;                                                                                           		 proxy_set_header X-Real-IP $remote_addr;                                                                               		 proxy_set_header REMOTE-HOST $remote_addr; 
+     # 
+     proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;                                                           	
+     proxy_pass http://localhost/index.html;  
 ```
 
 https://imququ.com/post/x-forwarded-for-header-in-http.html
