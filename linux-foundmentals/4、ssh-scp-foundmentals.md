@@ -393,7 +393,7 @@ $ ssh root@192.168.1.102  -p 22
 
 ### ssh 相关文件
 
-ssh 的配置文件一般在 ~/.ssh 目录中，由于安全原因，该目录的权限一般要设置为 700 。
+**ssh 的配置文件一般在 ~/.ssh 目录中，由于安全原因，该目录的权限一般要设置为 700 。**
 
 ```shell
 # 查看ssh有哪些包
@@ -403,7 +403,7 @@ libssh2-1.4.3-12.el7_6.2.x86_64
 openssh-7.4p1-16.el7.x86_64
 openssh-server-7.4p1-16.el7.x86_64
 
-# 查看openssh-client安装了哪些包
+# 查看openssh-client相关的文件
 $ rpm -ql openssh-clients
 
 /etc/ssh/ssh_config
@@ -428,7 +428,25 @@ $ rpm -ql openssh-clients
 /usr/share/man/man5/ssh_config.5.gz
 /usr/share/man/man8/ssh-pkcs11-helper.8.gz
 
-
+# 查看openssh-server相关的文件
+[root@localhost ~]# rpm -ql openssh-server
+/etc/pam.d/sshd
+/etc/ssh/sshd_config
+/etc/sysconfig/sshd
+/usr/lib/systemd/system/sshd-keygen.service
+/usr/lib/systemd/system/sshd.service
+/usr/lib/systemd/system/sshd.socket
+/usr/lib/systemd/system/sshd@.service
+/usr/lib64/fipscheck/sshd.hmac
+/usr/libexec/openssh/sftp-server
+/usr/sbin/sshd
+/usr/sbin/sshd-keygen
+/usr/share/man/man5/moduli.5.gz
+/usr/share/man/man5/sshd_config.5.gz
+/usr/share/man/man8/sftp-server.8.gz
+/usr/share/man/man8/sshd.8.gz
+/var/empty/sshd
+[root@localhost ~]#
 
 
 # ssh客户端全局配置文件，所有用户公用的配置文件
@@ -437,7 +455,7 @@ $ rpm -ql openssh-clients
 ~/.ssh/config
 
 
-# ssh服务端配置文件，用来配置认证方式，是否启用root登陆，加密方式
+# ssh服务端配置文件，用来配置认证方式，是否启用root登陆，加密方式等等。
 /etc/ssh/sshd_config
 
 # 服务程序sshd启动时生成的服务端公钥和私钥文件。如ssh_host_rsa_key和ssh_host_rsa_key.pub。
@@ -445,12 +463,11 @@ $ rpm -ql openssh-clients
 # 其中私钥文件严格要求权限为600，若不是则sshd服务可能会拒绝启动。
 /etc/ssh/ssh_host_*
 
-
 # 客户端用户私钥，从客户端登陆服务端需要提供这个私钥证明合法登陆。为了安全，这个文件的权限必须是600。~/.ssh 目录的权限必须是700
 ~/.ssh/id_rsa
 
 # ssh服务端公钥，公钥与私钥是一对密钥对，一般要设置为600，防止其他用户把自己的公钥注入进来
-# 这个文件可以存放多个公钥
+# 这个文件可以追加写入多个公钥
 ~/.ssh/authorized_keys
 
 
@@ -464,6 +481,16 @@ http://www.jinbuguo.com/openssh/sshd.html
 http://www.jinbuguo.com/openssh/sshd_config.html
 http://www.jinbuguo.com/openssh/ssh-keygen.html
 ```
+
+
+
+### 相关配置参数说明
+
+```
+
+```
+
+
 
 
 
