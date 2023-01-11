@@ -2711,6 +2711,14 @@ json-file 日志的路径位于 `/var/lib/docker/containers/container_id/contain
 
 
 
+## docker in docker
+
+就是在Docker内运行Docker,一个常用的场景是我们用Docker起了一个Jenkins，Jenkins构建项目的时候，为了保证项目环境是干净的，也需要拉一个docker镜像，把项目放到干净的容器中。
+
+
+
+
+
 # 容器标准规范
 
 
