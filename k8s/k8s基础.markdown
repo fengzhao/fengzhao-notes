@@ -2,8 +2,6 @@
 
 
 
-
-
 ## 什么是k8s
 
 
@@ -30,7 +28,9 @@ Kubernetes 是希腊语中的 "舵手" 的意思。
 
 
 
-将复杂的大型单体应用拆分为小的可独立部署的微服务组件，每个微服务以独立的进程运行，并通过简单且定义良好的接口（API）与其他服务通信。服务之间可以通过 HTTP 这样的同步协议通讯，或通过像 AMQP 这样的异步协议通信。
+将复杂的大型单体应用拆分为小的可独立部署的微服务组件，每个微服务以独立的进程运行，并通过简单且定义良好的接口（API）与其他服务通信。
+
+服务之间可以通过 HTTP 这样的同步协议通讯，或通过像 AMQP 这样的异步协议通信。
 
 
 
@@ -89,6 +89,10 @@ k8s集群分为两类节点
 当您在 Kubernetes 上部署应用程序时，您可以告诉 master 启动应用程序容器。master 调度容器在集群的工作节点上运行。
 
  节点使用 Master 公开的 Kubernetes API 与 Master 通信。用户也可以直接使用 Kubernetes 的 API 与集群交互。
+
+
+
+
 
 **master 节点中的组件**
 
@@ -253,13 +257,19 @@ kubectl describe pod kubia-hczji
 
 
 
-为什么是pod？
+## 为什么是pod？
 
-对于由多个进程组成的应用程序。
+一个 pod 是一组紧密关联的容器，它们总是一起运行在同一个工作节点上，以及同一个Linux命名空间中。
 
 
 
 同一pod中容器之间的部分隔离
+
+
+
+
+
+
 
 ### 通过 pod 合理管理容器
 
@@ -1191,3 +1201,6 @@ Ingress
 ### kubeadm 简介
 
 [kubeadm](https://github.com/kubernetes/kubernetes/tree/master/cmd/kubeadm)是 一位17岁的芬兰高中生Lucas Kaldstrom的作品，他用业余时间完成的一个社区项目。
+
+
+
