@@ -933,7 +933,7 @@ https://support.huaweicloud.com/bestpractice-swr/swr_bestpractice_0002.html)
 
 
 
-下面我们拿来 [debian:buster](https://hub.docker.com/_/debian) 这个基础镜像的 [Dockerfile](https://github.com/debuerreotype/docker-debian-artifacts/blob/18cb4d0418be1c80fb19141b69ac2e0600b2d601/buster/Dockerfile) 来看一下基础镜像是如何炼成的：
+下面我们拿来 [debian:buster](https://hub.docker.com/_/debian) 这个基础镜像的 [Dockerfile](https://github.com/debuerreotype/docker-debian-artifacts/blob/dist-amd64/stable/slim/Dockerfile) 来看一下基础镜像是如何炼成的：
 
 ```YAML
 FROM scratch
@@ -941,7 +941,7 @@ ADD rootfs.tar.xz /
 CMD ["bash"]
 ```
 
-一个基础镜像的 Dockerfile 一般仅有三行。第一行 `FROM scratch` 中的`scratch` 这个镜像并不真实的存在。
+一个debian基础镜像的 Dockerfile 一般仅有三行。第一行 `FROM scratch` 中的`scratch` 这个镜像并不真实的存在。
 
 当你使用 `docker pull scratch` 命令来拉取这个镜像的时候会翻车哦，提示 `Error response from daemon: 'scratch' is a reserved name`。
 
@@ -952,6 +952,18 @@ CMD ["bash"]
 第三行 `CMD ["bash"]` 指定这镜像在启动容器的时候执行的应用程序，一般基础镜像的 CMD 默认为 bash 或者 sh 。
 
 > As of Docker 1.5.0 (specifically, [`docker/docker#8827`](https://github.com/docker/docker/pull/8827)), `FROM scratch` is a no-op in the Dockerfile , and will not create an extra layer in your image (so a previously 2-layer image will be a 1-layer image instead).
+
+
+
+
+
+这个 `rootfs.tar.xz` 一般是发行版源码编译出来的根文件系统
+
+Debian 发行版的 `rootfs.tar.xz` 可以在 [docker-debian-artifacts](https://github.com/debuerreotype/docker-debian-artifacts) 这个 repo 上找到，根据不同处理器 arch 选择相应的 branch ，然后这个 branch 下的目录就对应着该发行版的不同的版本的代号。意外发现 Debian 官方是将所有 arch 和所有版本的 `rootfs.tar.xz` 都放在这个 repo 里的，以至于这个 repo 的大小接近 2.88 GiB
+
+
+
+我们把这个 `rootfs.tar.xz` 解开就可以看到，这就是一个 Linux 的根文件系统，不同于我们使用 ISO  安装系统的那个根文件系统，这个根文件系统是经过一系列的裁剪，去掉了一些在容器运行中不必要的文件，使之更加轻量适用于容器运行的场景，整个根文件系统的大小为 125M，如果使用 slim 的 `rootfs.tar.xz` 会更小一些，仅仅 76M。当然相比于仅仅几 M 的 `alpine` ，这算是够大的了。
 
 
 
@@ -972,6 +984,88 @@ cat /var/lib/docker/image/overlay2/repositories.json | jq
 #### 镜像是怎么存放在本地的
 
 当我们构建完一个镜像之后，镜像就存储在了我们 docker 本地存储目录，默认情况下为 `/var/lib/docker` 。
+
+所谓的“镜像”，实际上就是一个 Ubuntu 操作系统的 rootfs，它的内容是 Ubuntu 操作系统的所有文件和目录。
+
+不过，与之前我们讲述的 rootfs 稍微不同的是，Docker 镜像使用的rootfs，往往由多个“层”组成：
+
+
+
+
+
+
+
+docker 镜像分层，一个新的镜像层的建立，其实就是用上一层的镜像启动容器，然后直接 dockerfile 指令，再它保存为一个新的镜像。
+
+当 dockerfile 指令执行成功后，上一层的容器就会被删除。
+
+由于每个指令的结果都是个静态的镜像，
+
+
+
+
+
+````shell
+# 默认地，当没有镜像和容器时，/var/lib/docker/overlay2/文件目录中是空的。仅有一个l目录，用于存放链接
+
+# 一开始overlay路径下为空，用docker pull命令下载一个由3层镜像层组成的docker镜像(ubuntu):
+root@fengzhao:~# docker pull ubuntu                                                                                        
+Using default tag: latest                                                        
+latest: Pulling from library/ubuntu                                                                          
+d72e567cc804: Pull complete                                                                         
+0f3630e5ff08: Pull complete                                                                       
+b6a83d81d1f4: Pull complete                                                                 
+Digest: sha256:bc2f7250f69267c9c6b66d7b6a81a54d3878bb85f1ebb5f951c896d13e6ba537    
+Status: Downloaded newer image for ubuntu:latest                                                                  
+docker.io/library/ubuntu:latest                                                                            
+root@fengzhao:~# 
+
+# 此时，在路径 /var/lib/docker/overlay2/ 下，每个镜像层都有一个对应的目录
+
+root@fengzhao:~# tree -L 2 /var/lib/docker/overlay2/                                                                             
+/var/lib/docker/overlay2/                                                                  
+├── 251f5bb4a1f43d8d437d97b166e3112e6d3fd27724e7e09f03e7a700d3684285      
+│   ├── committed                                                                     
+│   ├── diff                                                                             
+│   ├── link                                                                           
+│   ├── lower                                                                         
+│   └── work                                                                              
+├── 2d1bbb653ff8e4d592f850dec47c35aef0da8754515dc54638cab3198b52f230       
+│   ├── diff                                                               
+│   ├── link                                                                    
+│   ├── lower                                                                     
+│   └── work                                                                    
+├── bbc3cc6b589e3840f450ab623889ee00e0eba84b21dda83118644113ca723092
+│   ├── committed                                                                        
+│   ├── diff                                                                   
+│   └── link                                                                      
+└── l                                                                         
+    ├── 2XZAHJTU7QZTYQ5J4X77ZHXXSH -> ../bbc3cc6b589e3840f450ab623889ee00e0eba84b21dda83118644113ca723092/diff                  
+    ├── 7VAHNQQUOE4W2FE7CEWJAC2KDA -> ../251f5bb4a1f43d8d437d97b166e3112e6d3fd27724e7e09f03e7a700d3684285/diff
+    └── RENSXZAHFGKKQVTIMEB77EPTTY -> ../2d1bbb653ff8e4d592f850dec47c35aef0da8754515dc54638cab3198b52f230/diff                                                                                                
+12 directories, 7 files                                                                              
+root@fengzhao:~# 
+
+
+root@fengzhao:~# du -sch /var/lib/docker/overlay2/*                                                                                                                                                              
+96K     /var/lib/docker/overlay2/251f5bb4a1f43d8d437d97b166e3112e6d3fd27724e7e09f03e7a700d3684285
+32K     /var/lib/docker/overlay2/2d1bbb653ff8e4d592f850dec47c35aef0da8754515dc54638cab3198b52f230
+79M     /var/lib/docker/overlay2/bbc3cc6b589e3840f450ab623889ee00e0eba84b21dda83118644113ca723092
+16K     /var/lib/docker/overlay2/l                                           
+80M     total                                                                       
+root@fengzhao:~# 
+
+[root@compute-share-stxz ~]# docker image inspect --format "{{json .RootFS.Layers}}" 513f9a9d874 | jq
+[
+  "sha256:e2eb06d8af8218cfec8210147357a68b7e13f7c485b991c288c2d01dc228bb68",
+  "sha256:e6d3cea19fef0752dc05de747d53678768e5442b7bc553da24c26843fb004991",
+  "sha256:20d0effdf3a238c529aef35de8ec8ad77705b85a36f46e3176bba4178bceaddf",
+  "sha256:311d8db33235c961c2327f4ffdd3ffcdfbd752261b10546bc5aa77ae3e3a52be",
+  "sha256:b4b4e85910eaa882511fa86afc141b08e8d04681f061c099c47a072036dcb7a3",
+  "sha256:40403bebe4fddeee2a651217032b0bae844ff0a4a5fbcb4b646d8f4f20cff0b1"
+]
+[root@compute-share-stxz ~]#
+````
 
 
 
@@ -1065,59 +1159,6 @@ docker 镜像分层，一个新的镜像层的建立，其实就是用上一层�
 由于每个指令的结果都是个静态的镜像，
 
 
-
-```shell
-
-# 默认地，当没有镜像和容器时，/var/lib/docker/overlay2/文件目录中是空的。仅有一个l目录，用于存放链接
-
-# 一开始overlay路径下为空，用docker pull命令下载一个由3层镜像层组成的docker镜像(ubuntu):
-root@fengzhao:~# docker pull ubuntu                                                                                        
-Using default tag: latest                                                        
-latest: Pulling from library/ubuntu                                                                          
-d72e567cc804: Pull complete                                                                         
-0f3630e5ff08: Pull complete                                                                       
-b6a83d81d1f4: Pull complete                                                                 
-Digest: sha256:bc2f7250f69267c9c6b66d7b6a81a54d3878bb85f1ebb5f951c896d13e6ba537    
-Status: Downloaded newer image for ubuntu:latest                                                                  
-docker.io/library/ubuntu:latest                                                                            
-root@fengzhao:~# 
-
-# 此时，在路径 /var/lib/docker/overlay2/ 下，每个镜像层都有一个对应的目录
-
-
-root@fengzhao:~# tree -L 2 /var/lib/docker/overlay2/                                                                             
-/var/lib/docker/overlay2/                                                                  
-├── 251f5bb4a1f43d8d437d97b166e3112e6d3fd27724e7e09f03e7a700d3684285      
-│   ├── committed                                                                     
-│   ├── diff                                                                             
-│   ├── link                                                                           
-│   ├── lower                                                                         
-│   └── work                                                                              
-├── 2d1bbb653ff8e4d592f850dec47c35aef0da8754515dc54638cab3198b52f230       
-│   ├── diff                                                               
-│   ├── link                                                                    
-│   ├── lower                                                                     
-│   └── work                                                                    
-├── bbc3cc6b589e3840f450ab623889ee00e0eba84b21dda83118644113ca723092
-│   ├── committed                                                                        
-│   ├── diff                                                                   
-│   └── link                                                                      
-└── l                                                                         
-    ├── 2XZAHJTU7QZTYQ5J4X77ZHXXSH -> ../bbc3cc6b589e3840f450ab623889ee00e0eba84b21dda83118644113ca723092/diff                  
-    ├── 7VAHNQQUOE4W2FE7CEWJAC2KDA -> ../251f5bb4a1f43d8d437d97b166e3112e6d3fd27724e7e09f03e7a700d3684285/diff
-    └── RENSXZAHFGKKQVTIMEB77EPTTY -> ../2d1bbb653ff8e4d592f850dec47c35aef0da8754515dc54638cab3198b52f230/diff                                                                                                
-12 directories, 7 files                                                                              
-root@fengzhao:~# 
-
-
-root@fengzhao:~# du -sch /var/lib/docker/overlay2/*                                                                                                                                                              
-96K     /var/lib/docker/overlay2/251f5bb4a1f43d8d437d97b166e3112e6d3fd27724e7e09f03e7a700d3684285
-32K     /var/lib/docker/overlay2/2d1bbb653ff8e4d592f850dec47c35aef0da8754515dc54638cab3198b52f230
-79M     /var/lib/docker/overlay2/bbc3cc6b589e3840f450ab623889ee00e0eba84b21dda83118644113ca723092
-16K     /var/lib/docker/overlay2/l                                           
-80M     total                                                                       
-root@fengzhao:~# 
-```
 
 
 
@@ -1710,9 +1751,13 @@ root@pve /data#
 
 https://man7.org/linux/man-pages/man7/namespaces.7.html
 
-很多人都知道 docker 底层其实就是 Linux 的容器技术。
+
+
+很多人都知道 docker 底层其实就是 Linux 的容器技术：
 
 > **docker 通过 namespace 实现资源隔离，通过 cgroups 实现了资源限制。**
+
+
 
 实质上，Linux 内核实现 namespace 的主要目的，就是实现轻量级虚拟化（容器）服务。**namespace 是 Linux 内核用来隔离内核资源的方式。**
 
@@ -2128,17 +2173,62 @@ pid namespace 隔离非常有用，它对进程 PID 重新标号，即两个不�
 
 #### mount namespace
 
-mount namespace 通过隔离文件系统挂载点对隔离文件系统提供支持。
+mount namespace 通过隔离文件系统挂载点对隔离文件系统提供支持。容器里的应用进程，理应看到一份完全独立的文件系统。
 
-启动一个 alpine 容器
-
-```sh
- docker run -dit --name alpine1 alpine ash  
- 
- 
-```
+它可以在自己的容器目录（比如 /tmp）下进行操作，而完全不会受宿主机以及其他容器的影响。
 
 
+
+Mount Namespace 修改的，是容器进程对文件系统“挂载点”的认知。
+
+但是，这也就意味着，只有在“挂载”这个操作发生之后，进程的视图才会被改变。而在此之前，新创建的容器会直接继承宿主机的各个挂载点。
+
+创建新进程时，除了声明要启用 Mount Namespace 之外，我们还可以告诉容器进程，有哪些目录需要重新挂载，就比如这个 /tmp 目录。
+
+于是，我们在容器进程执行前可以添加一步重新挂载 /tmp 目录的操作
+
+
+
+
+
+
+
+当然，为了能够让容器的这个根目录看起来更“真实”，我们一般会在这个容器的根目录下挂载一个完整操作系统的文件系统，比如 Ubuntu16.04 的 ISO。
+
+这样，在容器启动之后，我们在容器里通过执行 "ls /" 查看根目录下的内容，就是 Ubuntu 16.04 的所有目录和文件。
+
+而这个挂载在容器根目录上、用来为容器进程提供隔离后执行环境的文件系统，就是所谓的“容器镜像”。
+
+它还有一个更为专业的名字，叫作：rootfs（根文件系统）。
+
+一个最常见的 rootfs，或者说容器镜像，会包括如下所示的一些目录和文件，比如 /bin，/etc，/proc
+
+
+
+
+
+rootfs 只是一个操作系统所包含的文件、配置和目录，并不包括操作系统内核。
+
+在 Linux 操作系统中，这两部分是分开存放的，操作系统只有在开机启动时才会加载指定版本的内核镜像。
+
+所以说，rootfs 只包括了操作系统的“躯壳”，并没有包括操作系统的“灵魂”。那么，对于容器来说，这个操作系统的“灵魂”又在哪里呢？
+
+实际上，同一台机器上的所有容器，都共享宿主机操作系统的内核。
+
+这就意味着，如果你的应用程序需要配置内核参数、加载额外的内核模块，以及跟内核进行直接的交互，你就需要注意了：
+
+这些操作和依赖的对象，都是宿主机操作系统的内核，它对于该机器上的所有容器来说是一个“全局变量”，牵一发而动全身。
+
+
+
+由于 rootfs 里打包的不只是应用，而是整个操作系统的文件和目录，也就意味着，应用以及它运行所需要的所有依赖，都被封装在了一起。
+事实上，对于大多数开发者而言，他们对应用依赖的理解，一直局限在编程语言层面。比如Golang 的 Godeps.json。
+
+但实际上，一个一直以来很容易被忽视的事实是，对一个应用来说，操作系统本身才是它运行所需要的最完整的“依赖库”。
+
+有了容器镜像“打包操作系统”的能力，这个最基础的依赖环境也终于变成了应用沙盒的一部分。
+
+这就赋予了容器所谓的一致性：无论在本地、云端，还是在一台任何地方的机器上，用户只需要解压打包好的容器镜像，那么这个应用运行所需要的完整的执行环境就被重现出来了。
 
 #### network namespace
 
