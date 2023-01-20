@@ -241,7 +241,7 @@ $ systemctl status docker  #查看状态
 dockerd 守护进程的配置，有两种方式指定：
 
 - 通过在 dockerd 命令后面指定启动参数。
-- 通过 dockerd  --config-file  来指定一个json 格式的配置文件 （默认在/etc/docker/daemon.json）
+- 通过 dockerd  --config-file  来指定一个json 格式的配置文件 （默认在/etc/docker/daemon.json），一般更常见是这个。
 
 默认地，这个配置文件不存在，系统按照默认配置启动 docker ，如果想自定义，可以创建这个文件。下面是一个简单的示例：
 
@@ -271,6 +271,8 @@ dockerd --debug \
 
 在 Linux 中，一般使用包管理器安装 docker , 默认的 dockerd 守护进程是通过 systemd 管理的。
 
+如果使用手动二进制安装了，可以从  [the github repository](https://github.com/moby/moby/tree/master/contrib/init/systemd)  这个仓库拷贝 service 和 socket 文件到 /etc/systemd/system 中来手动配置systemd
+
 ```shell
 # 在这两个文件中，一般都默认设置了 dockerd 的启动参数。
 # Ubuntu的路径
@@ -280,7 +282,20 @@ dockerd --debug \
 
 ExecStart=/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock  --ipv6=false       
 ExecReload=/bin/kill -s HUP $MAINPID 
+
 ```
+
+
+
+docker daemon 通常是通过 HTTP_PROXY ， HTTPS_PROXY 这两个环境变量来设置代理的。所以需要在 service 文件中重写，而不能在 daemon.json 中配置。
+
+参考配置如下：
+
+https://docs.docker.com/config/daemon/systemd/#httphttps-proxy
+
+https://www.lfhacks.com/tech/pull-docker-images-behind-proxy/
+
+
 
 
 
