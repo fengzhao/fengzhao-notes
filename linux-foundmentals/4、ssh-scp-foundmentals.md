@@ -486,13 +486,7 @@ http://www.jinbuguo.com/openssh/ssh-keygen.html
 
 ### 相关配置参数说明
 
-```
-
-```
-
-
-
-
+https://github.com/fengzhao/sshd_config/blob/master/sshd_config
 
 关于 ssh 的公钥认证详细原理，可以参考阮一峰的博客。
 
@@ -530,6 +524,10 @@ PasswordAuthentication no　 # 不允许密码方式登录
 RSAAuthentication yes # 允许RSA认证，只针对SSH1
 PubkeyAuthentication yes # 允许公钥认证
 AuthorizedKeysFile .ssh/authorized_keys #保存公钥的认证文件
+
+UseDNS  yes            # 服务端sshd服务开启UseDNS选项状态下，当客户端试图使用SSH连接服务器时，服务器端先根据客户端的IP地址进行DNS PTR反向查询出客户端的主机名，然后根据查询出的客户端主机名进行DNS正向A记录查询，验证与其原始IP地址是否一致，这是防止客户端欺骗的一种措施，但一般我们的是动态IP不会有PTR记录，建议关闭该选项。
+
+
 ```
 
 ## SSH 常用场景
