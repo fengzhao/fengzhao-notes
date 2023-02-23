@@ -12,6 +12,12 @@ Keepalived 软件主要通过 VRRP 协议实现高可用功能的，VRRP 是 Vir
 
 
 
+Keepalived的主要目的就是它自身启动为一个服务，它工作在多个LVS主机节点上，当前活动的节点叫做Master备用节点叫做Backup。
+
+Master会不停的向Backup节点通告自己的心跳，这种通告是基于VRRP协议的。
+
+Backup节点一旦接收不到Master的通告信息，它就会把LVS的VIP拿过来，并且把ipvs的规则也拿过来，在自己身上生效，从而替代Master节点。
+
 
 
 
