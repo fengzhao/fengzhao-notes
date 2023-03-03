@@ -74,6 +74,10 @@ LVS 最初是他在大学期间的玩具，随着后来使用的用户越来越�
 
 
 
+
+
+
+
 LVS的全称是Linux virtual server，即Linux虚拟服务器。
 
 之所以是虚拟服务器，是因为 LVS 自身是个负载均衡器(director)，不直接处理请求，而是将请求转发至位于它后端真正的服务器 realserver 上。

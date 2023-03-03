@@ -181,7 +181,6 @@ WantedBy=multi-user.target
 #　网络配置
 bind  *      		# 监听多个网卡地址 　bind 192.168.1.100 10.1.0.1 ，redis尽量不要直接对公网开放
 port 6379           # 监听端口号，实在要对公网开放，修改默认端口能避免被扫描。
-
 protect-mode  yes      # 安全模式
 requirepass Elw2Ea&3kvmDwv0  # redis密码是明文保存，必须要设置超高强度密码
 daemonize yes       # 守护进程的方式启动
