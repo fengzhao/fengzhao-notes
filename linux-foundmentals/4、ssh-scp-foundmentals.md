@@ -1320,3 +1320,26 @@ https://blog.csdn.net/yanggleyang/article/details/104727065
 # 常见问题排查
 
 (参考)[https://help.aliyun.com/document_detail/41470.html]
+
+
+
+
+
+# pdssh和pssh
+
+parallel-ssh 是为小规模自动化而设计的异步并行的  SSH 库，包括 pssh、pscp、prsync、pslurp 和 pnuke工具，其源代码使用 Python语言编写开发的。
+
+该项目最初位于Google Code上，是由Brent N.Chun编写和维护的，但是由于工作繁忙，Brent于2009年10月将维护工作移交给了Andrew McNabb管理。
+
+到了 2012年的时候，由于Google Code的已关闭，该项目一度被废弃，现在也只能在 Google Code 的归档中找到当时的版本了。
+
+但是需要注意的是，之前的版本是不支持 Python3 的，但是 Github 上面有人 Fork 了一份，自己进行了改造使其支持 Python3 以上的版本了。
+
+与此同时，还有一个组织专门针对 [parallel-ssh](https://github.com/ParallelSSH/parallel-ssh) 进行了开发和维护，今天看了下很久都没有更新了。有需要的，自己可以自行查阅。
+
+
+
+
+
+pssh是一个用python编写的可以在多台服务器上执行命令的工具，同时支持拷贝文件等功能，在同类工具中还是很方便使用的。项目地址：[parallel-ssh](https://code.google.com/p/parallel-ssh/)
+
