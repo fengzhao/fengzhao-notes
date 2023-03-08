@@ -2440,6 +2440,20 @@ ip addr add  10.1.1.1/24   dev  veth-yyyyyyy
 
 
 
+**网桥**
+
+```
+brctl addbr br1 			#创建网桥
+brctl addif br1 enp4s0 		#为网桥添加物理接口
+brctl delbr br1 			#删除网桥
+brctl delif br1 enp4s0 		#删除网桥接口
+brctl show 					#显示网桥列表信息
+brctl show br1 				#显示网桥br1的信息
+brctl showmacs br1 			#显示网桥的MAC地址信息
+brctl showstp br1			#显示网桥的stp信息
+brctl stp br-test on|off	#开|关stp
+```
+
 
 
 
