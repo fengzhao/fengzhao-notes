@@ -720,7 +720,9 @@ server {
 }
 ```
 
-当 nginx 接收到 http 请求时，先从请求头提取到 Host 头部字段，然后跟 server_name 匹配来确认是哪个server块来处理请求。如果都不匹配，那么就用这个端口号的 default server 来处理。
+当 nginx 接收到 http 请求时，先从请求头提取到 Host 头部字段，然后跟 server_name 匹配来确认是哪个server块来处理请求。
+
+如果都不匹配，那么就用这个端口号的 default server 来处理。
 
 在这个例子中，就是第一个来处理。——这是nginx的标准做法。也可以在端口号后面加上一个 default_server 来显示指定这个行为。
 
