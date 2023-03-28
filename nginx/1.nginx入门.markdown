@@ -81,17 +81,17 @@ Nginx服务器的所有工作进程都用于接收和处理客户端的请求。
 
 ## Nginx 及其周边
 
-介绍完 Nginx 的背景，我们就该说说 Nginx 的版本了。目前 Nginx 有三个主要的产品：
+介绍完 Nginx 的背景，我们就该说说 Nginx 周边了。目前基于 Nginx 二次开发的软件主要如下：
 
 - 官方 Nginx。包含开源版（nginx.org）和商业版（nginx.com）
-- [Tengine](https://tengine.taobao.org/)。Tengine 是由淘宝网发起的 Web 服务器项目，目前已经开源。
-- [OpenResty](https://openresty.org/cn/)。OpenResty 通过 Lua 对 Nginx 进行扩展，使得扩展 Nginx 模块变得异常轻松
+- [Tengine](https://tengine.taobao.org/)，Tengine 是由淘宝网发起的 Web 服务器项目，目前已经开源。
+- [OpenResty](https://openresty.org/cn/)，OpenResty 通过 Lua 对 Nginx 进行扩展，使得扩展 Nginx 模块变得异常轻松
+- [kong](https://github.com/Kong/kong)，Kong Gateway (OSS) ，Kong是一个云原生，快速，可扩展和分布式微服务的开源API网关。
+- [apisix](https://apisix.apache.org/zh/)，Apache APISIX 是一个动态、实时、高性能的云原生 API 网关，提供了负载均衡、动态上游、灰度发布、服务熔断、身份认证等功能。
+
+
 
 针对我们日常工作学习来说，选择官方开源版的 Nginx 或者 OpenResty 就可以了。
-
-
-
-
 
 ### Nginx 版本策略
 
