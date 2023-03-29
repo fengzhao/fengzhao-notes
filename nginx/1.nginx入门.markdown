@@ -361,6 +361,10 @@ OpenResty 的编译安装步骤与 Nginx 基本一致
 
 在 <https://openresty.org/en/download.html> 中下载 OpenResty 的源代码，然后按照 Nginx 的编译步骤执行即可。
 
+```bash
+wget  https://openresty.org/download/openresty-1.21.4.1.tar.gz
+```
+
 
 
 
