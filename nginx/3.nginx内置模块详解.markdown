@@ -1,0 +1,47 @@
+
+
+
+
+
+
+# ngx_http_stub_status_module
+
+
+
+`ngx_http_stub_status_module` 模块提供对基本状态信息的访问的支持。
+
+默认不构建此模块，可在构建时使用 `--with-http_stub_status_module` 配置参数启用。
+
+```bash
+# 检查
+nginx -V 2>&1 | grep -o with-http_stub_status_module
+
+# 编译安装
+wget http://nginx.org/download/nginx-1.13.12.tar.gz
+tar xfz nginx-1.13.12.tar.gz
+cd nginx-1.13.12/
+./configure --with-http_stub_status_module
+make
+make install
+```
+
+
+
+
+
+## 配置使用
+
+
+
+```nginx
+location /nginx_status {
+  stub_status on;
+  allow 127.0.0.1;  #only allow requests from localhost
+  deny all;   #deny all other hosts 
+ }
+```
+
+
+
+- Location地址请严格命名为`nginx_status`。
+- `allow 127.0.0.1`和`deny all`表示仅允许本地访问。若需允许Nginx Exporter访问，则可将这两行代码注释，或者将`127.0.0.1`设置为Nginx Exporter的IP地址。
