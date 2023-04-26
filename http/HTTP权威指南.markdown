@@ -2532,6 +2532,36 @@ https://blog.skk.moe/post/chrome-omnibox-www/
 
 https://taoshu.in/ssl-ev-is-dead.html
 
+
+
+
+
+根据 Let’s Encrypt CA 的统计，截至 2017 年 11 月，Firefox 加载的网页中启用 HTTPS 的比例占 67%，比去年底的 45% 有巨大提升。
+
+浏览器开发商如 Mozilla， Google 准备采取下一步措施：将所有 HTTP 网站标记为不安全。
+
+随着 HTTPS 的普及，给网站加个 SSL 证书已经是大势所趋而且很有必要了。目前已经存在不少免费好用的 SSL 证书
+
+
+
+毫无疑问，Letsencrypt.org 是目前使用范围最为广泛的免费 SSL 证书，而且[官方博客宣布](https://letsencrypt.org/2017/12/07/looking-forward-to-2018.html)，自 2018 年开始提供通配符 SSL 证书，也就是 wildcard certificates
+
+这对于广大个人站长来说，无疑是个不错的利好消息。唯一的缺憾就是，Letsencrypt.org 发行的证书有效期只有 3 个月，虽然可以通过定时任务来自动续期。
+
+
+
+Cloudflare 很早就开始提供免费 SSL 证书，前提是你的域名要放在 Cloudflare 解析，注册为 Free Plan 就可以。
+
+备注：只要域名加入 Cloudflare Free Plan，解析 A 记录的时候，点击 Traffic to this hostname will go through Cloudflare，就可以了。
+
+一般情况下，这个免费的 Universal SSL 里会包含一大堆别人的域名（该证书也是 Comodo 发行的）。
+
+当然，如果你比较介意这个的话，可以付费购买其 Dedicated SSL Certificate ($5/month) 或 Dedicated SSL Certificate with Custom Hostnames ($10/month)。
+
+
+
+
+
 # WEB性能优化最佳实践
 
 
