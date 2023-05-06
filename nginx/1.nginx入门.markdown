@@ -169,7 +169,7 @@ sudo yum install gcc gcc-c++ make automake autoconf libtool pcre* zlib openssl o
 sudo apt install zlib1g zlib1g-dev
 
 # 在 http://nginx.org/en/download.html 里面下载 Nginx 源代码，永远下载最新的Stable release版本
-wget http://nginx.org/download/nginx-1.21.4.tar.gz
+wget http://nginx.org/download/nginx-1.21.6.tar.gz
 
 
 # https://www.cnblogs.com/chrdai/p/11306728.html
