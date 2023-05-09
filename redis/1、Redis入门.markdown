@@ -1,4 +1,4 @@
-## 简介
+# 简介
 
 redis 学习网站
 
@@ -98,11 +98,10 @@ redis 在实际项目中的应用场景：
 
 
 
-## 安装
+# 安装
 
 ```shell
 # 源码包编译安装redis6.0
-
 
 # 创建好指定运行redis的用户
 groupadd redis
@@ -203,15 +202,8 @@ rename-command EVAL ""
 
 
 
-
-
-
-
 ./redis-server /path/to/redis.conf
 ./redis-server --daemonize yes
-
-
-
 
 # Install Redis Server on Ubuntu 18.04
 sudo apt-get update
@@ -237,8 +229,6 @@ yum install redis
 # 1， 表示内核允许分配所有的物理内存，而不管当前的内存状态如何。
 # 2， 表示内核允许分配超过所有物理内存和交换空间总和的内存
 vm.overcommit_memory = 1
-
-
 
 
 # docker版本
@@ -288,9 +278,6 @@ networks:
 ### 针对redis的内核参数优化
 
 ```shell
-
-
-
 # vim  /etc/sysctl.conf 设置内存参数
 # 内核参数overcommit_memory:内存分配策略，在Ubuntu和CentOS中这个参数值默认是0
 # 查看 cat /proc/sys/vm/overcommit_memory
@@ -308,13 +295,9 @@ sysctl vm.overcommit_memory=1
 
 echo madvise > /sys/kernel/mm/transparent_hugepage/enabled
 
-
 # WARNING: The TCP backlog setting of 511 cannot be enforced because /proc/sys/net/core/somaxconn is set to the lower value of 128.
 
 #  WARNING overcommit_memory is set to 0! Background save may fail under low memory condition. To fix this issue add 'vm.overcommit_memory = 1' to /etc/sysctl.conf and then reboot or run the command 'sysctl vm.overcommit_memory=1' for this to take effect
-
-
-
 
 # WARNING you have Transparent Huge Pages (THP) support enabled in your kernel. This will create latency and memory usage issues with Redis. To fix this issue run the command 'echo never > /sys/kernel/mm/transparent_hugepage/enabled' as root, and add it to your /etc/rc.local in order to retain the setting after a reboot. Redis must be restarted after THP is disabled.
 ```
@@ -349,7 +332,7 @@ echo madvise > /sys/kernel/mm/transparent_hugepage/enabled
 
 
 
-## redis 基本概念
+# redis 基本概念
 
 Redis默认提供了16个数据库（database），每个数据库有一个id，从0到15，他们没有名字，只有id。
 
@@ -432,7 +415,7 @@ redis 127.0.0.1:6379> FLUSHALL
 
 
 
-## 数据类型 
+# 数据类型 
 
 redis 并不是简单的键值对存储服务器，它实际上是一个  ***数据结构服务器*** ，它支持多种类型的 value  。
 
@@ -565,7 +548,33 @@ lrange [key] [startIndex] [endIndex]
 
 ### hash类型
 
-## redis 基本命令
+
+
+### stream类型
+
+> Redis5.0 中还增加了一个数据类型Stream，它借鉴了Kafka的设计，是一个新的强大的支持多播的可持久化的消息队列。
+
+ 
+
+  Stream是redis最复杂的一个数据结构, 也是redis 5.0的一个重要更新。Redis Stream 主要用于消息队列（MQ，Message Queue），这样的数据结构其实很常见, 比如腾讯云的CMQ、阿里的RocketMQ、ActiveMQ、RabbitMQ以及炙手可热的Kafka等。
+
+
+
+Redis 本身是有一个 Redis 发布订阅 (pub/sub) 来实现消息队列的功能，但它有个缺点就是消息无法持久化，如果出现网络断开、Redis 宕机等，消息就会被丢弃。简单来说发布订阅 (pub/sub) 可以分发消息，但无法记录历史消息。而 Redis Stream 提供了消息的持久化和主备复制功能，可以让任何客户端访问任何时刻的数据，并且能记住每一个客户端的访问位置，还能保证消息不丢失。
+
+
+
+
+
+Stream主要由消息、生产者、消费者、消费组4部分组成。 这里消费组可能让人有些困惑， 其实就是消费组里面有多个消费者， 他们互相竞争， 当一个消费了某条消息， 消息会被放入待确认队列， 消息队列的迭代器就会前移， 下一个同组消费者不管是谁， 都不会再次消费这个消息， 而是下一个消息。
+
+这种概念和kafka很雷同，在某些特定场景可以使用redis的stream代替kafka等消息队列，减少系统复杂性，增强系统的稳定性。
+
+
+
+
+
+# redis 基本命令
 
   
 
@@ -995,7 +1004,7 @@ https://liangshuang.name/2017/06/29/redis/
 
 
 
-## 深入理解 redis 内存模型
+# 深入理解 redis 内存模型
 
 
 
@@ -1082,11 +1091,13 @@ redis 作为内存数据库，在内存中存储的内容主要是数据（键�
 
 redis 的内存占用主要可以划分为以下几个部分：
 
-## redis 集群
 
 
 
 
+
+
+# redis 集群
 
 
 
@@ -2639,7 +2650,7 @@ setRedis（Key，value，time + Math.random() * 10000）；
 
 # Redis 认证和ACL
 
-在 Redis 6.0 中引入了 ACL（Access Control List) 的支持在此前的版本中 Redis 中是没有用户的概念的。
+在 Redis 6.0 中引入了 ACL（Access Control List) 的支持。在此前的版本中 Redis 中是没有用户的概念的。
 
 其实这样是没有办法很好的控制权限，redis 6.0 开始支持用户，可以给每个用户分配不同的权限来控制权限。
 
@@ -2710,11 +2721,28 @@ aclfile /etc/redis/users.acl
 
 
 
+```shell
+127.0.0.1:6379> ACL LIST
+1) "user default on nopass ~* +@all"
+```
 
 
 
+参数说明：
 
+| 参 数       | 说明                                                         |
+| ----------- | ------------------------------------------------------------ |
+| user        | 用户                                                         |
+| default     | 表示默认用户名，或则自己定义的用户名                         |
+| on          | 表示是否启用该用户，默认为off（禁用）                        |
+| ... /nopass | ...表示用户密码/nopass表示不需要密码                         |
+| ~*          | 表示可以访问的Key（正则匹配）                                |
+| +@          | 表示用户的权限，“+”表示授权权限，有权限操作或访问，“-”表示还是没有权限； <br />@为权限分类，可以通过 `ACL CAT` 查询支持的分类。+@all 表示所有权限，nocommands 表示不给与任何命令的操作权限 |
 
+权限对key的类型和命令的类型进行了分类：
+
+- 如有对数据类型进行分类：string、hash、list、set、sortedset
+- 对命令类型进行分类：connection、admin、dangerous
 
 # Redis开发规范
 
