@@ -324,9 +324,38 @@ find is /usr/bin/find
 
 
 
+#### 冒号
 
+在shell中，冒号“:”是一个内建（builtin）命令，格式如下：
+
+```
+: [arguments]
+```
+
+冒号命令本身没什么副作用，使用场景有限，一般用于参数扩展，有以下几种用法：
+
+```shell
+${parameter:-word}             # 如果parameter没有设置或者为空，替换为word；否则替换为parameter的值。
+${parameter:+word}             # 如果parameter没有设置或者为空，不进行任何替换；否则替换为word。
+${parameter:=word}             # 如果parameter没有设置或者为空，把word赋值给parameter。最终替换为parameter的值。
+${parameter:?word}             # 如果parameter没有设置或者为空，把word输出到stderr，否则替换为parameter的值。
+${parameter:offset}            # 扩展为parameter中从offset开始的子字符串。
+${parameter:offset:length}     # 扩展为parameter中从offset开始的长度不超过length的字符。
+```
 
 #### eval命令
+
+在shell中，内建（builtin）命令eval，格式如下：
+
+```bash
+eval [arg ...]
+```
+
+eval命令首先读取其参数值，然后把它们连接成一个命令并执行这个命令，这个命令的退出状态即eval的退出状态，如果没有指定参数，其退出状态为0。
+
+args 参数们会被拼接成一个命令，然后被读取并执行。
+
+
 
 当我们在命令行前加上eval时，shell就会在执行命令之前扫描它两次。eval命令将首先会先扫描命令行进行所有的置换，然后再执行该命令。
 
