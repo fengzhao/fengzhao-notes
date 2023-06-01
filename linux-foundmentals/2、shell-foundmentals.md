@@ -374,6 +374,12 @@ Linux
 
 
 
+
+
+
+
+
+
 ### SHELL脚本
 
 SHELL 脚本，其实就是将一大堆可执行命令放在一个文本文件中，其中也可以包含一些逻辑判断，循环遍历等，就类似一种批处理。
@@ -963,17 +969,17 @@ ass_array[index2]=value2
 
 ## shell 自动补全
 
+在Bash中输入命令时，可以使用 `Tab` 键根据已输入的字符自动补全**路径名**、**文件名**和**可执行程序**；
+
+[bash-completion](https://github.com/scop/bash-completion) 是一组利用了shell可编程特性实现自动补全功能的shell函数。
 
 
 
+自动补全依赖于Bash的内置命令`complete`、`compgen`和在`/etc/bash_completion.d/`路径下创建的自动补全脚本；
 
-
-
-
+bash提供了一个`complete`内建命令，它的用途是规定参数怎么自动补全。 有了它，第三方开发的命令就可以根据自己的实际情况指定自动提示功能了！
 
 ## Shell 通配符扩展
-
-
 
 Shell 接收到用户输入的命令以后，会根据空格将用户的输入，拆分成一个个词元（`token`）。
 
@@ -1691,16 +1697,17 @@ restart
 
 Linux shell 中还存在很多变量子串，提供很多控制和提取变量中的相关内容。
 
-
+[参考](https://blog.csdn.net/qq_36025814/article/details/109098731)
 
 | 变量                       | 含义                                              |
 | -------------------------- | ------------------------------------------------- |
-| ${variable}                | 返回变量值，普通变量，shell脚本中可以直接引用变量 |
-| ${#variable}               | 返回变量的字符长度                                |
+| ${variable}                | 普通变量，shell脚本中引用变量                     |
+| ${#variable}               | 返回变量的字符数量长度                            |
 | ${#variable:offset}        | 在变量中，从offset之后提取子串到结尾              |
 | ${#variable:offset:length} | 在变量中，从offset之后提取长度为length的子串      |
 | ${#variable#word}          |                                                   |
-|                            |                                                   |
+| ${var:position}            | 变量var从第position个位置开始到最后的子串         |
+| ${var:position:length}     | 在变量var中，从position开始，截取length长度的子串 |
 |                            |                                                   |
 
  **<font color=#FF0000 > ${#variable} 字符长度 </font>** 
@@ -1728,7 +1735,9 @@ fengzhao@fengzhao-pc:~$
 
 ```shell
 count_words.sh
-#! /bin/bash
+
+#!/bin/bash
+# 实现思路：将字符串存到数组，迭代取出每个单词，判断长度并输出。
 array=($1)
 for ((i=0;i<${#array[*]};i++))
 do
@@ -1964,21 +1973,39 @@ Linux的管道主要包括两种：无名管道和有名管道。
 
 
 
+### set 命令
+
+set命令为shell内建命令，通过help set可以看到关于set的帮助信息。其主要作用是改变 shell 选项和位置参数的值，或者显示 shell 变量的名称和值。
+
+在终端下，如果执行set命令，就会显示当前shell下所有的环境配置信息。
+
+`set`命令用来修改 Shell 环境的运行参数，也就是可以定制环境。一共有十几个参数可以定制。
+
+
+
+#### 错误处理
+
+一般情况下，每个Linux shell 命令执行完毕后，都会返回一个执行结果，并将其保存到$?中，一般0表示命令执行成功，非零表示命令执行失败。
+
+shell脚本中一般会使用到大量的命令，严格意义上，我们应该小心的检查每个关键命令的执行结果，以确定之后的执行逻辑。
+
+```
+
+```
+
+-e选项就是解决这个问题的一种十分优雅的方案，-e表示如果一个命令以非零状态退出，则整个shell脚本程序就会立即退出。比如，
 
 
 
 
-#### set 命令
 
-set 命令在 shell 脚本中有很多用法。
-
+可是有的时候，命令返回1并不代表执行失败，这时如果启用了set -e，那么脚本就会立即退出，这不是我们想看到的，解决办法有两种：
 
 
-##### set -u 
+
+#### 变量未定义
 
 执行脚本的时候，如果遇到不存在的变量，Bash 默认忽略它。
-
-
 
 ```shell
 #!/usr/bin/env bash
