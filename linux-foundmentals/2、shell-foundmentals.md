@@ -979,6 +979,10 @@ ass_array[index2]=value2
 
 bash提供了一个`complete`内建命令，它的用途是规定参数怎么自动补全。 有了它，第三方开发的命令就可以根据自己的实际情况指定自动提示功能了！
 
+[参考](https://jasonkayzk.github.io/2020/12/06/Bash%E5%91%BD%E4%BB%A4%E8%87%AA%E5%8A%A8%E8%A1%A5%E5%85%A8%E7%9A%84%E5%8E%9F%E7%90%86/)
+
+
+
 ## Shell 通配符扩展
 
 Shell 接收到用户输入的命令以后，会根据空格将用户的输入，拆分成一个个词元（`token`）。
