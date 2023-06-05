@@ -163,7 +163,7 @@ openssh 的认证方式：
 | [scp](https://www.ssh.com/ssh/scp/)            | 二进制可执行文件 | 远程传输文件                           |
 | [ssh-agent](<https://www.ssh.com/ssh/agent>)   |                  |                                        |
 | ssh-keyscan                                    |                  |                                        |
-| sshd                                           |                  | ssh服务端，用于在服务器上启动sshdj进程 |
+| sshd                                           | 二进制可执行文件 | ssh服务端，用于在服务器上启动sshdj进程 |
 |                                                |                  |                                        |
 
 
@@ -572,6 +572,8 @@ fengzhao@fengzhao-work:~$
 SSH 端口转发也被称作 SSH 隧道([SSH Tunnel](http://blog.trackets.com/2014/05/17/ssh-tunnel-local-and-remote-port-forwarding-explained-with-examples.html))，因为它们都是通过 SSH 登陆之后，在 **SSH客户端**与 **SSH服务端 **之间建立了一个隧道，从而进行通信。
 
 SSH隧道是非常安全的，因为SSH是通过加密传输数据的。
+
+https://harttle.land/2022/05/02/ssh-port-forwarding.html
 
 
 
@@ -1221,8 +1223,6 @@ iptables防火墙通过直观的监视系统的运行状况，阻挡网络中的
 
 
 OpenSSH 可以使用tun/tap设备来创建一个加密隧道，SSH隧道类似mode TCP模式下的OpenVPN，对于有需求快速设置一个基于IP的VPN来说非常方便。
-
-
 
 使用SSH隧道的优点：
 
