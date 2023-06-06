@@ -149,7 +149,7 @@ Linux 的 Shell 种类众多，常见的有：
 
       oh-my-zsh 管的东西太多了。oh-my-zsh 的各种插件里面基本上全是 aliases
 
-  - prezto
+  - [prezto](https://github.com/sorin-ionescu/prezto)
 
     oh-my-zsh 之外的另一个选择，或者说是他的的替代品。比 oh-my-zsh 轻量一点。
 
