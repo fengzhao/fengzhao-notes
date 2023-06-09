@@ -6,13 +6,13 @@
 
 盗链是指服务提供商自己不提供服务的内容，通过技术手段绕过其它有利益的最终用户界面（如广告）。
 
-直接在自己的网站上向最终用户提供其它服务提供商的服务内容，骗取最终用户的浏览和点击率。受益者不提供资源或提供很少的资源，而真正的服务提供商却得不到任何的收益。
+直接在自己的网站上向最终用户提供其它服务提供商的服务内容，骗取最终用户的浏览和点击率。
+
+受益者不提供资源或提供很少的资源，而真正的服务提供商却得不到任何的收益。
 
 
 
 ### referer 头部
-
-
 
 现实生活中，购买服务或加入会员的时候，往往要求提供信息："你从哪里知道了我们？"
 
@@ -44,7 +44,7 @@ HTTP 协议在请求（request）的头信息里面，设计了一个`Referer`�
 
 
 
-referer 模块默认被编译进 nginx 中，通过 `--without-http_referer_module` 禁用
+referer 模块默认被编译进 nginx 中，可以通过 `--without-http_referer_module` 禁用
 
 
 
@@ -91,10 +91,10 @@ server {
     
     
     location / {
-        # none  允许没有referer头部的请求访问，即允许直接访问URL
-        # blocked 允许referer头部为空的请求访问
-        # server_names 表示本机自己可以访问
-        # *.ziyang.com  匹配上了正则的可以访问
+        # none                允许没有referer头部的请求访问，即允许直接输入URL进行访问
+        # blocked             允许referer头部为空的请求访问
+        # server_names        允许本机自己可以访问
+        # *.ziyang.com        允许匹配上了正则的可以访问
         # www.ziyang.org.cn/nginx/  该页面发起的请求可以访问
         # ~\.google\.  google 前后都是正则匹配
         valid_referers none blocked server_names
@@ -131,8 +131,6 @@ https://developer.qiniu.com/fusion/manual/3839/domain-name-hotlinking-prevention
 
 
 ## 防盗链第二种
-
-
 
 
 
