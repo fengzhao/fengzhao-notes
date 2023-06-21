@@ -477,9 +477,13 @@ docker 镜像的命名空间主要是 Registry/Users/Repository/Tag，分别表�
 
 主要分为以下几种情况
 
-1. docker hub 上的官方镜像为默认Registry    ubuntu:16.04
-2. docker hub 上用户空间下的镜像   fengzhao/nginx:latest
+1. dockerhub 上的官方镜像（docker公司制作的即为官方）为默认Registry  ubuntu:16.04
+2. dockerhub 上用户空间下的镜像   fengzhao/nginx:latest
 3. 私有 docker registry上的镜像   hub.mycompany.com/dev/nginx:latest 
+
+
+
+
 
 
 
@@ -509,7 +513,7 @@ docker tag 一般用于给镜像打标签，用于区分设置镜像的版本号
 
 - 镜像仓库（Registry）                         					                        
 
-  Docker 的镜像存储中心通常被称为 `Registry`。目前有 docker hub 和 阿里云镜像仓库，github packages  , https://quay.io/   等等。              
+  Docker 的镜像存储中心通常被称为 `Registry`。目前公共的有 dockerhub 和 阿里云镜像仓库，github packages  , https://quay.io/   等等。              
 
   当您需要获取您自己的私有镜像的时候，首先需要登录 `Registry`，然后拉取镜像。
 
@@ -2993,81 +2997,104 @@ OCI镜像规范主要是 [这个文件](https://github.com/opencontainers/image-
 
 
 
+```shell
+root@racknerd-79c7a3:~# tree /var/lib/docker/image/overlay2/
+/var/lib/docker/image/overlay2/
+├── distribution
+│   ├── diffid-by-digest
+│   │   └── sha256
+│   │       ├── 029a81f05585f767fb7549af85a8f24479149e2a73710427a8775593fbe86159
+│   │       ├── 31e352740f534f9ad170f75378a84fe453d6156e40700b882d737a8f4a6988a3
+│   │       ├── 6548006e859cacfd8109e07022ac20262d91279aece3f5c6798b11aa2255f053
+│   │       ├── 7aaf69037d81f66eec59c735ab5ab7e0a7bf9a2206560da4a7f34fb381758417
+│   │       ├── e268293a53bfac1a6652d69fe4feb626339068fba763b90c927c0066b1d807a2
+│   │       └── f96dfaeaf01bf8481d8ebc8a4446108d444423a394f31a883973a7d5fa69aec8
+│   └── v2metadata-by-diffid
+│       └── sha256
+│           ├── 0e7894b51ded192efa80409753c44a90941d2eaf9576bbdd1baa354bd1e050cb
+│           ├── 235d52d65f012076b8a0cec39421df6bd6e8a2351b18b0334320d7db4537a476
+│           ├── 5870c742b1d8ba77c52e2a9a73a93d0e13e5490566fcc332b84e6a79e167c6ca
+│           ├── 78a822fe2a2d2c84f3de4a403188c45f623017d6a4521d23047c9fbb0801794c
+│           ├── e3b65bf0a8033063c223caa7571fe06554f1dd85db2e696f632a819a6a30724d
+│           └── fc8c6bed6c013fe73ede343782279c97dc696ca082e57f92bd8c1cfea543df1a
+├── imagedb
+│   ├── content
+│   │   └── sha256
+│   │       └── 26c28490dc59c9199e6cf6999321c703ce82a23124445ce3413b0952fc5d0392
+│   └── metadata
+│       └── sha256
+├── layerdb
+│   ├── sha256
+│   │   ├── 4239c3829dcb0c4bca2904c11abead0e548307de21a4bef56c56b696bfc0c80a
+│   │   │   ├── cache-id
+│   │   │   ├── diff
+│   │   │   ├── parent
+│   │   │   ├── size
+│   │   │   └── tar-split.json.gz
+│   │   ├── 78a822fe2a2d2c84f3de4a403188c45f623017d6a4521d23047c9fbb0801794c
+│   │   │   ├── cache-id
+│   │   │   ├── diff
+│   │   │   ├── size
+│   │   │   └── tar-split.json.gz
+│   │   ├── 9c2e94a224e7eafbc625ae588a1c22f787ac3b41dae18182fd4acb1bd10ddd7c
+│   │   │   ├── cache-id
+│   │   │   ├── diff
+│   │   │   ├── parent
+│   │   │   ├── size
+│   │   │   └── tar-split.json.gz
+│   │   ├── a4682c365dc15469ae031034c076928423b465ab63e93e408c4f124647623a87
+│   │   │   ├── cache-id
+│   │   │   ├── diff
+│   │   │   ├── parent
+│   │   │   ├── size
+│   │   │   └── tar-split.json.gz
+│   │   ├── cb65a8982cd7da1ca5f634d0bfb79c8bd0732880c0ed76394423a6ed9bf44ef7
+│   │   │   ├── cache-id
+│   │   │   ├── diff
+│   │   │   ├── parent
+│   │   │   ├── size
+│   │   │   └── tar-split.json.gz
+│   │   └── f83076a1f9eddd80cf6463d8315dfcfc8372f8a90d642b50c36e7314c0103cb1
+│   │       ├── cache-id
+│   │       ├── diff
+│   │       ├── parent
+│   │       ├── size
+│   │       └── tar-split.json.gz
+│   └── tmp
+└── repositories.json
+
+19 directories, 43 files
+root@racknerd-79c7a3:~#
+```
+
+
+
 
 
 ```shell
-root@fengzhao-ubuntu ~/docker-image#
-root@fengzhao-ubuntu ~/docker-image# docker save ghcr.io/fengzhao/jenkins:2.3 -o jenkins.tar
-root@fengzhao-ubuntu ~/docker-image#
-root@fengzhao-ubuntu ~/docker-image#
-root@fengzhao-ubuntu ~/docker-image# ls -al jenkins.tar
--rw------- 1 root root 349394432  5月 18 23:05 jenkins.tar
-root@fengzhao-ubuntu ~/docker-image#
-root@fengzhao-ubuntu ~/docker-image# tar -xf jenkins.tar
-root@fengzhao-ubuntu ~/docker-image#
-root@fengzhao-ubuntu ~/docker-image#
-root@fengzhao-ubuntu ~/docker-image# ls -al
-total 341308
-drwxr-xr-x 19 root root      4096  5月 18 23:05 .
-drwx------ 23 root root      4096  5月 18 23:02 ..
-drwxr-xr-x  2 root root      4096  2月  7 02:06 00b42a0559af21eb4600f3d0f18b270a30a17dc4f61dfb1d3f2d39187266d5d4
-drwxr-xr-x  2 root root      4096  2月  7 02:06 0594403923aad62dbf31e6fbefb4c067a798573edb80b2ed707cb201d4ecc805
-drwxr-xr-x  2 root root      4096  2月  7 02:06 1a58e6937db044ef6f2e2962a0dc7bef16a6c33fdfc5a0318c39092612a1bd1a
-drwxr-xr-x  2 root root      4096  2月  7 02:06 2d0935b43d8b22383b71a8734a9675a402d8306ccac15948a18745449670270a
-drwxr-xr-x  2 root root      4096  2月  7 02:06 32e409b6511e33bf680acd8e74b8f9d00e2df1a19e94fe7e2bf95ed6c8dbebb4
-drwxr-xr-x  2 root root      4096  2月  7 02:06 3be0c3039e188d65d9e0aaf5f9c078238583d97d2981a8cdd3cf65bcdc4b8419
-drwxr-xr-x  2 root root      4096  2月  7 02:06 566ad6d99a2cf977ef8a25523c27fb42c7a5ab48168c910b36e8911ddcda7141
-drwxr-xr-x  2 root root      4096  2月  7 02:06 794a0e75e9b54a16f36db81e71c27cafca3d886edfd907459f8f8df4b840cd97
-drwxr-xr-x  2 root root      4096  2月  7 02:06 815921338a5f15cafc49e84a3b8ba74e77b68e26f66684675ec78d92b48f2a54
-drwxr-xr-x  2 root root      4096  2月  7 02:06 8e7bcb15fe00312fbc67b4fb77a981c5d6342e63204246675a4ee3ad33c0d846
-drwxr-xr-x  2 root root      4096  2月  7 02:06 98867178f60349f16652222772d086159a6d087fcd50bc32b9d75c23cd01ed8d
--rw-r--r--  1 root root     14902  2月  7 02:06 a669e88f84b927f9db853e6e118c9f0bec6b5d3d1d5c5abea0a1293afe957203.json
-drwxr-xr-x  2 root root      4096  2月  7 02:06 a8ee30602eb07f8a63b1ab66e73c511bab67b539a9f91a4392baea160752fd7d
-drwxr-xr-x  2 root root      4096  2月  7 02:06 bb9e0739b93d623e74909bc46434f0b27edf9b089437dfccb759a264b2c3fb48
-drwxr-xr-x  2 root root      4096  2月  7 02:06 c12f86d2a60fc27a1d93d555944262fda4ed66e3a3172ac45cd861151a0dc6c1
-drwxr-xr-x  2 root root      4096  2月  7 02:06 c3536d926535cc67cf3db2084f1aeb713bc3c5eb98550c71a647f494fd72b3fb
-drwxr-xr-x  2 root root      4096  2月  7 02:06 d4744a6398dac17d197914022bdf3719075e75f35ad41486e6d6edbdfee1f33c
-drwxr-xr-x  2 root root      4096  2月  7 02:06 e54bef723ddf73c174aca15d61c1886b0dcc9591fdfb0e66a216ab926484ca36
--rw-------  1 root root 349394432  5月 18 23:05 jenkins.tar
--rw-r--r--  1 root root      1449  1月  1  1970 manifest.json
--rw-r--r--  1 root root       104  1月  1  1970 repositories
-root@fengzhao-ubuntu ~/docker-image#
+/var/lib/docker/image/overlay2/repositories.json
 
+# overlay2 代表着本地 docker 存储使用的是 overlay2 该存储驱动，目前最新版本的 docker 默认优先采用 overlay2 作为存储驱动。
+# 对于已支持该驱动的 Linux 发行版，不需要任何进行任何额外的配置，可使用 lsmod 命令查看当前系统内核是否支持 overlay2 。
 
-# manifest.json 包含了镜像的顶层配置，它是一系列配置按顺序组织而成的。
-root@fengzhao-ubuntu ~/docker-image# cat manifest.json | jq
-[
-  {
-    "Config": "a669e88f84b927f9db853e6e118c9f0bec6b5d3d1d5c5abea0a1293afe957203.json",
-    "RepoTags": [
-      "ghcr.io/fengzhao/jenkins:2.3"
-    ],
-    "Layers": [
-      "1a58e6937db044ef6f2e2962a0dc7bef16a6c33fdfc5a0318c39092612a1bd1a/layer.tar",
-      "c12f86d2a60fc27a1d93d555944262fda4ed66e3a3172ac45cd861151a0dc6c1/layer.tar",
-      "98867178f60349f16652222772d086159a6d087fcd50bc32b9d75c23cd01ed8d/layer.tar",
-      "566ad6d99a2cf977ef8a25523c27fb42c7a5ab48168c910b36e8911ddcda7141/layer.tar",
-      "d4744a6398dac17d197914022bdf3719075e75f35ad41486e6d6edbdfee1f33c/layer.tar",
-      "32e409b6511e33bf680acd8e74b8f9d00e2df1a19e94fe7e2bf95ed6c8dbebb4/layer.tar",
-      "a8ee30602eb07f8a63b1ab66e73c511bab67b539a9f91a4392baea160752fd7d/layer.tar",
-      "e54bef723ddf73c174aca15d61c1886b0dcc9591fdfb0e66a216ab926484ca36/layer.tar",
-      "00b42a0559af21eb4600f3d0f18b270a30a17dc4f61dfb1d3f2d39187266d5d4/layer.tar",
-      "3be0c3039e188d65d9e0aaf5f9c078238583d97d2981a8cdd3cf65bcdc4b8419/layer.tar",
-      "0594403923aad62dbf31e6fbefb4c067a798573edb80b2ed707cb201d4ecc805/layer.tar",
-      "8e7bcb15fe00312fbc67b4fb77a981c5d6342e63204246675a4ee3ad33c0d846/layer.tar",
-      "c3536d926535cc67cf3db2084f1aeb713bc3c5eb98550c71a647f494fd72b3fb/layer.tar",
-      "bb9e0739b93d623e74909bc46434f0b27edf9b089437dfccb759a264b2c3fb48/layer.tar",
-      "2d0935b43d8b22383b71a8734a9675a402d8306ccac15948a18745449670270a/layer.tar",
-      "815921338a5f15cafc49e84a3b8ba74e77b68e26f66684675ec78d92b48f2a54/layer.tar",
-      "794a0e75e9b54a16f36db81e71c27cafca3d886edfd907459f8f8df4b840cd97/layer.tar"
-    ]
-  }
-]
-root@fengzhao-ubuntu ~/docker-image#
-root@fengzhao-ubuntu ~/docker-image#
+# repositories.json 就是存储当前主机内所有镜像的元数据信息，主要是 image name 和 image id 的对应，digest 和 image id 的对应。
+# 当 pull 完一个镜像的时候 docker 会更新这个文件。
+# 当我们 docker run 一个容器的时候也用到这个文件去索引本地是否存在该镜像，没有镜像的话就自动去 pull 这个镜像。
 
-
+{
+    "Repositories": {
+        "redis": {
+            "redis:6.0.19-alpine": "sha256:26c28490dc59c9199e6cf6999321c703ce82a23124445ce3413b0952fc5d0392",
+            "redis@sha256:c667b30710a4a71f218d945378fea5f83222bfa3f2dcec8b3d4337d19ee9cced": "sha256:26c28490dc59c9199e6cf6999321c703ce82a23124445ce3413b0952fc5d0392"
+        }
+    }
+}
+  
 ```
+
+
+
+
 
 
 
