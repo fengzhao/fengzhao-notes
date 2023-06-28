@@ -135,6 +135,12 @@ tar xf redis-6.0.5.tar.gz  && cd redis-6.0.5
 # MALLOC=libc   在ubuntu使用这个参数 MALLOC=libc，一般不需要设置这个
 sudo make USE_SYSTEMD=yes
 
+# 如果latomic报错，devtoolset默认安装只有 atomic 的头文件，没有链接库。需要额外安装。
+# yum install devtoolset-7-libatomic-devel.x86_64
+
+
+
+
 # 安装，安装后，二进制文件会被复制到/usr/local/bin目录下
 sudo make install
 
