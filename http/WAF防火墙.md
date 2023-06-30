@@ -56,15 +56,19 @@ Web Application Firewall ,可以用来屏蔽常见的网站漏洞攻击，如SQL
 
 
 
-Web防火墙产品部署在Web服务器的前面，串行接入，不仅在硬件性能上要求高，而且不能影响Web服务，所以HA功能、Bypass功能都是必须的，而且还要与[负载均衡](https://link.zhihu.com/?target=https%3A//www.imperva-incapsula.cn/%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/)、Web Cache，CDN等Web服务器前的常见的产品协调部署。
+Web防火墙产品部署在Web服务器的前面，串行接入，不仅在硬件性能上要求高，而且不能影响Web服务，所以HA功能、Bypass功能都是必须的，而且还要与[负载均衡](https://link.zhihu.com/?target=https%3A//www.imperva-incapsula.cn/%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/)、Web Cache，CDN 等Web服务器前的常见的产品协调部署。
 
  
 
 [Web应用防火墙](https://link.zhihu.com/?target=https%3A//www.imperva-incapsula.cn/%E7%BD%91%E7%AB%99%E5%AE%89%E5%85%A8/waf/)的主要技术的对入侵的检测能力，尤其是对Web服务入侵的检测，Web防火墙最大的挑战是识别率，这并不是一个容易测量的指标，因为漏网进去的入侵者，并非都大肆张扬，比如给网页挂马，你很难察觉进来的是那一个，不知道当然也无法统计。
 
+
+
 对于已知的攻击方式，可以谈识别率；对未知的攻击方式，你也只好等他自己“跳”出来才知道。
 
-现在市场上大多数的产品是基于规则的WAF。其原理是每一个会话或HTTP事务，都要经过一系列的测试，每一项测试都由一个过多个检测规则组成，如果测试没通过，请求就会被认为非法并拒绝。
+现在市场上大多数的产品是基于规则的WAF。
+
+其原理是每一个会话或HTTP事务，都要经过一系列的测试，每一项测试都由一个过多个检测规则组成，如果测试没通过，请求就会被认为非法并拒绝。
 
 基于规则的WAF很容易构建并且能有效的防范已知安全问题。当我们要制定自定义防御策略时使用它会更加便捷。
 
