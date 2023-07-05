@@ -740,11 +740,14 @@ server {
 
 **注意在这个配置中，default_server只是跟在端口后面，并没有配置在域名上面。 **
 
+
+
 对于请求头中没有Host头部的请求，如果要禁止访问，可以设置如下配置：没有host头部的请求就会被这个server匹配上，并返回非标准的444状态码关闭连接。
 
-```
+```nginx
+# 
 server {
-    listen      80;
+    listen      80 default_server;
     server_name "";
     return      444;
 }
@@ -762,6 +765,8 @@ listen 指令在 server 块中生效，用来配置监听哪些网络接口地�
 Syntax:	listen address[:port] [default_server] [ssl] [http2 | spdy] [proxy_protocol] [setfib=number] [fastopen=number] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [ipv6only=on|off] [reuseport] [so_keepalive=on|off|[keepidle]:[keepintvl]:[keepcnt]];
 listen port [default_server] [ssl] [http2 | spdy] [proxy_protocol] [setfib=number] [fastopen=number] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [ipv6only=on|off] [reuseport] [so_keepalive=on|off|[keepidle]:[keepintvl]:[keepcnt]];
 listen unix:path [default_server] [ssl] [http2 | spdy] [proxy_protocol] [backlog=number] [rcvbuf=size] [sndbuf=size] [accept_filter=filter] [deferred] [bind] [so_keepalive=on|off|[keepidle]:[keepintvl]:[keepcnt]];
+
+# 默认值
 Default:	 listen *:80 | *:8000;
 
 # 只能出现在server块中
@@ -771,15 +776,15 @@ Context:	server
 
 # 常见的litsen配置语法
 
-listen 443 ssl http2;
+listen 443 ssl http2; # 监听443，开启https，开启http2协议
+# 对于nginx1.25之后，需要用单独的指令"http2 on"这样来配置，不支持在litsen后面这样写了。
+# 参见：http://nginx.org/en/docs/http/ngx_http_v2_module.html
+
 
 listen 127.0.0.1:8080;
-
-listen 8080；
-
-listen *:8080；
-
-listen *:8080；
+listen 8080;
+listen *:8080;
+listen *:8080;
 
 
 
@@ -895,6 +900,14 @@ https://www.cnblogs.com/wupeixuan/p/12074007.html
 
 
 # Nginx 安全配置规范
+
+
+
+## 禁止IP访问
+
+ 一台服务器部署多个网站的时候，为了确保用户访问特定的网站，就要求用户使用域名访问，不能使用IP；另外，也可以防止一些未备案的域名解析到服务器，导入服务器被断网。 
+
+
 
 
 
