@@ -26,7 +26,7 @@ fi
  
 packSrcs()												# 查找相关文件并打包
 {
-	DIR=$1
+	DIR=$1  
 	packageName=$2
 	pattern=$3
  
