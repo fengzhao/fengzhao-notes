@@ -29,6 +29,8 @@
 
 [阿里云WAF](https://help.aliyun.com/document_detail/149485.html?spm=a2c4g.11186623.6.577.4dc842eauvprOo)
 
+
+
 常见Web应用攻击防护
 
 - 防御OWASP常见威胁：支持防御以下常见威胁：
@@ -56,15 +58,19 @@ Web Application Firewall ,可以用来屏蔽常见的网站漏洞攻击，如SQL
 
 
 
-Web防火墙产品部署在Web服务器的前面，串行接入，不仅在硬件性能上要求高，而且不能影响Web服务，所以HA功能、Bypass功能都是必须的，而且还要与[负载均衡](https://link.zhihu.com/?target=https%3A//www.imperva-incapsula.cn/%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/)、Web Cache，CDN等Web服务器前的常见的产品协调部署。
+Web防火墙产品部署在Web服务器的前面，串行接入，不仅在硬件性能上要求高，而且不能影响Web服务，所以HA功能、Bypass功能都是必须的，而且还要与[负载均衡](https://link.zhihu.com/?target=https%3A//www.imperva-incapsula.cn/%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/)、Web Cache，CDN 等Web服务器前的常见的产品协调部署。
 
  
 
 [Web应用防火墙](https://link.zhihu.com/?target=https%3A//www.imperva-incapsula.cn/%E7%BD%91%E7%AB%99%E5%AE%89%E5%85%A8/waf/)的主要技术的对入侵的检测能力，尤其是对Web服务入侵的检测，Web防火墙最大的挑战是识别率，这并不是一个容易测量的指标，因为漏网进去的入侵者，并非都大肆张扬，比如给网页挂马，你很难察觉进来的是那一个，不知道当然也无法统计。
 
+
+
 对于已知的攻击方式，可以谈识别率；对未知的攻击方式，你也只好等他自己“跳”出来才知道。
 
-现在市场上大多数的产品是基于规则的WAF。其原理是每一个会话或HTTP事务，都要经过一系列的测试，每一项测试都由一个过多个检测规则组成，如果测试没通过，请求就会被认为非法并拒绝。
+现在市场上大多数的产品是基于规则的WAF。
+
+其原理是每一个会话或HTTP事务，都要经过一系列的测试，每一项测试都由一个过多个检测规则组成，如果测试没通过，请求就会被认为非法并拒绝。
 
 基于规则的WAF很容易构建并且能有效的防范已知安全问题。当我们要制定自定义防御策略时使用它会更加便捷。
 
@@ -173,9 +179,17 @@ SecRule REQUEST_HEADERS:Content-Length "!@rx ^\d+$" \
 
 # ModSecurity-nginx
 
+[Libmodsecurity](https://github.com/SpiderLabs/ModSecurity) 是 ModSecurity v3 项目的一个组成部分。该库代码库作为 ModSecurity 连接器的接口，接收 Web 流量并应用传统的 ModSecurity 处理。
+
+总体而言，它提供了加载/解释以 ModSecurity SecRules 格式编写的规则并将其应用于通过连接器提供的 HTTP 内容的能力。
 
 
 
+在ModSecurity v3之前的版本中，Nginx的兼容性较差，这是因为在ModSecurity在设计之初是作为Apache HTTP服务的一个模块进行设计开发的，所以导致ModSecurity严重依赖于Apache HTTP Server。随着时间的推移，由于大众需求，该项目已经扩展到其他平台，包括Nginx 和 IIS等。为了满足对额外平台的支持不断增长的需求，需要删除该项目下的 Apache 依赖项，使其更加独立于平台。在ModSecurity v3版本中进行了重构，整个项目完全进行重写，去除了Apache HTTP的依赖，可以完美兼容Nginx。新的ModSecurity v3版本中，核心功能转移到了名为 Libmodsecurity 的独立组件中，通过连接器连接到 Nginx 和 Apache。接收 Web 流量并应用传统的 ModSecurity 处理。
+
+
+
+这里展示如何编译安装最新版的 Libmodsecurity 系统使用 Debian 11 。
 
 ```shell
 # centos
@@ -184,21 +198,37 @@ yum install gcc gcc-c++ make automake autoconf libtool pcre  pcre-devel zlib ope
 # ubuntu
 apt-get install build-essential libpcre3 libpcre3-dev zlib1g zlib1g-dev libssl-dev libgd-dev libxml2 libxml2-dev uuid-dev libgeoip-dev   geoip-database geoipupdate  libmaxminddb-dev
 
+# ubuntu
+apt -y install libyajl-dev libpcre++-dev libxml2-dev libgeoip1 libmaxminddb-dev libfuzzy-dev liblua5.3-dev liblmdb-dev libpcre2-dev liblmdb-dev libcurl4-openssl-dev
+
+
+# 用git将Libmodsecurity下载至你需要的位置（一般来说是 /usr/src）
+git clone  https://github.com/SpiderLabs/ModSecurity.git  /usr/local/src/ModSecurity
+
+# 下载ngx_http_geoip2_module模块
+git clone https://github.com/leev/ngx_http_geoip2_module.git /usr/local/src/ngx_http_geoip2_module
+
+git clone  https://github.com/SpiderLabs/ModSecurity-nginx.git  /usr/local/src/ModSecurity-nginx
+
+# cd 到源码目录下按顺序执行
+cd /usr/local/src/ModSecurity
+./build.sh
+git submodule init
+git submodule update
+./configure --with-lmdb --with-pcre2  --prefix=/usr/local/modsecurity
+sudo make && make install
 
 
 
-
-
-# 下载编译安装
+# 下载编译安装nginx 
 mkdir -p /usr/local/nginx
 useradd nginx -s /sbin/nologin -M
+
 # 永远去官网找最新版来编译 http://nginx.org/download/nginx-1.19.8.tar.gz
 wget -P /usr/local/src/  http://nginx.org/download/nginx-1.22.0.tar.gz  
 cd /usr/local/src/ &&  tar -zxvf nginx-1.22.0.tar.gz
 cd  nginx-1.22.0
 mkdir -p ~/.vim/  && cp -r contrib/vim/* ~/.vim/
-
-
 
 
 
@@ -208,8 +238,15 @@ mkdir -p ~/.vim/  && cp -r contrib/vim/* ~/.vim/
     --with-http_ssl_module  \
     --with-http_image_filter_module=dynamic \
     --with-http_geoip_module=dynamic \
-    --add-module=/usr/local/ngx_http_geoip2_module
+    --add-module=/usr/local/src/ngx_http_geoip2_module \
+    --add-module=/usr/local/src/ModSecurity-nginx
 
+# 或者动态模块
+./configure --add-dynamic-module=/path/to/ModSecurity-nginx --with-compat
+
+
+
+make  && make install 
 ```
 
 

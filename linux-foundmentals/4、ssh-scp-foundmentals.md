@@ -40,6 +40,8 @@ openssh 是利用 OpenSSL  协议具体实现的开源软件，包括 ssh,ssh-co
 
 ## **OpenSSL** 
 
+
+
 OpenSSL 是用于传输层安全性（TLS）协议的健壮的，商业级，功能齐全的开源工具包，因 **安全套接字层（SSL）协议** 而闻名。
 
 这个协议的实现是基于完整功能的通用密码库，该库也可以独立使用。
@@ -50,8 +52,9 @@ OpenSSL 代码库的地址是 https://github.com/openssl/openssl
 
 ```shell
 wget https://www.openssl.org/source/openssl-1.1.1d.tar.gz 
-
-
+wget https://www.openssl.org/source/openssl-1.1.1u.tar.gz
+wget https://www.openssl.org/source/openssl-3.0.9.tar.gz
+wget https://www.openssl.org/source/openssl-3.1.1.tar.gz
 ```
 
 
@@ -75,6 +78,32 @@ OpenSSL 3.0 是下一代的 OpenSSL 发布版，目前仍然在开发中。
 https://wiki.openssl.org/index.php/OpenSSL_3.0
 
 历时三年的开发，17次 alpha releases，2 次 beta releases
+
+
+
+OpenSSL是一款广泛使用的开源套件，可帮助应用程序实现安全通信。其1.1.1版本自2018年9月发布以来，已得到官方长达5年的更新与维护。
+
+据 OPENSSL 项目组发布公告，发布于 2018 年 9 月 11 日的 OPENSSL 1.1.1 LTS 版即将结束 5 年长期支持，将在 2023 年 9 月 11 日正式结束支持。
+
+在结束支持后此版本不会再接收任何公开可用的安全修复程序，也就是即便出现安全漏洞也得不到修复，因此很容易因为安全漏洞而遭到攻击。
+
+对于仍然需要使用 OPENSSL 1.1.1 LTS 的企业来说，还可以选择付费购买高级支持合同，这样在结束支持后仍然可以获得某些安全更新，可以继续使用。
+
+对于普通用户来说 OPENSSL 项目组推荐在结束支持前升级到受支持版本，可选版本包括最新的 OPENSSL 3.1 版，该版本的支持周期到 2025 年 3 月 14 日；
+
+另一个可选版本是 OPENSSL 3.0 LTS 版，该版本支持周期到 2026 年 9 月 7 日。
+
+
+
+为确保安全性，官方强烈建议用户在此之前升级到更新版本的OpenSSL。目前，最新版本OpenSSL 3.1将在2025年3月14日前获得官方支持。
+
+而长期支持版本OpenSSL 3.0的生命周期则可达到2026年9月7日。值得一提的是，OpenSSL 3.0相较于旧版本有许多重大变更，但并非完全兼容旧版本。
+
+这些变更包括加入联邦资讯处理标准（FIPS）、采用Apache License 2.0开源授权，以及废弃一些较旧的API。
+
+官方表示，大部分使用OpenSSL 1.1.1的软件只需重新编译即可正常运行。然而，开发者可能会看到一些已废弃的API的编译警告。
+
+在OpenSSL 1.1.1生命周期结束前，用户需采取必要行动，确保获得官方支持和安全保障。
 
 
 
@@ -163,7 +192,7 @@ openssh 的认证方式：
 | [scp](https://www.ssh.com/ssh/scp/)            | 二进制可执行文件 | 远程传输文件                           |
 | [ssh-agent](<https://www.ssh.com/ssh/agent>)   |                  |                                        |
 | ssh-keyscan                                    |                  |                                        |
-| sshd                                           |                  | ssh服务端，用于在服务器上启动sshdj进程 |
+| sshd                                           | 二进制可执行文件 | ssh服务端，用于在服务器上启动sshdj进程 |
 |                                                |                  |                                        |
 
 
@@ -572,6 +601,8 @@ fengzhao@fengzhao-work:~$
 SSH 端口转发也被称作 SSH 隧道([SSH Tunnel](http://blog.trackets.com/2014/05/17/ssh-tunnel-local-and-remote-port-forwarding-explained-with-examples.html))，因为它们都是通过 SSH 登陆之后，在 **SSH客户端**与 **SSH服务端 **之间建立了一个隧道，从而进行通信。
 
 SSH隧道是非常安全的，因为SSH是通过加密传输数据的。
+
+https://harttle.land/2022/05/02/ssh-port-forwarding.html
 
 
 
@@ -1221,8 +1252,6 @@ iptables防火墙通过直观的监视系统的运行状况，阻挡网络中的
 
 
 OpenSSH 可以使用tun/tap设备来创建一个加密隧道，SSH隧道类似mode TCP模式下的OpenVPN，对于有需求快速设置一个基于IP的VPN来说非常方便。
-
-
 
 使用SSH隧道的优点：
 

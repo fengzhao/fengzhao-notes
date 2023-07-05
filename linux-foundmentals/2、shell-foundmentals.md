@@ -149,7 +149,7 @@ Linux 的 Shell 种类众多，常见的有：
 
       oh-my-zsh 管的东西太多了。oh-my-zsh 的各种插件里面基本上全是 aliases
 
-  - prezto
+  - [prezto](https://github.com/sorin-ionescu/prezto)
 
     oh-my-zsh 之外的另一个选择，或者说是他的的替代品。比 oh-my-zsh 轻量一点。
 
@@ -324,9 +324,38 @@ find is /usr/bin/find
 
 
 
+#### 冒号
 
+在shell中，冒号“:”是一个内建（builtin）命令，格式如下：
+
+```
+: [arguments]
+```
+
+冒号命令本身没什么副作用，使用场景有限，一般用于参数扩展，有以下几种用法：
+
+```shell
+${parameter:-word}             # 如果parameter没有设置或者为空，替换为word；否则替换为parameter的值。
+${parameter:+word}             # 如果parameter没有设置或者为空，不进行任何替换；否则替换为word。
+${parameter:=word}             # 如果parameter没有设置或者为空，把word赋值给parameter。最终替换为parameter的值。
+${parameter:?word}             # 如果parameter没有设置或者为空，把word输出到stderr，否则替换为parameter的值。
+${parameter:offset}            # 扩展为parameter中从offset开始的子字符串。
+${parameter:offset:length}     # 扩展为parameter中从offset开始的长度不超过length的字符。
+```
 
 #### eval命令
+
+在shell中，内建（builtin）命令eval，格式如下：
+
+```bash
+eval [arg ...]
+```
+
+eval命令首先读取其参数值，然后把它们连接成一个命令并执行这个命令，这个命令的退出状态即eval的退出状态，如果没有指定参数，其退出状态为0。
+
+args 参数们会被拼接成一个命令，然后被读取并执行。
+
+
 
 当我们在命令行前加上eval时，shell就会在执行命令之前扫描它两次。eval命令将首先会先扫描命令行进行所有的置换，然后再执行该命令。
 
@@ -342,6 +371,12 @@ Try 'uname --help' for more information.
 $ eval $foo
 Linux
 ```
+
+
+
+
+
+
 
 
 
@@ -405,7 +440,27 @@ root@vpsServer:~#
 
 **变量是暂时存储数据的地方及标记，所存储的数据位于内存空间中，通过正确的调用内存中变量的名字可以取出其变量值。**
 
-使用 **$VARIABLES** 或 **${VARIABLES}** 来引用变量。应用程序运行时通过读取环境变量
+使用 **$VARIABLES** 或 **${VARIABLES}** 来引用变量。应用程序运行时通过读取环境变量。
+
+
+
+根据变量的作用范围，变量的类型可以分为两类：环境变量（全局变量）和普通变量（局部变量）。
+
+- 环境变量：可以在创建它们的 shell 及其派生出来的任意子进程 shell 中使用，环境变量又分为用户自定义环境变量和 bash 内置环境变量。
+- 普通变量：只能在创建他们的 shell 函数内和 shell 脚本中使用。普通变量一般由开发者在开发脚本时创建。
+
+根据变量的生命周期，可以分为两类：
+
+- 永久的：需要修改配置文件，变量永久生效。（这种变量需要在文件中声明）
+- 临时的：使用 `export` 命令声明即可，变量在关闭 shell 时失效。（这种变量在命令或在脚本中声明，用的比较多）
+
+http://c.biancheng.net/view/773.html
+
+
+
+
+
+
 
 ```shell
 # 变量声明，变量名大写，变量值用引号括起来，防止值中有空格
@@ -432,18 +487,6 @@ root@vpsServer:~# echo ${NAME3}
 fengzhao
 root@vpsServer:~#
 ```
-
-
-
-根据变量的作用范围，变量的类型可以分为两类：环境变量（全局变量）和普通变量（局部变量）。
-
-- 环境变量：可以在创建它们的 shell 及其派生出来的任意子进程 shell 中使用，环境变量又分为用户自定义环境变量和 bash 内置环境变量。
-- 普通变量：只能在创建他们的 shell 函数内和 shell 脚本中使用。普通变量一般由开发者在开发脚本时创建。
-
-根据变量的生命周期，可以分为两类：
-
-- 永久的：需要修改配置文件，变量永久生效。（这种变量需要在文件中声明）
-- 临时的：使用 `export` 命令声明即可，变量在关闭 shell 时失效。（这种变量在命令或在脚本中声明，用的比较多）
 
 
 
@@ -934,17 +977,21 @@ ass_array[index2]=value2
 
 ## shell 自动补全
 
+在Bash中输入命令时，可以使用 `Tab` 键根据已输入的字符自动补全**路径名**、**文件名**和**可执行程序**；
+
+[bash-completion](https://github.com/scop/bash-completion) 是一组利用了shell可编程特性实现自动补全功能的shell函数。
 
 
 
+自动补全依赖于Bash的内置命令`complete`、`compgen`和在`/etc/bash_completion.d/`路径下创建的自动补全脚本；
 
+bash提供了一个`complete`内建命令，它的用途是规定参数怎么自动补全。 有了它，第三方开发的命令就可以根据自己的实际情况指定自动提示功能了！
 
+[参考](https://jasonkayzk.github.io/2020/12/06/Bash%E5%91%BD%E4%BB%A4%E8%87%AA%E5%8A%A8%E8%A1%A5%E5%85%A8%E7%9A%84%E5%8E%9F%E7%90%86/)
 
 
 
 ## Shell 通配符扩展
-
-
 
 Shell 接收到用户输入的命令以后，会根据空格将用户的输入，拆分成一个个词元（`token`）。
 
@@ -1045,6 +1092,18 @@ Shell 是 Linux 下的命令交互程序，其实就是一个命令解释器。
 
 可以说，shell 使用的熟练程度反映了用户对 Unix/Linux 使用的熟练程度。
 
+
+
+Shell脚本语言是实现Linux/UNIX系统管理及自动化[运维](https://cloud.tencent.com/solution/operation?from=20065&from_column=20065)所必备的重要工具， Linux/UNIX系统的底层及基础应用软件的核心大都涉及Shell脚本的内容。
+
+每一个合格 的Linux系统管理员或运维工程师，都需要能够熟练地编写Shell脚本语言，并能够阅 读系统及各类软件附带的Shell脚本内容。
+
+只有这样才能提升运维人员的工作效率，适 应曰益复杂的工作环境，减少不必要的重复工作，从而为个人的职场发展奠定较好的基础。
+
+
+
+
+
 ## 1、Linux 命令和 SHELL 基础
 
 Linux 命令分为两种类型：
@@ -1068,7 +1127,37 @@ bash,  :,  .,  [, alias, bg, bind, break, builtin, caller, cd, command, compgen,
 
 
 
+**三、脚本语言**
 
+**定义：**为了缩短传统的编写-编译-链接-运行（edit-compile-link-run）过程而创建的计算机编程语言。
+
+**特点：**程序代码即是最终的执行文件，只是这个过程需要解释器的参与，所以说脚本语言与解释型语言有很大的联系。脚本语言通常是被解释执行的，而且程序是文本文件。
+
+典型的脚本语言有，JavaScript，Python，shell等。
+
+**其他常用的脚本语句种类**
+
+- **PHP**是网页程序，也是脚本语言。是一款更专注于web页面开发（前端展示）的脚本语言，例如：Dedecms,discuz。PHP程序也可以处理系统日志，配置文件等，php也可以调用系统命令。
+
+- **Perl**脚本语言。比shell脚本强大很多，语法灵活、复杂，实现方式很多，不易读，[团队协作](https://cloud.tencent.com/product/prowork?from=20065&from_column=20065)困难，但仍不失为很好的脚本语言，存世大量的程序软件。MHA高可用Perl写的
+
+- **Python**，不但可以做脚本程序开发，也可以实现web程序以及软件的开发。近两年越来越多的公司都会要求会Python。
+
+
+
+
+
+**Shell脚本与php/perl/python语言的区别和优势？**
+
+shell脚本的优势在于处理操作系统底层的业务 （linux系统内部的应用都是shell脚本完成）因为有大量的linux系统命令为它做支撑。
+
+2000多个命令都是shell脚本编程的有力支撑，特别是grep、awk、sed等。
+
+例如：一键软件安装、优化、监控报警脚本，常规的业务应用，shell开发更简单快速，符合运维的简单、易用、高效原则。
+
+PHP、Python优势在于开发运维工具以及web界面的管理工具，web业务的开发等。处理一键软件安装、优化，报警脚本。
+
+常规业务的应用等php/python也是能够做到的。但是开发效率和复杂比用shell就差很多了。
 
 
 
@@ -1620,16 +1709,17 @@ restart
 
 Linux shell 中还存在很多变量子串，提供很多控制和提取变量中的相关内容。
 
-
+[参考](https://blog.csdn.net/qq_36025814/article/details/109098731)
 
 | 变量                       | 含义                                              |
 | -------------------------- | ------------------------------------------------- |
-| ${variable}                | 返回变量值，普通变量，shell脚本中可以直接引用变量 |
-| ${#variable}               | 返回变量的字符长度                                |
+| ${variable}                | 普通变量，shell脚本中引用变量                     |
+| ${#variable}               | 返回变量的字符数量长度                            |
 | ${#variable:offset}        | 在变量中，从offset之后提取子串到结尾              |
 | ${#variable:offset:length} | 在变量中，从offset之后提取长度为length的子串      |
 | ${#variable#word}          |                                                   |
-|                            |                                                   |
+| ${var:position}            | 变量var从第position个位置开始到最后的子串         |
+| ${var:position:length}     | 在变量var中，从position开始，截取length长度的子串 |
 |                            |                                                   |
 
  **<font color=#FF0000 > ${#variable} 字符长度 </font>** 
@@ -1657,7 +1747,9 @@ fengzhao@fengzhao-pc:~$
 
 ```shell
 count_words.sh
-#! /bin/bash
+
+#!/bin/bash
+# 实现思路：将字符串存到数组，迭代取出每个单词，判断长度并输出。
 array=($1)
 for ((i=0;i<${#array[*]};i++))
 do
@@ -1676,6 +1768,34 @@ fengzhao@fengzhao-pc:~$
 ```
 
 
+
+
+
+## 3、shell 
+
+
+
+### 关键字
+
+
+
+简单命令
+
+
+
+管道
+
+
+
+命令组
+
+与
+
+或
+
+
+
+复合语句
 
 
 
@@ -1893,21 +2013,39 @@ Linux的管道主要包括两种：无名管道和有名管道。
 
 
 
+### set 命令
+
+set命令为shell内建命令，通过help set可以看到关于set的帮助信息。其主要作用是改变 shell 选项和位置参数的值，或者显示 shell 变量的名称和值。
+
+在终端下，如果执行set命令，就会显示当前shell下所有的环境配置信息。
+
+`set`命令用来修改 Shell 环境的运行参数，也就是可以定制环境。一共有十几个参数可以定制。
+
+
+
+#### 错误处理
+
+一般情况下，每个Linux shell 命令执行完毕后，都会返回一个执行结果，并将其保存到$?中，一般0表示命令执行成功，非零表示命令执行失败。
+
+shell脚本中一般会使用到大量的命令，严格意义上，我们应该小心的检查每个关键命令的执行结果，以确定之后的执行逻辑。
+
+```
+
+```
+
+-e选项就是解决这个问题的一种十分优雅的方案，-e表示如果一个命令以非零状态退出，则整个shell脚本程序就会立即退出。比如，
 
 
 
 
-#### set 命令
 
-set 命令在 shell 脚本中有很多用法。
-
+可是有的时候，命令返回1并不代表执行失败，这时如果启用了set -e，那么脚本就会立即退出，这不是我们想看到的，解决办法有两种：
 
 
-##### set -u 
+
+#### 变量未定义
 
 执行脚本的时候，如果遇到不存在的变量，Bash 默认忽略它。
-
-
 
 ```shell
 #!/usr/bin/env bash
