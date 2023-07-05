@@ -208,13 +208,14 @@ git clone  https://github.com/SpiderLabs/ModSecurity.git  /usr/local/src/ModSecu
 # 下载ngx_http_geoip2_module模块
 git clone https://github.com/leev/ngx_http_geoip2_module.git /usr/local/src/ngx_http_geoip2_module
 
+git clone  https://github.com/SpiderLabs/ModSecurity-nginx.git  /usr/local/src/ModSecurity-nginx
 
 # cd 到源码目录下按顺序执行
 cd /usr/local/src/ModSecurity
 ./build.sh
 git submodule init
 git submodule update
-./configure --with-lmdb --with-pcre2
+./configure --with-lmdb --with-pcre2  --prefix=/usr/local/modsecurity
 sudo make && make install
 
 
@@ -237,12 +238,15 @@ mkdir -p ~/.vim/  && cp -r contrib/vim/* ~/.vim/
     --with-http_ssl_module  \
     --with-http_image_filter_module=dynamic \
     --with-http_geoip_module=dynamic \
-    --add-module=/usr/local/src/ngx_http_geoip2_module
-    --add-module=/usr/local/src/ModSecurity
+    --add-module=/usr/local/src/ngx_http_geoip2_module \
+    --add-module=/usr/local/src/ModSecurity-nginx
 
 # 或者动态模块
 ./configure --add-dynamic-module=/path/to/ModSecurity-nginx --with-compat
 
+
+
+make  && make install 
 ```
 
 
