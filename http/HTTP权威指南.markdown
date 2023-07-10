@@ -90,7 +90,7 @@ User-agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML,
 
 
 
-
+https://a-wing.top/browser/2021/08/22/user-agent
 
 
 
@@ -2787,6 +2787,12 @@ x首先在本地生成一个密钥对，利用这个私钥对"我们需要提供
 ssl_certificate      cert/server.crt; # 替换成您的证书文件的路径。
 ssl_certificate_key  cert/server.key; # 替换成您的私钥文件的路径。
 ```
+
+
+
+https://blog.csdn.net/zyhse/article/details/108026800
+
+
 
 ### SSL证书类型
 
