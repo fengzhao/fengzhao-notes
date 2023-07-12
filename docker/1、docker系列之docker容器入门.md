@@ -1800,9 +1800,9 @@ https://man7.org/linux/man-pages/man7/namespaces.7.html
 
 
 
-Namespace 技术实际上修改了应用进程看待整个计算机“视 图”，即它的“视线”被操作系统做了限制，只能“看到”某些指定的内容。
+**Namespace 技术实际上修改了应用进程看待整个计算机“视 图”，即它的“视线”被操作系统做了限制，只能“看到”某些指定的内容。**
 
-但对于宿主机来 说，这些被“隔离”了的进程跟其他进程并没有太大区别。
+**但对于宿主机来 说，这些被“隔离”了的进程跟其他进程并没有太大区别。**
 
 
 
@@ -2287,6 +2287,10 @@ rootfs 只是一个操作系统所包含的文件、配置和目录，并不包�
 
 **无论在本地、云端，还是在一台任何地方的机器上，用户只需要解压打包好的容器镜像，那么这个应用运行所需要的完整的执行环境就被重现出来了。**
 
+
+
+
+
 #### network namespace
 
 network namespace 是实现网络虚拟化的重要功能，它能创建多个隔离的网络空间，它们有独自的网络栈信息。Linux内核2.6版本引入 network namespace。
@@ -2383,6 +2387,7 @@ $ ip netns delete nstest
 $ ip netns list
 nstest
 nstest2
+
 # 在新建的namespace中执行命令 ip netns exec <namespace> <command>
 $ ip netns exec nstest commad
 
