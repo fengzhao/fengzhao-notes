@@ -121,9 +121,11 @@ foo: hello
 # 由于 set 指令因为是在 location /bar 中使用的，所以赋值操作只会在访问 /bar 的请求中执行。
 $ curl 'http://localhost:8080/foo'
     foo = []
+    
 # 这个URL匹配到 location /bar，所以成功使用set赋值
 $ curl 'http://localhost:8080/bar'
     foo = [32]
+    
 # 即使前面请求了这两个URL，再次请求/foo。依然是空的。因为各个请求都有自己独立的 $foo 变量的副本。
 $ curl 'http://localhost:8080/foo'
     foo = []
@@ -222,7 +224,10 @@ $ curl 'http://localhost:8080/foo'
 
 Nginx 内建变量最常见的用途就是获取关于请求或响应的各种信息。
 
-例如由 [ngx_http_core](http://nginx.org/en/docs/http/ngx_http_core_module.html) 模块提供的内建变量 [$uri](http://wiki.nginx.org/HttpCoreModule#.24uri)，可以用来获取当前请求的 URI（经过解码，并且不含请求参数），而 [$request_uri](http://wiki.nginx.org/HttpCoreModule#.24request_uri) 则用来获取请求最原始的 URI （未经解码，并且包含请求参数）。
+例如由 [ngx_http_core](http://nginx.org/en/docs/http/ngx_http_core_module.html) 模块提供的内建变量：
+
+- [$uri](http://wiki.nginx.org/HttpCoreModule#.24uri)，可以用来获取当前请求的 URI（经过解码，并且不含请求参数）。
+-  [$request_uri](http://wiki.nginx.org/HttpCoreModule#.24request_uri) 则用来获取请求最原始的 URI （未经解码，并且包含请求参数）。
 
 比如：
 
