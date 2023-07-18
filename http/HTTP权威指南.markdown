@@ -381,6 +381,12 @@ HTTP 客户端可以使用 Accept-Charset 请求首部来明确告知服务器�
 
 
 
+
+
+
+
+
+
 ### X-Forwarded-For
 
 X-Forwarded-For 是一个 HTTP 扩展头部。
@@ -464,9 +470,15 @@ location /proxy {                                                               
      proxy_pass http://localhost/index.html;  
 ```
 
+
+
+
+
 https://imququ.com/post/x-forwarded-for-header-in-http.html
 
+https://dog.xmu.edu.cn/2021/07/02/x-forwarded-for-ip-address-spoofing.html
 
+https://www.cnblogs.com/bonelee/p/14701861.html
 
 #### 动态NAT场景
 
@@ -478,6 +490,8 @@ https://imququ.com/post/x-forwarded-for-header-in-http.html
 
 - 119.147.19.234(业务的前端负载均衡服务器)
 - 192.168.126.127(业务处理服务器)。
+
+
 
 在这种情况下，对于服务器后端业务服务器，应该取到的客户端IP应该是 116.1.2.3 ，可以在代码中通过头部进行判断
 
@@ -493,7 +507,9 @@ https://imququ.com/post/x-forwarded-for-header-in-http.html
 - 119.147.19.234(业务的前端负载均衡服务器)
 - 192.168.126.127(业务处理服务器)。
 
-在这种情况下，对于服务器后端业务服务器，应该取到的客户端应该是 211.162.78.1，可以在代码中通过头部进行判断
+
+
+在这种情况下，对于服务器后端业务服务器，应该取到的客户端应该是 211.162.78.1，可以在代码中通过头部进行判断。
 
 
 
@@ -3035,7 +3051,52 @@ CA在颁发证书时，都为每个证书设定了有效期，包括开始时间
 
 
 
+## mTLS
 
+
+
+相互 TLS 简称 mTLS，是一种[相互身份验证](https://www.cloudflare.com/learning/access-management/what-is-mutual-authentication/)的方法。mTLS 通过验证他们都拥有正确的私人[密钥](https://www.cloudflare.com/learning/ssl/what-is-a-cryptographic-key/)来确保网络连接两端的各方都是他们声称的身份。
+
+
+
+mTLS 通常被用于[零信任](https://www.cloudflare.com/learning/security/glossary/what-is-zero-trust)安全框架*，以验证组织内的用户、设备和服务器。它也可以帮助保持 API 的安全。
+
+**零信任意味着默认情况下不信任任何用户、设备或网络流量，这种方法有助于消除许多安全漏洞。**
+
+
+
+
+
+
+
+通常在 TLS 中，服务器有一个 TLS 证书和一个公钥/私钥对，而客户端没有。典型的 TLS 流程是这样运作的：
+
+
+
+1. 客户端连接到服务器
+2. 服务器出示其 TLS 证书
+3. 客户端验证服务器的证书
+4. 客户端和服务器通过加密的 TLS 连接交换信息
+
+
+
+
+
+在 mTLS 中，客户端和服务器都有一个证书，并且双方都使用它们的公钥/私钥对进行身份验证。与常规 TLS 相比，mTLS 中有一些额外步骤来验证双方（额外的步骤**加粗**显示）。
+
+1. 客户端连接到服务器
+2. 服务器出示其 TLS 证书
+3. 客户端验证服务器的证书
+4. **客户端出示其 TLS 证书**
+5. **服务器验证客户端的证书**
+6. **服务器授予访问权限**
+7. 客户端和服务器通过加密的 TLS 连接交换信息
+
+
+
+实施 mTLS 的组织充当其自己的证书颁发机构。这与标准 TLS 相反，标准 TLS 的证书颁发机构是一个外部组织，负责检查证书所有者是否合法拥有关联[域](https://www.cloudflare.com/learning/dns/glossary/what-is-a-domain-name/)（了解 [TLS 证书验证](https://www.cloudflare.com/learning/ssl/types-of-ssl-certificates)）。
+
+mTLS 需要“根”TLS 证书；这使组织能够成为他们自己的证书颁发机构。授权客户端和服务器使用的证书必须与此根证书相对应。根证书是自签名的，这意味着组织自己创建它。（这种方法不适用于公共互联网上的单向 TLS，因为必须由外部证书颁发机构颁发这些证书。）
 
 
 
