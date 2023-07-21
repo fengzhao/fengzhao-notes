@@ -299,12 +299,15 @@ syntax on
 
 # 第二类配置参数
 # 可以配置使用或不使用哪些模块，前缀通常是 with 和 with out，需要加 with 参数的通常是不会被 Nginx 默认编译的，without 则是会移出编译。
+## 比如说--with-http_ssl_module或者--with-http_v2_module，通常需要主动加--with的时候，意味着模块默认是不会编译进nginx的。
+
 
 --with-http_ssl_module             enable ngx_http_ssl_module
 --with-http_v2_module              enable ngx_http_v2_module
 --with-http_realip_module          enable ngx_http_realip_module
 ...
 
+## 比如说--without-http_charset_module意味着默认他会编译进nginx中，加了参数是把他移除默认的nginx的模块中。
 --without-http_charset_module      disable ngx_http_charset_module
 --without-http_gzip_module         disable ngx_http_gzip_module
 --without-http_ssi_module          disable ngx_http_ssi_module
@@ -882,6 +885,30 @@ location ^~ /static/files {
 
 
 ## ngx_http_upstream_module 模块
+
+
+
+## ngx_http_gzip_module
+
+
+
+什么是网站gzip压缩
+
+正常浏览器通过URI访问服务时，下载的资源都是源文件大小。开启gzip压缩时，服务器在响应之前，对资源进行gzip压缩，并追加Content-Encoding: gzip响应头。
+
+浏览器接收响应之后，会检查Content-Encoding响应头，若是gzip，则先对响应进行gzip解压，然后交给浏览器，进行解析及渲染等一系列操作。
+
+
+
+网站gzip压缩的优点
+
+网站开启gzip以后，会将输出到用户浏览器的数据进行压缩处理，这样会减小通过网络传输的数据量，达到提升网页加载速度、提升用户浏览体验。
+
+网站开启gzip并非全是优点，gzip压缩算法属于依赖CPU型操作，在服务器端大量的资源进行gzip压缩，会占用服务器CPU和磁盘资源。但对于目前CPU性能来说，其影响微乎其微。
+
+使用SSL/TSL协议时，压缩的响应可能会受到BREACH攻击。
+
+
 
 
 
