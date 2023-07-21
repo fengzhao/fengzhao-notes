@@ -960,7 +960,165 @@ https://github.com/jtesta/ssh-audit
 
 
 
-#### 查看用户登录及用户操作历史相关信息
+## TCP Wrappers 访问控制
+
+
+
+TCP Wrappers 像一个防护罩一样，保护着TCP服务程序，它代为监听TCP服务程序的端口，为其增加了一个安全检测过程。
+
+外来的连接请求必须先通过这层安全检测，获得许可后才能访问真正的服务程序。大多数 Linux 发行版，TCP Wrappers 是默认提供的功能。
+
+tcp wrapper是Wietse Venema开发的一个开源软件。它是一个**用来分析TCP/IP封包的软件**，类似的IP封包软件还有iptables。Linux默认安装了tcp_wrapper。
+
+
+
+作为一个安全的系统，Linux本身有两层安全防火墙，通过IP过滤机制的iptables实现第一层防护。
+
+iptables防火墙通过直观的监视系统的运行状况，阻挡网络中的一些恶意攻击，保护整个系统正常运行免遭攻击和破坏。
+
+
+
+如果通过了第一层防护，那么下一层防护就是tcp_wrapper了。
+
+**通过tcp_wrapper可以实现对系统中提供的某些服务的开放和关闭、允许及禁止，从而更有效的保证系统安全运行。**
+
+使用tcp_wrapper的功能仅需要两个配置文件：/etc/hosts.allow 和/etc/hosts.deny。
+
+
+
+**如何界定特殊服务: 凡是调用了libwrap.so库的文件都受TCP Wrapper控制**
+
+
+
+判断方式：
+
+- 查看服务命令所在路径
+
+  - 拿 ssh 为例
+
+    ```shell
+    [root@centos7 ~]# which sshd
+    ```
+
+- 查看指定命令时是否调用libwrap.so文件
+
+  - ```shell
+    [root@centos7 ~]# ldd /usr/sbin/sshd | grep libwrap.so
+    libwrap.so.0 => /lib64/libwrap.so.0 (0x00007fbfcf5c0000)
+    ```
+
+**ldd是用来静态查看服务启动时所调用的库**
+
+
+
+以ssh为例，每当有ssh的连接请求时，先读取系统管理员所设置的访问控制文件，符合要求，则会把这次连接原封不动的转给ssh进程，由ssh完成后续工作；
+
+如果这次连接发起的ip不符合访问控制文件中的设置，则会中断连接请求，拒绝提供ssh服务[通过审查客户端的来源地址，决定该客户端的请求是否需要送达到SSH服务]
+
+
+
+ **匹配顺序：**
+
+- **优先查看/etc/hosts.allow，匹配即停止**
+- **允许个别，拒绝所有（白名单）：/etc/hosts.allow文件添加允许的策略，hosts.deny文件添加all**
+- **拒绝个别，允许所有（黑名单）：/etc/hosts.allow文件为空，hosts.deny文件添加单个拒绝的策略**
+
+
+
+TCP_Wrappers的使用主要是依靠两个配置文件/etc/hosts.allow, /etc/hosts.deny，以此实现访问控制。
+
+默认情况下，/etc/hosts.allow，/etc/hosts.deny什么都没有添加，此时没有限制。
+
+
+
+**配置文件编写规则：**
+
+```bash
+# service_list@host:client_list
+# service_list:是程序（服务）的列表，可以是多个，多个时，使用，隔开
+# @host:设置允许或禁止他人从自己的哪个网口进入。这一项不写，就代表全部
+# client_list:是访问者的地址，如果需要控制的用户较多，可以使用空格或，隔开
+# client_list格式如下：
+# 基于IP地址： 192.168.88.1 192.168.88.
+# 基于域（域名）： www.kernel.com .kernel.com 较少用（域名IP可能变）
+# 基于网络/掩码： 192.168.0.0/255.255.255.0
+# 内置ACL：ALL(所有主机)、LOCAL(本地主机)
+
+
+# 拒绝单个IP使用ssh远程连接（黑名单）效果
+/etc/hosts.allow： 空着
+/etc/hosts.deny：sshd:192.168.88.20
+
+# 拒绝某一网段使用ssh远程连接：
+/etc/hosts.allow：空着
+/etc/hosts.deny：sshd:192.168.88. 或者 sshd:192.168.88.0/255.255.255.0
+# 但sshd:192.168.88.0/24 可写入，但加入限制名单后仍可正常登入，故未生效，如图
+
+# 仅允许某一IP使用ssh远程连接（白名单）效果
+/etc/hosts.allow：sshd:192.168.88.20 
+/etc/hosts.deny：sshd:ALL
+```
+
+**特性**
+
+- 工作在第四层（传输层）的TCP协议
+- 对有状态连接的特定服务进行安全检测并实现访问控制
+- 以库文件形式实现
+- 某进程是否接受libwrap的控制取决于发起此进程的程序在编译时是否针对libwrap进行编译的
+- 判断sshd服务是否支持tcp_wrapper：
+
+
+
+## 防爆破
+
+
+
+暴露给互联网的所有服务器都有遭受恶意软件攻击的风险。 例如，如果您有连接到互联网的软件，则攻击者可以利用蛮力尝试来访问应用程序
+
+
+
+### sshguard
+
+sshguard采用宽容的BSD许可证来发行
+
+软件在最常用的GNU/Linux发行版的主存储库中发行，面向某个BSD系统，但是你也可以[下载页面](http://www.sshguard.net/download/)下载源代码。
+
+
+
+```shell
+# SSHGuard在一些软件包仓库中可以直接安装，一般来说，包名就是sshguard。
+
+# 依赖
+apt install autoconf automake byacc flex gcc python-docutils
+dnf install autoconf automake byacc flex gcc python-docutils
+
+# 源码构建
+git clone https://bitbucket.org/sshguard/sshguard.git
+cd sshguard/
+autoreconf -i
+./configure
+make && make install
+```
+
+
+
+
+
+### file2ban
+
+https://github.com/fail2ban/fail2ban
+
+
+
+Fail2ban是一个开源工具，可以通过监视服务日志中的恶意活动来帮助你保护Linux免受暴力攻击和其他自动攻击。
+
+它使用正则表达式来扫描日志文件。将对所有与模式匹配的记录进行计数，并且当它们的数量达到某个预定义的阈值时。
+
+Fail2ban会在指定时间段内禁止有问题的IP。 默认使用[系统防火墙](https://www.myfreax.com/how-to-setup-a-firewall-with-ufw-on-ubuntu-20-04/)阻止该IP的访问。 禁止期限到期后，IP地址将从禁止列表中删除。
+
+
+
+## 查看用户登录及用户操作历史相关信息
 
 使用 who 命令查看当前用户登录状况
 
@@ -1187,61 +1345,6 @@ yes | pv | ssh remote_host "cat >/dev/null"
 ```
 
 
-
-# TCP Wrappers 访问控制
-
-
-
-TCP Wrappers 像一个防护罩一样，保护着TCP服务程序，它代为监听TCP服务程序的端口，为其增加了一个安全检测过程。
-
-外来的连接请求必须先通过这层安全检测，获得许可后才能访问真正的服务程序。大多数 Linux 发行版，TCP Wrappers 是默认提供的功能。
-
-tcp wrapper是Wietse Venema开发的一个开源软件。它是一个**用来分析TCP/IP封包的软件**，类似的IP封包软件还有iptables。Linux默认安装了tcp_wrapper。
-
-
-
-作为一个安全的系统，Linux本身有两层安全防火墙，通过IP过滤机制的iptables实现第一层防护。
-
-iptables防火墙通过直观的监视系统的运行状况，阻挡网络中的一些恶意攻击，保护整个系统正常运行免遭攻击和破坏。
-
-如果通过了第一层防护，那么下一层防护就是tcp_wrapper了。
-
-**通过tcp_wrapper可以实现对系统中提供的某些服务的开放和关闭、允许及禁止，从而更有效的保证系统安全运行。**
-
-使用tcp_wrapper的功能仅需要两个配置文件：/etc/hosts.allow 和/etc/hosts.deny。
-
-**如何界定特殊服务: 凡是调用了libwrap.so库的文件都受TCP Wrapper控制**
-
-
-
-判断方式：
-
-- 查看服务命令所在路径
-
-  - 拿 ssh 为例
-
-    ```shell
-    [root@centos7 ~]# which sshd
-    ```
-
-- 查看指定命令时是否调用libwrap.so文件
-
-  - ```shell
-    [root@centos7 ~]# ldd /usr/sbin/sshd | grep libwrap.so
-    libwrap.so.0 => /lib64/libwrap.so.0 (0x00007fbfcf5c0000)
-    ```
-
-**ldd是用来静态查看服务启动时所调用的库**
-
-
-
-**特性**
-
-- 工作在第四层（传输层）的TCP协议
-- 对有状态连接的特定服务进行安全检测并实现访问控制
-- 以库文件形式实现
-- 某进程是否接受libwrap的控制取决于发起此进程的程序在编译时是否针对libwrap进行编译的
-- 判断sshd服务是否支持tcp_wrapper：
 
 
 
