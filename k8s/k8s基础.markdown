@@ -94,14 +94,14 @@ k8s集群分为两类节点
 
 
 
-**master 节点中的组件**
+**master 节点核心组件**
 
-这些组件可以运行在单个 master 节点上，**也可以通过副本运行在多个 master 节点上以确保高可用性。**
+这些组件可以运行在单个 master 节点上，**也可以通过副本机制运行在多个 master 节点上以确保其高可用性。**
 
 - etcd 是兼具一致性和高可用性的键值数据库，可以作为保存 Kubernetes 所有集群数据的后台数据库。可以内置在 master 中，也可以放到外面。
   - etcd 用来注册节点，持久化存储集群配置。
-
 - kube-apiserver : 集群控制的入口，提供 HTTP REST 服务，主节点上负责提供 Kubernetes API 服务的组件；它是 Kubernetes 控制面的前端。
+  - 它提供了 Kubernetes 各类资源对象（Pod、RC、Service 等）的增删改查及 watch 等 HTTP REST 接口，是整个系统的管理入口。
 - kube-scheduler : 负责 Pod 的调度，该组件监视那些新创建的未指定运行节点的 Pod，并选择节点让 Pod 在上面运行。
 - kube-controller-manager :  Kubernetes 集群中所有资源对象的自动化控制中心
   - 
@@ -111,6 +111,8 @@ k8s集群分为两类节点
   - 服务帐户和令牌控制器（Service Account & Token Controllers）: 为新的命名空间创建默认帐户和 API 访问令牌.
 
 启动一个 nginx 服务，客户端向 apiserver 发送
+
+
 
 **node 节点的组件**
 
@@ -1208,7 +1210,98 @@ Ingress
 
 
 
+# 深入理解 Kubeenetes 编排对象
 
+
+
+Kubernetes 系统是一套分布式容器应用编排系统，当我们用它来承载业务负载时主要使用的编排对象有 Deployment、ReplicaSet、StatefulSet、DaemonSet 等。读者可能好奇的地方是 Kubernetes 管理的对象不是 Pod 吗？为什么不去讲讲如何灵活配置 Pod 参数。其实这些对象都是对 Pod 对象的扩展封装。并且这些对象作为核心工作负载 API 固化在 Kubernetes 系统中了。所以 ，我们有必要认真的回顾和理解这些编排对象，依据生产实践的场景需要，合理的配置这些编排对象，让 Kubernetes 系统能更好的支持我们的业务需要。
+
+
+
+
+
+
+
+### deployment
+
+
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-deployment
+  labels:
+    app: nginx
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.7.9
+        ports:
+        - containerPort: 80
+```
+
+
+
+
+
+通过编写YAML文件创建出来的Secret对象只有一个。
+
+但它的data字段，却以Key-Value的格式保存了两份Secret数据。其中，“user”就是第一份数据的Key，“pass”是第二份数据的Key。
+
+需要注意的是，Secret对象要求这些数据必须是经过Base64转码的，以免出现明文密码的安全隐患。
+
+像这样创建的Secret对象，它里面的内容仅仅是经过了转码，并没有被加密。在生产环境中，你需要在Kubernetes中开启Secret的加密插件，增强数据的安全性。
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysecret
+type: Opaque
+data:
+  user: YWRtaW4=
+  pass: MWYyZDFlMmU2N2Rm
+```
+
+
+
+
+
+```yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-projected-volume 
+spec:
+  containers:
+  - name: test-secret-volume
+    image: busybox
+    args:
+    - sleep
+    - "86400"
+    volumeMounts:
+    - name: mysql-cred
+      mountPath: "/projected-volume"
+      readOnly: true
+  volumes:
+  - name: mysql-cred
+    projected:
+      sources:
+      - secret:
+          name: user
+      - secret:
+          name: pass
+```
 
 
 
