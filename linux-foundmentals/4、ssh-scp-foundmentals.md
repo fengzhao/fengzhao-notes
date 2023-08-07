@@ -744,6 +744,25 @@ ssh -NTfR 192.168.0.2:4000:localhost:3000 root@192.168.0.2
 
 
 
+#### SSH 反向内网穿透
+
+SSH反向穿透需要有一台有公网IP的服务器作为桥梁，此处将位于多重NAT网络中需要访问的主机称为**Target**，而将有固定IP的中转服务器称为**Server**。
+
+SSH反向穿透的原理是：**Target主动建立与Server间的SSH连接，利用SSH的端口转发功能，将访问Server某端口的数据包转发到Target SSH端口（22端口）上，以此实现间接登陆Target的目的。**
+
+假设Server上的转发端口为`6766`，使用如下命令在Target上建立与Server间的反向隧道：
+
+```shell
+# -R用于定义反向隧道，-fN用于在建立SSH连接后SSH进入后台运行。
+
+ssh -p 22 -fN -R 6766:localhost:22 userServer@Server
+
+```
+
+
+
+
+
 ## SCP 远程传输
 
 scp 就是 secure copy，是用来进行远程文件复制的，整个复制过程是加密的，数据传输使用的是 ssh，并且使用和 ssh 相同的认证方式，提供相同的安全保证。
