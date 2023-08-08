@@ -515,8 +515,11 @@ https://tonybai.com/2012/10/11/understanding-go-declaration-syntax/
 使用 var 关键字来声明变量，变量声明的通用格式如下：
 
 ```go
-// 变量声明初始化并赋值
+// 变量声明初始化并赋值：var关键字表示声明变量，name为变量名，type为变量数据类型，expression为变量表达式
 var name type = expression 
+
+// https:////blog.golang.org/gos-declaration-syntax
+// Rob Pike 曾经在Go官方博客解释过: 为什么要把数据类型放在后面
 
 // 声明多个变量
 var a int
@@ -551,7 +554,9 @@ var (
     city string
 )
 
-// 变量的类型也可以在运行时实现自动推断
+// Go编译器可以根据变量的值来自动推断其类型，这有点像 Ruby 和 Python这类动态语言，只不过他们是在运行时进行推断，而 Go 是在编译时就已经完成推断过程。
+// 自动推断类型并不是任何时候都适用的，当你想要给变量的类型并不是自动推断出的某种类型时，你还是需要显式指定变量的类型
+// 变量的类型也可以在运行时实现自动推断: 这种写法主要用于声明包级别的全局变量，当你在函数体内声明局部变量时，还是应使用简短声明语法:=
 var (
     HOME = os.Getenv("HOME")
     USER = os.Getenv("USER")
@@ -1462,18 +1467,18 @@ func main() {
 
 
 
-### 字符类型
+### 字符类型/符文
 
 严格来说，这并不是 Go 语言的一个类型，字符只是整型的特殊用例。
 
-在 golang 中，字符串中的每一个元素叫做 “字符”，在遍历或者单个获取字符串元素时可以获得字符。
+在 golang 中，字符串中的每一个元素叫做 【字符】，在遍历或者单个获取字符串元素时可以获得字符。
 
-在 go 中，没有 char 这种字符类型，我们声明的 'A' , '中' 这种字符常量，其数据类型实际上是 int32  
+在 golang 中，其实没有 char 这种字符类型的，我们声明的 'A' , '中' 这种字符常量（Rune literals），其数据类型实际上是 int32  
 
- byte 和 rune 类型实际上是 uint8 和 int32 的类型别名。
+ byte 和 rune 类型实际上是 uint8 和 int32 的类型别名。Go 语言将 `rune` 定义为 `int32` 类型的别名，它们在功能上完全相同，但是语义不同，`rune` 可以更清楚地用整型值来表示码点。
 
 - **byte**，占用1个节字，共 8 个比特位，它和 `uint8` 类型本质上没有区别，它表示的是 ACSII 表中的一个字符。
-- **rune**，占用4个字节，共 32 个比特位，它和 `int32` 本质上也没有区别。它表示的是一个 Unicode 字符。
+- **rune**，占用4个字节，共 32 个比特位，它和 `int32` 本质上也没有区别。它表示的是一个 Unicode 字符。`rune` 可以更清楚地用整型值来表示码点。
 
 
 
@@ -1520,6 +1525,188 @@ var d = "😀"                    // emoji字符串
 fmt.Println(d)                  // 😀
 fmt.Println(reflect.TypeOf(d))  // string
 ```
+
+
+
+
+
+### 字符串
+
+Go 的作者 Ken Thompson 是 UTF-8 的发明人（也是C，Unix，Plan9 等的创始人），因此在关于字符编码上，Go有着独到而周全的设计。在 Go 中，字符串实际上是一个**只读的字节切片。**
+
+Go 语言中的字符串是原生数据类型，在内部实现使用 UTF-8 编码。相比之下， C/C++语言中并不存在原生的字符串类型，通常使用字符数组来表示，并以字符指针来传递。
+
+一个字符串包含任意多个字节，不论字符串是否包含 Unicode 文本、UTF-8 文本或任何其他预定义格式。就字符串的内容而言，它完全等价于一个字节切片([]byte)。
+
+**字符串中的一个字符，可能由多个字节构成。比如，"你好"这个字符串，由两个字符组成，但是由于一个中文占3个字节，所以底层存储时由6个字节组成，`len("你好")` 为6。**
+
+Go 将大部分字符串处理的函数放在了 `strings`,`bytes `这两个包里。
+
+因为在字符串和整型间没有隐式类型转换，字符串和其他基本类型的转换的功能主要在标准库`strconv`中提供。
+
+`unicode`相关功能在`unicode`包中提供。`encoding`包提供了一系列其他的编码支持。
+
+
+
+- Go语言源代码总是采用`UTF-8`编码
+- 字符串`string`可以包含任意字节序列，通常是`UTF-8`编码的。
+- 字符串字面值，在不带有字节转义的情况下一定是`UTF-8`编码的。
+- Go使用`rune`代表`Unicode`**码位**。一个**字符**可能由一个或多个码位组成（复合字符）
+- Go string是建立在 **字节数组** 的基础上的，因此对string使用`[]`索引会得到字节`byte`而不是字符`rune`。
+- Go语言的字符串不是正规化(`normalized`)的，因此同一个字符可能由不同的字节序列表示。使用`unicode/norm`解决此类问题。
+
+- **字符串的值必须以双引号包裹，Go语言中单引号包裹的是字符类型**
+
+```go
+// 一个字符串，它使用十六进制串(\xNN格式)符号来定义一个字符串常量，其中包含一些特殊的字节值（字节的取值范围从十六进制值 00 到 FF）。
+const sample = "\xbd\xb2\x3d\xbc\x20\xe2\x8c\x98"
+
+// 由于上边我们的示例字符串 sample 中的某些字节不是有效的 ASCII，甚至不是有效的 UTF-8，所以直接打印字符串会产生奇怪的输出。产生这种乱码（其确切外观因环境而异）
+fmt.Println(sample)
+
+// 为了找出 sample 字符串底层到底是什么，我们需要把它拆开检查一下。有几种方法可以做到这一点。最明显的是循环其内容并单独提取字节
+
+for i := 0; i < len(sample); i++ {
+    fmt.Printf("%x ", sample[i])  // 输出为十六进制格式:bd b2 3d bc 20 e2 8c 98
+}
+
+// 正如前文所述，索引字符串访问的是单个字节，而不是单个字符
+
+// 为凌乱的字符串生成可呈现输出的一种更简便的方法是使用`fmt.Printf`方法的`%x`（十六进制）格式，它只是将字符串的每两个连续字节转储为十六进制数字：
+fmt.Printf("%x\n", sample)  // 使用`fmt.Printf`方法的`%x`（十六进制）格式，它只是将字符串的每两个连续字节转储为十六进制数字： bdb23dbc20e28c98
+fmt.Printf("% x\n", sample) // 在`%和之间放置一个空格`x： bd b2 3d bc 20 e2 8c 98
+ 
+fmt.Printf("%q\n", sample) // 使用 %q 动词将转义字符串中的任何不可打印的字节序列， "\xbd\xb2=\xbc ⌘"
+// 一个 ASCII 等号和一个空格，最后出现了著名的瑞典“感兴趣的地方”符号。该符号具有 Unicode 值 U+2318，由空格后面的字节编码为 UTF-8（十六进制值`20`）：e2 8c 98。
+
+
+// 短声明字符串，并赋值
+s := "Hello World"
+
+// 单独的字母，汉字，符号表示一个字符
+c1 = 'h'
+c2 = '1'
+
+// 字符串的内容可以用类似于数组下标的方式获取
+
+var s2 = s[0]  // s2="H"
+
+
+
+```
+
+
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+	const placeOfInterest = `⌘`
+
+	fmt.Printf("plain string: ")
+	fmt.Printf("%s", placeOfInterest)
+	fmt.Printf("\n")
+
+	fmt.Printf("quoted string: ")
+	fmt.Printf("%+q", placeOfInterest)
+	fmt.Printf("\n")
+
+	fmt.Printf("hex bytes: ")
+	for i := 0; i < len(placeOfInterest); i++ {
+		fmt.Printf("%x ", placeOfInterest[i])
+	}
+	fmt.Printf("\n")
+}
+
+
+// 以三种不同的方式打印带有单个字符的字符串常量，一次作为纯字符串，一次作为仅 ASCII 引用的字符串，一次作为十六进制的单个字节。
+// 为了避免混淆，我们创建了一个"原始字符串"，用反引号括起来，因此它只能包含文字文本（用双引号括起来的常规字符串可以包含转义符号，但反引号中不可以）
+
+// plain string: ⌘
+// quoted string: "\u2318"
+// hex bytes: e2 8c 98 
+
+// Unicode 字符值 U+2318，就是“感兴趣的地方”符号 ⌘，由字节表示是 e2 8c 98，而这些字节是十六进制值 2318 的 UTF-8 编码。
+
+
+// Go 源代码是 UTF-8，因此字符串字面量的源代码是 UTF-8 编码格式。如果该字符串文字不包含原始字符串不能的转义序列，则构造的字符串将准确地保存引号之间的源文本。
+// Unicode 标准使用术语"码点"来指代由单个值表示的项目。码点 U+2318，十六进制值为 2318，代表符号⌘。
+```
+
+
+
+
+
+多行字符串
+
+
+
+
+
+#### 字符串转义符
+
+
+
+|      |        |      |
+| ---- | ------ | ---- |
+| \n   | 换行符 |      |
+|      |        |      |
+|      |        |      |
+
+#### 字符串常用函数
+
+由于 Go 语言的字符串都以 UTF-8 格式保存，每个中文占用 3 个字节，因此使用 len() 获得两个中文文字对应的 6 个字节。
+
+UTF-8 包提供的utf8.RuneCountInString() 函数用来统计 **Unicode** 字符数量。
+
+```go
+package main
+ 
+import "fmt"
+ 
+func main() {
+	str1 := "hello world"
+	fmt.Println(len(str1)) //11
+ 
+	str2 := "你好"
+	fmt.Println(len(str2)) //6
+}
+
+
+
+package main
+ 
+import (
+	"fmt"
+	"unicode/utf8"
+)
+ 
+func main() {
+	str1 := "hello world"
+	fmt.Println(utf8.RuneCountInString(str1)) //11
+ 
+	str2 := "你好"
+	fmt.Println(utf8.RuneCountInString(str2)) //2
+}
+
+```
+
+
+
+
+
+| 操作     | 方法                                    | 返回值                               |
+| -------- | --------------------------------------- | ------------------------------------ |
+| 长度     | len(s1)  utf8.RuneCountInString(s1)     | 返回字符串 s1 的长度                 |
+| 拼接     | s1+s2 或者 fmt.Sprint( "%s%s", s1 , s2) | 返回新字符串                         |
+| 分割     | strings.Split(s1 , "\\")                | 将 s1 字符串按 \ 分割                |
+| 包含     | strings.Contains(s1, "Hello")           | 判断字符串中是否包含子串，返回布尔值 |
+| 前缀判断 | fmt.HasPrefix(s1, "prefix")             | 判断字符串前缀中是否包含，返回布尔值 |
+| 后缀判断 | strings.HasSuffix(s1,"suffix")          | 判断字符串后缀中是否包含，返回布尔值 |
+
+
 
 
 
@@ -1615,114 +1802,6 @@ if 和 for 语句的条件部分都是布尔类型的值，并且 `==` 和`<` �
 
 
 
-
-### 字符串
-
-Go 的作者 Ken Thompson 是 UTF-8 的发明人（也是C，Unix，Plan9 等的创始人），因此在关于字符编码上，Go有着独到而周全的设计。
-
-Go 语言中的字符串是原生数据类型，在内部实现使用 UTF-8 编码。相比之下， C/C++语言中并不存在原生的字符串类型，通常使用字符数组来表示，并以字符指针来传递。
-
-Go 将大部分字符串处理的函数放在了 `strings`,`bytes `这两个包里。
-
-因为在字符串和整型间没有隐式类型转换，字符串和其他基本类型的转换的功能主要在标准库`strconv`中提供。
-
-`unicode`相关功能在`unicode`包中提供。`encoding`包提供了一系列其他的编码支持。
-
-
-
-- Go语言源代码总是采用`UTF-8`编码
-- 字符串`string`可以包含任意字节序列，通常是`UTF-8`编码的。
-- 字符串字面值，在不带有字节转义的情况下一定是`UTF-8`编码的。
-- Go使用`rune`代表`Unicode`**码位**。一个**字符**可能由一个或多个码位组成（复合字符）
-- Go string是建立在**字节数组**的基础上的，因此对string使用`[]`索引会得到字节`byte`而不是字符`rune`。
-- Go语言的字符串不是正规化(`normalized`)的，因此同一个字符可能由不同的字节序列表示。使用`unicode/norm`解决此类问题。
-
-- **字符串的值必须以双引号包裹，Go语言中单引号包裹的是字符类型**
-
-```go
-// 短声明字符串，并赋值
-s := "Hello World"
-
-// 单独的字母，汉字，符号表示一个字符
-c1 = 'h'
-c2 = '1'
-
-// 字符串的内容可以用类似于数组下标的方式获取
-
-var s2 = s[0]  // s2="H"
-
-
-
-```
-
-
-
-多行字符串
-
-
-
-
-
-#### 字符串转义符
-
-
-
-|      |        |      |
-| ---- | ------ | ---- |
-| \n   | 换行符 |      |
-|      |        |      |
-|      |        |      |
-
-#### 字符串常用函数
-
-由于 Go 语言的字符串都以 UTF-8 格式保存，每个中文占用 3 个字节，因此使用 len() 获得两个中文文字对应的 6 个字节。
-
-UTF-8 包提供的utf8.RuneCountInString() 函数用来统计 **Unicode** 字符数量。
-
-```go
-package main
- 
-import "fmt"
- 
-func main() {
-	str1 := "hello world"
-	fmt.Println(len(str1)) //11
- 
-	str2 := "你好"
-	fmt.Println(len(str2)) //6
-}
-
-
-
-package main
- 
-import (
-	"fmt"
-	"unicode/utf8"
-)
- 
-func main() {
-	str1 := "hello world"
-	fmt.Println(utf8.RuneCountInString(str1)) //11
- 
-	str2 := "你好"
-	fmt.Println(utf8.RuneCountInString(str2)) //2
-}
-
-```
-
-
-
-
-
-| 操作     | 方法                                    | 返回值                               |
-| -------- | --------------------------------------- | ------------------------------------ |
-| 长度     | len(s1)  utf8.RuneCountInString(s1)     | 返回字符串 s1 的长度                 |
-| 拼接     | s1+s2 或者 fmt.Sprint( "%s%s", s1 , s2) | 返回新字符串                         |
-| 分割     | strings.Split(s1 , "\\")                | 将 s1 字符串按 \ 分割                |
-| 包含     | strings.Contains(s1, "Hello")           | 判断字符串中是否包含子串，返回布尔值 |
-| 前缀判断 | fmt.HasPrefix(s1, "prefix")             | 判断字符串前缀中是否包含，返回布尔值 |
-| 后缀判断 | strings.HasSuffix(s1,"suffix")          | 判断字符串后缀中是否包含，返回布尔值 |
 
 
 
