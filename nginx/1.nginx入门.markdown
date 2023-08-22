@@ -188,9 +188,21 @@ nginx-1.21.4
 └── src # nginx 核心源代码
 
 
-# 配置 Vim 高亮, 如果 Vim 没有开启语法高亮的话，最好开启一下
+# 配置 Vim 高亮, 如果 Vim 没有开启语法高亮的话，最好开启一下。如果没有 ~/.vim 文件夹就新建一个
 cp -r contrib/vim/* ~/.vim
 echo 'syntax on' > ~/.vimrc 
+
+# 在 vim ~/.vim/ftdetect/nginx.vim 文件中指定，哪些文件，需要按照nginx的语法进行高亮显示
+au BufRead,BufNewFile *.nginx set ft=nginx
+au BufRead,BufNewFile */etc/nginx/* set ft=nginx
+au BufRead,BufNewFile */usr/local/nginx/conf/* set ft=nginx
+au BufRead,BufNewFile */usr/local/nginx/conf/* set ft=nginx
+
+au BufRead,BufNewFile nginx.conf set ft=nginx
+
+
+
+
 
 
 # configure配置，configure之后，会生成Makefile文件，用于编译和构建nginx
