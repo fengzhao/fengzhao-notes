@@ -1,0 +1,163 @@
+## redolog动态开关
+
+在 MySQL 8.0.21 新版本发布中，支持了一个新特性 **Redo Logging 动态开关**。
+
+借助这个功能，在向一个新实例导数据的场景下，事务处理可以跳过记录 redolog 和 doublewrite buffer，从而加快数据的导入速度。
+
+**同时，付出的代价是短时间牺牲了数据库的ACID保障。所以主要使用场景就是向一个新实例导入数据。**
+
+**所以导完数据之后，一定要记得开启这个参数。**
+
+**注意事项**
+
+- 该特性仅用于新实例导数据场景，不可用于线上的生产环境；
+
+- Redo logging 关闭状态下，支持正常流程的关闭和重启实例；但在异常宕机情况下，可能会导致丢数据和页面损坏；
+
+  Redo logging关闭后异常宕机的实例需要废弃重建，直接重启会有如下报错：[ERROR] [MY-013578] [InnoDB] Server was killed when Innodb Redo logging was disabled. Data files could be corrupt. You can try to restart the database with innodb_force_recovery=6.
+
+- Redo logging 关闭状态下，不支持 cloning operations 和 redo log archiving 这两个功能；
+
+- 执行过程中不支持其他并发的ALTER INSTANCE操作；
+
+
+
+**新增内容**
+
+- SQL语法`ALTER INSTANCE {ENABLE | DISABLE} INNODB REDO_LOG`。
+- INNODB_REDO_LOG_ENABLE 权限，允许执行Redo Logging动态开关的操作。
+- Innodb_redo_log_enabled的status，用于显示当前Redo Logging开关状态。
+
+
+
+**用法**
+
+```sql
+--先赋权
+GRANT INNODB_REDO_LOG_ENABLE ON *.* to 'data_load_admin';
+--然后关闭redo_log
+ALTER INSTANCE DISABLE INNODB REDO_LOG;
+--确认是否关闭成功
+SHOW GLOBAL STATUS LIKE 'Innodb_redo_log_enabled';
+
+--开始往新实例导入数据
+
+--重新开启redo_log
+ALTER INSTANCE ENABLE INNODB REDO_LOG;
+--确认是否开启成功
+SHOW GLOBAL STATUS LIKE 'Innodb_redo_log_enabled';
+```
+
+
+
+参考
+
+https://cloud.tencent.com/developer/article/1700908
+
+
+
+
+
+## MySQL快速导入大量数据
+
+
+
+
+
+在很多场景，我们需要临时快速导入大量数据到某个新数据库。
+
+
+
+
+
+```sql
+-- 数据库应用程序开发中，涉及大批量数据需要插入时，使用 load data 语句的效率比一般的 insert 语句的高很多
+
+-- 可以把load data看成select … into outfile语句的反操作，select … into outfile将数据库表中的数据导出保存到一个文件中。
+
+-- 逻辑导出可以使用  mysqldump 或 select ... into outfile 语句
+-- 然后使用 mysqlimport 或 load data 等语句来导入数据
+
+-- 优点：导入速度非常快，比insert的插入速度快很多，根据官网文档，说是快20倍。
+-- 缺点：只能备份表数据，并不能包含表结构；如果表被drop，是无法恢复数据的。（只是select ... into outfile）
+
+-- select into outfile 导出表
+select col1， col2 from table-name into outfile  '/path/备份文件名称'
+
+-- 将tt表数据备份到tmp目录下的tt.sql文件
+select * from tt into outfile '/tmp/tt.sql';
+-- 如果tt.sql文件存在，会报错文件以及存在
+
+LOAD DATA INFILE '/path/备份文件' into table database.tt
+-- 将tmp下的tt.sql文件恢复到tt表
+load data infile '/tmp/tt.sql' into table db.tt
+
+-- load data与insert速度对比
+-- 以插入10万条数据为例，load data需要大概1.4s，insert大概需要12.2s，大概是insert的12倍。
+
+```
+
+
+
+```shell
+# mysqldump命令创建的是逻辑备份，它输出的结果集有两种格式：
+# 第一种是将数据转换成标准SQL语句(一堆 CREATE , DROP ，INSERT等语句)；
+# 第二种是将数据按照指定的分隔符，输出成定界格式的平面文件。
+
+
+mysqldump -uusername -p -B  db_qhdata_macro  qhdata_source  qhdata_standard  qhdata_support   qhdata_theme_qingdao  > qingdao.sql ;
+
+
+
+
+
+
+
+
+
+
+# mysqldump导出来的sql语句，经常会带注释
+
+
+CREATE DATABASE /*!32312 IF NOT EXISTS*/ `db_qhdata_macro` /*!40100 DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci */ /*!80016 DEFAULT ENCRYPTION='N' */;
+
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
+```sql
+-- 登陆
+mysql -u root -p'password'
+ 
+-- 建库
+CREATE DATABASE database_name  ;
+ 
+-- 设置参数
+set sql_log_bin=OFF;//关闭日志
+set autocommit=0;//关闭autocommit自动提交模式 0是关闭  1 是开启（默认）
+ 
+
+use database_name;
+ 
+-- 开启事务
+START TRANSACTION;
+-- 引入SQL文件
+source 文件的路径;
+-- 在此处会引入sql文件，也就是你的insert;
+-- 成功后事务提交 
+commit;
+
+
+```
+
