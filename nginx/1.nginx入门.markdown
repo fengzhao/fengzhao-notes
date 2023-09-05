@@ -921,6 +921,58 @@ location ^~ /static/files {
 
 
 
+# Nginx限流配置
+
+
+
+流量限制(rate-limiting)，是 Nginx 中一个非常实用，却经常被错误理解和错误配置的功能。我们可以用来限制用户在给定时间内 HTTP 请求的数量。
+
+请求，可以是一个简单网站首页的 GET 请求，也可以是登录表单的 POST 请求。
+
+
+
+流量限制可以用作安全目的，比如可以减慢暴力密码破解的速率。
+
+通过将传入请求的速率限制为真实用户的典型值，并标识目标URL地址(通过日志)，还可以用来抵御 DDOS 攻击。
+
+更常见的情况，该功能被用来保护上游应用服务器不被同时太多用户请求所压垮。
+
+
+
+
+
+- [ngx_http_limit_req_module](https://nginx.org/en/docs/http/ngx_http_limit_req_module.html)
+
+- [ngx_http_limit_conn_module](https://nginx.org/en/docs/http/ngx_http_limit_conn_module.html)
+
+
+
+ngx_http_limit_conn_module 对于一些服务器流量异常、负载过大，甚至是大流量的恶意攻击访问等，进行并发数的限制；
+
+该模块可以根据定义的键来限制每个键值的连接数，只有那些正在被处理的请求（这些请求的头信息已被完全读入）所在的连接才会被计数。
+
+
+
+该模块提供了两个配置参数，limit_conn_zone 和 limit_conn 。
+
+其中 limit_conn_zone 只能配置在 http{} 段，而 limit_conn 则可以配置于http{}，server{}，location{} 区段中。
+
+
+
+https://www.cnblogs.com/biglittleant/p/8979915.html
+
+
+
+
+
+注意事项：
+
+
+
+事务都具有两面性的。ngx_http_limit_conn_module 模块虽说可以解决当前面临的并发问题，但是会引入另外一些问题的。
+
+如前端如果有做LVS或反代，而我们后端启用了该模块功能，那不是非常多503错误了？这样的话，可以在前端启用该模块，要么就是设置白名单。
+
 
 
 
