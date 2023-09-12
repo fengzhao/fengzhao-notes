@@ -2734,6 +2734,8 @@ SHA 算法主要包括其代表算法 SHA-1 和 SHA-1 算法的变种 SHA-2 系�
 
 https://www.tomczhen.com/2016/10/10/hashing-security/
 
+https://cloud.tencent.com/developer/article/1805350
+
 
 
 #### 加密算法
