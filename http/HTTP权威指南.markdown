@@ -598,6 +598,20 @@ func main() {
 
 
 
+# 内容协商机制
+
+
+
+在 [HTTP](https://developer.mozilla.org/zh-CN/docs/Glossary/HTTP) 协议中，***内容协商\***是一种机制，用于为同一 URI 提供资源不同的[表示](https://developer.mozilla.org/zh-CN/docs/Glossary/Representation_header)形式，以帮助用户代理指定最适合用户的表示形式（例如，哪种文档语言、哪种图片格式或者哪种内容编码）。
+
+
+
+
+
+- **主动式内容协商**
+
+- **响应式内容协商**
+
 
 
 
@@ -610,6 +624,8 @@ HTTP 应用程序有时在发送之前需要对内容进行编码。例如，在
 
 
 
+原始媒体/内容的类型通过 [`Content-Type`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Content-Type) 首部给出，而 `Content-Encoding` 应用于数据的表示，或“编码形式”。如果原始媒体以某种方式编码（例如 zip 文件），则该信息不应该被包含在 `Content-Encoding` 首部内。
+
 ## 内容编码类型
 
 HTTP 定义了一些标准的内容编码类型，并允许用扩展编码的形式增添更多的编码。由互联网号码分配机构（IANA）对各种编码进行标准化，它给每个内容编码算法分配了唯一的代号。
@@ -620,7 +636,12 @@ HTTP 定义了一些标准的内容编码类型，并允许用扩展编码的形
 Content-Encoding: gzip,compress,deflate,identity
 ```
 
-
+|          |      |      |
+| -------- | ---- | ---- |
+| gzip     |      |      |
+| compress |      |      |
+| deflate  |      |      |
+| identity |      |      |
 
 
 
