@@ -2751,7 +2751,11 @@ SHA 算法主要包括其代表算法 SHA-1 和 SHA-1 算法的变种 SHA-2 系�
 
 查表法和彩虹表只有在所有密码都以相同方式进行哈希加密时才有效。如果两个用户密码相同，那么他们密码的哈希值也是相同的。
 
+哈希加盐
 
+https://www.tomczhen.com/2016/10/10/hashing-security/
+
+https://cloud.tencent.com/developer/article/1805350
 
 
 

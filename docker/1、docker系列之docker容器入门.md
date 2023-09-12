@@ -606,7 +606,7 @@ docker build -t shykes/myapp:1.0.2 -t shykes/myapp:latest .  # 最后的.表示�
 # 这一步是 docker cli 这个命令行客户端将我们当前目录（即构建上下文） build context 打包发送 Docker daemon 守护进程 （即 dockerd）的过程。
 ```
 
-
+build 也是一个C/S架构，[具体参考](https://docs.docker.com/build/architecture/)
 
 docker build 构建镜像的流程大概就是：
 
@@ -620,10 +620,6 @@ docker build 构建镜像的流程大概就是：
 - 构建完成之后为该镜像打上 tag；
 
 以上就是构建镜像的大致流程，我们也可以通过 `docker history <imageName:Tag>` 命令来逆向推算出 docker build 的过程。
-
-
-
-
 
 
 
@@ -790,7 +786,7 @@ Docker 此前已经提供了 `--userns-remap` 标志支持了相关能力，提�
 
 **FROM**
 
-一个 `Dockerfile` 中 `FROM` 是必备的指令，并且必须是第一条指令。
+一个 `Dockerfile` 中 `FROM` 是必备的指令，并且**必须是第一条指令。**
 
 在 [Docker Hub](https://hub.docker.com/search?q=&type=image&image_filter=official) 上有非常多的高质量的官方镜像，有可以直接拿来使用的服务类的镜像，如 [`nginx`](https://hub.docker.com/_/nginx/)、[`redis`](https://hub.docker.com/_/redis/)、[`mongo`](https://hub.docker.com/_/mongo/)、[`mysql`](https://hub.docker.com/_/mysql/)、[`httpd`](https://hub.docker.com/_/httpd/)、[`php`](https://hub.docker.com/_/php/)、[`tomcat`](https://hub.docker.com/_/tomcat/) 等；
 
@@ -946,7 +942,7 @@ COPY 指令只能从执行 docker build 所在的主机上读取资源并复制�
 
 **WORKDIR** 
 
-WORKDIR指令设置 Dockerfile 中的任何 RUN，CMD，ENTRPOINT，COPY 和 ADD 指令的工作目录。
+WORKDIR指令设置 Dockerfile 中的《任何 RUN，CMD，ENTRPOINT，COPY 和 ADD 指令》的工作目录。
 
 如果 WORKDIR 指 定的目录不存在，即使随后的指令没有用到这个目录，都会创建。
 
@@ -961,6 +957,67 @@ WORKDIR指令设置 Dockerfile 中的任何 RUN，CMD，ENTRPOINT，COPY 和 ADD
 
 
 https://support.huaweicloud.com/bestpractice-swr/swr_bestpractice_0002.html)
+
+
+
+
+
+
+
+#### BuildKit特性
+
+Docker 其实在 2017 年就开始着手增加自己的新一代构建引擎 BuildKit 了，并且在 Docker v18.09 中已经可以通过增加 `DOCKER_BUILDKIT=1` 环境变量的方式来默认启用它了。 后来 Docker Desktop 中也已经将 BuildKit 设置成了默认的构建引擎。
+
+
+
+ 在 Docker v23.0.0 中，`docker build` 实际已经成为了 `docker buildx build` 的别名。
+
+`docker buildx` 同样具备了非常丰富的特性，其中一个有趣的特性在于 **它支持设置不同的构建驱动**，包括使用 docker-container ， Kubernetes 和 remote。
+
+
+
+
+
+BuildKit 由 `buildkitd 守护进程` 和 `buildctl 客户端`组成。
+
+虽然 buildctl 客户端可用于 Linux、macOS 和 Windows，但 buildkitd 守护进程目前仅适用于 `Linux buildkitd` 守护程序依赖以下组件：
+
+- runc 或 crun
+- containerd
+
+
+
+
+
+
+
+buildx 是一个用户接口的 build CLI tools。buildx 不仅仅是 build 命令的升级，还包含了管理 builder 的工具。
+
+在新版本的docker中，使用`docker build` 其实就是会解析成 buildx
+
+
+
+
+
+**builder**
+
+一个 builder 是用于描述一个 buildkit 后端实例
+
+
+
+docker engine 会自动创建一个默认的 builder，作为默认的 backend ，
+
+
+
+**buildkit**
+
+一个 build 的执行是从解析 `docker build` 命令开始的。buildx 解析 docker 
+
+
+
+
+
+
 
 
 

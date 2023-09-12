@@ -373,9 +373,9 @@ https://dev.mysql.com/doc/refman/8.0/en/innodb-preload-buffer-pool.html
 
 在生产中，重启 MySQL 后，会发现一段时间内 SQL 性能变差，然后最终恢复到原有性能。
 
-这是因为 MySQL 已经经常操作的热点数据都已经缓存到 InnoDB Buffer Pool 缓冲池中。
+这是因为 MySQL 已经经常操作的热点数据都已经缓存到 InnoDB Buffer Pool 缓冲池中。MySQL 进程重启后，它在内存中的数据自然就释放了。
 
-MySQL 进程重启后，它在内存中的数据自然就释放了。通过业务的访问才会逐步将热点数据从磁盘缓存到 InnoDB Buffer Pool 中，从磁盘读取数据自然没有从内存读取数据快。
+只有通过业务的访问才会逐步将热点数据从磁盘缓存到 InnoDB Buffer Pool 中，从磁盘读取数据自然没有从内存读取数据快。
 
 **MySQL 重启后，将热点数据从磁盘逐渐缓存到 InnoDB Buffer Pool 的过程称为预热（官方文档称之为warmup）。**
 
@@ -383,18 +383,24 @@ MySQL 进程重启后，它在内存中的数据自然就释放了。通过业�
 
 
 
-为了避免这种情况发生，MySQL 5.6 引入了数据预热机制，在停止数据库的时候，把内存中的热点数据dump到磁盘文件中，启动时，直接把热点数据从磁盘加载回内存中。
+为了避免这种情况发生，MySQL 5.6 引入了数据预热机制：
 
-**需要注意的是，对于较大内存的数据库来说，配置这种预热机制，会让关闭数据库的时间非常长。同样启动过程也会延长。**
+**在停止数据库的时候，把内存中的热点数据dump到磁盘文件中，下次启动时，直接把热点数据从磁盘加载回内存中。**
+
+> **需要注意的是，对于较大内存的数据库来说，配置这种预热机制，会让关闭数据库的时间非常长。同样启动过程也会延长。**
 
 ```toml
 # 关闭数据库时是否保留当前的缓冲池的状态到磁盘中，MySQL5.7之后默认开启
 innodb_buffer_pool_dump_at_shutdown=on
+
 # 保留内存缓冲池中数据的比例，默认是25%
 innodb_buffer_pool_dump_pct=25
-# 缓冲池数据dump到磁盘中的文件名称，默认是ib_buffer_pool，一般放在
+
+# 缓冲池数据dump到磁盘中的文件名称，默认是ib_buffer_pool，该文件默认保存在InnoDB的数据目录下
+# ib_buffer_pool 是纯文本文件，其中保存了 tablespace IDs 和 page IDs
 innodb_buffer_pool_filename=ib_buffer_pool
 
+# 启动MySQL，InnoDB Buffer Pool历史数据导入，MySQL5.7之后默认开启
 innodb_buffer_pool_load_at_startup=on
 
 ```
