@@ -1095,11 +1095,15 @@ TCP 设计中也考虑到这一点，使用了一些算法来检测网络拥塞�
 
 包含嵌入对象的组合页面如果能（通过并行连接）克服单条连接的空载时间和带宽限制，加载速度也会有所提高。
 
+
+
 如果单条连接没有充分利用客户端的因特网带宽，可以将未用带宽分配来装载其他对象。
 
 **即使并行连接的速度可能会更快，但并不一定总是更快。**
 
-客户端的网络带宽不足时，大部分的时间可能都是用来传送数据的。在这种情况下，一个连接到速度较快服务器上的HTTP 事务就会很容易地耗尽所有可用的 Modem 带宽。
+客户端的网络带宽不足时，大部分的时间可能都是用来传送数据的。
+
+在这种情况下，一个连接到速度较快服务器上的HTTP 事务就会很容易地耗尽所有可用的 Modem 带宽。
 
 如果并行加载多个对象，每个对象都会去竞争这有限的带宽，每个对象都会以较慢的速度按比例加载，这样带来的性能提升就很小，甚至没什么提升。
 
@@ -1169,7 +1173,9 @@ https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Connection_management_in_HTTP_
 >
 > 其实就是域名哈希技术（或者说域名分区）
 >
-> 由于浏览器针对同一个域名的并发请求是有限制的，Chrome是 6 个。即在Chrome 中访问 zhihu.com 时，本地与 zhihu.com 同时最多只能有 6 个 TCP 连接。
+> 由于浏览器针对同一个域名的并发请求是有限制的，Chrome是 6 个。
+>
+> 即在Chrome 中访问 zhihu.com 时，本地与 zhihu.com 同时最多只能有 6 个 TCP 连接。
 >
 > 浏览器对并发请求的数目限制是针对域名的，即针对同一域名（包括二级域名）在同一时间支持的并发请求数量的限制。
 >
@@ -1177,7 +1183,9 @@ https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Connection_management_in_HTTP_
 >
 > 但是，每个新主机也会有一次额外的 DNS 查询，也有更多的开销。
 >
-> 在实践中，可以用一个服务器托管资源，然后 cname 解析多个域名到同一台服务器。由于浏览器的限制是对域名的限制，并没有对 IP 的限制，这样就可以突破限制。
+> 在实践中，可以用一个服务器托管资源，然后 cname 解析多个域名到同一台服务器。
+>
+> 由于浏览器的限制是对域名的限制，并没有对 IP 的限制，这样就可以突破限制。
 >
 > 但是这种域名分区并不是越多越好，很明显，如果一个客户端对服务器建立太多 TCP 连接，自然会过多消耗服务器资源。
 >
@@ -1196,7 +1204,7 @@ https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Connection_management_in_HTTP_
 # Connection响应首部和Keep-Alive响应首部
 # Keep-Alive 首部完全是可选的，但只有在提供 Connection: Keep-Alive 时才能使用它
 # timeout  估计了服务器希望将连接保持在活跃状态的时间，这并不是一个承诺值。
-# max      。这并不是一个承诺值。
+# max      这并不是一个承诺值。
 Connection: Keep-Alive
 Keep-Alive: max=5, timeout=120
 # 这个例子说明服务器最多还会为另外 5 个事务保持连接的打开状态，或者将打开状态保持到连接空闲了 2 分钟之后
@@ -3208,6 +3216,23 @@ https://blog.mf8.biz/nginx-install-tls1-3/
 
 ### TLS握手流程
 
+**一般情况下，不管 TLS 握手次数如何，都得先经过 TCP 三次握手后才能进行**。
+
+因为 HTTPS 都是基于 TCP 传输协议实现的，得先建立完可靠的 TCP 连接才能做 TLS 握手的事情。
+
+
+
+「HTTPS 中的 TLS 握手过程可以同时进行三次握手」
+
+- **客户端和服务端都开启了 TCP Fast Open 功能，且 TLS 版本是 1.3；**
+- **客户端和服务端已经完成过一次通信。**
+
+
+
+https://aandds.com/blog/network-tls.html#2fa47076
+
+
+
 
 
 和 HTTP/1.x 一样，目前受到主流支持的 TLS 协议版本是 1.1 和 1.2，分别发布于 2006年和2008年，也都已经落后于时代的需求了。
@@ -3216,7 +3241,19 @@ https://blog.mf8.biz/nginx-install-tls1-3/
 
 
 
-- 握手开始，Client 先发送 ClientHello ，在这条消息中，Client 会上报它支持的所有“能力”。client_version 中标识了 Client 能支持的最高 TLS 版本号；random 中标识了 Client 生成的随机数，用于预备主密钥和主密钥以及密钥块的生成，总长度是 32 字节，其中前 4 个字节是时间戳，后 28 个字节是随机数；cipher_suites 标识了 Client 能够支持的密码套件。extensions 中标识了 Client 能够支持的所有扩展。
+TLS 握手中的确切步骤将根据所使用的密钥交换算法的种类和双方支持的密码套件而有所不同。
+
+RSA 密钥交换算法虽然现在被认为不安全，但曾在 1.3 之前的 TLS 版本中使用。
+
+
+
+
+
+- 客户端问候：握手开始，Client 先发送 ClientHello ，在这条消息中，Client 会上报它支持的所有“能力”。
+  - client_version 中标识了 Client 能支持的最高 TLS 版本号；
+  - random 中标识了 Client 生成的随机数，用于预备主密钥和主密钥以及密钥块的生成，总长度是 32 字节，其中前 4 个字节是时间戳，后 28 个字节是随机数；
+  - cipher_suites 标识了 Client 能够支持的密码套件。
+  - extensions 中标识了 Client 能够支持的所有扩展。
 
 
 
@@ -3731,7 +3768,9 @@ DNS 预读取是一项使浏览器主动去执行域名解析工作的功能，�
 
 传统的浏览器被设计为显示网页，而Chrome的设计目标是支撑“Web App”（当时的js和相关技术已经相当发达了，Gmail等服务也很成功）。
 
-这就要求Chrome提供一个类似于“[操作系统](https://www.zhihu.com/search?q=操作系统&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A999401453})”感觉的架构，支持App的运行。而App会变得相当的复杂，这就难以避免出现bug，然后crash。同时浏览器也要面临可能运行“[恶意代码](https://www.zhihu.com/search?q=恶意代码&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A999401453})”。
+这就要求Chrome提供一个类似于“[操作系统](https://www.zhihu.com/search?q=操作系统&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A999401453})”感觉的架构，支持App的运行。而App会变得相当的复杂，这就难以避免出现bug，然后crash。
+
+同时浏览器也要面临可能运行“[恶意代码](https://www.zhihu.com/search?q=恶意代码&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A999401453})”。
 
 流览器不能决定上面的js怎么写，会不会以某种形式有意无意的攻击浏览器的渲染引擎。如果将所有这些App和[浏览器](https://www.zhihu.com/search?q=浏览器&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A999401453})实现在一个进程里，一旦挂，就全挂。
 
@@ -3743,6 +3782,18 @@ DNS 预读取是一项使浏览器主动去执行域名解析工作的功能，�
 以及Web App之间是并发的，可以提供更好的响应，一个App的渲染卡顿不会影响其他App的渲染（性能）（当然这点线程也能做到）
 
 因此，这样看起来用进程实现非常自然。
+
+
+
+
+
+目前世界上使用率最高的浏览器是 [Chrome](https://www.google.com/chrome/)，它的核心是 [Chromium](https://www.chromium.org/chromium-projects/)（Chrome 的开发实验版），微软的 [Edge](https://www.microsoft.com/en-us/edge) 以及国内的大部分主流浏览器，都是基于 Chromium 二次开发而来，它们都有一个共同的特点：**多进程架构**。
+
+当我们用 Chrome 打开一个页面时，会同时启动多个进程
+
+(Chrome 使用了由 Apple 发展来的号称 “地表最快” 的 [Webkit](https://webkit.org/) 排版引擎，搭载 Google 独家开发的 [V8](https://v8.dev/) Javascript 引擎)
+
+**高性能的 Web 应用的设计和优化都离不开浏览器的多进程架构**，接下来我会以 Chrome 为例，带你了解多进程架构。
 
 
 
@@ -3762,11 +3813,19 @@ Chromium里有三种进程——浏览器、渲染器和插件。
 
 
 
-一般来讲每一个网站的实例都会创建一个渲染进程。但也有特例，比如一个站点通过js在新tab/window上打开同一个站点的另外的页面。这两个界面内部会共享同一个进程，也能彼此分享数据。
+一般来讲每一个网站的实例都会创建一个渲染进程。
 
-在Chrome角度，这两个页面算是“同一个App”。但是如果用户用浏览器的地址栏开一个新的tab，而该网址已经有tab了，Chrome会算是“来自同一域名的两个App”，从而创建新的进程。
+但也有特例，比如一个站点通过js在新tab/window上打开同一个站点的另外的页面。这两个界面内部会共享同一个进程，也能彼此分享数据。
 
-但是大家都知道进程开多了资源消耗也变大，因此Chrome会限制最大的进程数量（比如20）。当进程达到这个数量后，Chrome会倾向于去复用已有的进程（所以这时，隔离性就会被影响）。
+在Chrome角度，这两个页面算是“同一个App”。
+
+
+
+但是如果用户用浏览器的地址栏开一个新的tab，而该网址已经有tab了，Chrome会算是“来自同一域名的两个App”，从而创建新的进程。
+
+但是大家都知道进程开多了资源消耗也变大，因此Chrome会限制最大的进程数量（比如20）。
+
+当进程达到这个数量后，Chrome会倾向于去复用已有的进程（所以这时，隔离性就会被影响）。
 
 
 
