@@ -151,7 +151,7 @@ sudo mkdir /etc/redis
 # 配置文件去掉空格和注释
 grep -v '^#' redis.conf | grep -v '^$' >  /etc/redis.conf
 
-cp utils/redis_init_script 
+cp utils/redis_init_script  
 
 # 源代码包解压之后的./utils/redis_init_script 可以做为一个简单的启停脚本
 # https://github.com/redis/redis/blob/unstable/utils/redis_init_script
