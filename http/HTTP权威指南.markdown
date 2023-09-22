@@ -848,9 +848,17 @@ GET 方法和 HEAD 方法都被认为是安全的，这就意味着使用 GET �
 
 
 
+##### 断点续传主要原理是是HTTP1.1（RFC2616）中定义header中定义的Range和contentRange字段
 
+**range** ： 用于请求头中，指定第一个字节的位置和最后一个字节的位置
 
+```
+Range:(unit=first byte pos)-[last byte pos] 
+```
 
+**Content-Range**： 用于响应头，指定整个实体中的一部分的插入位置，他也指示了整个实体的长度。
+
+在服务器向客户端返回一个部分响应，它必须描述响应覆盖的范围和整个实体长度。
 
 
 
