@@ -275,7 +275,7 @@ UNIX的守护进程一般都命名为*d的形式，如httpd，telnetd等等。
 
 这两个类型影响的是 **Shell 的启动文件 (startup files)**。
 
-当我们使用终端登录一台主机时，主机会为我们启动一个 Shell，由于是登录以后启动的，所以是 login Shell。
+当我们使用终端登录一台主机时，主机会为我们启动一个 Shell 进程，由于是登录以后启动的，所以是 login Shell。
 
 其他情况的 Shell 就是 non-login 的，比如我登录以后，输入 `bash` 再启动一个 Shell，那么这个 Shell 就是 non-login 的。
 
