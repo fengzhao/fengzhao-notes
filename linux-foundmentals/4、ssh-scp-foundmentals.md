@@ -1,4 +1,4 @@
-# 23·ssh 和 scp 基础
+# ssh 和 scp 基础
 
 ## OpenSSH 概览
 
@@ -1312,8 +1312,6 @@ https://blog.csdn.net/weixin_41305441/article/details/107108429
 
 
 # ssh 连接速度
-
-
 
 How to Check the Speed of Your ssh Connection
 
