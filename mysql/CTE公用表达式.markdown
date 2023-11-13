@@ -441,6 +441,17 @@ INNER JOIN
 
 
 
+| 名称           | 数据库                                         |
+| -------------- | ---------------------------------------------- |
+| AUTO_INCREMENT | MySQL                                          |
+| GENERATOR      | Firebird, InterBase                            |
+| IDENTITY DB2   | Derby, Microsoft SQL Server, Sybase            |
+| ROWID          | SQLite                                         |
+| SEQUENCE DB2   | Firebird, Informix, Ingres, Oracle, PostgreSQL |
+| SERIAL         | MySQL, PostgreSQL                              |
+
+
+
 
 
 
