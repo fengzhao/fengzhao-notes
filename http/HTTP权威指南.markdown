@@ -38,6 +38,10 @@ HTTPS 的默认端口是443
 
 
 
+https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Resources_and_specifications
+
+
+
 # HTTP头部
 
 
@@ -49,6 +53,34 @@ HTTPS 的默认端口是443
 原来在 http2.0 协议中，添加了 pseudo header names （伪头部字段）
 
 在HTTP/2.0中，选择以冒号开头的伪头名称，因为这对于HTTP/1.1中的头名称是非法字符。HTTP/1.1不使用伪头名称。
+
+> **HTTP Header 的名称字段是不区分大小写的**
+>
+> Each header field consists of a case-insensitive field name followed by a colon (":"), optional leading whitespace, the field value, and optional trailing whitespace.  https://datatracker.ietf.org/doc/html/rfc7230#section-3.2
+>
+> 需要注意的是，HTTP/2 多了额外的限制，因为增加了头部压缩，要求在编码前必须转成小写 https://datatracker.ietf.org/doc/html/rfc7540#section-8.1.2
+
+
+
+
+
+如今大多数客户端与 HTTP 服务端都默认会把 HTTP Header 的名称字段统一改成小写，避免使用方再重复做大小写转换的处理逻辑。
+
+比如 NodeJS 中的 HTTP 模块就会自动将 Header 字段改成小写。
+
+
+
+在 HTTP/1 中，HTTP 请求和响应都是由「状态行、请求 / 响应头部、消息主体」三部分组成。
+
+一般而言，消息主体都会经过 gzip 压缩，或者本身传输的就是压缩过后的二进制文件（例如图片、音频），但状态行和头部却没有经过任何压缩，直接以纯文本传输。
+
+
+
+随着 Web 功能越来越复杂，每个页面产生的请求数也越来越多，根据 [HTTP Archive](http://httparchive.org/trends.php) 的统计，当前平均每个页面都会产生上百个请求。
+
+越来越多的请求导致消耗在头部的流量越来越多，尤其是每次都要传输 UserAgent、Cookie 这类不会频繁变动的内容，完全是一种浪费。
+
+HTTP/1 时代，为了减少头部消耗的流量，有很多优化方案可以尝试，例如合并请求、启用 Cookie-Free 域名等等，但是这些方案或多或少会引入一些新的问题
 
 
 
