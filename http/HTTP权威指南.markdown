@@ -2640,7 +2640,8 @@ HTTP1.1 有以下安全性问题：
 
 
 1. HTTPS 还是要基于 TCP 来传输
-2. 单独使用一个新的协议，把 HTTP 协议包裹起来。所谓的“HTTP over SSL”，实际上是在原有的 HTTP 数据外面加了一层 SSL 的封装。HTTP 协议原有的 GET、POST 之类的机制，基本上原封不动
+2. 单独使用一个新的协议，把 HTTP 协议包裹起来。
+3. 所谓的“HTTP over SSL”，实际上是在原有的 HTTP 数据外面加了一层 SSL 的封装。HTTP 协议原有的 GET、POST 之类的机制，基本上原封不动
 
 
 
