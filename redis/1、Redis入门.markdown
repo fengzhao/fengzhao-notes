@@ -1149,7 +1149,7 @@ https://liangshuang.name/2017/06/29/redis/
 
 redis 复制主要通过如下机制实现：
 
-- 当主节点和从节点连接良好时，主节点通过发送一个命令流来保持从节点的数据更新。（包括客户端的写入和更新，key过期或被逐出，或者其他变更）
+- 当主节点和从节点连接良好时，主节点通过发送命令流来保持从节点的数据更新。（包括客户端的写入和更新，key过期或被逐出，或者其他变更）
 - 当主节点和从节点连接故障，比如网络超时等。
   -  slave 重新连接上 master 并会尝试进行部分**重同步**：这意味着它会尝试只获取在断开连接期间内丢失的命令流。
 - 当无法进行部分重同步时， slave 会请求进行全量重同步。
@@ -1183,7 +1183,7 @@ redis 复制分为两种情况：
 
 
 
-Redis 默认使用**异步复制**，保证了低延迟和高性能，适用于绝大数的应用场景。
+Redis 默认使用**异步复制**，保证了低延迟和高性能，在绝大数应用场景都是最自然的复制模型。
 
 从节点会异步的处理主节点发过来的数据（周期性地）。所以主节点不需要一直等待直至一个命令被从节点处理完成。
 
@@ -1201,6 +1201,7 @@ Redis 默认使用**异步复制**，保证了低延迟和高性能，适用于�
 - 一主可以多从
 - 可以星形复制，也可以链式复制。
 - redis 在主节点上是非阻塞的。
+-  replicaof（Redis 5.0 之前使用 slaveof）
 
 
 
@@ -1210,19 +1211,21 @@ Redis 默认使用**异步复制**，保证了低延迟和高性能，适用于�
 
 **主从复制的开启，完全是在从节点发起的；不需要我们在主节点做任何事情。**
 
-从节点开启主从复制，有3种方式：
+
+
+从节点开启 replicaof 主从复制，有3种方式：
 
 （1）配置文件
 
-在从服务器的配置文件中加入：slaveof <masterip> <masterport>
+在从服务器的配置文件中加入：replicaof <masterip> <masterport> replicaof 192.168.1.1 6379
 
 （2）启动命令
 
-redis-server启动命令后加入 --slaveof <masterip> <masterport>
+redis-server启动命令后加入 --slaveof <masterip> <masterport> replicaof 192.168.1.1 6379
 
 （3）客户端命令
 
-Redis服务器启动后，直接通过客户端执行命令：slaveof <masterip> <masterport>，则该Redis实例成为从节点。
+redis服务器启动后，直接通过客户端执行命令：slaveof <masterip> <masterport>，则该Redis实例成为从节点。
 
 上述3种方式是等效的，下面以客户端命令的方式为例，看一下当执行了 slaveof 后，Redis主节点和从节点的变化。
 
@@ -1274,9 +1277,13 @@ replica-read-only yes
 
 主从复制过程大体可以分为3个阶段：连接建立阶段（即准备阶段）、数据同步阶段、命令传播阶段；下面分别进行介绍。
 
+
+
 ##### 连接建立阶段
 
 该阶段的主要作用是在主从节点之间建立连接，为数据同步做好准备。
+
+
 
 **步骤一、保存主节点信息**
 
@@ -1952,6 +1959,17 @@ redis 哨兵（sentinel ）也是企业场景中最常见的高可用方案。�
 
 redis-sentinel 本身也是一个独立运行的进程，它能监控多个 master-slave 集群，发现 master 宕机后能进行自动切换。
 
+`redis-sentinel` 可执行文件其实是指向  `redis-server` 可执行文件的符号链接。
+
+可以直接使用 `redis-server` 可执行文件带  `--sentinel` 参数，在哨兵模式下启动。默认监听 26379 端口。
+
+本身设计为在多个 redis-sentinel  进程合作的配置下运行。多个哨兵进程合作的优势如下：
+
+- 当多个哨兵进程对master不可用的事实达成一致时，就会执行故障检测。这样可以降低误报的概率。
+- 哨兵进程自身的高可用
+
+
+
 当一个集群中的 master 失效之后，sentinel 可以选举出一个新的 master 用于自动接替 master 的工作。
 
 集群中的其他 redis 服务器自动指向新的 master 同步数据。
@@ -1986,7 +2004,7 @@ redis的哨兵(sentinel) 系统用于管理多个 redis 服务器组，该系统
 
 - **监控(Monitoring)**：哨兵(sentinel) 会不断地检查你的 Master 和 Slave 是否运作正常。
 
-- **提醒(Notification)**：当被监控的某个 Redis 组出现问题时, 哨兵(sentinel) 可以通过 API 向管理员或者其他应用程序发送通知。
+- **提醒(Notification)**：当被监控的某个 Redis 复制组出现问题时, 哨兵(sentinel) 可以通过 API 向管理员或者其他应用程序发送通知。
 - **故障转移(Automatic failover)**：当一个Master不能正常工作时，哨兵(sentinel) 会开始一次自动故障迁移操作；
   - 它会将失效 Master 的其中一个 Slave 升级为新的 Master,
   -  并让失效 Master 的其他 Slave 改为复制新的 Master; 
@@ -2004,6 +2022,8 @@ redis的哨兵(sentinel) 系统用于管理多个 redis 服务器组，该系统
 5）在一般情况下，每个 Sentinel 会以每 10 秒一次的频率向它已知的所有 Master，Slave 发送 INFO 命令。
 6）当 Master 被 Sentinel 标记为客观下线时，Sentinel 向下线的 Master 的所有 Slave 发送 INFO 命令的频率会从 10 秒一次改为每秒一次。 
 7）若没有足够数量的 Sentinel 同意 Master 已经下线，Master 的客观下线状态就会被移除。 若 Master 重新向 Sentinel 的 PING 命令返回有效回复，Master 的主观下线状态就会被移除。
+
+
 
 **sentinel在内部有3个定时任务**
 
