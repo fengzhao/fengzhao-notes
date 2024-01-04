@@ -780,7 +780,7 @@ Docker 此前已经提供了 `--userns-remap` 标志支持了相关能力，提�
 
 
 
-#### Dockerfile 中的指令
+#### Dockerfile 指令
 
 
 
@@ -800,11 +800,25 @@ Docker 此前已经提供了 `--userns-remap` 标志支持了相关能力，提�
 
 如 [`ubuntu`](https://hub.docker.com/_/ubuntu/)、[`debian`](https://hub.docker.com/_/debian/)、[`centos`](https://hub.docker.com/_/centos/)、[`fedora`](https://hub.docker.com/_/fedora/)、[`alpine`](https://hub.docker.com/_/alpine/) 等，这些操作系统的软件库为我们提供了更广阔的扩展空间。
 
+一个官方的ubuntu镜像有60MB+，CentOS镜像有70MB+。可以把一个可执行文件扔进来直接执行。
+
 
 
 除了选择现有镜像为基础镜像外，Docker 还存在一个特殊的镜像，名为 `scratch`。这个镜像是虚拟的概念，并不实际存在，它表示一个空白的镜像。
 
-**当你使用 `docker pull scratch` 命令来拉取这个镜像的时候会翻车哦**
+**当你使用 `docker pull scratch` 命令来拉取这个镜像的时候会报错哦**
+
+官方给出了下面的方法
+
+```shell
+tar cv --files-from /dev/null | docker import - scratch
+
+docker images ls
+```
+
+
+
+
 
 对于 ubuntu 等最底层的基镜像，其 [Dockerfile](https://github.com/debuerreotype/docker-debian-artifacts/blob/dist-amd64/buster/Dockerfile) 就类似这样：
 
@@ -1857,11 +1871,13 @@ https://man7.org/linux/man-pages/man7/namespaces.7.html
 
 
 
-**Namespace 技术实际上修改了应用进程看待整个计算机“视 图”，即它的“视线”被操作系统做了限制，只能“看到”某些指定的内容。**
+**Namespace 技术实际上修改了应用进程看待整个计算机“视图”，即它的“视线”被操作系统做了限制，只能“看到”某些指定的内容。**
 
-**但对于宿主机来 说，这些被“隔离”了的进程跟其他进程并没有太大区别。**
+**但对于宿主机来说，这些被“隔离”了的进程跟其他进程并没有太大区别。**
 
 
+
+容器技术的核心功能，就是通过约束和修改进程的动态表现，从而为其创造出一个“边界”。
 
 
 
@@ -1875,14 +1891,14 @@ Linux namespaces 是对全局系统资源的一种封装隔离，使得处于不
 
 
 
-| namespace |      | 隔离内容                                 |
-| --------- | ---- | ---------------------------------------- |
-| UTS       |      | 主机名和域                               |
-| IPC       |      | 信号量，消息队列，共享内存               |
-| PID       |      | 进程编号数字空间                         |
-| Network   |      | 网络设备，网络栈，IP地址，端口，路由表等 |
-| Mount     |      | 挂载点，（文件系统）                     |
-| User      |      | 用户和用户组                             |
+| namespace |      | 隔离内容                                                     |
+| --------- | ---- | ------------------------------------------------------------ |
+| UTS       |      | 主机名和域                                                   |
+| IPC       |      | 隔离进程间通信（IPC）资源，包括：信号量，消息队列，共享内存等等。 |
+| PID       |      | 进程编号数字空间                                             |
+| Network   |      | 网络设备，网络栈，IP地址，端口，路由表等                     |
+| Mount     |      | 挂载点，（文件系统）                                         |
+| User      |      | 用户和用户组                                                 |
 
 
 
@@ -1892,13 +1908,14 @@ Linux namespaces 是对全局系统资源的一种封装隔离，使得处于不
 
 Linux 对各种 namespace 提供了四种API：
 
-- 通过 clone() 这个系统调用在创建新进程的同时创建 namespace。把进程放到对应的 namespace 中
-- 查看 /proc/pid/ns 目录，具体可以看内核文档  <https://linux.die.net/man/5/proc>
+- 通过 clone() 这个系统调用在创建新进程的同时创建 namespace。把进程放到对应的 namespace 中。
+- 查看 /proc/pid/ns 目录，具体可以看 内核文档中的 [proc伪文件系统](https://linux.die.net/man/5/proc)  
   -  /proc/pid/ns 里面其实是几个链接文件，其实就是指向不同 namespace 号的文件。
   -  如果两个进程指向的 namespace 号相同，那就说明它们在同一个 namespace 中。
   -  链接文件的作用是只要文件描述符存在，就算该 namespace 下的所有进程都结束，这个 namespace 也一直存在，也可以被其他进程加入进来。
   -  在 docker 中，通过文件描述符定位和加入一个存在的 namespace 是最基本的使用方式。
 - 通过 setns() 让进程加入到一个已经存在的 namespace 
+- **unshare()** : 使某进程脱离某个 namespace
 
 
 
@@ -2027,7 +2044,7 @@ root@gcp-2 /data#
 在 docker 中，通过文件描述符定位和加入一个存在的 namespace 是最基本的方式。
 
 ```shell
-#  把 /proc/xxxx/ns 目录文件使用 --bind 的方式挂载起来，就可以起到上述作用。
+#  把 /proc/{pid}/ns 目录文件使用 --bind 的方式挂载起来，就可以起到上述作用。
 root@pve:~# touch ~/uts
 root@pve:~#
 root@pve:~#
@@ -2079,6 +2096,7 @@ root@pve:~#
     # 缺少第四条的称为线程，如果完全没有用户空间称为内核线程，共享用户空间的称为用户线程。
 
 
+
 ##### fork() 调用
 
 在 Linux 多进程中，系统函数 **fork()** 可以在父进程中创建一个子进程，并为其分配资源，例如存储数据和代码的空间。
@@ -2101,6 +2119,7 @@ import os
 print('当前进程:%s 启动中 ....' % os.getpid())
 # 在 Linux 版本的 python 中，os模块才支持fork函数去调用操作系统的fork()函数。
 pid = os.fork()
+
 if pid == 0:
     print('子进程:%s,父进程是:%s' % (os.getpid(), os.getppid()))
 else:
@@ -2125,7 +2144,7 @@ else:
 
 所以这段代码的判断语句的逻辑可以理解为:
 
-- 通过判断 fork 返回值，来指定子进程中的代码和父进程中的代码。
+- 通过判断 fork 返回值，来指定是在子进程中运行的代码和父进程中运行的代码。
 - 在这里，上面一行代码是在子进程中执行的，下面一行是在父进程中执行的。
 
 使用 fork 后，父进程有义务监控子进程的运行状态，并在子进程退出后自己才能正常退出。否则子进程就会成为 `孤儿进程`。
