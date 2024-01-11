@@ -927,6 +927,44 @@ map 指令是由 `ngx_http_map_module` 模块提供的，默认情况下nginx �
 
 map 的主要作用是`创建自定义变量`，通过使用 nginx 的`内置变量`,去`匹配`某些特定规则;
 
+```nginx
+# $args 是nginx内置变量，就是获取的请求 url 的参数。
+
+# map定义两个变量的映射关系：当 $args 的值等于 debug 的时候，$foo 变量的值就是 1，否则 $foo 的值就为 0.
+
+map $args $foo {
+    	default     0;
+    	debug       1;
+    }
+
+server {
+        listen 8080;
+
+        location /test {
+        	# 将变量$foo的值赋给变量$orig_foo
+            set $orig_foo $foo;
+        
+        	# 强行修改 $args 的值为 debug
+            set $args debug;
+
+            echo "original foo: $orig_foo";
+            echo "foo: $foo";
+        }
+    }
+curl 'http://localhost:8080/test'
+
+# 第一行输出"original foo: 0"
+# 这个请求并没有提供 URL 参数串，$args 最初就是空值，根据map规则，$foo则应当为0
+
+# 第二行输出"foo: 0"
+# 在强行改写 $args 变量的值为字符串 debug 之后，$foo 仍然是 0，显然不符合map规则。
+
+# 原因是$foo在第一次读取时，根据映射规则计算出的值被缓存住了
+
+
+
+```
+
 
 
 # Nginx限流配置
