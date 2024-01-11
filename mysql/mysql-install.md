@@ -572,7 +572,7 @@ select id, SUM(cnt) from t group by id  asc;
 
 
 
-#### 隐式排序起源
+#### 	
 
 最初为什么要用隐式排序呢？
 
