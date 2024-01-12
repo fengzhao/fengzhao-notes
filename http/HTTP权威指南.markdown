@@ -652,17 +652,31 @@ func main() {
 
 在 [HTTP](https://developer.mozilla.org/zh-CN/docs/Glossary/HTTP) 协议中，***内容协商\***是一种机制，用于为同一 URI 提供资源不同的[表示](https://developer.mozilla.org/zh-CN/docs/Glossary/Representation_header)形式，以帮助用户代理指定最适合用户的表示形式（例如，哪种文档语言、哪种图片格式或者哪种内容编码）。
 
+一个URL常常需要代表若干不同的资源。例如那种需要以多种语言提供其内容的网站站点。如果某个站点有说法语的和说英语的两种用户，它可能想用这两种语言提供网站站点信息。理想情况下，服务器应当向英语用户发送英文版，向法语用户发送法文版——用户只要访问网站主页就可以得到相应语言的内容
+
+HTTP提供了内容协商方法，允许客户端和服务器作这样的决定。
+
+通过这些方法，单一的URL就可以代表不同的资源(比如，同一个网站页面的法语版和英语版)，这些不同的版本称为变体。
 
 
 
+内容协商的基本原则：
 
-- **主动式内容协商**
+
+
+- **主动式内容协商/**
 
 - **响应式内容协商**
 
 
 
+内容协商首部集是由客户端发送给服务器用于交换偏好信息的，以便服务器可以从文档的不同版本中选择出最符合客户端偏好的那个来提供服务。
 
+HTTP/1.1 规范指定了一系列的标准标头用于启动服务端驱动型内容协商（[`Accept`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept)、[`Accept-Charset`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept-Charset)、[`Accept-Encoding`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept-Encoding)、[`Accept-Language`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept-Language)）
+
+- [`Accept`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept) 标头列举了用户代理希望接收的媒体资源的 MIME 类型。其中不同的 MIME 类型之间用逗号分隔，同时每一种 MIME 类型会配有一个品质因数（quality factor），该参数明确了不同 MIME 类型之间的相对优先级。
+- [`Accept-Encoding`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept-Encoding) 标头明确说明了（接收端）可以接受的内容编码形式（所支持的压缩算法）。该标头的值是一个 Q 因子清单（例如 `br, gzip;q=0.8`），用来提示不同编码类型值的优先级顺序。默认值 `identity` 的优先级最低（除非声明为其他优先级）。
+- 
 
 # 内容编码
 
