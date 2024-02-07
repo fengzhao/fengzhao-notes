@@ -1780,7 +1780,7 @@ var array [5]int
 // 声明并初始化，使用字面量来初始化数组
 array1 := [5] int {10, 20, 30, 40, 50}
 
-// 在数组文字中 ...代表数组长度，由后面初始化的字面值的数量计算出来
+// 在数组文字中，三个点 ... 代表数组长度，由后面初始化的字面值的数量计算出来
 array2 := [...]int{10, 20, 30, 40, 50}
 
 // 特定元素初始化，其余元素零值。
@@ -2092,12 +2092,19 @@ fmt.Println(newSlice2)			   // 新切片2      [10 90 30 40 50]
 // 切片的 append 
 // 与数组不同，可动态增减元素是数组切片比数组更为强大的功能
 
+
+var car []string                   //空切片
+car = append(car, "热烈欢迎世界各地") //添加第一个元素，使用 append() 函数向切片中添加 1 个元素
+car = append(car, "参加", "2022北京冬奥会", "的代表团！") //使用 append() 函数向切片中添加多个元素
+
+
+
 // appen()函数是builtin.go中定义的一个函数，它的定义如下：func append(slice []Type, elems ...Type) []Type
 // append(被操作的切片,要被增加的元素... ) ，按照 append 语义，第二个参数其实是一个不定长参数。可以根据需求添加n个元素
 slice := []int{10, 20, 30, 40, 50}  //  [10 20 30 40 50]
 newSlice := slice[1:3] // [20 30]
 newSlice = append(newSlice, 60)  // [20 30 60]
-// 由于和原始的 slice 共享同一个底层数组，slice 中索引为 3 的元素的值也被改动了。[10 20 60 40 50]
+// 由于newSlice和原始的slice共享同一个底层数组，slice 中索引为 3 的元素的值也被改动了。[10 20 60 40 50]
 
 // 切片添加元素时，第二个元素也可以是切片，要注意加上 ... （相当于把第二个切片打散传入）
 mySlice = append(mySlice, mySlice2...)
@@ -2112,8 +2119,8 @@ mySlice = append(mySlice, mySlice2...)
 // 为了保持原有切片的底层数组不被改变，可以创建一个长度和容量相同的切片，这时候再append，就可以强制让新切片的第一个 append 操作创建新的底层数组，与原有的底层数组分离。
 // 新切片与原有的底层数组分离后，可以安全地进行后续修改
 source := []string{"Apple", "Orange", "Plum", "Banana", "Grape"}  //字符串切片
-slice := source[2:3:3]     //对第三个元素切片，长度和容量都是1 ，[Plum]
-slice = append(slice, "Kiwi")   // 对新切片追加字符串
+slice := source[2:3:3]     										  //对第三个元素切片，长度和容量都是1 ，[Plum]
+slice = append(slice, "Kiwi")   								  // 对新切片追加字符串
 // 由于新切片长度和容量都是1，append的时候，会创建一个新的底层数组，这个数组包括 2 个元素，并将水果 Plum 复制进来，再追加新水果 Kiwi，并返回一个引用了这个底层数组的新切片
 // 这样就不会对原始切片造成修改
 
@@ -2121,7 +2128,7 @@ slice = append(slice, "Kiwi")   // 对新切片追加字符串
 
 
 // 切片内容复制
-
+// 使用 Go 语言内建的 copy() 函数，可以迅速地将一个切片的数据复制到另外一个切片空间中
 
 
 
@@ -2183,7 +2190,7 @@ slice := [][]int{{10}, {100, 200}}
 
 #### map 内部实现
 
-在向 map 中存储元素的时候，会将每个 key 经过 hash 运算，根据运算得到的 hash 值选择合适的 hash bucket(hash桶)，让后将各个 key/value 存放到选定的hash bucket 中。如果一来，整个map将根据bucket被细分成很多类别，每个key可能会交叉地存放到不同的bucket中。
+在向 map 中存储元素的时候，会将每个 key 经过 hash 运算，根据运算得到的 hash 值选择合适的 hash bucket(hash桶)，然后将各个 key/value 存放到选定的hash bucket 中。如果一来，整个map将根据bucket被细分成很多类别，每个key可能会交叉地存放到不同的bucket中。
 
 
 
@@ -2209,9 +2216,9 @@ slice := [][]int{{10}, {100, 200}}
 ////////////////////////////////////////////// map声明 //////////////////////////////////////////////////////////
 
 // nilmap: 未被初始化的map都称为 nil map 。无法进行赋值，因为没有申请底层数据结构的内存空间
+
 // 声明一个map类型的变量（键string,值string）
 var myMap map[string]  string 
-
 
 // 空map: 不做任何赋值的map，已经申请了底层数据结构的内存空间
 my_map := map[string]string{}
