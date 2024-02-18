@@ -207,6 +207,10 @@ au BufRead,BufNewFile */usr/local/nginx/conf/* set ft=nginx
 # configure配置，configure之后，会生成Makefile文件，用于编译和构建nginx
 ./configure   --user=nginx --group=nginx  --prefix=/usr/local/nginx/  --with-http_stub_status_module  --with-http_ssl_module
 
+# https://blog.51cto.com/meiling/2165811
+./configure   --user=nginx --group=nginx  --prefix=/usr/local/nginx/  --with-http_stub_status_module  --with-http_ssl_module --with-stream  --with-openssl=/usr/local/openssl/  
+
+
 ./configure --help # --help 命令可以查看配置脚本支持哪些参数
 
 # 第一类配置参数
