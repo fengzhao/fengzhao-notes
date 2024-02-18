@@ -42,6 +42,7 @@ openssh 是利用 OpenSSL  协议具体实现的开源软件，包括 ssh,ssh-co
 
 OpenSSL是Openssl团队的一个开源的能够实现安全套接层（SSLv2/v3）和安全传输层（TLSv1）协议的通用加密库。
 该产品支持多种加密算法，包括对称密码、哈希算法、安全散列算法等。
+
 OpenSSL 存在操作系统命令注入漏洞，该漏洞源于c_rehash 脚本未正确清理 shell 元字符导致命令注入。攻击者利用该漏洞执行任意命令。
 
 OpenSSL 是用于传输层安全性（TLS）协议的健壮的，商业级，功能齐全的开源工具包，因 **安全套接字层（SSL）协议** 而闻名。
@@ -79,6 +80,10 @@ OpenSSL 3.0 是下一代的 OpenSSL 发布版，目前仍然在开发中。
 
 https://wiki.openssl.org/index.php/OpenSSL_3.0
 
+https://www.cnblogs.com/Neeo/articles/17861749.html
+
+
+
 历时三年的开发，17次 alpha releases，2 次 beta releases
 
 
@@ -108,6 +113,16 @@ OpenSSL是一款广泛使用的开源套件，可帮助应用程序实现安全�
 在OpenSSL 1.1.1生命周期结束前，用户需采取必要行动，确保获得官方支持和安全保障。
 
 
+
+
+
+目前，OpenSSL 的最新版本是 3.0，它于 2021 年 9 月 7 日正式发布。
+
+OpenSSL 3.0 是一个重大的更新，它引入了许多新的概念和特性，例如提供者（Provider）、FIPS 模块（FIPS Module）、低级 API 的弃用（Deprecation of Low Level APIs）等。这些变化旨在提高 OpenSSL 的可扩展性、灵活性、安全性和易用性。
+
+与此同时，OpenSSL 1.1.1 版本已经达到了其生命周期（EOL）的尾声。根据 OpenSSL 官方的声明，OpenSSL 1.1.1 版本将在 2023 年 9 月 11 日停止支持，届时它将不再收到公开的安全修复程序。这意味着如果您继续使用 OpenSSL 1.1.1 版本，您的数据安全将面临巨大的风险。
+
+因此，我们强烈建议您尽快升级到 OpenSSL 3.0 版本，以享受最新的安全保护和功能增强。升级到 OpenSSL 3.0 版本并不复杂，您只需要下载最新的源代码包，编译并安装即可。如果您遇到任何问题或困难，您可以参考 OpenSSL 官方提供的迁移指南，或者在社区论坛寻求帮助。
 
 
 
