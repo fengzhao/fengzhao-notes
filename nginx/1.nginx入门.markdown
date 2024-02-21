@@ -208,7 +208,7 @@ au BufRead,BufNewFile */usr/local/nginx/conf/* set ft=nginx
 ./configure   --user=nginx --group=nginx  --prefix=/usr/local/nginx/  --with-http_stub_status_module  --with-http_ssl_module
 
 
-# 如果打算用源码的高版本openssl，那编译时候用./configure --with-http_ssl_module --with-openssl=/tmp/openssl-1.0.2k
+# 如果打算用源码的高版本openssl，那编译时候用./configure --with-http_ssl_module --with-openssl=/usr/local/openssl-1.0.2k
 
 # 等号后面的绝对路径或者相对路径就是openssl的源码包tar.gz解压出来的目录，就是里面有目录啊，config二进制文件啊，README啦那些。
 
