@@ -2,11 +2,14 @@
 
 # 安装前提
 
+Gitlab 分为 SaaS 和 Self-Managed 两种版本，其中:
 
-Gitlab 分为 SaaS 和 Self-Managed 两种版本，其中，SaaS 即 gitlab.com 这个在线版本（这个其实就是官方的 Self-Managed 版本，不过有一些额外的功能）；
-Self-Managed 就是指的我们自己本地部署的版本（本地部署也有额外的功能）。
+- SaaS 即 gitlab.com 这个在线版本（这个其实就是官方的 Self-Managed 版本，不过有一些额外的功能）；
+- Self-Managed 就是指的我们自己本地部署的版本（本地部署也有额外的功能）。
 
-Gitlab 官网目前提供了 Enterprise Edition 和 Community Edition 两种 Self-Managed 版本，分别对应 linux 系统的软件包 gitlab-ee 和 gitlab-ce。看名字就知道，gitlab-ee 是收费的功能更加丰富的版本。
+Gitlab 官网目前提供了 Enterprise Edition 和 Community Edition 两种 Self-Managed 版本，分别对应 linux 系统的软件包 gitlab-ee 和 gitlab-ce。看名字就知道，gitlab-ee 是收费的功能更加丰富的版本。此外，企业版根据用户付费情况的不同，又分为了 Starter、Premiun、Ultimate 三种 PLAN，可以在 https://about.gitlab.com/pricing/feature-comparison/ 查看区别。
+
+
 Gitlab 官方推荐用户安装企业版，因为在不购买许可证时，安装的 Gitlab-ee 就是运行为 Gitlab-ce 版本（付费功能自动隐藏），方便用户随时升级到企业版。毫无疑问，必须得选择安装 Gitlab-ee 啊！
 安装方法有很多种，甚至可以选择最原始的从源代码进行安装。针对 Linux 系统 Gitlab 官方提供了很多现成的软件包，安装简单高效，可以在 https://about.gitlab.com/install/ 查看支持的 Linux 发行版。
 
