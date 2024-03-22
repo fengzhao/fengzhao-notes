@@ -64,7 +64,7 @@ curl -u "{account_id}:{license_key}" "https://geolite.info/geoip/v2.1/city/{ip_a
 
 # 下载地址
 https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-Country&license_key={license_key}&suffix=tar.gz
-https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-Country&license_key=o23RigbM86yCt0RW&suffix=tar.gz
+https://download.maxmind.com/app/geoip_download?edition_id=GeoLite2-Country&license_key={license_key}&suffix=tar.gz
 
 # 使用 github actions 自动更新和下载，参考如下
 https://github.com/fengzhao-study-notes/maxmind-geoip
