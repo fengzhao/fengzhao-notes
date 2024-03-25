@@ -3738,6 +3738,92 @@ https://www.easystack.cn/doc/CertificateService/1.1.1/zh-cn/FAQ/Encrypt.html
 
 
 
+## 七、中间人攻击原理
+
+HTTPS 劫持其实是一个老生常谈的话题，从上古时代的 HTTPS 降级（maybe sslstrip），到现在很稳定的安全工具 burpsuite，xray 等，以及一些常见的网络调试工具 fiddler、charles、surge，很多都直接或者间接利用了 HTTPS 的 MITM 攻击。
+
+
+
+使用 Charles，Fiddler，Burpsuite，xray ，启动代理服务器，浏览器配置一个代理就可以抓包进行调试、漏洞测试了。
+
+Fiddler、Charles都是收费软件
+
+**不安全的 CA 可以给任何网站进行签名，TLS 服务端解密需要服务端私钥和服务段证书，然而这个不安全的 CA 可以提供用户暂时信任的服务端私钥和证书**，这就好比你信任了一个信用极差的人进入你的家，这个信用极差的人可以在你的家里乱翻乱拿无恶不作。
+
+
+
+HTTP 抓包神器 Fiddler 的工作原理是在本地开启 HTTP 代理服务，通过让浏览器流量走这个代理，从而实现显示和修改 HTTP 包的功能。
+
+如果要让 Fiddler 解密 HTTPS 包的内容，需要先将它自带的根证书导入到系统受信任的根证书列表中。
+
+一旦完成这一步，浏览器就会信任 Fiddler 后续的「伪造证书」，从而在浏览器和 Fiddler、Fiddler 和服务端之间都能成功建立 TLS 连接。
+
+
+
+而对于 Fiddler 这个节点来说，两端的 TLS 流量都是可以解密的。
+
+
+
+
+
+Web隧道是用 HTTP 的 CONNECT 方法建立起来的。CONNECT方法并 不 是HTTP/1.1 核心规范的一部分，但却是一种得到广泛应用的扩展。
+
+CONNECT 方法请求隧道网关创建一条到达任意目的服务器和端口的 TCP 连接，并对客户端和服务器之间的后继数据进行盲转发。
+
+这里注意有个误区，很多人以为 HTTP 代理只能代理 http:// 内容，其实也可以代理 https:// 以及任何基于 TCP 的内容，但是不能代理 UDP 内容。
+
+等会展开下就知道为什么不能代理 UDP 内容了。
+
+假如我通过代理访问 A 网站，浏览器首先通过 CONNECT 请求，让代理创建一条到 A 网站的 TCP 连接；一旦 TCP 连接建好，代理无脑转发后续流量即可。所以这种代理，理论上适用于任意基于 TCP 的应用层协议，HTTPS 网站使用的 TLS 协议当然也可以。
+
+这也是这种代理为什么被称为隧道的原因。
+
+
+
+Charles is an HTTP and SOCKS proxy server. Proxying requests and responses enables Charles to inspect and change requests as they pass from the client to the server, and the response as it passes from the server to the client. This section outlines some of the proxying functions that Charles provides. Also see the [Tools](https://www.charlesproxy.com/documentation/tools/) section.
+
+Charles 是一个HTTP和**Socks 5 代理**服务器
+
+
+
+**系统代理**
+
+这个概念大家想必大家都比较熟悉， 比如 macOS, 在 系统偏好->网络->高级->代理 里就可以修改系统代理。Windows中同样有这样的设置。
+
+但是在这里设置代理后, 【**应用软件会不会走这个代理完全取决于应用软件自己**】。
+
+比如 Chrome 浏览器会走这儿设置的代理， 而 Terminal 等很多应用就选择无视这个代理。
+
+
+
+URL输入chrome://flags/，搜索：Allow invalid certificates for resources loaded from localhost.，设置为Enable
+
+
+
+这里其实工作在应用层，在这里拦截的话，抓包工具只需要处理应用层的协议包即可。这也是目前大部分抓包工具实现的方式。
+
+许多抓包软件从系统代理捕获数据包，应用程序很容易跳过系统代理。
+
+
+
+浏览器—>Charles 
+
+- Windows / Internet Explorer proxy settings – used automatically by most Windows applications
+- macOS proxy settings – used automatically by most macOS applications
+- Mozilla Firefox proxy settings (all platforms)
+
+在很多朋友尝试 HTTPS 中间人的时候，其实都有过这样的想法：“我挂在路由器上，让我所有的的 HTTPS 流量全都变成明文！”。但是往往受限于性能问题以及部署问题，导致了很多人“只是想想”。
+
+
+
+不管是 HTTP 还是 HTTPS 的劫持，除了解决安全工程问题，其实还有更多别的用途：比如你连入了一个 WIFI，需要 Web 端认证，这个时候你的路由器本质就是在“劫持”你到认证页面，当你认证成功，路由器防火墙策略把你的流量放行，并停止劫持。
+
+毕竟劫持不仅可以劫持用户端，服务端返回的数据也可以被劫持：操纵用户手脚还是蒙住用户的眼睛都可以
+
+
+
+BurpSuite
+
 
 
 # 解决方案 
