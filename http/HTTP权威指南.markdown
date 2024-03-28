@@ -2334,15 +2334,31 @@ https://taoshu.in/http3-port.html
 
 # cookie和session
 
-HTTP Cookie（也叫 Web Cookie 或浏览器 Cookie）是服务器发送到用户浏览器并保存在本地的一小块数据。
+
+
+HTTP 最初是一个匿名、无状态的请求/响应协议（无状态协议）。服务器处理来自客户端的请求， 然后向客户端回送一条响应。
+
+Web 服务器几乎没有什么信息可以用来判定是哪个用 户发送的请求，也无法记录来访用户的请求序列。
+
+现代的 Web 站点希望能够提供个性化的接触。它们希望对连接另一端的用户有更多 的了解，并且能在用户浏览页面时对其进行跟踪。
+
+Amazon.com 这样流行的在线商 店网站可以通过以下几种方式实现站点的个性化
+
+典型的场景比如购物车，当你点击下单按钮时，由于HTTP协议无状态，所以并不知道是哪个用户操作的，所以服务端要为特定的用户创建了特定的Session，用用于标识这个用户，并且跟踪用户，这样才知道购物车里面有几本书。这个Session是保存在服务端的，有一个唯一标识。在服务端保存Session的方法很多，内存、数据库、文件都有。集群的时候也要考虑Session的转移，在大型的网站，一般会有专门的Session服务器集群，用来保存用户会话，这个时候 Session 信息都是放在内存的，使用一些缓存服务比如Memcached之类的来放 Session。
+
+
+
+
+
+HTTP Cookie（也叫 Web Cookie 或浏览器 Cookie）是**服务器发送到用户浏览器并保存在客户端本地**的一小块数据。
 
 它会在浏览器下次向同一服务器再发起请求时被携带并发送到服务器上。
 
 （试想，如果没有 cookie，如果你进入一个购物网站并且尚未登陆，添加商品到购物车后，然后刷新页面，购物车就被清空。那会是多么麻烦）
 
-通常，它用于告知服务端两个请求是否来自同一浏览器，如保持用户的登录状态。
 
-Cookie 使基于[无状态](https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview#HTTP_is_stateless_but_not_sessionless)的HTTP协议记录稳定的状态信息成为了可能。
+
+通常，它用于告知服务端两个请求是否来自同一浏览器，如保持用户的登录状态。Cookie 使基于[无状态](https://developer.mozilla.org/en-US/docs/Web/HTTP/Overview#HTTP_is_stateless_but_not_sessionless)的HTTP协议记录稳定的状态信息成为了可能。
 
 
 
@@ -2354,19 +2370,54 @@ Cookie 曾一度用于客户端数据的存储，因当时并没有其它合适�
 
 
 
+### cookie的用途
+
+
+
+- 会话管理
+- 个性化
+- 用户跟踪（广告）
+
+
+
+
+
+用户首次访问购物网站，网站server为用户生成了一个sessionId，并在响应中携带Set-Cookie: sessionId=123; Expires=Tue, 15 Jan 2021 21:47:38 GMT;
+
+
+
+浏览器收到服务端的响应，从响应中获取到Set-Cookie，将sessionId=123存储浏览器cookie中。由于Set-Cookie中携带了Expires属性，浏览器同时为该cookie设置过期时间（如果没有Expires属性，浏览器会把该cookie作为session cookie处理，当用户关闭浏览器时，该cookie会被删除）
+
+
+
+用户将一个iphone商品加入购物车，浏览器会将此购物车操作发送给server，并且在该请求中的cookie中自动携带上sessionId=123。server会记住sessionId=123的用户在购物车中添加了一个iphone
+
+用户然后关闭了该购物网站
+
+数小时后，用户再此打开此购物网站并访问购物车，网站从后端请求购物车数据。浏览器查找本地cookie，发现保存了此网站sessionId=123的有效cookie，浏览器在网站请求头中附带自动附带sessionId=123的cookie。
+
+服务端收到购物车查询请求，并获从请求头中获取到sessionId=123，服务器查找内存中的id=123的session，发现有此用户的购物车商品数据（一台iphone）。服务器将此数据返回给前端。
+
+用户在购物车中看到了自己上次访问网站是添加的iphone，选中此商品完成结算
+
+
+
+
+
 
 
 ### cookie的过程
 
-当服务器收到 HTTP 请求时，服务器可以在响应头里面添加一个 [`Set-Cookie`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Set-Cookie) 头部。
+当服务器收到 HTTP 请求时，服务器可以在响应头里面添加一个或多个 [`Set-Cookie`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Set-Cookie) 头部。
 
-浏览器收到响应后通常会保存下 Cookie，之后对该服务器每一次请求中都通过 [`Cookie`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Cookie) 请求头部将 Cookie 信息发送给服务器。
+浏览器收到响应后通常会保存 Cookie，之后对该服务器每一次请求中都通过 [`Cookie`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Cookie) 请求头部将 Cookie 信息发送给服务器。
 
 另外，Cookie 的过期时间、域、路径、有效期、适用站点都可以根据需要来指定。
 
 ```shell
 # 服务器返回的浏览器的响应头中添加这个头部，设置cookie
-Set-Cookie: yummy_cookie=choco; tasty_cookie=strawberry
+Set-Cookie: yummy_cookie=choco; 
+Set-Cookie: tasty_cookie=strawberry
 
 
 
@@ -2386,10 +2437,8 @@ Cookie 的生命周期可以通过两种方式定义：
 
 - 持久性 Cookie 的生命周期取决于过期时间（`Expires`）或有效期（`Max-Age`）指定的一段时间。
 
-  例如：
-
   ```shell
-  Set-Cookie: id=a3fWa; Expires=Wed, 21 Oct 2015 07:28:00 GMT;
+Set-Cookie: id=a3fWa; Expires=Wed, 21 Oct 2015 07:28:00 GMT;
   ```
 
 > **提示：**当Cookie的过期时间被设定时，设定的日期和时间只与客户端相关，而不是服务端。
@@ -2406,10 +2455,6 @@ Cookie 的生命周期可以通过两种方式定义：
 
 `Domain` 和 `Path` 标识定义了Cookie的作用域：即允许 Cookie 应该发送给哪些 URL。
 
-
-
-
-
 ```javascript
 //nodejs的demo项目设置cookie
 var http = require('http');
@@ -2425,6 +2470,122 @@ var server = http.createServer(function(request, response)
 server.listen(3000);
 
 ```
+
+
+
+禁用Cookie会怎样?如果客户在浏览器禁用了Cookie，该怎么办呢?
+
+方案一：拼接SessionId参数。在GET或POST请求中拼接SessionID，GET请求通常通过URL后面拼接参数来实现，POST请求可以放在Body中。无论哪种形式都需要与服务器获取保持一致。
+
+这种方案比较常见，比如老外的网站，经常会提示是否开启Cookie。如果未点同意或授权，会发现浏览器的URL路径中往往有"?sessionId=123abc"这样的参数。
+
+
+
+方案二：基于Token(令牌)。在APP应用中经常会用到Token来与服务器进行交互。Token本质上就是一个唯一的字符串，登录成功后由服务器返回，标识客户的临时授权，客户端对其进行存储，在后续请求时，通常会将其放在HTTP的Header中传递给服务器，用于服务器验证请求用户的身份。
+
+
+
+### cookie安全
+
+- 中间人攻击/网络窃听
+- 
+
+
+
+
+
+众所周知，Chrome有浏览器记住和保存密码的功能，可以在Chrome浏览器 "密码管理器" 查看已保存的明文密码。
+
+
+
+```bash
+# Chrome浏览器cookie文件
+
+C:\Users\<UserName>\AppData\Local\Google\Chrome\User Data\Default\Cookies
+C:\Users\<UserName>\AppData\Local\Google\Chrome\User Data\Default\Network\Cookies
+
+
+# Chrome浏览器保存的各种网站的账号密码文件
+
+# 加密的sqlite文件路径: C:\Users\<UserName>\AppData\Local\Google\Chrome\User Data\Default\Login Data
+# 解密密钥文件路径   C:\Users\<UserName>\AppData\Local\Google\Chrome\User Data\Local State
+```
+
+
+
+https://juejin.cn/post/6959830432519520292#heading-15
+
+https://cloud.tencent.com/developer/article/1910076
+
+
+
+
+
+
+
+# Chrome浏览器密码存储机制
+
+
+
+
+
+
+
+chrome保存密码
+
+
+
+**如何查看已保存的密码**
+
+Chrome 密码管理器的进入方式：右侧扳手图标→设置→显示高级设置→密码和表单→管理已保存的密码。
+
+或者直接在地址栏中复制粘贴：chrome://chrome/settings/passwords，然后回车进入。
+
+如果你允许Chrome保存密码，点击密码区域，显示一个“显示”按钮，再点击“显示”按钮，可看到密码。
+
+
+
+当我们登录成功时，并且使用的是一套新的证书（也就是xx次登录该网站），Chrome就会询问我们是否需要记住密码。
+
+那么登录成功后，密码是如何被Chrome存储的呢？
+
+
+
+Chrome已保存的密码数据存储在一个 SQLite 数据库中，路径如上。你可以用  SQLite Database Browser 等数据库IDE工具打开这个文件（文件名就是“Login Data”），查看“logins”表格，该表就包含了被保存的密码。但你会看到“password_value” 域的值是不可读，因为值已加密。
+
+**以密文的方式存储，加密方式是 AES-256 in GCM mode，但是密钥也存储在本地，也就是说可以手动完成解密**
+
+
+
+为了执行加密（在Windows操作系统上），Chrome使用了Windows提供的API，该API**只**允许用于加密密码的Windows用户账户去解密已加密的数据。
+
+所以基本上来说，你的主密码就是你的Windows账户密码。所以，只要你登录了用自己的账号Windows，Chrome就可以解密加密数据。
+
+
+
+CryptProtectData
+
+
+
+
+
+不过，因为你的Windows账户密码是一个常量，并不是只有Chrome才能读取“主密码”，其他外部工具也能获取加密数据，同样也可以解密加密数据。
+
+比如使用NirSoft的免费工具ChromePass*（*[*NirSoft官方下载*](http://www.nirsoft.net/utils/chromepass.html)*）*，就可以看得你已保存的密码数据，并可以轻松导出为文本文件。
+
+
+
+既然 ChromePass 可以读取加密的密码数据，那恶意软件也能读取的。
+
+当ChromePass.exe被上传至VirusTotal时，超过半数的反病毒（AV）引擎会标记这一行为是危险级别。
+
+
+
+不过在这个例子中，这个工具是安全的。不过有点囧，微软的Security Essentials并没有把这一行为标记为危险。
+
+在后渗透中，获取用户凭证是很重要的一步，其中就包括浏览器的各种敏感信息。包括浏览记录、下载历史、cookie、书签等等。
+
+Chrome的数据文件存储路径可以通过在搜索框中输入chrome://version 看到，其中Profile Path就是存储路径。
 
 
 
