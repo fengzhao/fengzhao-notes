@@ -110,6 +110,10 @@ Linux 的 Shell 种类众多，常见的有：
 
   是UNIX最初使用的 shell，而且在每种 UNIX 上都可以使用。Bourne Shell 在 shell 编程方面相当优秀，但在处理与用户的交互方面做得不如其他几种 shell。
 
+  **在debian系操作系统中，sh指向dash；在centos系操作系统中，sh指向bash。**
+
+  
+
 - **Bourne Again Shell（/bin/bash）**
 
   - **Linux 默认的 shell ，它是 Bourne Shell 的扩展。 与 Bourne Shell 完全兼容，并且在 Bourne Shell 的基础上增加了很多特性，可以提供命令补全，命令编辑和命令历史等功能。**
@@ -1285,9 +1289,21 @@ source 的意思是读入或加载指定的 shell 脚本文件，然后依次执
 
 这种情况最多的用法就是 shell 脚本中调其他 shell 。在单个进程中执行的。
 
+
+
+
+
 ## 2、变量
 
 变量是暂时存储数据的地方及标记，所存储的数据位于内存空间中。
+
+默认情况下，bash shell是不会区分变量类型的，其它变成语言如（c、c++、java等）在定义一个变量时需要先定义变量的类型，常见的变量类型为整数、字符串、小数等。
+
+
+
+**shell变量在定义时可以不用去指定，当然也可以使用declare显示定义变量的类型，一般情况下shell变量没有这个需求。**
+
+
 
 通过正确的调用内存中变量的名字可以取出其变量值，使用 $VARIABLES 或 ${VARIABLES} 来引用变量。
 
@@ -1299,6 +1315,8 @@ source 的意思是读入或加载指定的 shell 脚本文件，然后依次执
 
 
 - 环境变量：可以在创建它们的 shell 及其派生出来的任意子进程 shell 中使用，环境变量又分为用户自定义环境变量和 bash 内置环境变量。
+  - 用户自定义环境变量
+  - bash内置全局变量(https://www.gnu.org/software/bash/manual/bash.html#Bash-Variables)
 
 
 - 普通变量（局部变量）：只能在创建他们的 shell 函数内和 shell 脚本中使用。普通变量一般由开发者在开发脚本时创建。
@@ -1362,6 +1380,8 @@ fengzhao@fengzhao-pc:~$
 根据规范，所有环境变量的名字都定义成大写。在命令行中定义的变量仅在当前 shell 会话有效，一旦退出会话，这些变量就会失效，这样的就是普通变量。
 
 如果需要永久保存，可以在 ~/.bash_profile 或 ~/.bashrc 中定义。每次用户登陆时，这些变量都将被初始化。或放到 /etc/pfofile 文件中定义，这是全局配置文件。
+
+
 
 ### 2.2、变量使用技巧
 
@@ -1466,6 +1486,10 @@ MySQL-5.7.26.tar.gz
 | $PS1            | 基本提示符，就是命令行终端中的 prompt ，对于root用户是#，对于普通用户是\$ |      |
 
 [参考](https://blog.csdn.net/iEearth/article/details/52694106)
+
+
+
+
 
 
 ### 2.4、shell 中特殊且重要的变量
