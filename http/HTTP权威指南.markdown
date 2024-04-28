@@ -2470,7 +2470,7 @@ Cookie 的生命周期可以通过两种方式定义：
 - 持久性 Cookie 的生命周期取决于过期时间（`Expires`）或有效期（`Max-Age`）指定的一段时间。
 
   ```shell
-Set-Cookie: id=a3fWa; Expires=Wed, 21 Oct 2015 07:28:00 GMT;
+  Set-Cookie: id=a3fWa; Expires=Wed, 21 Oct 2015 07:28:00 GMT;
   ```
 
 > **提示：**当Cookie的过期时间被设定时，设定的日期和时间只与客户端相关，而不是服务端。
@@ -4731,7 +4731,7 @@ https://www.rgc.com/v1/
 
 一道经典的面试题"浏览器打开url到页面展现，中间发生了什么？"，面试官通常用这道题来考察候选者对网络知识掌握的广度和深度。
 
-
+[重新思考浏览器输入了 URL 并按下回车之后到底发生了什么——本地 DNS 部分 | Nova Kwok's Awesome Blog](https://nova.moe/rethink-type-url-dns/)
 
 ## 1、浏览器URL自动补全填充
 
@@ -4794,6 +4794,8 @@ https://yangleiup.github.io/accumulate/url%E7%BC%96%E7%A0%81%E4%B8%8E%E8%A7%A3%E
 在浏览器中访问域名的时候，会优先访问浏览器缓存，如果未命中则访问 OS 缓存，最后再进行DNS查找。
 
 
+
+https://jaminzhang.github.io/dns/DNS-TTL-Understanding-and-Config/
 
 我们在设置 DNS 解析记录会有一个 ttl 值(time to live)，单位是秒，意思是这个记录最大有效期是多少秒。
 
@@ -4968,7 +4970,9 @@ webhook是在特定情况下触发的一种api（回调），用于在项目发�
 
 # HTTP内容协商
 
-一个 URL 常常需要代表若干不同的资源。例如那种需要以多种语言提供其内容的网站站点。如果某个站点（比如 Joe 的五金商店这样的站点）有说法语的和说英语的两种用户，它可能想用这两种语言提供网站站点信息。但在这种情况下，当用户请求 http://www.joes-hardware.com 时，服务器应当发送哪种版本呢？法文版还是英文版？
+一个 URL 常常需要代表若干不同的资源。例如那种需要以多种语言提供其内容的网站站点。如果某个站点（比如 Joe 的五金商店这样的站点）有说法语的和说英语的两种用户，它可能想用这两种语言提供网站站点信息。
+
+但在这种情况下，当用户请求 http://www.joes-hardware.com 时，服务器应当发送哪种版本呢？法文版还是英文版？
 
 
 
