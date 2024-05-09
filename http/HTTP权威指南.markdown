@@ -5143,7 +5143,11 @@ webhook是在特定情况下触发的一种api（回调），用于在项目发�
 
 # HTTP内容协商
 
-一个 URL 常常需要代表若干不同的资源。例如那种需要以多种语言提供其内容的网站站点。如果某个站点（比如 Joe 的五金商店这样的站点）有说法语的和说英语的两种用户，它可能想用这两种语言提供网站站点信息。
+***内容协商\***是一种机制，用于为同一 URI 提供资源不同的[表示](https://developer.mozilla.org/zh-CN/docs/Glossary/Representation_header)形式，以帮助用户代理指定最适合用户的表示形式（例如，哪种文档语言、哪种图片格式或者哪种内容编码）。
+
+一个 URL 常常需要代表若干不同的资源。例如那种需要以多种语言提供其内容的网站站点。
+
+如果某个站点（比如 Joe 的五金商店这样的站点）有说法语的和说英语的两种用户，它可能想用这两种语言提供网站站点信息。
 
 但在这种情况下，当用户请求 http://www.joes-hardware.com 时，服务器应当发送哪种版本呢？法文版还是英文版？
 
@@ -5151,11 +5155,19 @@ webhook是在特定情况下触发的一种api（回调），用于在项目发�
 
 **Google 建议对每种语言版本的网页使用不同的网址，而不是使用 Cookie 或浏览器设置来调整网页上的内容语言。**
 
-世界各国谷歌网址是由Google加上不同国家和地区顶级域名（ccTLD）后缀组成的。为了适应不同国家地区的搜索习惯，提供最精确的搜索结果，谷歌在全世界主要国家地区都有对应的不同网址。
+世界各国谷歌网址是由Google加上不同国家和地区顶级域名（ccTLD）后缀组成的。
 
-比如，美国谷歌：google.com（美国不使用google.us），德国谷歌：google.de等等。不同国家的谷歌，搜索同一个关键词，结果都是不一样的，这也就是地域化的区别。
+为了适应不同国家地区的搜索习惯，提供最精确的搜索结果，谷歌在全世界主要国家地区都有对应的不同网址。
 
-用户在访问谷歌时，也会优先跳转到相应国家的Google网址。 因此，如果是针对某个国家地区做SEO，那么在验证结果的时候，一定要使用该国家的谷歌进行搜索，这样才能得到最准确的结果。
+
+
+比如，美国谷歌：google.com（美国不使用google.us），德国谷歌：google.de等等。
+
+不同国家的谷歌，搜索同一个关键词，结果都是不一样的，这也就是地域化的区别。
+
+用户在访问谷歌时，也会优先跳转到相应国家的Google网址。
+
+因此，如果是针对某个国家地区做SEO，那么在验证结果的时候，一定要使用该国家的谷歌进行搜索，这样才能得到最准确的结果。
 
 **固定访问谷歌地址**
 
@@ -5165,13 +5177,37 @@ webhook是在特定情况下触发的一种api（回调），用于在项目发�
 
 
 
+
+
+在服务端驱动型内容协商或者主动内容协商中，浏览器（或者其他任何类型的用户代理）会随同 URL 发送一系列的 HTTP 头。这些头描述了用户倾向的选择。
+
+服务器则以此为线索，通过内部算法来选择最佳方案提供给客户端。如果它不能提供一个合适的资源，它可能使用 [`406`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Status/406)（Not Acceptable）、[`415`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Status/415)（Unsupported Media Type）进行响应并为其支持的媒体类型设置标头（例如，分别对 POST 和 PATCH 请求使用 [`Accept-Post`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept-Post) 或 [`Accept-Patch`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept-Patch) 标头）。相关算法与具体的服务器相关，并没有在规范中进行规定。
+
+
+
+HTTP/1.1 规范指定了一系列的标准标头用于启动服务端驱动型内容协商（[`Accept`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept)、[`Accept-Charset`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept-Charset)、[`Accept-Encoding`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept-Encoding)、[`Accept-Language`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept-Language)）。
+
+尽管严格来说 [`User-Agent`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/User-Agent) 并不在此列，有时候它还是会被用来确定给客户端发送的所请求资源的特定表示形式，不过这种做法不提倡使用。
+
+服务器会使用 [`Vary`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Vary) 标头来说明实际上哪些标头被用作内容协商的参考依据（确切来说是与之相关的响应标头），这样可以使[缓存](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Caching)的运作更有效。
+
+除此之外，有一个向可供选择的列表中增加更多标头的实验性提案，称为*客户端提示*（Client Hint）。客户端示意机制可以告知运行用户代理的设备类型（例如，是桌面计算机还是移动设备）。
+
+即便服务端驱动型内容协商机制是最常用的对资源特定表示形式进行协商的方式，它也存在如下几个缺点：
+
+- 服务器对浏览器并非全知全能。即便是有了客户端示意扩展，也依然无法获取关于浏览器能力的全部信息。与客户端进行选择的代理驱动型内容协商机制不同，服务器端的选择总是显得有点武断。
+- 客户端提供的信息相当冗长（HTTP/2 协议的标头压缩机制缓解了这个问题），并且存在隐私风险（HTTP 指纹识别技术）。
+- 因为给定的资源需要返回不同的表示形式，共享缓存的效率会降低，而服务器端的实现会越来越复杂。
+
+
+
 # 跨域
 
 
 
 “前端如何解决跨域问题?” 
 
-这个是前段在知乎看到的一个提问，这几乎是做前端都会遇到的一个问题，产生的情况可能会很多，解决一个问题还是要先了解下为什么会产生这样问题
+这个是前段在知乎看到的一个提问，这几乎是做前端都会遇到的一个问题，产生的情况可能会很多，解决一个问题还是要先了解下为什么会产生这样问题。
 
 
 
@@ -5181,9 +5217,9 @@ CORS 是浏览器端还是服务器端的限制?
 
 
 
-
-
 ## 浏览器同源策略
+
+同源策略是在客户端网络应用（比如网络浏览器）上实施的安全政策，用于防止来自不同来源的资源之间发生交互。虽然这种安全措施可用于防止恶意行为，但也可能会阻止已知来源之间开展的合法交互。
 
 
 
@@ -5207,15 +5243,17 @@ CORS 是浏览器端还是服务器端的限制?
 
 跨域并不是请求发不出去，请求能发出去，服务端能收到请求并正常返回结果，只是结果被浏览器拦截了。
 
+不仅仅是静态的资源。WebStorage、Cookie、IndexDB，在浏览器层面上都是以域这一概念来划分管理的。
+
+而且这个划分管理行为，就是在浏览器本地生效，和服务器、其他客户端没有直接关系。
 
 
-不仅仅是静态的资源。WebStorage、Cookie、IndexDB，在浏览器层面上都是以域这一概念来划分管理的。而且这个划分管理行为，就是在浏览器本地生效，和服务器、其他客户端没有直接关系。
 
 
 
+当一个项目变大时，把所有的内容架构在一个域名网站或者后台服务器是不现实的。
 
-
-当一个项目变大时，把所有的内容架构在一个网站或者后台服务器是不现实的。
+虽然这种安全措施可用于防止恶意行为，但也可能会阻止已知来源之间开展的合法交互。
 
 ### 非同源数据存储访问
 
@@ -5236,13 +5274,11 @@ CORS 是浏览器端还是服务器端的限制?
 
 
 
-
-
 ### 浏览器是个公共应用
 
 无论是在PC还是移动设备商，你的 Chrome 和 Firefox 是所有网站应用的载体。
 
-你在访问 淘宝网 的时候，相当于从 [www.taobao.com](http://www.taobao.com/) 的服务器上下载了对应的 html、css、js资源，页面也从 api.taobao.com (JSONP 也好, CORS 也罢）获取了商品数据。
+你在访问淘宝网的时候，相当于从 [www.taobao.com](http://www.taobao.com/) 的服务器上下载了对应的 html、css、js资源，页面也从 api.taobao.com (JSONP 也好, CORS 也罢）获取了商品数据。
 
 页面 JavaScript 把获取到的热门商品数据缓存到了本地的 localstorage 中，用于优化体验。
 
@@ -5267,3 +5303,13 @@ CORS 是浏览器端还是服务器端的限制?
 相同的情况类比一下，把浏览器当做系统本身(Chrome Book 请给我打钱)，把各个站点相当于“系统上”的一个个App。
 
 下面的页面各位 FEer一定很熟悉，这是Chrome浏览器对于页面中所有加载的静态资源的域名划分。
+
+
+
+## CROS
+
+[跨域资源共享](https://fetch.spec.whatwg.org/#http-cors-protocol) (CORS) 规范是由[万维网联盟 (W3C)](https://www.w3.org/) 制定的，该规范旨在克服上述限制。
+
+
+
+https://developer.mozilla.org/zh-CN/docs/Web/HTTP/CORS
