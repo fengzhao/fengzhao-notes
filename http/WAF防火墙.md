@@ -185,6 +185,14 @@ SecRule REQUEST_HEADERS:Content-Length "!@rx ^\d+$" \
 
 
 
+ModSecurity在最初设计的时候，它只是Apache的一个扩展模块，随着时间的推移、用户量的增加，为了满足用户的需求，该项目增加了对Nginx以及IIS的支持，但由于其本身是Apache的一个模块，因此在编译以及运行时，都离不开Apache这个主体，意思就是，即便是在Nginx上使用ModSecurity，但仍需先安装Apache。以上为ModSecurity v2版本的实现机制。
+
+
+
+为了满足日益增长的对额外平台支持的需求，因此ModSecurity团队决定删除其对Apache的依赖，使其更加独立于平台，ModSecurity v3版本由此诞生，同时取了一个新名字：Libmodsecurity。ModSecurity v3版本可以不依赖WEB服务进行独立安装，但是如果需要与WEB服务进行联动工作时，则需要安装对应的Connector（连接器），如Nginx需要安装ModSecurity-nginx connector，Apache需要安装ModSecurity-apache connector。
+
+
+
 在ModSecurity v3之前的版本中，Nginx的兼容性较差，这是因为在ModSecurity在设计之初是作为Apache HTTP服务的一个模块进行设计开发的，所以导致ModSecurity严重依赖于Apache HTTP Server。随着时间的推移，由于大众需求，该项目已经扩展到其他平台，包括Nginx 和 IIS等。为了满足对额外平台的支持不断增长的需求，需要删除该项目下的 Apache 依赖项，使其更加独立于平台。在ModSecurity v3版本中进行了重构，整个项目完全进行重写，去除了Apache HTTP的依赖，可以完美兼容Nginx。新的ModSecurity v3版本中，核心功能转移到了名为 Libmodsecurity 的独立组件中，通过连接器连接到 Nginx 和 Apache。接收 Web 流量并应用传统的 ModSecurity 处理。
 
 
@@ -279,5 +287,67 @@ access_by_lua_file "/usr/local/openresty/nginx/conf/waf/access.lua";
 
 
 
+```
+
+
+
+# 防CC攻击
+
+在大规模CC攻击中，单台傀儡机发包的速率往往远超过正常用户的请求频率。针对这种场景，直接对请求源设置限速规则是最有效的办法。
+
+
+
+# IP黑名单
+
+
+
+
+
+东北大学网络威胁黑名单系统
+
+http://antivirus.neu.edu.cn/ssh/lists/neu.txt
+
+
+
+Linux上黑名单可以直接添加到 `/etc/hosts.deny` 里面，这样就可以拦截了，可以写一个脚本，放在crontab里面执行一下
+
+```bash
+#!/bin/sh
+# Fetch NEU SSH Black list to /etc/hosts.deny
+#
+
+export PATH=/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin
+
+URL=http://antivirus.neu.edu.cn/ssh/lists/neu_sshbl_hosts.deny.gz
+HOSTSDENY=/etc/hosts.deny
+TMP_DIR=/dev/shm
+FILE=hosts.deny
+
+[ -d $TMP_DIR ] || TMP_DIR=/tmp
+
+cd $TMP_DIR
+
+curl --connect-timeout 60 $URL 2> /dev/null | gzip -dc > $FILE 2> /dev/null
+
+LINES=`grep "^sshd:" $FILE | wc -l`
+
+if [ $LINES -gt 10 ]
+then
+    sed -i '/^####SSH BlackList START####/,/^####SSH BlackList END####/d' $HOSTSDENY
+    echo "####SSH BlackList START####" >> $HOSTSDENY
+    cat $FILE >> $HOSTSDENY
+    echo "####SSH BlackList END####" >> $HOSTSDENY
+fi
+
+
+#==========开始复制==========
+ldd `which sshd` | grep libwrap # 确认sshd是否支持TCP Wrapper，输出类似:libwrap.so.0 => /lib/libwrap.so.0 (0x00bd1000)
+cd /usr/local/bin/
+wget antivirus.neu.edu.cn/ssh/soft/fetch_neusshbl.sh
+chmod +x fetch_neusshbl.sh
+cd /etc/cron.hourly/
+ln -s /usr/local/bin/fetch_neusshbl.sh .
+./fetch_neusshbl.sh
+#=========结束复制==========
 ```
 

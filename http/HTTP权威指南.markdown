@@ -3389,6 +3389,11 @@ Base64 是我们最常见的编码，除此之外，其实还有 Base16、Base32
 
 
 
+- **确保软件来自软件发布者**
+- **保护软件在发行后不被更改**
+
+
+
 代码签名的用例包括内部或外部使用的软件、补丁或修复程序、测试、IoT设备产品开发、计算环境和移动应用程序。
 
 除了代码和软件之外，代码签名还适用于应用程序、固件、文件、消息、XML、脚本、容器和图像。
@@ -5023,6 +5028,10 @@ https://yangleiup.github.io/accumulate/url%E7%BC%96%E7%A0%81%E4%B8%8E%E8%A7%A3%E
 
 
 
+
+
+https://blog.skk.moe/post/what-happend-to-dns-in-proxy/
+
 https://jaminzhang.github.io/dns/DNS-TTL-Understanding-and-Config/
 
 我们在设置 DNS 解析记录会有一个 ttl 值(time to live)，单位是秒，意思是这个记录最大有效期是多少秒。
@@ -5032,9 +5041,28 @@ https://jaminzhang.github.io/dns/DNS-TTL-Understanding-and-Config/
 
 
 - 在Chrome地址栏中输入chrome://net-internals/#dns 就可以看各域名的DNS 缓存时间。默认，Chrome对每个域名会默认缓存60s。
-  - 注意，
 
 - 
+
+
+
+
+
+
+
+### 浏览器是怎么发出的 DNS 请求
+
+
+
+现代的浏览器本身会缓存 DNS 记录，这个缓存在 Chrome 的官方文档中被称为 built-in resolver 或者 async resolver
+
+浏览器DNS缓存 
+
+
+
+浏览器 DNS 缓存（未命中） -> 浏览器调用 `getaddrinfo()` 查询数据，其中，`getaddrinfo()` 的查询背后有多个缓存
+
+
 
 
 
