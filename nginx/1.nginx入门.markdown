@@ -780,6 +780,24 @@ server {
 
 
 
+server_name 指令是用来配置究竟是哪个 server 来处理我们的请求的。有时候，一个 server_name 中可能会有多个域名，这时候是如何选择的呢？
+
+1. server_name 指令后可以跟多个域名，第一个是主域名，多个域名之间空格分隔
+2. 泛域名：仅支持在最前或最后加 *，例如：`server_name *.taohui.tech`
+3. 正则表达式匹配：`server_name www.taohui.tech ~^www\d+\.taohui\.tech$;`
+
+当 server_name 指令后有多个域名时，会有一个 `server_name_in_redirect` 的配置，这个配置默认关闭，它使用来控制域名重定向的，也就是这个配置开启之后，请求过来会重定向到主域名访问。
+
+```nginx
+Syntax  server_name_in_redirect on | off;
+Default server_name_in_redirect off; 
+Context http, server, location
+```
+
+
+
+
+
 ### listen 指令
 
 listen 指令在 server 块中生效，用来配置监听哪些网络接口地址，哪些端口，由这些端口来处理请求。listen 指令的配置语法如下：
@@ -816,6 +834,123 @@ listen *:8080;
 
 
 ### root指令
+
+root 指令指定了 Nginx 查找文件的根目录，适用与`server` 和 `location`。可以指定多个，如果 `locaiton` 中没有指定，会往其外层的 `server` 或 `http` 中寻找继承。
+
+
+
+```nginx
+location /request_path/image/ {
+	root /local_path/image/;
+}
+```
+
+
+
+这样配置的结果就是当客户端请求 `/request_path/image/cat.png` 时，`Nginx` 把请求映射为 `/local_path/image/request_path/image/cat.png`
+
+
+
+```nginx
+location /static {
+	root /var/www/html/static;
+}
+
+# 对于这个配置
+# 我们访问http://127.0.0.1/static/stc.jpg，发现并不能显示图片，通过查看`error.log`发现我们最后访问的地址是`/var/www/html/static/static/stc.jpg`。所以 root 中配置的路径要去掉最后的`static`。
+```
+
+**其实就是将访问的地址进行拼接了上去**
+
+
+
+```nginx
+location /static {
+	root /var/www/html;
+}
+
+location /static/ {
+	root /var/www/html;
+}
+
+
+# 如果在location最后多加一个斜杠/，这样一来最后拼接后变成了这样/var/www/html/static//stc.jpg，这样并不会影响我们访问资源，因为在nginx中，多个斜杠/和一个斜杠/是等价的。
+
+
+# 配置 location /static 可以匹配 /static/content.js 这种请求，也可以匹配 /static11/ 等等，只要以 wandou 开头的目录都可以匹配到。
+# 配置 location /wandou/ 必须精确匹配 /wandou/ 这个目录的请求,
+
+
+
+
+
+
+
+
+```
+
+
+
+**有时候访问的地址要求后面以 / 结尾，如果用户忘记输入 /，Nginx 就会自动加上 /**
+
+```nginx
+server {
+	listen	80;
+	server_name localhost;
+	location / {
+		root html;
+		index index.html;
+	}
+}
+```
+
+要想访问上述资源，很简单，只需要通过  http://192.168.200.133  直接就能访问，地址后面不需要加 /
+
+
+
+````
+server {
+	listen	80;
+	server_name localhost;
+	location /frx {
+		root html;
+		index index.html;
+	}
+}
+````
+
+
+
+这个时候，要想访问上述资源，按照上述的访问方式，我们可以通过 http://192.168.200.133/frx/ 来访问，但是如果地址后面不加斜杠，如 http://192.168.200.133/frx，页面就会出问题。
+
+如果不加斜杠，Nginx 服务器内部会自动做一个 301 的重定向，重定向的地址会有一个指令叫 `server_name_in_redirect` 来决定重定向的地址：
+
+- 如果该指令为 on重定向的地址为：http://server_name/目录名/
+
+- 如果该指令为 off重定向的地址为：http://原URL中的域名/目录名/
+
+
+所以就拿刚才的地址来说，访问 http://192.168.200.133/frx 如果不加斜杠，那么按照上述规则：
+
+- 如果指令 server_name_in_redirect 为 on，则 301 重定向地址变为 http://localhost/frx/，IP 发生改变，地址出现了问题
+- 如果指令 server_name_in_redirect 为 off，则 301 重定向地址变为 http://192.168.200.133/frx/。这个符合我们的期望
+
+
+
+注意 server_name_in_redirect 指令在 Nginx 的 0.8.48 版本之前默认都是 on，之后改成了 off，所以现在我们这个版本不需要考虑这个问题，但是如果是 0.8.48 以前的版本并且 server_name_in_redirect 设置为 on，我们如何通过 Rewrite 来解决这个问题？
+
+
+```nginx
+
+```
+
+```nginx
+location static/ {
+	root /var/www/html;
+}
+```
+
+
 
 
 
@@ -901,6 +1036,10 @@ location ^~ /static/files {
 - 当访问http://www.fengzhao.me/blog/detail/3.html ，会匹配规则C。
 
 分析思路，首先看看，“**精确匹配**”是否可以匹配成功，显示不可以；然后，看看是否可以“**普通匹配**”是否可以完全匹配，显示也没有；接着在看看非正则匹配，是否可以匹配成功，发现同规则C匹配上了，所以采用了规则C。
+
+
+
+
 
 ### internal 指令
 
