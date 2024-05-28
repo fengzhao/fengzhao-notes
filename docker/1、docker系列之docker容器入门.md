@@ -74,9 +74,33 @@ Docker Engine是一个客户端 - 服务器应用程序，包含以下主要组�
 
 ![engine-components-flow](./resources/engine-components-flow.png)
 
+
+
+安装 docker 引擎最简单的方法就是执行 `apt install docker.io`，它会把 containerd.io、docker-ce、docker-ce-cli 都安装上。
+
+然后我们就可以用命令行的方式操作 docker。
+
 docker 客户端命令或 REST API 可以与服务端通讯，向服务端的守护进程下达指令。
 
 docker daemon 创建和管理Docker对象，例如镜像，容器，网络和数据卷等。
+
+
+
+#### 各组件
+
+
+
+- docker containerd.io 
+
+
+
+- docker-ce
+  - 是Docker Community Edition的缩写，是Docker的社区版本。它是一个开源的容器化平台，提供了构建、发布和运行容器的工具和服务。广义来说，docker-ce包含了dockerd（Docker守护进程）、docker命令行工具、docker-compose等组件；狭义上来讲，docker-ce 是与 docker containerd.io、docker-ce-cli 并列的服务组件。
+
+- docker-ce-cli 
+  - 是Docker Community Edition的命令行工具（command line）。它提供了与Docker守护进程进行交互的命令行接口，可以用于管理和操作Docker容器、镜像、网络等。
+
+
 
 ### Docker架构
 
@@ -1029,22 +1053,31 @@ docker engine 会自动创建一个默认的 builder，作为默认的 backend �
 
 
 
+ In newer versions of Docker Desktop and Docker Engine, you're using Buildx by default when you invoke the `docker build` command.
+
+ In earlier versions, to build using Buildx you would use the `docker buildx build` command.
+
+
+
 
 
 #### 多平台构建
 
-
-
-过往服务器主要都是amd64为主,但随着服务器领域ARM架构的崛起,加上国内信创环境也主要是ARM架构， 因此构建的容器镜像支持arm架构也慢慢成为一种普遍的需求。
+过往服务器主要都是amd64为主，但随着服务器领域ARM架构的崛起，加上国内信创环境也主要是ARM架构， 因此构建的容器镜像支持arm架构也慢慢成为一种普遍的需求。
 
 于是,过往我们使用`sudo docker build -t name:latest .`这样构建出来的镜像就不满足需求了，因为它构建出来的镜像只是你当前系统架构的特定版本。
 
 想要构建多平台的镜像,有两种方式可以考虑:
 
 - 在不同的架构系统上分别构建自己的镜像并上传 (不同名称的镜像名不能一样,否则会覆盖)
+
 - 基于Docker提供的buildx工具,在任意架构平台的系统上,一次性构建并上传多平台镜像
 
-第一种就不说了，因为它并不方便，也不实用，而且也麻烦。 今天的这篇文章主要就是介绍如何基于Docker提供的buildx工具，来构建多平台镜像，让你只做一次，满足不同平台.
+  
+
+第一种就不说了，因为它并不方便，也不实用，而且也麻烦。
+
+ 今天的这篇文章主要就是介绍如何基于Docker提供的buildx工具，来构建多平台镜像，让你只做一次，满足不同平台.
 
 
 
@@ -1058,9 +1091,9 @@ docker engine 会自动创建一个默认的 builder，作为默认的 backend �
 
 如果你安装的是最新docker版本，buildx工具已经是内置的了。识别你当前安装的环境是否支持buildx工具的方式是执行如下命令
 
-之所以能在特定架构系统上构建不同的架构平台的镜像，就是使用的qemu虚拟技术。所以需要安装与之相关的这两个工具
+之所以能在特定架构系统上构建不同的架构平台的镜像，就是使用的qemu虚拟技术。所以需要安装与之相关的这两个工具。
 
-在debian/ubuntu系统平台上,执行以下命令
+在debian/ubuntu系统平台上，执行以下命令
 
 
 
