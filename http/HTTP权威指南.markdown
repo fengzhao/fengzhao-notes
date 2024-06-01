@@ -751,18 +751,57 @@ Content-Encoding: gzip,compress,deflate,identity
 
 # HTTP报文
 
+
+
+
+
 HTTP 报文是服务器和客户端之间交换数据的方式，有两种类型的消息︰
 
 - 请求（requests）--由客户端发送用来触发一个服务器上的动作；
 - 响应（responses）--来自服务器的应答。
 
-请求
 
 
 
-HTTP消息由采用 ASCII 编码的多行文本构成。在HTTP/1.1及早期版本中，这些消息通过连接公开地发送。
 
-在HTTP/2中，为了优化和性能方面的改进，HTTP报文被分到多个HTTP帧中。
+HTTP消息由采用 ASCII 编码的多行文本构成。在HTTP/1.1及早期版本中，这些消息通过连接公开地发送。在HTTP/2中，为了优化和性能方面的改进，HTTP报文被分到多个HTTP帧中。
+
+
+
+Web 开发人员或网站管理员，很少自己手工创建这些原始的 HTTP 消息：由软件、浏览器、代理或服务器完成。他们通过配置文件（用于代理服务器或服务器），API（用于浏览器）或其他接口提供 HTTP 消息。
+
+HTTP 请求和响应具有相似的结构，由以下部分组成：
+
+1. 一行起始行用于描述要执行的请求，或者是对应的状态，成功或失败。这个起始行总是单行的。
+2. 一个可选的 HTTP 标头集合指明请求或描述消息主体（body）。
+3. 一个空行指示所有关于请求的元数据已经发送完毕。
+4. 一个可选的包含请求相关数据的*主体*（比如 HTML 表单内容），或者响应相关的文档。主体的大小有起始行的 HTTP 头来指定。
+
+
+
+```http
+GET /zh-CN/docs/Glossary/Simple_header HTTP/1.1
+Host: developer.mozilla.org
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.9; rv:50.0) Gecko/20100101 Firefox/50.0
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+Accept-Language: en-US,en;q=0.5
+Accept-Encoding: gzip, deflate, br
+Referer: https://developer.mozilla.org/zh-CN/docs/Glossary/Simple_header
+
+200 OK
+Connection: Keep-Alive
+Content-Encoding: gzip
+Content-Type: text/html; charset=utf-8
+Date: Wed, 20 Jul 2016 10:55:30 GMT
+Etag: "547fa7e369ef56031dd3bff2ace9fc0832eb251a"
+Keep-Alive: timeout=5, max=1000
+Last-Modified: Tue, 19 Jul 2016 00:59:33 GMT
+Server: Apache
+Transfer-Encoding: chunked
+
+
+(content)
+```
 
 
 
@@ -965,6 +1004,8 @@ Range:(unit=first byte pos)-[last byte pos]
 **Content-Range**： 用于响应头，指定整个实体中的一部分的插入位置，他也指示了整个实体的长度。
 
 在服务器向客户端返回一个部分响应，它必须描述响应覆盖的范围和整个实体长度。
+
+
 
 
 
@@ -2259,6 +2300,79 @@ Nginx 下关于缓存控制字段cache-control的配置说明
 https://www.cnblogs.com/kevingrace/p/10459429.html
 
 
+
+# HTTP演进历史
+
+
+
+## HTTP/0.9 1991年
+
+最初的 HTTP 协议并没有版本号，0.9 实际上是为了跟后续的 1.0 版本作区分。总的来说 0.9 版本十分简陋，功能单一。
+
+特点：
+
+- 只支持 GET 请求，在其后面跟上目标资源的路径
+
+- 没有 HTTP 头部
+
+**不足：**
+
+- **因为没有 HTTP 头部，所以除了文本类型无法区分和传输其他类型**
+
+- **没有状态码和错误码，一旦出现问题，只能返回一个固定的错误页面**
+
+
+
+## HTTP/1.0 1996年
+
+
+
+在 0.9 基础上做了扩展，支持传输更多类型的内容。
+
+特点：
+
+- 在请求中明确了版本号
+
+- 增加响应状态码
+
+- 增加 HTTP 头，使传输资源更加灵活，如：
+
+- - Content-type：通过指定不同的 MIME type，表明资源的格式，如 text/html、text/css、image/png、application/javascript、application/octet-stream 等
+  - Accept-Encoding / Content-Encoding：表明客户端支持的压缩类型和响应中使用的压缩类型
+
+**不足：**
+
+- **每个 TCP 连接只能发送一个请求，造成了连接效率低下。后续在请求和响应头中增加了一个非标准的 Connection: keep-alive，告知双方请求可以复用同一条 TCP 连接而不是每次请求响应后都关闭连接。**
+
+  **不过由于不是标准字段，不同实现的行为可能不一致，因此没有从根本上解决。**
+
+
+
+## HTTP/1.1 1997年
+
+ [RFC 2068](https://datatracker.ietf.org/doc/html/rfc2068)
+
+在 1997 年初，HTTP1.1 标准发布。HTTP/1.1 消除了大量歧义内容并引入了多项改进
+
+特点：
+
+- 持久连接复用成为默认，不需要声明 Connection: keep-alive，想要关闭可以在响应中增加 Connection: close 声明
+
+- pipelining 管道，可以一次性发送多个请求，避免了此前一次只能发送一个请求的情况，不过响应需要按照发送的顺序来回复。
+
+- 增加几种 HTTP 方法
+
+- 增加分块传输的流模式，响应头携带 Transfer-Encoding:chunked 并在每一个分块增加 Content-Length 表明当前块长度，并在所有内容传输完成的最后追加一个 Content-Length:0 表明传输完成。
+
+- 增加 range 、Content-Range 相关头，用来支持续传和分段请求。
+
+**不足：**
+
+- **存在 Head of line blocking 队头阻塞问题，即同一个连接中有一个请求阻塞了，后续所有请求都将被阻塞。**
+
+
+
+## HTTP/2 2015年
 
 # HTTP2 
 
@@ -5699,3 +5813,21 @@ CGI接收的用户数据，是通过HTTP协议传递过来的。而选用不同�
 websocket是html5规范中的一个部分，它借鉴了socket这种思想，为web应用程序客户端和服务端之间（注意是客户端服务端）提供了一种全双工通信机制。
 
 同时，它又是一种新的应用层协议，websocket协议是为了提供web应用程序和服务端全双工通信而专门制定的一种应用层协议，通常它表示为：ws://echo.websocket.org/?encoding=text HTTP/1.1，可以看到除了前面的协议名和http不同之外，它的表示地址就是传统的url地址。
+
+
+
+
+
+
+
+# Chrome调试技巧
+
+
+
+
+
+initiator 的这个单词翻译过来是“发起者”，所以在Network 的initiator这列可以看到是哪一行代码是发起请求的发起者
+
+
+
+鼠标悬停在这个initiator上，你可以看到完整的调用信息，不论是自己的文件还是外部引用的文件
