@@ -41,6 +41,7 @@ openssh 是利用 OpenSSL  协议具体实现的开源软件，包括 ssh,ssh-co
 ## **OpenSSL** 
 
 OpenSSL是Openssl团队的一个开源的能够实现安全套接层（SSLv2/v3）和安全传输层（TLSv1）协议的通用加密库。
+
 该产品支持多种加密算法，包括对称密码、哈希算法、安全散列算法等。
 
 OpenSSL 存在操作系统命令注入漏洞，该漏洞源于c_rehash 脚本未正确清理 shell 元字符导致命令注入。攻击者利用该漏洞执行任意命令。
@@ -49,9 +50,7 @@ OpenSSL 是用于传输层安全性（TLS）协议的健壮的，商业级，功
 
 这个协议的实现是基于完整功能的通用密码库，该库也可以独立使用。
 
-OpenSSL 代码库的地址是 https://github.com/openssl/openssl 
 
-源代码包下载
 
 ```shell
 wget https://www.openssl.org/source/openssl-1.1.1d.tar.gz 
@@ -62,7 +61,13 @@ wget https://www.openssl.org/source/openssl-3.1.1.tar.gz
 
 
 
+现在几乎所有的服务器软件和很多客户端软件都在使用OpenSSL，其中基于命令行的工具是进行密钥、证书管理以及测试最常用到的软件了。
 
+有意思的是，之前很多使用其他库作为SSL/TLS解析的浏览器正发生一些变化，例如Google正在将Chrome迁移到他们自己的OpenSSL分支BoringSSL
+
+
+
+OpenSSL 代码库的地址是 https://github.com/openssl/openssl 
 
 用户可以从 [www.openssl.org/source](https://www.openssl.org/source) 或者 github 下载官方发行版的源代码压缩包 。OpenSSL 项目不会以二进制形式分发工具包。
 
@@ -76,7 +81,7 @@ wget https://www.openssl.org/source/openssl-3.1.1.tar.gz
 
 **OpenSSL 3.0** 
 
-OpenSSL 3.0 是下一代的 OpenSSL 发布版，目前仍然在开发中。
+OpenSSL 3.0 是下一代的 OpenSSL 发布版，目前仍然在开发中。2021.11发布了3.0版本，开源协议也改成 `Apache License v2.0`
 
 https://wiki.openssl.org/index.php/OpenSSL_3.0
 
@@ -157,6 +162,10 @@ https://blog.csdn.net/naioonai/article/details/80984032
 
 
 
+
+
+
+OpenSSL没有自带可信根证书（也叫作可信证书库）
 
 
 
