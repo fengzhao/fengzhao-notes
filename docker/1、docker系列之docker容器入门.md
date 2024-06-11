@@ -1400,6 +1400,47 @@ https://help.aliyun.com/document_detail/173175.html
 
 
 
+#### Docker pull使用代理
+
+
+
+如果你的容器需要使用代理服务器，那么可以以如下方式配置： 在运行容器的用户 home 目录下，配置 `~/.docker/config.json` 文件。
+
+重新启动容器后，这些环境变量将自动设置进容器，从而容器内的进程可以使用代理服务。
+
+所以[官网](https://docs.docker.com/network/proxy/#configure-the-docker-client)的这篇文章是讲如何配置运行容器的环境，与如何拉取镜像无关。
+
+
+
+常规的命令行程序如果要使用代理，需要设置两个环境变量：`HTTP_PROXY` 和 `HTTPS_PROXY` ，设置环境变量的方法见 [这篇文章](https://www.lfhacks.com/test/cypress-download-failure#env) 。
+
+但是仅仅这样设置环境变量，也不能让 docker 成功拉取镜像。
+
+因为镜像的拉取和管理都是 docker daemon 的职责，所以我们要让 docker daemon 知道代理服务器的存在。而 docker daemon 是由 systemd 管理的，所以我们要从 systemd 配置入手。
+
+
+
+```shell
+$ sudo mkdir -p /etc/systemd/system/docker.service.d
+
+touch  /etc/systemd/system/docker.service.d/http-proxy.conf
+[Service]
+Environment="HTTP_PROXY=http://proxy.example.com:80"
+Environment="HTTPS_PROXY=https://proxy.example.com:443"
+Environment="NO_PROXY=your-registry.com,10.10.10.10,*.example.com"
+
+$ sudo systemctl daemon-reload
+$ sudo systemctl restart docker
+
+$ sudo systemctl show --property=Environment docker
+
+docker info 
+```
+
+
+
+
+
 ## docker 文件系统
 
 
