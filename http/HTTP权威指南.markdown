@@ -479,6 +479,10 @@ HTTP/1.1（RFC 2616）协议并没有对它的定义，它最开始是由 Squid 
 
 如今它已经成为事实上的标准，被各大 HTTP 代理、负载均衡等转发服务广泛使用，并被写入 [RFC 7239](http://tools.ietf.org/html/rfc7239)（Forwarded HTTP Extension）标准之中。
 
+```dart
+客户端=>（正向代理=>透明代理=>服务器反向代理=>）Web服务器
+```
+
 
 
 > X-Forwarded-For 请求头格式
@@ -501,9 +505,19 @@ Proxy3 直连服务器，它会给 XFF 追加 IP2，表示它是在帮 Proxy2 �
 
 
 
+一般的客户端（例如浏览器）发送HTTP请求是没有X-Forwarded-For头的，当请求到达第一个代理服务器时，代理服务器会加上X-Forwarded-For请求头，并将值设为客户端的IP地址（也就是最左边第一个值），后面如果还有多个代理，会依次将IP追加到X-Forwarded-For头最右边，最终请求到达Web应用服务器，应用通过获取X-Forwarded-For头取左边第一个IP即为客户端真实IP。
+
+但是如果客户端在发起请求时，请求头上带上一个伪造的X-Forwarded-For，由于后续每层代理只会追加而不会覆盖，那么最终到达应用服务器时，获取的左边第一个IP地址将会是客户端伪造的IP。也就是上面的Java代码中getClientIp()方法获取的IP地址很有可能是伪造的IP地址，如果一个投票系统用这种方式做的IP限制，那么很容易会被刷票。
+
+
+
 
 
 **Remote Address** 
+
+在Java中，获取客户端IP最直接的方式就是使用request.getRemoteAddr()。这种方式能获取到连接服务器的客户端IP，在中间没有代理的情况下，的确是最简单有效的方式。但是目前互联网Web应用很少会将应用服务器直接对外提供服务，一般都会有一层Nginx做反向代理和负载均衡，有的甚至可能有多层代理。在有反向代理的情况下，直接使用request.getRemoteAddr()获取到的IP地址是Nginx所在服务器的IP地址，而不是客户端的IP。
+
+
 
 HTTP 连接基于 TCP 连接，Remote Address 来自 TCP 连接，表示与服务端建立 TCP 连接的设备 IP 。
 
@@ -679,6 +693,10 @@ func main() {
     }
 }
 ```
+
+
+
+https://blog.csdn.net/xiao__gui/article/details/83054462
 
 
 
