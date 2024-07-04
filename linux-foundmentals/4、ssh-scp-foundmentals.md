@@ -977,6 +977,18 @@ ssh 批量分发密钥
 
 
 
+
+
+## Systemd下的ssh服务
+
+
+
+配置 sshd 大家都很熟悉，主要就是围绕 `/etc/ssh/sshd_config` 进行配置。而配置 sshd 的端口则是配置 `sshd_config` 中的 `Port`。
+
+不过在 systemd 环境下，根据服务是由 `.socket` 文件配置启动还是 `.service` 文件配置启动的不同，配置端口分别需要配置 **`sshd.socket`** 文件或依然是 `sshd_config`。
+
+
+
 # ssh安全
 
 

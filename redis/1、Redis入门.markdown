@@ -128,7 +128,7 @@ wget http://download.redis.io/releases/redis-7.0.3.tar.gz  -O  /usr/local/src/re
 # 解压
 tar xf redis-6.0.5.tar.gz  && cd redis-6.0.5
 
-# 编译，，具体编译参数：
+# 编译，，具体编译参数：要设置开机自启和systemd服务管理，就要这个
 # USE_SYSTEMD=yes  支持以systemd系统服务方式来管理redis，需要包的支持：libsystemd-dev on Debian/Ubuntu or systemd-devel on CentOS
 # PREFIX=/some/other/directory 指定将redis可执行文件安装到不同目录下
 # BUILD_TLS=yes  开启TLS通讯，一般也不需要

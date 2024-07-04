@@ -212,8 +212,8 @@ au BufRead,BufNewFile */usr/local/nginx/conf/* set ft=nginx
 
 
 
-
-
+# Nginx是在 /usr/local/lib; /usr/pkg/lib; /opt/local/lib; 这三个路径下去查找OpenSSL library PATH
+# 有时候因为nginx升级之后使用了高版本的Openssl，本地需要添加新模块重新编译nginx时候要升级openssl至指定版本。
 
 # configure配置，configure之后，会生成Makefile文件，用于编译和构建nginx
 ./configure   --user=nginx --group=nginx  --prefix=/usr/local/nginx/  --with-http_stub_status_module  --with-http_ssl_module
