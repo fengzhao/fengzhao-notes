@@ -989,6 +989,30 @@ ssh 批量分发密钥
 
 
 
+需要确认系统所用的 sshd 服务，是由 `sshd.socket` 提供的，还是由 `sshd.service` 提供的。
+
+- 如果服务由 `sshd.socket` 提供，配置端口需要配置 `sshd.socket` 文件；
+- 如果服务由 `sshd.service` 提供，配置端口则需要配置传统的 `sshd_config` 文件。
+
+一般系统中所安装的ssh服务都是由 `openssh` 包提供的：
+
+```shell
+# Ubuntu / Debian 下使用以下命令
+dpkg -L openssh-server
+# Red Hat / CentOS 下使用以下命令
+rpm -ql openssh-server
+# Arch Linux 下使用以下命令
+pacman -Ql openssh
+```
+
+其中，在 systemd 环境下，
+
+- CentOS 7 的 sshd 服务默认是由 `sshd.service` 文件启动的；
+- Arch Linux 的 sshd 服务默认是由 `sshd.socket` 文件启动的；
+- 其他系统也可以按照下面介绍的方法来确认服务是如何启动的。
+
+
+
 # ssh安全
 
 
