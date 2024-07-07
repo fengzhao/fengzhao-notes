@@ -977,6 +977,42 @@ ssh 批量分发密钥
 
 
 
+
+
+## Systemd下的ssh服务
+
+
+
+配置 sshd 大家都很熟悉，主要就是围绕 `/etc/ssh/sshd_config` 进行配置。而配置 sshd 的端口则是配置 `sshd_config` 中的 `Port`。
+
+不过在 systemd 环境下，根据服务是由 `.socket` 文件配置启动还是 `.service` 文件配置启动的不同，配置端口分别需要配置 **`sshd.socket`** 文件或依然是 `sshd_config`。
+
+
+
+需要确认系统所用的 sshd 服务，是由 `sshd.socket` 提供的，还是由 `sshd.service` 提供的。
+
+- 如果服务由 `sshd.socket` 提供，配置端口需要配置 `sshd.socket` 文件；
+- 如果服务由 `sshd.service` 提供，配置端口则需要配置传统的 `sshd_config` 文件。
+
+一般系统中所安装的ssh服务都是由 `openssh` 包提供的：
+
+```shell
+# Ubuntu / Debian 下使用以下命令
+dpkg -L openssh-server
+# Red Hat / CentOS 下使用以下命令
+rpm -ql openssh-server
+# Arch Linux 下使用以下命令
+pacman -Ql openssh
+```
+
+其中，在 systemd 环境下，
+
+- CentOS 7 的 sshd 服务默认是由 `sshd.service` 文件启动的；
+- Arch Linux 的 sshd 服务默认是由 `sshd.socket` 文件启动的；
+- 其他系统也可以按照下面介绍的方法来确认服务是如何启动的。
+
+
+
 # ssh安全
 
 
