@@ -5352,6 +5352,72 @@ Chromium里有三种进程——浏览器、渲染器和插件。
 
 
 
+# 动态数据
+
+在现代网站和应用中另一个常见的任务是**从服务端获取个别数据来更新部分网页而不用加载整个页面**。这看起来是小细节却对网站性能和行为产生巨大的影响。
+
+所以我们将在这篇文章介绍概念和技术使它成为可能，例如：XMLHttpRequest 和 Fetch API
+
+
+
+
+
+
+
+这导致了创建允许网页请求小块数据（例如 [HTML](https://developer.mozilla.org/zh-CN/docs/Web/HTML), [XML](https://developer.mozilla.org/zh-CN/docs/Glossary/XML), [JSON](https://developer.mozilla.org/zh-CN/docs/Learn/JavaScript/Objects/JSON), 或纯文本) 和 仅在需要时显示它们的技术，从而帮助解决上述问题。
+
+这是通过使用诸如 [`XMLHttpRequest`](https://developer.mozilla.org/zh-CN/docs/Web/API/XMLHttpRequest) 之类的 API 或者 — 最近以来的 [Fetch API](https://developer.mozilla.org/zh-CN/docs/Web/API/Fetch_API) 来实现。这些技术允许网页直接处理对服务器上可用的特定资源的 [HTTP](https://developer.mozilla.org/zh-CN/docs/Web/HTTP) 请求，并在显示之前根据需要对结果数据进行格式化。
+
+> 在早期，这种通用技术被称为 Asynchronous JavaScript and XML**（Ajax），** 因为它倾向于使用[`XMLHttpRequest`](https://developer.mozilla.org/zh-CN/docs/Web/API/XMLHttpRequest) 来请求 XML 数据。
+>
+> 但通常不是这种情况 (你更有可能使用 `XMLHttpRequest` 或 Fetch 来请求 JSON), 但结果仍然是一样的，术语“Ajax”仍然常用于描述这种技术。
+
+
+
+`XMLHttpRequest`（通常缩写为 XHR）现在是一个相当古老的技术 - 它是在 20 世纪 90 年代后期由微软发明的，并且已经在相当长的时间内跨浏览器进行了标准化。
+
+
+
+Ajax，全称“Asynchronous JavaScript and XML”（异步JavaScript和XML），是一种用于创建交互式网页应用的网页开发技术。
+
+在 Web 应用中通过异步发送 HTTP 请求向服务器获取内容，并使用这些新内容更新页面中相关的部分，而无需重新加载整个页面的 Web 开发技术。这可以让网页更具有响应性，因为只请求了需要更新的部分。
+
+它允许浏览器与服务器之间进行异步数据交互，可以在不重新加载整个页面的情况下，更新页面的部分内容。
+
+AJAX的关键技术
+
+- XMLHttpRequest（简称XHR）：这是浏览器内置的对象，允许JavaScript在后台（异步）向服务器发送请求以及接收服务器返回的数据。
+
+- JavaScript：编写客户端脚本，用于调用XHR对象、处理服务器返回的数据以及更新DOM树中的部分内容。
+
+
+
+数据格式：尽管名字中含有XML，但AJAX实际上并不局限于XML数据格式，JSON现在已经成为更常用的数据交换格式，因为其可读性强、体积小且容易被JavaScript解析。
+
+异步处理：与传统的同步请求不同，异步请求不会导致浏览器停止响应，用户可以在等待服务器响应的同时继续与页面进行其他交互。
+
+可以实现的一些功能如下
+
+- 动态加载数据：在不刷新页面的情况下，从服务器获取新的数据并更新页面内容(百度搜索)。
+
+- 实时验证：在用户输入时，实时检查输入的有效性并给出反馈。
+
+- 提高用户体验：减少页面的加载时间和刷新次数，提供更加流畅的用户交互。
+
+
+
+
+
+Fetch API 基本上是 XHR 的一个现代替代品——它是最近在浏览器中引入的，它使异步 HTTP 请求在 JavaScript 中更容易实现，对于开发人员和在 Fetch 之上构建的其他 API 来说都是如此。
+
+
+
+这完全取决于你正在干的项目是啥样。XHR 已经面世非常之久，现在已经有了相当棒的跨浏览器支持。然而对于网页平台来说，Fetch 和 Promise 是新近的产物，除了 IE 和 Safari 浏览器不支持，别的浏览器大多提供了支持。（现在 Safari 也即将为 fetch 和 promise 提供支持）。
+
+如果你的项目需要支持年代久远的浏览器，那么使用 XHR 可能会更爽一些。如果你的项目比较激进而且你根本不管老版的浏览器吃不吃这套，那就选择 Fetch 吧老铁。
+
+话说回来，咱倒真应该两者都学学——因为使用 IE 浏览器的人们在变少，Fetch 会变得越来越流行（事实上 IE 已经没人管了，因为微软 Edge 浏览器的受宠），但在所有浏览器彻底支持 Fetch 之前，你可能还得和 XHR 纠缠一阵子。
+
 
 
 # restful 架构风格
