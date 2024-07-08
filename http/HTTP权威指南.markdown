@@ -782,20 +782,36 @@ HTTP 报文是服务器和客户端之间交换数据的方式，有两种类型
 
 
 
-HTTP消息由采用 ASCII 编码的多行文本构成。在HTTP/1.1及早期版本中，这些消息通过连接公开地发送。在HTTP/2中，为了优化和性能方面的改进，HTTP报文被分到多个HTTP帧中。
+HTTP消息由采用 ASCII 编码的多行文本构成。在HTTP/1.1及早期版本中，这些消息通过连接公开地发送。
+
+在HTTP/2中，为了优化和性能方面的改进，HTTP报文被分到多个HTTP帧中。
 
 
 
-Web 开发人员或网站管理员，很少自己手工创建这些原始的 HTTP 消息：由软件、浏览器、代理或服务器完成。他们通过配置文件（用于代理服务器或服务器），API（用于浏览器）或其他接口提供 HTTP 消息。
+Web 开发人员或网站管理员，很少自己手工创建这些原始的 HTTP 消息：
+
+由软件、浏览器、代理或服务器完成。他们通过配置文件（用于代理服务器或服务器），API（用于浏览器）或其他接口提供 HTTP 消息。
 
 HTTP 请求和响应具有相似的结构，由以下部分组成：
 
-1. 一行起始行用于描述要执行的请求，或者是对应的状态，成功或失败。这个起始行总是单行的。
-2. 一个可选的 HTTP 标头集合指明请求或描述消息主体（body）。
+1. 起始行：一行起始行用于描述要执行的请求，或者是对应的状态，成功或失败。这个起始行总是单行的。
+2. 头部：一个可选的 HTTP 标头集合指明请求或描述消息主体（body）。
 3. 一个空行指示所有关于请求的元数据已经发送完毕。
-4. 一个可选的包含请求相关数据的*主体*（比如 HTML 表单内容），或者响应相关的文档。主体的大小有起始行的 HTTP 头来指定。
+4. 主体：一个可选的包含请求相关数据的*主体*（比如 HTML 表单内容），或者响应相关的文档。主体的大小有起始行的 HTTP 头来指定。
 
 
+
+
+
+HTTP/1.1 请求的第一行包含请求方法和路径。
+
+HTTP/2 用一系列伪头部（pseudo-header）替换了请求行，这五个伪头部很容易识别，因为它们在名称的开头用了一个冒号来表示。
+
+比如请求方法和路径伪头字段如下：
+
+- ":method" 伪头字段包含了 HTTP 方法；
+- ":path" 伪头字段包含目标 URL 的路径和查询部分；
+- 
 
 ```http
 GET /zh-CN/docs/Glossary/Simple_header HTTP/1.1
@@ -806,7 +822,11 @@ Accept-Language: en-US,en;q=0.5
 Accept-Encoding: gzip, deflate, br
 Referer: https://developer.mozilla.org/zh-CN/docs/Glossary/Simple_header
 
-200 OK
+(content)
+```
+
+```http
+HTTP1.1  200 OK
 Connection: Keep-Alive
 Content-Encoding: gzip
 Content-Type: text/html; charset=utf-8
@@ -816,7 +836,6 @@ Keep-Alive: timeout=5, max=1000
 Last-Modified: Tue, 19 Jul 2016 00:59:33 GMT
 Server: Apache
 Transfer-Encoding: chunked
-
 
 (content)
 ```
@@ -4019,11 +4038,11 @@ TLS 握手的关键在于利用通信双方生成的随机字符串和服务端�
 
 HTTPS 会加密 URL 吗？
 
+
+
 HTTPS 会加密头部吗？
 
-
-
-因为 URL 的信息都是保存在 HTTP Header 中的，而 HTTPS 是会对 HTTP Header + HTTP Body 整个加密的，所以 URL 自然是会被加密的。
+因为 URL 的信息都是保存在 HTTP Header 中的，而 HTTPS 是会对 `HTTP Header` 和  `HTTP Body` 整个加密的，所以 URL 自然是会被加密的。
 
 浏览器显示信息是已经解密后的信息，所以不要误以为 URL 没有加密。
 
