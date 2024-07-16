@@ -177,7 +177,7 @@ useradd -r -g nginx -s /bin/false nginx
 # 安装依赖环境，确保编译正常
 sudo yum install gcc gcc-c++ make automake autoconf libtool pcre* zlib openssl openssl-devel  pcre pcre-devel
 
-sudo apt install zlib1g zlib1g-dev
+sudo apt install zlib1g zlib1g-dev curl gnupg2 ca-certificates lsb-release ubuntu-keyring dirmngr software-properties-common apt-transport-https   gcc make libpcre3 libpcre3-dev   zlib1g-dev openssl libssl-dev 
 
 # 在 http://nginx.org/en/download.html 里面下载 Nginx 源代码，永远下载最新的Stable release版本
 wget http://nginx.org/download/nginx-1.21.6.tar.gz
@@ -283,13 +283,6 @@ ExecStop=/bin/kill -s QUIT $MAINPID
 PrivateTmp=true
 [Install]
 WantedBy=multi-user.target
-
-
-
-# ubuntu
-
-sudo apt-get install gcc make libpcre3 libpcre3-dev   zlib1g-dev openssl libssl-dev 
-
 ```
 
 
