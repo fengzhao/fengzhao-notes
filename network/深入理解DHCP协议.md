@@ -208,3 +208,23 @@ DHCP服务器可以配置当前地址池中IP地址的**租用有效期限**，�
    - 如果收到DHCP ACK报文，则租约更新成功；
    - 如果收到DHCP NAK报文，则重新发起申请过程。
 3. 如果IP地址租约到期前都没有收到DHCP服务器的应答，DHCP客户端会停止使用此IP地址，重新发送DHCP DISCOVER报文请求新的IP地址。
+
+
+
+
+
+## DHCP Snooping
+
+
+
+目前[DHCP](https://info.support.huawei.com/info-finder/encyclopedia/zh/DHCP.html)协议（RFC2131）在应用的过程中遇到很多安全方面的问题，网络中存在一些针对DHCP的攻击，如DHCP Server仿冒者攻击、DHCP Server的拒绝服务攻击、仿冒DHCP报文攻击等。为了保证网络通信业务的安全性，引入DHCP Snooping技术。在DHCP Client和DHCP Server之间建立一道防火墙，以抵御网络中针对DHCP的各种攻击。
+
+
+
+
+
+由于[DHCP](https://info.support.huawei.com/info-finder/encyclopedia/zh/DHCP.html) Server和DHCP Client之间没有认证机制，所以如果在网络上随意添加一台DHCP服务器，它就可以为客户端分配IP地址以及其他网络参数。
+
+如果该DHCP服务器为用户分配错误的IP地址和其他网络参数，将会对网络造成非常大的危害。
+
+https://info.support.huawei.com/info-finder/encyclopedia/zh/DHCP+Snooping.html
