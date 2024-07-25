@@ -345,6 +345,10 @@ Vim 本身的功能很强大，但是如果引入一些插件的话，在某些�
 
 
 
+安装该插件。要注意的是：安装插件不等于下载插件，安装插件是对该插件资源的管理， 你自己下载下来，放到对应的位置，但是你没有配置该指令，就不会安装，它的功能你也就用不了，这就是插件管理器的作用， 插件管理器不仅仅是下载插件代码的。这个要搞清楚。
+
+
+
 
 
 ```bash
@@ -358,6 +362,22 @@ curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs \
 ```
 
 
+
+如果您要安装的插件在[vim-scripts](https://github.com/vim-scripts)仓库中，那么，配置的格式如下：
+
+```
+Plug 'PluginName'
+```
+
+
+
+
+
+如果您要安装的插件使用[git](http://blog.fpliu.com/it/software/git)管理的，但是它并不在[GitHub](https://github.com/)仓库中， 那么，配置的格式如下：
+
+```
+Plug 'git:https://gitee.com/mirrors/youcompleteme.git'
+```
 
 
 
