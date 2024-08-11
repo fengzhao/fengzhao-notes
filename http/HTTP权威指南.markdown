@@ -337,10 +337,10 @@ HTTP 应用程序有时在发送之前需要对内容进行编码。
 
 内容编码过程：
 
-- 网站服务器生成原始响应报文，其中有原始的 Content-Type 和 Content-Length 首部。
+- 网站服务器生成原始响应报文，其中有原始的 `Content-Type` 和 `Content-Length` 首部。
 - 内容编码服务器（也可能是原始的服务器或缓存代理等）创建编码后的报文。
-  - 编码后的报文有同样的 Content-Type 和  Content-Length ，可能不同（比如主体被压缩了）。
-  - 内容编码服务器在编码后的报文中增加 Content-Encoding 首部，这样接收的应用程序就可以进行解码了。
+  - 编码后的报文有同样的 `Content-Type` 和  `Content-Length` ，可能不同（比如主体被压缩了）。
+  - 内容编码服务器在编码后的报文中增加 `Content-Encoding` 首部，这样接收的应用程序就可以进行解码了。
 - 客户端接收程序得到编码后的报文，进行解码，获得原始报文。
 
 通过 gzip 内容编码函数对 HTML 页面处理之后，得到一个更小的、压缩的主体。经过网络发送的是压缩的主体，并打上了 gzip 压缩的标志。
@@ -731,6 +731,8 @@ HTTP/1.1 规范指定了一系列的标准标头用于启动服务端驱动型�
 - [`Accept`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept) 标头列举了用户代理希望接收的媒体资源的 MIME 类型。其中不同的 MIME 类型之间用逗号分隔，同时每一种 MIME 类型会配有一个品质因数（quality factor），该参数明确了不同 MIME 类型之间的相对优先级。
 - [`Accept-Encoding`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept-Encoding) 标头明确说明了（接收端）可以接受的内容编码形式（所支持的压缩算法）。该标头的值是一个 Q 因子清单（例如 `br, gzip;q=0.8`），用来提示不同编码类型值的优先级顺序。默认值 `identity` 的优先级最低（除非声明为其他优先级）。
 - 
+
+
 
 # 内容编码
 
