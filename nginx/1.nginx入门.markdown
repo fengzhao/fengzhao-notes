@@ -532,21 +532,72 @@ nginx -s reload
 
 
 
-# 升级
+# 升级/热升级
 
-但想要更换或者升级 nginx 版本时，就需要采用热部署的方式：
+使用 Nginx 时，经常遇到添加新模块或升级Nginx版本。如何做到不停机升级部署？**Nginx热升级指服务不中断情况下用新的Nginx二进制文件替换老的Nginx二进制文件。**
 
-1. 查看现有 master 进程的 pid。可以看出来，worker 进程是 master 进程的子进程
+热升级大致分为两步，按照新的要求编译好Nginx的二进制文件，通过信号，完成新老进程的平滑过渡，保证升级期间服务可用。
+
+
+
+- 第一步：先查看原先编译的参数。`nginx -V` 可以查看编译时的参数。（`nginx -v`是查看版本）
+
+  在新编译时，要将原有的模块参数也加上，否则原有的模块不会编译进去。
+
+  
+
+- 第二步：下载最新的nginx版本。并开始编译，编译过程和之前一致，只是增加了要添加模块的参数。
+
+  > ./configure  --add-module=/xx/nginx-xx-moudule --with-compat --with-file-aio   
+  >
+  > 这里通过–add-module可以编译第三方的模块到Nginx。 这里只需要make编译，不要make install安装。编译完成后的nginx二进制文件在objs目录。一会要用到。
+  >
+  > 
+  
+
+- 第三步：备份和替换：先备份正在运行中的nginx二进制执行文件，将新编译的二进制nginx文件考到现在的目录并覆盖原先的nginx 
+
+  > 先备份二进制执行文件  
+  >
+  > cd /usr/local/nginx/sbin/  && cp nginx nginx.bak 
+  >
+  > 将新编译的二进制nginx文件考到现在的目录并覆盖原先的nginx
+  >
+  >  cp -r nginx /usr/local/src/nginx/sbin/ -f
+
+  
+
+- 第四步：热升级。至此我们只是替换了二进制文件，但是现在服务中的Nginx进程还是由原来的nginx二进制文件启动的，所以请求还是走原有的逻辑。
+
+  > 先通过ps -ef查看Nginx master进程id
+  > 给nginx的master进程发送一个信号：USR2
+  > kill -USR2 13195
+  >
+  > 向老nginx进程发送一个信号：WINCH 让其优雅关闭所有的worker进程
+  > kill -WINCH 13195
+  >
+  > 此时所有的请求都会平滑过渡到新的worker进程。但是旧的master进程13195还在
+  > 只是没有worker进程，如果要回退，只需要拉回旧的nginx拉回worker进程。如果运行一段时间没有问题，可以通过kill -QUIT 13159彻底关闭老进程
+  >
+  > 回滚：
+  > kill -HUP 13195 #拉回原来的nginx进程 （kill -HUP 和 -SIGHUP 作用是一样的）
+  > kill -QUIT 18034#关闭新起的master进程，该master进程会通知它下面的worker进程关闭
+
+至此热升级完毕，其中最关键的是Nginx通过信号来协调新老进程的过渡。
+
+
+
+Nginx是一个多进程应用，一般多进程通信可以采用共享内存、信号等通信方式。nginx的主进程和worker进程之间使用信号通信。开发者也会通过主动发送信号，控制nginx的行为，比如上面的热部署。
+
+能够发送和处理信号的有Master进程、worker进程以及nginx命令行。通常我们不直接给worker进程发送信号，而是给master进程发送信号，希望通过master进程管理worker进程（master进程和worker进程之间也会互发信号进行通信）。
+
+在信号名前加SIG也可以。比如 kill -HUP 和kill -SIGHUP一样。
 
 
 
 
 
 # Nginx 配置指令
-
-
-
-
 
 nginx.conf 文件是 nginx 中的核心文件，用于控制 nginx 的运行。
 
@@ -657,27 +708,28 @@ server {
 http 是最顶层的指令之一了，它必须直接在 main 中使用。
 
 ```nginx
-# 指定运行nginx进程的用户，Default: nobody，
-user nginx;  
-# 工作进程数，等于CPU核数
-worker_processes  auto;  
-error_log  logs/error.log;
-pid        logs/nginx.pid;
-worker_rlimit_nofile 8192;
+
+user nginx;                        # 指定运行nginx进程的用户，Default: nobody
+worker_processes  auto;            # 工作进程数，默认是auto，等于CPU核数
+error_log  logs/error.log;         # 错误日志路径
+pid        logs/nginx.pid;         # pid路径 
+worker_rlimit_nofile 8192;         # 最大打开文件句柄数
 
 events {
-  worker_connections  4096;  ## Default: 1024
+  worker_connections  4096;       ## 单个工作进程可以允许同时建立外部连接的数量。Default: 1024
 }
+# worker_processes与worker_connections 设置好合适大小，可以提示nginx处理性能，非常重要
 
 http {
-  include    conf/mime.types;
+  include    conf/mime.types;                    
   include    /etc/nginx/proxy.conf;
   include    /etc/nginx/fastcgi.conf;
   index    index.html index.htm index.php;
 
   default_type application/octet-stream;
     
-  server { # php/fastcgi
+  server { 
+    # php/fastcgi
     listen       80;
     server_name  domain1.com www.domain1.com;
     access_log   logs/domain1.access.log  main;
@@ -700,9 +752,11 @@ http {
 
 ### server 指令 
 
-server 是 nginx 中最重要的指令了，它必须被包含在 http 指令中使用。一个 server 就定义了一个虚拟主机。http块中可以有多个 server，可以让 nginx 支持多个虚拟主机。
+server 是 nginx 中最重要的指令了，它必须被包含在 http 指令中使用。一个 server 就定义了一个虚拟主机，http块中可以有多个 server，可以让 nginx 支持多个虚拟主机。
 
-虚拟主机是一种特殊的软硬件技术，它可以将网络上的每一台计算机分成多个虚拟主机，每个虚拟主机可以独立对外提供 www 服务，这样就可以实现一台主机对外提供多个 web 服务，每个虚拟主机之间是独立的，互不影响的。通俗说，一个虚拟主机就是一个网站。
+虚拟主机是一种特殊的软硬件技术，它可以将网络上的每一台计算机分成多个虚拟主机，每个虚拟主机可以独立对外提供 www 服务，这样就可以实现一台主机对外提供多个 web 服务，每个虚拟主机之间是独立的，互不影响的。
+
+通俗说，一个虚拟主机就是一个网站。
 
 ```
 Syntax:	server { ... }
@@ -751,11 +805,11 @@ server {
 }
 ```
 
-当 nginx 接收到 http 请求时，先从请求头提取到 Host 头部字段，然后跟 server_name 匹配来确认是哪个server块来处理请求。
+当 nginx 接收到 http 请求时，先从请求头提取到 HOST 头部字段，然后跟 server_name 匹配来确认是哪个server块来处理请求。
 
-如果都不匹配，那么就用这个端口号的 default server 来处理。
+如果都不匹配，那么就用这个端口号的 `default_server` 来处理。
 
-在这个例子中，就是第一个来处理。——这是nginx的标准做法。也可以在端口号后面加上一个 default_server 来显示指定这个行为。
+在这个例子中，就是第一个来处理。——这是nginx的标准做法。也可以在端口号后面加上一个 `default_server` 来显示指定这个行为。
 
 ```nginx
 server {
@@ -769,7 +823,7 @@ server {
 
 
 
-对于请求头中没有Host头部的请求，如果要禁止访问，可以设置如下配置：没有host头部的请求就会被这个server匹配上，并返回非标准的444状态码关闭连接。
+对于请求头中没有HOST头部的请求，如果要禁止访问，可以设置如下配置：没有host头部的请求就会被这个server匹配上，并返回非标准的444状态码关闭连接。
 
 ```nginx
 # 
@@ -782,11 +836,9 @@ server {
 
 
 
+server_name 指令是用来配置究竟是哪个 server 来处理我们的请求的。有时候，一个 `server_name` 中可能会有多个域名，这时候是如何选择的呢？
 
-
-server_name 指令是用来配置究竟是哪个 server 来处理我们的请求的。有时候，一个 server_name 中可能会有多个域名，这时候是如何选择的呢？
-
-1. server_name 指令后可以跟多个域名，第一个是主域名，多个域名之间空格分隔
+1. server_name 指令后可以跟多个域名，第一个是主域名，多个域名之间空格分隔。
 2. 泛域名：仅支持在最前或最后加 *，例如：`server_name *.taohui.tech`
 3. 正则表达式匹配：`server_name www.taohui.tech ~^www\d+\.taohui\.tech$;`
 
@@ -1145,8 +1197,6 @@ Nginx 能保持高度曝光发展到今天，除了因为有大量三方模块�
 ### ngx_http_gzip_module
 
 使用`gzip`方法压缩，有助于将传输数据的大小减少为一半甚至更多。提供请求返回速度。
-
-
 
 **什么是网站gzip压缩**
 
@@ -1775,9 +1825,21 @@ Nginx 采用这种进程模型有什么好处呢？首先，对于每个 Worker 
 
 
 
+# Nginx请求处理11阶段
+
+Nginx的HTTP框架基本由1个核心模块`ngx_http_module`、两个HTTP模块(`ngx_http_core_module`、`nginx_http_upstream_module`)组成，负责调用其他HTTP模块来一起处理用户请求。
 
 
 
+Nginx 处理请求的过程一共划分为 11 个阶段，按照执行顺序依次是 post-read、server-rewrite、find-config、rewrite、post-rewrite、preaccess、access、post-access、try-files、content 以及 log。
+
+
+
+Nginx实际把http请求处理流程划分为了11个阶段，这样划分的原因是将请求的执行逻辑细分，以模块为单位进行处理，各个阶段可以包含任意多个http模块并以流水线的方式处理请求。这样做的好处是使处理过程更加灵活、降低耦合度。
+
+可以让每个HTTP模块可以仅仅专注于完成一个独立，简单的功能。而一个请求的完整处理过程可以由多个HTTP模块共同合作完成。可以极大的提高多个模块合作的协同性，可测试性，可扩展性。
+
+换言之，nginx在处理每一个http请求，和配置文件上的顺序没有关系。
 
 
 
