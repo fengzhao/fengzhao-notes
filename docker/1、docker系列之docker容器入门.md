@@ -608,21 +608,19 @@ docker load -i spring-boot-docker.tar
 
 #### Dockerfile 构建镜像
 
-通过 docker build 命令来从 Dockerfile 和下文中构建镜像，上下文一般就是 Dockerfile 文件所在的路径， 其中包含一系列制作镜像的所需的原文件，上下文可以是本地操作系统磁盘中的某个路径，或者是某个 URL （一般是git repo）中。
+通过 `docker build` 命令来从 `Dockerfile` 和 **上下文** 中构建镜像。
 
-上下文会被递归处理，所以路径下可以包含子文件夹。
+上下文一般就是 Dockerfile 文件所在的路径， 其中包含一系列制作镜像的所需的源文件。上下文可以是本地操作系统磁盘中的某个路径，或者是某个 URL （一般是git repo）中。上下文会被递归处理，所以路径下可以包含子文件夹。
 
-构建过程是 docker daemon 来执行的，第一件事就是把整个上下文传给 daemon 。
+构建过程是 `docker daemon` 来执行的，第一件事就是把整个上下文传给 `daemon` 。在多数情况下，创建一个空文件夹来存放 `Dockerfile` 和构建镜像所必需的文件，把这个文件夹作为上下文。
 
-在多数情况下，创建一个空文件夹来存放 Dockerfile 和构建镜像所必需的文件，把这个文件夹作为上下文。
-
-也可以在任何位置执行 docker build 构建镜像，通过 -f 选项来指定 Dockerfile 文件。
+也可以在任何路径下执行 `docker build` 构建镜像，通过 `-f` 选项来指定 Dockerfile 文件。
 
 ```shell
 $ docker build -f /path/to/a/Dockerfile 
 ```
 
--t  选项来指定 **用户空间:仓库名称:标签**，可以指定多个标签（tag）。
+- -t  选项来指定 **用户空间:仓库名称:标签**，可以指定多个标签（tag）。
 
 ```shell
 docker build -t shykes/myapp:1.0.2 -t shykes/myapp:latest .  # 最后的.表示以当前路径作为上下文开始构建
@@ -644,10 +642,6 @@ docker build 构建镜像的流程大概就是：
 - 构建完成之后为该镜像打上 tag；
 
 以上就是构建镜像的大致流程，我们也可以通过 `docker history <imageName:Tag>` 命令来逆向推算出 docker build 的过程。
-
-
-
-
 
 
 
@@ -1000,15 +994,72 @@ https://support.huaweicloud.com/bestpractice-swr/swr_bestpractice_0002.html)
 
 
 
+#### BuildKit多平台构建
+
+过往服务器主要都是`amd64`为主，但随着服务器领域`ARM`架构的崛起，加上国内信创环境也主要是`ARM`架构， 因此构建的容器镜像支持arm架构也慢慢成为一种普遍的需求。
+
+于是，过往我们使用`sudo docker build -t name:latest .`这样构建出来的镜像就不满足需求了，因为它构建出来的镜像只是你当前系统架构的特定版本。
+
+想要构建多平台的镜像,有两种方式可以考虑：
+
+- 在不同的架构系统上分别构建自己的镜像并上传 (不同名称的镜像名不能一样，否则会覆盖)
+
+- 基于Docker提供的buildx工具，在任意架构平台的系统上，一次性构建并上传多平台镜像
+
+  
+
+第一种就不说了，因为它并不方便，也不实用，而且也麻烦。今天的这篇文章主要就是介绍如何基于Docker提供的buildx工具，来构建多平台镜像，让你只做一次，满足不同平台。
+
+
+
+事实上，只要你稍微关注`Docker Hub`，就会发现基本上主流的镜像，都是支持多架构的。常见的各种运行时环境：jdk，python，golang，nodejs，c# ，以及各种开源软件也基本上都有了。
+
+
+
+
+
+在 `Docker v18.09` 中已经可以通过增加 `DOCKER_BUILDKIT=1` 环境变量的方式来默认启用它了。 后来 Docker Desktop 中也已经将 BuildKit 设置成了默认的构建引擎。
+
+在`Docker v19.03` 引入了一个新的实验性插件，该插件使得跨平台构建 Docker 镜像比以往更加容易了。首先要确保 Docker 版本不低于 `19.03`，同时还要通过设置环境变量 `DOCKER_CLI_EXPERIMENTAL` 来启用。
+
+在 `Docker v23.0.0` 中，`docker build` 实际已经成为了 `docker buildx build` 的别名。如果你安装的是最新Docker版本，buildx工具已经是内置的了。
+
+
+
+识别你当前安装的环境是否支持buildx工具的方式是执行如下命令 `sudo docker buildx version`
+
+
+
+但是，之所以能在特定架构系统上构建不同的架构平台的镜像，就是使用的qemu虚拟化模拟CPU技术。QEMU 支持许多常见的 CPU 架构，包括 `ARM`、`Power-PC` 和 `RISC-V` 等。
+
+```bash
+
+# debian/ubuntu , 需要注意的是,qemu-user-static需要linux内核4.8以上,binfmt-support需要2.1.7版本及以上
+sudo apt install -y qemu-user-static binfmt-support
+
+# centos/rhel
+
+# 查看buildx的版本号
+sudo docker buildx version
+
+# 通过buildx的ls命令来检查支持了哪些不同架构平台：基本上支持linux/arm64, linux/amd64这两个架构平台足够,它们是绝对的主流
+sudo docker buildx ls
+
+NAME/NODE     DRIVER/ENDPOINT   STATUS    BUILDKIT   PLATFORMS
+ \_ default    \_ default       running   v0.15.0    linux/amd64, linux/amd64/v2, linux/386, linux/arm64, linux/riscv64, linux/ppc64, linux/ppc64le, linux/s390x, linux/mips64le, linux/mips64, linux/loong64, linux/arm/v7, linux/arm/v6
+```
+
+
+
 
 
 #### BuildKit特性
 
+Docker 提供了一种名为 Buildx 的功能，它允许在不同的平台上进行多架构构建。我们可以使用 Buildx 在 `amd64` 平台上构建适用于 `linux/arm64/v8` 平台的 Docker 镜像。
+
 Docker 其实在 2017 年就开始着手增加自己的新一代构建引擎 BuildKit 了，并且在 Docker v18.09 中已经可以通过增加 `DOCKER_BUILDKIT=1` 环境变量的方式来默认启用它了。 后来 Docker Desktop 中也已经将 BuildKit 设置成了默认的构建引擎。
 
-
-
- 在 Docker v23.0.0 中，`docker build` 实际已经成为了 `docker buildx build` 的别名。
+在 Docker v23.0.0 中，`docker build` 实际已经成为了 `docker buildx build` 的别名。
 
 `docker buildx` 同样具备了非常丰富的特性，其中一个有趣的特性在于 **它支持设置不同的构建驱动**，包括使用 docker-container ， Kubernetes 和 remote。
 
@@ -1063,37 +1114,7 @@ docker engine 会自动创建一个默认的 builder，作为默认的 backend �
 
 #### 多平台构建
 
-过往服务器主要都是amd64为主，但随着服务器领域ARM架构的崛起，加上国内信创环境也主要是ARM架构， 因此构建的容器镜像支持arm架构也慢慢成为一种普遍的需求。
 
-于是,过往我们使用`sudo docker build -t name:latest .`这样构建出来的镜像就不满足需求了，因为它构建出来的镜像只是你当前系统架构的特定版本。
-
-想要构建多平台的镜像,有两种方式可以考虑:
-
-- 在不同的架构系统上分别构建自己的镜像并上传 (不同名称的镜像名不能一样,否则会覆盖)
-
-- 基于Docker提供的buildx工具,在任意架构平台的系统上,一次性构建并上传多平台镜像
-
-  
-
-第一种就不说了，因为它并不方便，也不实用，而且也麻烦。
-
- 今天的这篇文章主要就是介绍如何基于Docker提供的buildx工具，来构建多平台镜像，让你只做一次，满足不同平台.
-
-
-
-事实上,只要你稍微关注Docker Hub，就会发现基本上主流的镜像，都是支持多架构的.
-
-
-
-`Docker 19.03` 引入了一个新的实验性插件，该插件使得跨平台构建 Docker 镜像比以往更加容易了。
-
-要想使用 `buildx`，首先要确保 Docker 版本不低于 `19.03`，同时还要通过设置环境变量 `DOCKER_CLI_EXPERIMENTAL` 来启用。
-
-如果你安装的是最新docker版本，buildx工具已经是内置的了。识别你当前安装的环境是否支持buildx工具的方式是执行如下命令
-
-之所以能在特定架构系统上构建不同的架构平台的镜像，就是使用的qemu虚拟技术。所以需要安装与之相关的这两个工具。
-
-在debian/ubuntu系统平台上，执行以下命令
 
 
 
