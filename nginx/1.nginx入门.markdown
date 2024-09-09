@@ -554,7 +554,6 @@ nginx -s reload
   >
   > 
   
-
 - 第三步：备份和替换：先备份正在运行中的nginx二进制执行文件，将新编译的二进制nginx文件考到现在的目录并覆盖原先的nginx 
 
   > 先备份二进制执行文件  
@@ -1967,6 +1966,8 @@ wget -O /usr/local/nginx/geo/GeoLiteASN.mmdb https://github.com/fengzhao-study-n
 
 # Nginx变量漫谈
 
+这里基本上完全摘录自春哥的 [agentzh 的Nginx 教程](https://openresty.org/download/agentzh-nginx-tutorials-zhcn.html?utm_source=tool.lu)
+
 
 
 Nginx 的配置文件使用的就是一门微型的编程语言，许多真实世界里的 Nginx 配置文件其实就是一个一个的小程序。
@@ -1979,11 +1980,11 @@ Nginx 的配置文件使用的就是一门微型的编程语言，许多真实�
 
 而所谓“值”，在许多编程语言里，既可以是 `3.14` 这样的数值，也可以是 `hello world` 这样的字符串，甚至可以是像数组、哈希表这样的复杂数据结构。
 
-**然而在 Nginx 配置中，变量只能存放一种类型的值，因为也只存在一种类型的值，那就是字符串。**
+<span color="blue">**然而在 Nginx 配置中，变量只能存放一种类型的值，因为也只存在一种类型的值，那就是字符串。**</span>
 
 
 
-比如我们的 `nginx.conf` 文件中有下面这一行配置：
+比如 `nginx.conf` 文件中有下面这一行配置：
 
 ```nginx
 # 使用标准ngx_rewrite模块中的set配置指令对变量 $a 进行了赋值操作。
