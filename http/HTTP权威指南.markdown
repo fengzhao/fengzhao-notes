@@ -2889,7 +2889,7 @@ Cookie 曾一度用于客户端数据的存储，因当时并没有其它合适�
 
 
 
-用户首次访问购物网站，网站server为用户生成了一个sessionId，并在响应中携带Set-Cookie: sessionId=123; Expires=Tue, 15 Jan 2021 21:47:38 GMT;
+用户首次访问购物网站，网站server为用户生成了一个 `sessionId`，并在响应中携带 `Set-Cookie: sessionId=123; Expires=Tue, 15 Jan 2021 21:47:38 GMT`;
 
 
 
@@ -2907,7 +2907,7 @@ Cookie 曾一度用于客户端数据的存储，因当时并没有其它合适�
 
 服务端收到购物车查询请求，并获从请求头中获取到sessionId=123，服务器查找内存中的id=123的session，发现有此用户的购物车商品数据（一台iphone）。服务器将此数据返回给前端。
 
-用户在购物车中看到了自己上次访问网站是添加的iphone，选中此商品完成结算
+用户在购物车中看到了自己上次访问网站是添加的iphone，选中此商品完成结算。
 
 
 
@@ -3044,6 +3044,20 @@ https://cloud.tencent.com/developer/article/1910076
 
 
 在这种趋势的背景下，例如，欧盟通过了著名的 GDPR 法律——现在每个欧洲网站上的用户都会看到一个带有几个按钮的丑陋栏：继续，选择要在此存储的有关您的数据地点。
+
+
+
+## Session
+
+实际上打开浏览器是可以看到保存了哪些Cookie的，也就是说如果把用户名和密码放在Cookie上是很不安全的，只要电脑被黑，在Cookie里面的重要信息就会被泄露。
+
+
+
+- **session 是基于 cookie 实现的，session 存储在服务器端，sessionId 会被存储到客户端的cookie 中**
+
+session的中文翻译是“会话”，当用户打开某个web应用时，便与web服务器产生一次session。服务器使用session把用户的信息临时保存在了服务器上，用户离开网站后session会被销毁。
+
+这种用户信息存储方式相对cookie来说更安全，可是session有一个缺陷：如果web服务器做了负载均衡，那么下一个操作请求到了另一台服务器的时候session会丢失。
 
 
 
