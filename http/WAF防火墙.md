@@ -237,7 +237,7 @@ apt -y install libyajl-dev libpcre++-dev libxml2-dev libgeoip1 libmaxminddb-dev 
 git clone https://github.com/leev/ngx_http_geoip2_module.git /usr/local/src/ngx_http_geoip2_module
 
 # 下载ModSecurity源代码
-git clone https://github.com/owasp-modsecurity/ModSecurity.git /usr/local/src/ModSecurity
+git clone  --recursive https://github.com/owasp-modsecurity/ModSecurity.git /usr/local/src/ModSecurity
 
 
 # 下载ModSecurity v3 Nginx Connector。目前最新的版本是V3，较此前的V2有一定的区别，使用时请注意区分版本。
@@ -264,7 +264,7 @@ sudo make && make install
 mkdir -p /usr/local/nginx
 useradd nginx -s /sbin/nologin -M
 
-# 永远去官网找最新版来编译 http://nginx.org/download/nginx-1.19.8.tar.gz
+# 永远去官网找最新版的nginx来编译
 wget -P /usr/local/src/  http://nginx.org/download/nginx-1.22.0.tar.gz  
 cd /usr/local/src/ &&  tar -zxvf nginx-1.22.0.tar.gz
 cd  nginx-1.22.0
