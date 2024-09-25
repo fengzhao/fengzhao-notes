@@ -2473,3 +2473,75 @@ location /test {
 2. 多个区间组成一个时间窗口，每流逝一个区间时间后，则抛弃最老的一个区间，纳入新区间。如图中示例的窗口 T1 变为窗口 T2；
 3. 若当前窗口的区间计数器总和超过设定的限制数量，则本窗口内的后续请求都被丢弃。
 
+
+
+# Nginx防止恶意解析
+
+在实际生产环境中经常会遇到一些不是自己的域名访问的内容与自己网站一样，检查域名没有绑定在服务器中。
+
+但域名是解析到自己服务器ip的，使用http和https可以访问自己的网站内容,
+
+
+
+**现象：**域名不是自己的，站点没绑定这个域名,使用域名http或者https可以访问到自己站点内容。
+
+**原因：**原因是因为服务器ip可以访问，即便没绑定这个域名，只要解析到服务器ip就会访问到第一个站点
+
+
+
+
+
+
+
+
+
+# Nginx 避免 IP 访问时证书暴露域名
+
+
+
+
+
+预读SNI，非法请求直接拒绝握手
+
+
+
+```nginx
+stream {
+    map $ssl_preread_server_name $backend_name {
+        api.myserver.com api;
+        default bad;
+    }
+    
+    upstream api {
+        server 127.0.0.1:777;
+    }
+
+    upstream bad {
+        server 127.0.0.1:400;
+    }
+
+    server {
+        listen 443 reuseport;
+        listen [::]:443 reuseport;
+        proxy_pass $backend_name;
+        ssl_preread on;
+    }
+}
+
+http {
+    server {
+        listen 777 ssl;
+
+        # do something
+    }
+
+    server {
+        listen  400 ssl;
+
+        # 拒绝握手
+        ssl_reject_handshake on;
+    }
+}
+
+```
+
