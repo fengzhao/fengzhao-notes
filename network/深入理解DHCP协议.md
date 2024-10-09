@@ -1,12 +1,6 @@
 # DHCP协议
 
-
-
-
-
 DHCP是一种应用层协议，建立在 UDP 协议之上。
-
-
 
 
 
@@ -16,17 +10,23 @@ DHCP（Dynamic Host Configuration Protocol，动态主机配置协议）通常�
 
 
 
+在常见的小型网络中（例如家庭网络和学生宿舍网），网络管理员都是采用手工分配IP地址的方法，而到了中、大型网络，这种方法就不太适用了。
+
+在中、大型网络，特别是大型网络中，往往有超过100台的客户机，手动分配IP地址的方法就不太合适了。
+
+因此，我们必须引入一种高效的IP地址分配方法，幸好，DHCP（Dynamic Host Configuration Protocol）为我们解决了这一难题。
+
+
+
 DHCP协议采用客户端/服务器模型，主机地址的动态分配任务由网络主机驱动。
 
 当DHCP服务器接收到来自网络主机申请地址的信息时，才会向网络主机发送相关的地址配置等信息，以实现网络主机地址信息的动态配置。
 
 
 
-
-
 ## DHCP 的组件
 
-使用 DHCP 时，了解所有的组件很重要，下面我为你列出了一些 DHCP 的组件和它们的作用都是什么。
+使用 DHCP 时，了解所有的组件很重要，下面我为你列出了一些 DHCP 的组件和它们的作用都是什么
 
 - `DHCP Server`：DHCP 服务器，负责处理来自客户端或中继的地址分配、地址续租、地址释放等请求，为客户端分配IP地址和其他网络配置信息。
 
@@ -34,7 +34,9 @@ DHCP协议采用客户端/服务器模型，主机地址的动态分配任务由
 
 - `DHCP Relay`：DHCP中继，负责转发来自客户端方向或服务器方向的DHCP报文，协助DHCP客户端和DHCP服务器完成地址配置功能。如果DHCP服务器和DHCP客户端不在同一个网段范围内，则需要通过DHCP中继来转发报文，这样可以避免在每个网段范围内都部署DHCP服务器，既节省了成本，又便于进行集中管理。
 
-- `Ip address pool`: 你得有 IP 地址池啊，虽然说你 DHCP 提供服务，但是你也得有工具啊，没有工具玩儿啥？IP 地址池是 DHCP 客户端可用的地址范围，这个地址范围通常由最低 -> 最高顺序发送。
+- `Ip address pool`: 你得有 IP 地址池啊，虽然说你 DHCP 提供服务，但是你也得有工具啊，没有工具玩儿啥？
+
+  IP 地址池是 DHCP 客户端可用的地址范围，这个地址范围通常由最低 -> 最高顺序发送。
 
 - `Subnet`：这个组件是子网，IP 网络可以划分一段一段的子网，子网更有助于网络管理。
 
@@ -47,8 +49,6 @@ DHCP协议采用客户端/服务器模型，主机地址的动态分配任务由
 
 
 **DHCP服务器**
-
-
 
 DHCP 服务器会维护 IP 地址池，在网络上启动时会将地址租借给启用 DHCP 的客户端。
 
@@ -119,27 +119,35 @@ DHCP 报文共有一下几种类型：
 
   
 
-  
+# DHCP工作机制
 
-  
+DHCP 的工作机制比较简单：
 
-DHCP 的工作机制比较简单，DHCP客户端向DHCP服务器动态地请求网络配置信息，DHCP服务器根据策略返回相应的配置信息（IP地址、子网掩码、缺省网关等网络参数）。
+DHCP客户端向DHCP服务器动态地请求网络配置信息，DHCP服务器根据策略返回相应的配置信息（IP地址、子网掩码、缺省网关等网络参数）。
 
 客户端和服务器之间交互的消息格式由固定格式的首部和可变的选项格式区域组成。
+
+
 
 （一）发现阶段
 
 当主机刚刚开机运行，此时他不知道此时网络中是否存在DHCP服务器，DHCP服务器是谁，因此它必须首先确定网络中的DHCP服务器身份。
 
-因此，新上线主机会发送DHCP Discover报文， 该报文是一个**广播**报文，源IP地址为0.0.0.0，目的IP地址为255.255.255.255。源MAC地址为自己的MAC地址，目的MAC地址为ffff-ffff-ffff。
+因此，新上线主机会发送`DHCP Discover`报文， 该报文是一个**广播**报文，源IP地址为0.0.0.0，目的IP地址为255.255.255.255。
+
+源MAC地址为自己的MAC地址，目的MAC地址为ffff-ffff-ffff。
 
 该报文会在二层网络中洪泛，因此如果网络中存在DHCP服务器，则DHCP服务器会收到该报文。
 
+
+
 （二）提供阶段
 
-当网络中的DHCP服务器收到了`DHCP Client`发送的DHCP报文后，DHCP就进入了提供阶段。在这个阶段，DHCP Server会根据管理员的相关配置，给DHCP Client提供一个可用的IP地址，同时给其提供DNS、子网掩码等信息。
+当网络中的DHCP服务器收到了`DHCP Client`发送的DHCP报文后，DHCP就进入了提供阶段。
 
-DHCP Server会发送`DHCP Offer`信息给`DHCP Client`提供上述信息，该报文也是一个**广播**报文。
+在这个阶段，DHCP Server会根据管理员的相关配置，给`DHCP Client`提供一个可用的IP地址，同时给其提供DNS、子网掩码等信息。
+
+`DHCP Server`会发送`DHCP Offer`信息给`DHCP Client`提供上述信息，该报文也是一个**广播**报文。
 
 源IP地址为DHCP Server的IP地址，目的IP地址为DHCP Server给该DHCP Client分配的IP地址，源MAC地址为DHCP Server的MAC地址，目的MAC地址为DHCP Client的MAC地址。
 
@@ -147,7 +155,7 @@ DHCP Server会发送`DHCP Offer`信息给`DHCP Client`提供上述信息，该�
 
 （三）请求阶段
 
-在DHCP Client收到DHCP Server发送的DHCP Offer报文后，就进入了DHCP请求阶段，在DHCP请求阶段，DHCP Client已经得到了DHCP Server分配给它的IP地址，DHCP Client在得到该IP地址后，却不会马上使用.
+在`DHCP Client`收到DHCP Server发送的DHCP Offer报文后，就进入了DHCP请求阶段，在DHCP请求阶段，DHCP Client已经得到了DHCP Server分配给它的IP地址，DHCP Client在得到该IP地址后，却不会马上使用.
 
 DHCP Client会向DHCP Server发送DHCP Request报文，正式向DHCP Server申请使用该IP地址。
 

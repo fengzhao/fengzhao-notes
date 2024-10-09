@@ -16,7 +16,9 @@ ICMP 的全称是 `Internet Control Message Protocol(互联网控制协议)`，�
 
 这也就是说，当主机收到一个指明上层协议为 ICMP 的 IP 数据报时，它会分解出该数据报的内容给 ICMP，就像分解数据报的内容给 TCP 和 UDP 一样。
 
-ICMP 协议和 TCP、UDP 等协议不同，它不用于传输数据，只是用来发送消息。因为 IP 协议现在有两类版本：IPv4 和 IPv6 ，所以 ICMP 也有两个版本：**ICMPv4 和 ICMPv6**。
+ICMP 协议和 TCP、UDP 等协议不同，它不用于传输数据，只是用来发送消息。
+
+因为 IP 协议现在有两类版本：IPv4 和 IPv6 ，所以 ICMP 也有两个版本：**ICMPv4 和 ICMPv6**。
 
 
 
