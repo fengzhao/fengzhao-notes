@@ -246,7 +246,15 @@ GitLab Runner 实现了很多可用于在不同场景中运行构建的执行器
 
 
 
+### PIPELINE
 
+一次 Pipeline 其实相当于一次构建任务，里面可以包含多个流程，如安装依赖、运行测试、编译、部署测试服务器、部署生产服务器等流程。
+
+ 任何提交或者 Merge Request 的合并都可以触发 Pipeline 
+
+
+
+流水线的流程是，提交代码后，gitlab会检测项目根目录里的`.github-ci.yml`文件，根据文件中的流水线自动构建，配置文件格式正确性可以在gitlab进行文件校验，格式使用yaml文件格式，一个yaml文件就是一个流水线，里面会定义多个作业
 
 ## 配置`.gitlab-ci.yml`文件
 
@@ -261,7 +269,7 @@ GitLab Runner 实现了很多可用于在不同场景中运行构建的执行器
 
 脚本被分组到`job`中，并且作业作为更大的 **流水线** 的一部分运行。
 
-您可以将多个独立作业分组到按定义顺序运行的**阶段**。 CI/CD 配置至少需要一项非隐藏的作业。
+您可以将多个独立作业分组到按定义顺序运行的 **阶段**。 CI/CD 配置至少需要一项非隐藏的作业。
 
 当您将 `.gitlab-ci.yml` 文件添加到仓库时，GitLab 会检测到它，并且 GitLab Runner 应用程序会运行作业中定义的脚本。
 
@@ -350,7 +358,8 @@ stages:
 # 4.如果deploy中的所有job执行成功，这个流水线被标记为passed
 
 # 如果任意一个job执行失败，流水线被标记为failed，后续stage中的job都不会执行，同一stage中的job不会被停止，会继续执行。
-# 如果流水线中没有定义stages，那么 build,test,depoly就是默认的stages，默认各阶段顺序如下：
+
+# 如果流水线中没有显式定义stages，那么build,test,depoly就是默认的stages，默认各阶段顺序如下：
 #  .pre 
 #  build
 #  test
@@ -439,7 +448,7 @@ deploy_production:
 
 - workflow:rules
 
-  workflow 用于配置规则，来确认是否执行流水线，workflow 在流水线最顶层定义。
+  workflow 用于控制PIPELINE行为，来确认是否执行流水线，workflow 在流水线最顶层定义。
 
   ```yaml
   workflow:
@@ -456,11 +465,11 @@ deploy_production:
   ```yaml
   workflow:
     rules:
-      - if: '$CI_PIPELINE_SOURCE == "schedule" # 计划流水线不执行
+      - if: '$CI_PIPELINE_SOURCE == "schedule" 	# 计划流水线不执行
         when: never
-      - if: '$CI_PIPELINE_SOURCE == "push"'     # push事件不执行
+      - if: '$CI_PIPELINE_SOURCE == "push"'       # push事件不执行
         when: never
-      - when: always                            # 其他的事件都流水线
+      - when: always                              # 其他的事件都流水线
      
      # 所有规则都可以是 when: never，最后是 when:always 规则。 匹配 when: never 规则的流水线不会运行。 所有其他流水线类型运行
   ```
