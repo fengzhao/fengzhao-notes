@@ -873,13 +873,19 @@ HTTP 定义了一组**请求方法**，以表明要对给定资源执行的操�
 
 # URL的构成
 
+https://developer.mozilla.org/zh-CN/docs/Learn/Common_questions/Web_mechanics/What_is_a_URL
+
+
+
 ```
 schema://<user>:<password>@host:port/path;<params>?<query_string>#frag
 ```
 
 
 
-- 方案：访问服务器以获取资源时要使用哪种协议：http、https、ftp
+- 方案：URL 的第一部分是方案（scheme），它表示浏览器必须使用的协议来请求资源（协议是计算机网络中交换或传输数据的一组方法）。
+
+  - 访问服务器以获取资源时要使用哪种协议：http、https、ftp
 
   - `scheme`是协议名不区分大小写，以冒号结尾，表示需要使用的协议来检索资源。
   - 在RFC1738中定义`scheme`中只能包含`字母、数字、+、-` ，现实中浏览器没有严格的遵守。
@@ -919,7 +925,7 @@ schema://<user>:<password>@host:port/path;<params>?<query_string>#frag
 
 浏览器本身支持的协议：`http: https: ftp: file:`(之前是local:，用来获取本地文件或者NFS与SMB共享)
 
-伪协议：一些保留协议用来调用浏览器脚本引擎或者函数，没有真正取回任何远程内容，也没有建立一个独立的文件。
+在现实中，一些非正式的协议也会被支持，如`javascript`等。伪协议：一些保留协议用来调用浏览器脚本引擎或者函数，没有真正取回任何远程内容，也没有建立一个独立的文件。
 
 如：`javascript: data:`
 
@@ -967,7 +973,7 @@ URL的基本结构是：[协议]://[域名]/[路径]
 
 
 
-对于get方法来说，都是把数据串联在请求的url后面作为参数。若请求query中包含中文，中文会被编码为 `%+16进制+16进制`形式。
+对于get方法来说，都是把数据串联在请求的url后面作为参数。若请求`query string`中包含中文，中文会被编码为 `%+16进制+16进制`形式。
 
 但你真的深入了解过，为什么要进行这种转义编码吗？编码的原理又是什么？
 
