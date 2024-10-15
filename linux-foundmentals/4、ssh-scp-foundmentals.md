@@ -181,17 +181,13 @@ https://www.cnblogs.com/sparkdev/p/10166061.html
 
 
 
-OpenSSH 客户端程序默认已经被系统安装好了，打开 设置->应用->可选功能 面板就可以看到：
+OpenSSH 客户端程序默认已经被系统安装好了，打开 设置->应用->可选功能面板就可以看到：
 
 也可以添加功能，安装 openssh server，安装好后，在服务中启动 openssh server 就可以让 windows 被 ssh 远程连接。
 
 Windows 系统中 OpenSSH 的安装目录为 C:\Windows\System32\OpenSSH，不管是客户端程序还是服务器端程序都这这个目录中：
 
 OpenSSH 服务器端程序的默认配置文件 sshd_config_default 也在这个目录中。这个目录会被添加到 PATH 环境变量中：
-
-
-
-
 
 
 
@@ -506,9 +502,9 @@ $ rpm -ql openssh-clients
 
 # ssh客户端全局配置文件，所有用户公用的配置文件
 /etc/ssh/ssh_config
+
 # ssh客户端用户配置文件，针对某个用户的具体配置文件，可以覆盖全局配置文件
 ~/.ssh/config
-
 
 # ssh服务端配置文件，用来配置认证方式，是否启用root登陆，加密方式等等。
 /etc/ssh/sshd_config
@@ -525,6 +521,7 @@ $ rpm -ql openssh-clients
 # 这个文件可以追加写入多个公钥
 ~/.ssh/authorized_keys
 
+# 当第一次登陆远程主机时，不管是用密码还是密钥，这段话提示用户无法确认远程主机的真实性，只知道 RSA 公钥的指纹，询问用户是否继续。
 
 # 你访问过远程主机的公钥指纹都记录在~/.ssh/known_hosts。当下次访问相同计算机时，OpenSSH 会核对公钥指纹。如果公钥不同，OpenSSH 会发出警告。
 ~/.ssh/known_hosts
@@ -573,17 +570,19 @@ Host *
 ``` shell
 # /etc/ssh/sshd_config  sshd 服务端常用配置选项
 
-port 22 # ssh端口，Linux一般都是22端口做为ssh服务
-PermitRootLogin yes  # 允许root远程登录
-PasswordAuthentication no　 # 不允许密码方式登录
-RSAAuthentication yes # 允许RSA认证，只针对SSH1
-PubkeyAuthentication yes # 允许公钥认证
-AuthorizedKeysFile .ssh/authorized_keys #保存公钥的认证文件
+port 22 									# ssh端口，Linux一般都是22端口做为ssh服务
+PermitRootLogin yes  						# 是否允许root远程登录
+PasswordAuthentication no　 		   		   # 是否允许密码方式登录
+RSAAuthentication yes 						# 允许RSA认证，只针对SSH1
+PubkeyAuthentication yes 					# 是否允许公钥认证
+AuthorizedKeysFile .ssh/authorized_keys 	# 保存公钥的认证文件
 
-UseDNS  yes            # 服务端sshd服务开启UseDNS选项状态下，当客户端试图使用SSH连接服务器时，服务器端先根据客户端的IP地址进行DNS PTR反向查询出客户端的主机名，然后根据查询出的客户端主机名进行DNS正向A记录查询，验证与其原始IP地址是否一致，这是防止客户端欺骗的一种措施，但一般我们的是动态IP不会有PTR记录，建议关闭该选项。
+UseDNS  yes       # 服务端sshd服务开启UseDNS选项状态下，当客户端试图使用SSH连接服务器时，服务器端先根据客户端的IP地址进行DNS PTR反向查询出客户端的主机名，然后根据查询出的客户端主机名进行DNS正向A记录查询，验证与其原始IP地址是否一致，这是防止客户端欺骗的一种措施，但一般我们的是动态IP不会有PTR记录，建议关闭该选项。
 
 
 ```
+
+
 
 ## SSH 常用场景
 
@@ -913,8 +912,6 @@ rm -f tmp.sh
 
 ## ssh 和 scp 使用代理
 
-
-
 连接国外 VPS 时，因为某些原因，ssh 连上了很卡，而且经常失去连接，因此需要让 ssh 走代理加速。
 
 ssh 使用 socks5、http_connect 代理：
@@ -942,12 +939,6 @@ host github.com
 
 
 
-
-
-
-
-
-
 scp/sftp 使用 socks5、http_connect 代理：
 
 ```shell
@@ -962,10 +953,6 @@ $ sftp -oProxyCommand="nc -Xconnect -x127.0.0.1:1080 %h %p" USER@SSH_SERVER
 ```shell
 
 ```
-
-
-
-
 
 https://blog.csdn.net/DiamondXiao/article/details/52488628
 
@@ -1019,15 +1006,9 @@ pacman -Ql openssh
 
 火狐信息安全openssh—guidelines
 
-https://infosec.mozilla.org/guidelines/openssh
-
-
-
-
+https://infosec.mozilla.org/guidelines/openss
 
 https://github.com/jtesta/ssh-audit
-
-
 
 
 

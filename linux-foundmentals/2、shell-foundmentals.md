@@ -28,6 +28,8 @@
 
 CLI 只能接受文本输入，也只能显示出文本和基本的图形输出。
 
+
+
 #### 控制台终端Terminal
 
 在 Linux 命令行界面模式中，开机后显示器出现的命令行界面（shell CLI）就叫终端，这种模式称作 Linux 控制台，因为它仿真了早期的硬接线控制台终端，而且是一种同 Linux系 统交互的直接接口。
@@ -62,15 +64,51 @@ CLI 只能接受文本输入，也只能显示出文本和基本的图形输出�
  
 ```
 
-
-
 UNIX 系统上的 terminfo 数据库用于定义终端和打印机的属性及功能，包括各设备（例如，终端和打印机）的行数和列数以及要发送至该设备的文本的属性
 
 UNIX 中的几个常用程序都依赖 terminfo 数据库提供这些属性以及许多其他内容，其中包括 vi 和 emacs 编辑器以及 curses 和 man 程序。
 
 
 
-tput 命令将通过 terminfo 数据库对您的终端会话进行初始化和操作。通过使用 tput，您可以更改几项终端功能，如移动或更改光标、更改文本属性，以及清除终端屏幕的特定区域。
+tput 命令将通过 terminfo 数据库对您的终端会话进行初始化和操作。
+
+通过使用 tput，您可以更改几项终端功能，如移动或更改光标、更改文本属性，以及清除终端屏幕的特定区域。
+
+```bash
+tput clear      # 清除屏幕
+tput sc         # 记录当前光标位置
+tput rc         # 恢复光标到最后保存位置
+tput civis      # 光标不可见
+tput cnorm      # 光标闪烁可见
+tput cup x y    # 光标按设定坐标点移动
+
+tput blink      # 文本闪烁
+tput bold       # 文本加粗
+tput el         # 清除到行尾
+tput smso       # 启动突出模式
+tput rmso       # 停止突出模式
+tput smul       # 下划线模式
+tput rmul       # 取消下划线模式
+tput sgr0       # 恢复默认终端
+tput rev        # 反相终端
+
+# 文本加粗
+bold=$(tput bold 2>/dev/null)
+# 恢复默认终端
+sgr0=$(tput sgr0 2>/dev/null)
+
+
+
+# 获取当前shell
+shell=$(echo $SHELL | awk 'BEGIN {FS="/";} { print $NF }')
+
+echo "Detected shell: ${bold}$shell${sgr0}"
+
+```
+
+
+
+
 
 
 
@@ -482,7 +520,6 @@ http://c.biancheng.net/view/773.html
 # 变量声明，变量名大写，变量值用引号括起来，防止值中有空格
 
 # 单引号声明变量 NAME='VALUE'  单引号不能识别特殊语法，即raw string
-
 # 双引号声明变量 NAME="VALUE"  双引号不能识别特殊语法，可以实现变量插值
 
 # 单引号变量，raw string
@@ -507,6 +544,8 @@ root@vpsServer:~#
 
 
 #### 环境变量
+
+环境变量是未在当前进程中定义，而从父进程中继承而来的变量。例如环境变量 `HTTP_PROXY` ，它定义了互联网连接应该使用哪个代理服务器。
 
 环境变量一般是值用 export 命令导出的变量，主要目的是用于控制计算机内所有程序的运行行为，比如：定义 shell 的运行环境等等。
 
@@ -637,6 +676,27 @@ unset -f pathmunge
 
 
 #### bash 环境变量
+
+
+
+
+
+## 数学运算
+
+在Bash shell环境中，可以利用 let 、 (( )) 和 [] 执行基本的算术操作。而在进行高级操作时，expr 和 bc 这两个工具也会非常有用。
+
+可以用普通的变量赋值方法定义数值，这时它会被存储为字符串。
+
+```bash
+#!/bin/bash
+no1=4;
+no2=5;
+let result=no1+no2
+echo ${result}
+
+# 自加操作
+let no1++
+```
 
 
 
