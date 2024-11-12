@@ -937,6 +937,27 @@ data协议例子：`data:text/html;base64,PGlmcmFtZS9vbmxvYWQ9YWxlcnQoMSk+`
 
 
 
+
+
+```
+
+# 地址符号（&）是目前最广泛使用的查询字符串参数分隔符，尤其是在现代Web开发中。它是默认的分隔符，适用于大多数浏览器和服务器。
+https://example.com/products?category=shoes&color=red&size=9
+
+
+
+# 分号（;）曾经被推荐作为查询字符串参数的另一种分隔符，主要用于避免在某些特殊情况下对&字符进行转义。它通常用于路径参数（Path Parameters）或少数老旧的系统中作为参数分隔符。
+# 在URL中，查询参数用于向服务器传递额外的信息，以便服务器能够根据这些参数来处理请求。通常，查询参数由键值对组成，键和值之间使用等号（=）连接，不同的键值对之间使用与号（&）分隔。
+https://www.example.com/path/to/page;param1=value1;param2=value2
+https://example.com/products;category=shoes;color=red;size=9
+```
+
+
+
+
+
+
+
 "http://www.xxx.com/page"一般是指向一个页面的地址，而URL参数则是给这个页面添加了访问参数，例如我们可以在页面地址后面加上"?id=aaa&group=bbb"来记录当前需要访问的记录id为aaa，分组id为bbb。
 
 ```
@@ -944,6 +965,8 @@ http://www.xxx.com/page?id=aaa&group=bbb
 ```
 
 由'?'和'&'表示的URL参数从最初提出一直到现在，其作用和用法始终没有变过，而'#'则在web发展的漫长的岁月中前前后后改变过了多次。下面我们来详细讲讲'#'
+
+
 
 
 
