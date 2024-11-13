@@ -44,13 +44,13 @@ OpenSSL是Openssl团队的一个开源的能够实现安全套接层（SSLv2/v3�
 
 该产品支持多种加密算法，包括对称密码、哈希算法、安全散列算法等。
 
-OpenSSL 存在操作系统命令注入漏洞，该漏洞源于c_rehash 脚本未正确清理 shell 元字符导致命令注入。攻击者利用该漏洞执行任意命令。
-
 OpenSSL 是用于传输层安全性（TLS）协议的健壮的，商业级，功能齐全的开源工具包，因 **安全套接字层（SSL）协议** 而闻名。
 
 这个协议的实现是基于完整功能的通用密码库，该库也可以独立使用。
 
 
+
+OpenSSL 存在操作系统命令注入漏洞，该漏洞源于c_rehash 脚本未正确清理 shell 元字符导致命令注入。攻击者利用该漏洞执行任意命令。
 
 ```shell
 wget https://www.openssl.org/source/openssl-1.1.1d.tar.gz 
@@ -67,7 +67,7 @@ wget https://www.openssl.org/source/openssl-3.1.1.tar.gz
 
 
 
-OpenSSL 代码库的地址是 https://github.com/openssl/openssl 
+OpenSSL 代码库的地址是 https://github.com/openssl/openssl ，项目由遍布世界的志愿者所组成的社区进行管理，他们通过互联网进行沟通、计划和开发OpenSSL工具集以及相关的文档。
 
 用户可以从 [www.openssl.org/source](https://www.openssl.org/source) 或者 github 下载官方发行版的源代码压缩包 。OpenSSL 项目不会以二进制形式分发工具包。
 
@@ -76,6 +76,20 @@ OpenSSL 代码库的地址是 https://github.com/openssl/openssl
 特别是在Linux和其他Unix操作系统上，通常建议与发行商或供应商提供的预编译共享库链接。**一般不建议在 Linux 上自行编译安装 OpenSSL**
 
 **这是一个操作系统很底层的加密库，很多应用层的软件都引用了它（比如nginx,python等），所以一般不建议在生产环境直接编译。**
+
+
+
+
+
+很多关于SSL/TLS以及PKI的著作，但是这些材料都存在两个问题：
+
+(1) 你需要的内容分布在不同的地方，很难形成整体（例如，RFC），因而难以寻找；
+
+(2) 大多数著作都非常详细而且深入底层。很多文档已经废弃。
+
+
+
+为了让这些材料变得有价值，我花了好几年时间工作和学习，才仅仅开始理解整个生态体系。
 
 
 
@@ -158,10 +172,6 @@ OpenSSL 工具包括：
 作为一个基于密码学的安全开发包，OpenSSL 提供的功能相当强大和全面，囊括了主要的密码算法、常用的[密钥](https://baike.baidu.com/item/%E5%AF%86%E9%92%A5)和证书封装管理功能以及 SSL 协议，并提供了丰富的应用程序供测试或其它目的使用。
 
 https://blog.csdn.net/naioonai/article/details/80984032
-
-
-
-
 
 
 

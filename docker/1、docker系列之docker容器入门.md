@@ -1247,11 +1247,7 @@ Linux 中各发行版实现的 UnionFS 各不相同，所以docker在不同 linu
 
 
 
-当我们构建完一个镜像之后，镜像就存储在了我们 docker 本地存储目录，默认情况下为 `/var/lib/docker` 。
-
-所谓的“镜像”，实际上就是一个 Ubuntu 操作系统的 rootfs，它的内容是 Ubuntu 操作系统的所有文件和目录。
-
-不过，与之前我们讲述的 rootfs 稍微不同的是，Docker 镜像使用的rootfs，往往由多个“层”组成：
+当我们构建完一个镜像之后，镜像就存储在了我们 docker 本地存储目录，默认情况下为 `/var/lib/docker` 。所谓的“镜像”，实际上就是一个 Ubuntu 操作系统的 rootfs，它的内容是 Ubuntu 操作系统的所有文件和目录。不过，与之前我们讲述的 rootfs 稍微不同的是，Docker 镜像使用的rootfs，往往由多个“层”组成：
 
 
 
@@ -1317,7 +1313,25 @@ distribution 目录下存放着 layer 的 diff_id 和 digest 的对应关系
 
 
 
+**manifest**
+manifest(描述文件)主要存在于 registry 中作为 docker 镜像的元数据文件，在 pull、push、save 和 load 过程中作为镜像结构和基础信息的描述文件。
 
+在镜像被 pull 或者 load 到 docker 宿主机时，manifest 被转化为本地的镜像配置文件 config。
+
+在我们拉取镜像时显示的摘要(Digest)：就是对镜像的 manifest 内容计算 sha256sum 得到的。
+
+- `manifest`： 也可以称为 **MANIFEST** 或 **单个 manifest** 或 **普通镜像** 是关于镜像的信息，例如 overylay 层、大小和摘要。
+- `manifest lists`: 也可以称为 **MANIFEST_LISTS** 或 **多 manifest** 或 **多架构镜像**，是通过指定一个或多个(理想情况下不止一个)镜像名称创建的镜像层列表。然后，它可以像 `docker pull` 和 `docker run` 命令中的映像名称一样使用。理想情况下，manifest list 是由不同的 CPU 架构 和 OS 操作系统组合的功能相同的镜像创建的。因此，`manifest lists` 通常被称为 “多架构镜像”。
+
+
+
+一个多架构镜像（manifest lists） 允许某个服务镜像使用一个名称关联多个不同架构功能相同的镜像。
+
+一个镜像 tag 中可以同时包含ARMv7/ARMv8/i386/AMD64/MacOS/Windows 等等不同平台运行依赖的 overlay 层等信息，在 `docker pull` 时会默认会自动下载当前机器依赖的镜像层运行，给多平台架构镜像的管理带来了很大的便利。
+
+`docker manifest` 命令本身不执行任何操作。为了对 manifest 或 manifest list 进行操作，必须使用其中一个子命令。 
+
+该命令还可以为用户查看普通镜像提供额外的信息，比如构建映像的操作系统和架构。一定要记住，本地存储的 manifest lists 永远不会被 docker 的引擎使用。
 
 
 

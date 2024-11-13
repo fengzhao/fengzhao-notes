@@ -4236,11 +4236,11 @@ https://github.com/qufei1993/blog/issues/30
 
 
 
-HTTPS 会加密 URL 吗？
+HTTPS 会加密 URL 吗？HTTPS 会加密头部吗？
 
 
 
-HTTPS 会加密头部吗？
+
 
 因为 URL 的信息都是保存在 HTTP Header 中的，而 HTTPS 是会对 `HTTP Header` 和  `HTTP Body` 整个加密的，所以 URL 自然是会被加密的。
 
@@ -4250,6 +4250,10 @@ HTTPS 会加密头部吗？
 
 
 
+但请注意 hostname 一般是会被明文传送的，因为 SNI是透明的。
+
+HTTPS 没有完全加密访问请求，因为 `Server Name` 依然是明文传输的。它发生在 HTTPS 传输过程中的 `Client Hello` 握手阶段
+
 HTTPS 可以看到请求的域名吗？
 
 从上面我们知道，HTTPS 是已经把  HTTP Header + HTTP Body 整个加密的，所以我们是无法从加密的 HTTP 数据中获取请求的域名的。
@@ -4257,6 +4261,12 @@ HTTPS 可以看到请求的域名吗？
 但是我们可以在 **TLS 握手过程中看到域名信息**。TLS 第一次握手的 “Client Hello” 消息中，有个 server name 字段，它就是请求的域名地址。
 
 
+
+**SNI信息**
+
+SNI，即服务器名称指示，是TLS协议的扩展。它允许在握手过程开始时通过客户端告诉服务器正在连接的主机名称，从而解决一个服务器拥有多个域名的情况。
+
+在TLS握手信息中并没有携带客户端要访问的目标地址，导致当一台服务器有多个虚拟主机，且每个主机的域名不一样，使用了不一样的证书时，不知道和哪台虚拟主机进行通信。而SNI允许Web服务器通过SSL或TLS握手的扩展在单个IP地址上托管多个站点，从而使得HTTPS网站具有唯一的TLS证书，即使它们位于共享IP地址上。使用SNI时，服务器的主机名包含在TLS握手中，这使得HTTPS网站具有唯一的TLS证书，即使它们位于共享IP地址上也是如此。
 
 
 
