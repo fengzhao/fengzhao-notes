@@ -53,13 +53,13 @@ Nginx 还采用了模块设计，有大量的第三方模块可以扩展 Nginx �
 
 ## 诞生背景
 
-Nginx 出现的背景是由于互联网的快速普及导致数据量的快速增长，同时催生出了海量的连接。
-
-传统的 Apache 等服务器采用的是单进程模型，这意味着，每处理一个请求就会创建一个进程，这不但存在进程创建的开销。
+Nginx 出现的背景是由于互联网的快速普及导致数据量的快速增长，同时催生出了海量的连接。传统的 Apache 等服务器采用的是单进程模型，这意味着，每处理一个请求就会创建一个进程，这不但存在进程创建的开销。
 
 而且进程之间相互切换产生的上下文开销也非常耗费 CPU 资源，导致这种传统的服务器在面对成千上万的并发连接时，性能非常低下，而这是快速发展的互联网所不能够忍受的。
 
 在这种背景下，Nginx 采用的是进程池和 epoll 处理模型，这二者加起来使得 Nginx 的性能非常优异，一台 32 核的机器上可以支撑数千万的并发连接。
+
+
 
 Nginx 有一个 master 进程和若干个 worker 进程。
 
@@ -698,15 +698,47 @@ server {
 
 ## 常用 nginx 指令
 
+所有的指令，都可以在官网中https://nginx.org/en/docs/dirindex.html找到，一般搜索 nginx directives 也可以找到。
+
+
+
+### **Main**
+
+Nginx的主配置文件是 nginx.conf，这个配置文件一共由三部分组成，分别为**全局块、events块和http块**。在http块中，又包含http全局块、多个server块。每个server块中，可以包含server全局块和多个location块。
+
+在同一配置块中嵌套的配置块，各个之间不存在次序关系。
+
+
+
+```nginx
+# 指定运行nginx服务的用户和用户组，只能在全局块配置，一般设置成nginx或者nobody用户
+user nginx;
+# 指定工作线程数，可以制定具体的进程数，默认是auto，等于CPU核数，这个指令只能在全局块配置
+worker_processes number | auto；
+
+
+# 指定pid文件存放的路径，这个指令只能在全局块配置
+# pid logs/nginx.pid;
+
+# 指定错误日志的路径和日志级别，此指令可以在全局块、http块、server块以及location块中配置。其中debug级别的日志需要编译时使用--with-debug开启debug开关
+# error_log [path] [debug | info | notice | warn | error | crit | alert | emerg] 
+# error_log  logs/error.log  notice;
+# error_log  logs/error.log  info;
+```
 
 
 
 
-### http 指令
+
+
+
+### http 块
 
 http 是最顶层的指令之一了，它必须直接在 main 中使用。
 
 ```nginx
+##########################################################MAIN############################################################## 
+# MAIN块的指令是全局参数，全局生效，对整体产生影响。
 
 user nginx;                        # 指定运行nginx进程的用户，Default: nobody
 worker_processes  auto;            # 工作进程数，默认是auto，等于CPU核数
@@ -718,8 +750,10 @@ events {
   worker_connections  4096;       ## 单个工作进程可以允许同时建立外部连接的数量。Default: 1024
 }
 # worker_processes与worker_connections 设置好合适大小，可以提示nginx处理性能，非常重要
+##########################################################MAIN############################################################## 
 
 http {
+    
   include    conf/mime.types;                    
   include    /etc/nginx/proxy.conf;
   include    /etc/nginx/fastcgi.conf;
@@ -749,18 +783,21 @@ http {
 
 
 
-### server 指令 
+### server 块
 
-server 是 nginx 中最重要的指令了，它必须被包含在 http 指令中使用。一个 server 就定义了一个虚拟主机，http块中可以有多个 server，可以让 nginx 支持多个虚拟主机。
+server 是 nginx 中最重要的指令了，它必须被包含在 http 块中使用。一个http块中可以有多个 server块，每个 server 就定义了一个虚拟主机，可以让 nginx 支持多个虚拟主机。
 
 虚拟主机是一种特殊的软硬件技术，它可以将网络上的每一台计算机分成多个虚拟主机，每个虚拟主机可以独立对外提供 www 服务，这样就可以实现一台主机对外提供多个 web 服务，每个虚拟主机之间是独立的，互不影响的。
 
 通俗说，一个虚拟主机就是一个网站。
 
 ```
-Syntax:	server { ... }
-Default:	—
-Context:	http
+http{
+	server {
+		listen   		80;
+		server_name  	www.domain.com;
+	}
+}
 ```
 
 ### server_name 指令
@@ -771,23 +808,12 @@ server_name 指令是用来配置究竟是哪个 server 块来处理我们的请
 - 泛域名：仅支持在最前或最后加 * 通配符匹配任意字符串，例如：`*.demo.com` 和 `test.nginx.*`
 - 正则表达式匹配：`server_name www.taohui.tech ~^www\d+\.taohui\.tech$;`
 
-
-
-```nginx
-Syntax:	server_name name ...;
-Default:	
-server_name "";
-Context:	server
-```
-
-
-
 nginx 是如何处理一个请求的，假设有这样一个配置文件，配置了三个域名。
 
 ```nginx
 server {
     listen      80;
-    server_name example.org www.example.org;
+    server_name example.org www.example.org; 
     ...
 }
 
@@ -1696,25 +1722,29 @@ proxy_set_header X-Forwarded-For $remote_addr;
 
 # 初探 nginx 架构
 
-nginx 在启动后，在 unix 系统中会以 daemon 的方式在后台运行，后台进程包含一个 master 进程和多个 worker 进程。
+nginx 在启动后，在 unix 系统中会以 daemon 的方式在后台运行，后台进程包含一个 master 进程和多个 worker 进程。我们也可以手动地关掉后台模式，让 nginx 在前台运行，并且通过配置让 nginx 取消 master 进程，从而可以使 nginx 以单进程方式运行。
 
-我们也可以手动地关掉后台模式，让 nginx 在前台运行，并且通过配置让 nginx 取消 master 进程，从而可以使 nginx 以单进程方式运行。
+
 
 很显然，生产环境下我们肯定不会这么做，所以关闭后台模式，一般是用来调试用的，在后面的章节里面，我们会详细地讲解如何调试nginx。
 
-**nginx是以多进程的方式来工作的，当然nginx也是支持多线程的方式的，只是我们主流的方式还是多进程的方式，也是nginx的默认方式。**
+**当然nginx是以多进程的方式来工作的，当然nginx也是支持多线程的方式的，只是我们主流的方式还是多进程的方式，也是nginx的默认方式。**
+
+
+
+
 
 
 
 **为什么 Nginx 不使用多线程？**
 
-Apache: 创建多个进程或线程，而每个进程或线程都会为其分配 cpu 和内存（线程要比进程小的多，所以worker支持比perfork高的并发），并发过大会耗光服务器资源。
+- Apache: 创建多个进程或线程，而每个进程或线程都会为其分配 cpu 和内存（线程要比进程小的多，所以worker支持比perfork高的并发），并发过大会耗光服务器资源。
 
-Nginx: 采用单线程来异步非阻塞处理请求（管理员可以配置Nginx主进程的工作进程的数量）(epoll)，不会为每个请求分配cpu和内存资源，节省了大量资源，同时也减少了大量的CPU的上下文切换。所以才使得Nginx支持更高的并发。
+- Nginx: 采用单线程来异步非阻塞处理请求（管理员可以配置Nginx主进程的工作进程的数量）(epoll)，不会为每个请求分配cpu和内存资源，节省了大量资源，同时也减少了大量的CPU的上下文切换。所以才使得Nginx支持更高的并发。
 
 
 
-Nginx 最核心的一个目的是要保持高可用性、高可靠性，而当 Nginx 如果使用的是多线程结构的时候，因为线程之间是共享同一个地址空间的，所以当某一个第三方模块引发了一个地址空间导致的段错误时、在地址越界出现时，会导致整个 Nginx 进程全部挂掉。而当采用多进程模型时，往往不会出现这样的问题。从上图可以看到 Nginx 在做进程设计时，同样遵循了实现高可用、高可靠这样的一个目的。
+Nginx 最核心的一个目的是要保持高可用性、高可靠性，而当 Nginx 如果使用的是多线程结构的时候，因为线程之间是共享同一个地址空间的，所以当某一个第三方模块引发了一个地址空间导致的段错误时、在地址越界出现时，会导致整个 Nginx 进程全部挂掉。而当采用多进程模型时，往往不会出现这样的问题。从下图可以看到 Nginx 在做进程设计时，同样遵循了实现高可用、高可靠这样的一个目的。
 
 
 
@@ -1739,8 +1769,8 @@ nginx在启动后，会有一个`master`进程和多个`worker`进程。
   - 监控worker进程的运行状态，当worker进程退出后(异常情况下)，会自动重新启动新的worker进程。
 
 - worker进程：
-  - worker才是真正的工作进程，处理网络请求事件。各进程互相之间是独立的。
-  - 一个请求，只可能在一个worker进程中处理。
+  - worker才是真正的工作进程，处理基本的网络请求事件。各进程互相之间是独立的。
+  - 一个请求，只可能在一个worker进程中处理。一个worker进程，不可能处理其它进程的请求。
   - Nginx 中还有两个特殊用途的进程：**缓存加载器进程（Cache Loader ）**和 **缓存管理器进程（Cache Manager）**
   - `cache loader`进程负责检测磁盘的缓存，且向内存数据库提供缓存元数据，`cache loader`在Nginx准备启动时，以一定的目录结构，遍历缓存内容的元数据，更新共享内存中的相关条目，**当准备完成后退出**。
   - `cache manager`进程主要负责缓存的过期管理和诊断。**一般存在于主进程的整个生命周期**，负责对缓存索引进行管理。通过缓存机制，可以提高对请求的响应效率，进一步降低网络压力。

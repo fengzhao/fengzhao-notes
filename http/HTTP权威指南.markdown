@@ -736,15 +736,19 @@ HTTP/1.1 规范指定了一系列的标准标头用于启动服务端驱动型�
 
 # 内容编码
 
-HTTP 应用程序有时在发送之前需要对内容进行编码。
-
-例如，在把很大的 HTML 文档发送给通过慢速连接连上来的客户端之前 , 服务器可能会对它进行压缩，这样有助于减少传输实体的时间。
-
-服务器还可以把内容搅乱或加密，以此来防止未经授权的第三方看到文档的内容。
+HTTP 应用程序有时在发送之前需要对内容进行编码。例如，在把很大的 HTML 文档发送给通过慢速连接连上来的客户端之前 , 服务器可能会对它进行压缩，这样有助于减少传输实体的时间。
 
 
 
-原始媒体/内容的类型通过 [`Content-Type`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Content-Type) 首部给出，而 `Content-Encoding` 应用于数据的表示，或“编码形式”。
+
+
+
+
+服务器还可以把内容搅乱或加密，以此来防止未经授权的第三方看到文档的内容。原始媒体/内容的类型通过 [`Content-Type`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Content-Type) 首部给出，而 `Content-Encoding` 应用于数据的表示，或“编码形式”。
+
+-  [`Content-Type`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Content-Type) 用于向接收方说明传输资源的媒体类型。例如，如果传输的是图片，那么它的媒体类型可能会是 `image/png` 、`image/jpg`。在浏览器中，浏览器会根据响应报文 Content-Type 判断响应体的资源类型，然后根据不同文件类型做出不同的展示。
+- Content-Encoding 通常用于对实体内容进行压缩编码，目的是优化传输，例如用 gzip 压缩文本文件，能大幅减小体积。通常是 gzip，compress，deflate
+- 
 
 如果原始媒体以某种方式编码（例如 zip 文件），则该信息不应该被包含在 `Content-Encoding` 首部内。
 
@@ -766,6 +770,14 @@ Content-Encoding: gzip,compress,deflate,identity
 | compress |      |      |
 | deflate  |      |      |
 | identity |      |      |
+
+
+
+
+
+# 传输编码
+
+在 HTTP 中传输数据有一个 chunked 的方式, 又称“分块传输”。在响应报文里用头字段Transfer-Encoding: chunked 来表示。意思是报文里的 body 部分不是一次性发过来的，而是分成了许多的块（chunk）逐个发送。
 
 
 
