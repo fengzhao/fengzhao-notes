@@ -48,8 +48,6 @@ OpenSSL 是用于传输层安全性（TLS）协议的健壮的，商业级，功
 
 这个协议的实现是基于完整功能的通用密码库，该库也可以独立使用。
 
-
-
 OpenSSL 存在操作系统命令注入漏洞，该漏洞源于c_rehash 脚本未正确清理 shell 元字符导致命令注入。攻击者利用该漏洞执行任意命令。
 
 ```shell
@@ -176,6 +174,10 @@ https://blog.csdn.net/naioonai/article/details/80984032
 
 
 OpenSSL没有自带可信根证书（也叫作可信证书库）
+
+
+
+
 
 
 
