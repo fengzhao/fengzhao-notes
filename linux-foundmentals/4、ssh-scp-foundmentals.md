@@ -177,6 +177,30 @@ OpenSSL没有自带可信根证书（也叫作可信证书库）
 
 
 
+```bash
+#!/bin/bash 
+
+
+yum -y install zlib  perl zlib-devel bzip2-devel ncurses-devel sqlite-devel readline-devel tk-devel \
+		gcc make libffi-devel gcc-c++ glibc  autoconf  openssl-devel pcre-devel  pam-devel  perl-IPC-Cmd
+
+OPENSSL_VERSION="3.4.0"
+
+mkdir -p /tmp/soft/  && cd  /tmp/soft/
+wget --no-check-certificate  -c  https://ftp.openssl.org/source/${OPENSSL_VERSION}.tar.gz -O ${OPENSSL_VERSION}.tar.gz
+# https://github.com/openssl/openssl/releases/download/openssl-${openssl_version}/openssl-${openssl_version}.tar.gz
+
+
+# "备份OpenSSL"
+mv -f /usr/bin/openssl /usr/bin/openssl_bak
+mv -f /usr/include/openssl /usr/include/openssl_bak
+mv -f /usr/lib64/libssl.so /usr/lib64/libssl.so.bak
+
+cd  /tmp/soft/
+./config --prefix=/usr/local/openssl -d shared && make -j 4 && make install -j 4
+
+```
+
 
 
 
