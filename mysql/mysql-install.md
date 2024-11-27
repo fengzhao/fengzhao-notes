@@ -388,10 +388,6 @@ $ sudo service mysqld status
 - 密码策略等
   - 
 
-
-
-
-
 ```shell
 # 8.0.20
 wget https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-8.0.20-linux-glibc2.12-x86_64.tar.xz
@@ -406,24 +402,14 @@ wget https://dev.mysql.com/get/Downloads/MySQL-5.7/mysql-5.7.26-linux-glibc2.12-
 
 ```
 
-
-
-
-
 ## 升级须知
 
-- MySQL 不支持跨版本升级，即 MySQL5.6 不能直接升级到 MySQL8.0 。
+- MySQL 不支持跨版本升级，即 MySQL5.6 不能直接升级到 MySQL8.0 
 
-- 一般建议先升级到次版本号的最新版。然后再进行大版本号的升级。
+- 一般建议先升级到次版本号的最新版。然后再进行大版本号的升级
 - 升级之前，先要安全的关闭 MySQL，把数据刷回磁盘，并且做好一次数据备份，再进行升级。
 
-
-
-
-
 ### 5.7 升级到 8.0.22
-
-
 
 1、准备 8.0.20 版本的二进制文件
 
@@ -505,7 +491,7 @@ systemctl start mysql
 
 
 
-## 升级注意事项
+## 升级后注意事项
 
 
 
@@ -572,8 +558,6 @@ select id, SUM(cnt) from t group by id  asc;
 
 
 
-#### 	
-
 最初为什么要用隐式排序呢？
 
 我们知道，要对一组数据进行分组，MySQL优化器会选择不同的方法。**其中最有效的一种是分组之前对数据排序，降低数据复杂度，使得连续分组变得很容易。**
@@ -583,6 +567,8 @@ select id, SUM(cnt) from t group by id  asc;
 而在实际操作中，Group by用到索引的频率很高。这么看，这确实是个很棒的主意！也可以说是留了一个优美的BUG。
 
 
+
+https://aws.amazon.com/cn/blogs/china/amazon-rds-for-mysql-5-7-to-8-0-pre-check/
 
 
 
