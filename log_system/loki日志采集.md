@@ -38,23 +38,11 @@ Grafana Loki 主要由 3 部分组成:
 
 
 
-
-
-
-
-
-
-
-
-
-
 ## Promtail
 
 
 
-
-
-Promtail是一个Agent，用于将本地日志内容发送到Loki。通常，它部署在需要监控的每台机器上。
+`Promtail` 是一个Agent，用于将本地日志内容发送到Loki。通常，它部署在需要监控的每台机器上。
 
 其主要功能包括：
 
@@ -64,7 +52,7 @@ Promtail是一个Agent，用于将本地日志内容发送到Loki。通常，它
 
 
 
-目前，Promtail可以从两个来源获取日志：本地日志文件和systemd journal日志（仅适用于AMD64架构的机器）。
+目前，`Promtail` 可以从两个来源获取日志：本地日志文件和`systemd journal`日志（仅适用于AMD64架构的机器）。
 
 
 
@@ -79,6 +67,31 @@ Kubernetes服务发现从Kubernetes API服务器获取所需的标签，而静�
 与Prometheus一样，Promtail使用`scrape_configs`配置段进行配置。通过`relabel_configs`，可以对要获取的内容、要丢弃的内容以及要附加到日志行的最终元数据进行精细控制。
 
 
+
+### 管道
+
+管道用于转换单个日志行、其标签和其时间戳。管道由一组**阶段**组成。有 4 种类型的阶段：
+
+- **解析阶段**解析当前日志行并从中提取数据。然后，提取的数据可供其他阶段使用。
+- **转换阶段**转换先前阶段提取的数据。
+- **操作阶段**获取先前阶段提取的数据并对其执行某些操作。操作可以
+  - 添加或修改日志行的现有标签
+  - 更改日志行的时间戳
+  - 更改日志行的内容
+  - 根据提取的数据创建指标
+- **过滤阶段**可以选择性地应用一部分阶段或根据某些条件丢弃条目
+
+
+
+典型的管道会以解析阶段开始（例如 [正则表达式](https://grafana.org.cn/docs/loki/latest/send-data/promtail/stages/regex/) 或 [JSON](https://grafana.org.cn/docs/loki/latest/send-data/promtail/stages/json/) 阶段）来从日志行中提取数据。然后会有一系列操作阶段来对提取的数据进行处理。
+
+另一个常见的阶段是 [匹配](https://grafana.org.cn/docs/loki/latest/send-data/promtail/stages/match/) 阶段，用于根据 [LogQL 流选择器和过滤器表达式](https://grafana.org.cn/docs/loki/latest/query/) 选择性地应用阶段或丢弃条目。
+
+
+
+
+
+最常见的操作阶段是 [标签](https://grafana.org.cn/docs/loki/latest/send-data/promtail/stages/labels/) 阶段，用于将提取的数据转换为标签。
 
 运行时配置
 
@@ -116,6 +129,18 @@ org.mybatis.spring.MyBatisSystemException: nested exception is org.apache.ibatis
 
 
 
+## 实例
+
+处理java应用的日志是需要关注多行日志模式的，即一条日志可能由多行文本组成：
+
+```
+
+```
+
+
+
+`
+
 
 
 
@@ -123,16 +148,16 @@ org.mybatis.spring.MyBatisSystemException: nested exception is org.apache.ibatis
 文件配置
 
 ```yaml
-# 禁用Promtail的HTTP和gRPC服务监听
+# Promtail可以作为HTTP服务器
 server:
   disable: true
 
-# 配置了Promtail如何连接到Loki的实例，配置了loki write的地址，以及使用的租户id
+# 配置Promtail如何连接到Loki的实例，配置了loki write的地址，以及使用的租户id
 clients:
 - url: http://loki-write:3100/loki/api/v1/push
   tenant_id: org1
 
-# 设置了Promtail读取日志文件时记录读取位置的文件
+# 设置了Promtail读取日志文件时，记录读取哪个到哪个文件的哪个位置
 positions:
   filename: /app/logs/positions.yaml
 
@@ -140,9 +165,11 @@ positions:
 target_config:
   sync_period: 10s
 
+
+# 抓取任务
 scrape_configs:
 
-# 配置了一个job：java_logs，将跟踪匹配本地/app/logs/*/*.log的日志
+# 配置了一个job：将跟踪匹配本地/app/logs/*/*.log的日志，收集Java的日志
 - job_name: java_logs
   static_configs:
   - targets:
@@ -151,10 +178,9 @@ scrape_configs:
       job: java_logs
       __path__: /app/logs/*/*.log
   
-  # 7个 pipeline stage
-  pipeline_stages:
-  
-  # multiline: 将多行合并成一个多行块，然后将其传递到管道中的下一个阶段。通过firstline首行正则表达式来识别新的块。不匹配该表达式的任何行都被视为前一个匹配块的一部分。这个正则其实就是说年月日开头的才叫一行
+	# 7个 pipeline stage
+  pipeline_stages:  
+	# multiline: 将多行合并成一个多行块，然后将其传递到管道中的下一个阶段。通过firstline首行正则表达式来识别新的块。不匹配该表达式的任何行都被视为前一个匹配块的一部分。这个正则其实就是说年月日开头的才叫一行
   - multiline:
       firstline: '^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3}'
       max_lines: 256

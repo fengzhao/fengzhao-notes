@@ -486,6 +486,13 @@ $ docker
 docker run 
 
 
+# 获取容器的IP (后面使用容器名或容器ID都可以)
+docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' $(docker ps -q)
+docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' docker-test1
+
+
+docker inspect --format='{{range .NetworkSettings.Networks}}{{.MacAddress}}{{end}}' $(docker ps -a -q)
+
 
 ```
 
@@ -3129,29 +3136,25 @@ docker pull registry:2
 
 ## docker 日志最佳实践
 
-
-
 Docker 日志分为两类：
 
 - docker engine 的日志
   - dockerd 守护进程一般是交由 systemd 来管理，所以 docker engine 的日志可以通过  journalctl -u docker 来查看
 
 - 容器内的日志
-  - 容器我们理解为一个普通的进程，进程就会有标准输入输出。
+  - 容器我们理解为一个普通的进程，进程就会有标准输入输出。其实就是容器业务进程的日志。
 
 
 
+`docker logs container` 可以查看一个容器的日志。更准确来说，这个命令是将容器进程的标准输出和标准错误重定向到标准输出（即当前终端）
+
+在生产环境，如果容器应用自身配置了标准输出重定向到日志文件里，所以我们在使用 docker logs 一般收集不到太多重要的日志信息。
 
 
-docker logs container 可以查看一个容器的日志，准确来说，这个命令是将容器进程的标准输出和标准错误重定向到标准输出（即当前终端）
-
-
-
-在生产环境，如果应用的标准输出重定向到日志文件里，所以我们在使用 docker logs 一般收集不到太多重要的日志信息。
 
 比如 tomcat 容器，日志就是写到文件中。
 
-当日志量比较大的时候，我们使用 docker logs 来查看日志，会对 docker daemon 造成比较大的压力，容器导致容器创建慢等一系列问题。
+当日志量比较大的时候，我们使用 `docker logs` 来查看日志，会对 docker daemon 造成比较大的压力，容器导致容器创建慢等一系列问题。
 
 
 
@@ -3169,8 +3172,6 @@ docker info --format '{{.LoggingDriver}}'
 
 # 查看容器的日志驱动
 docker inspect  -f '{{.HostConfig.LogConfig.Type}}'  containerID
-
-
 ```
 
 
@@ -3206,10 +3207,13 @@ docker run  -itd  --log-driver  local --name ping_test   alpine  ping www.baidu.
 # 查看容器日志驱动
 docker inspect  -f '{{.HostConfig.LogConfig.Type}}'  ping_test
 
-# 查看日志文件
-ls -al /var/lib/docker/containers/ping_test_container_id/local-logs/
+`docker docker inspect  -f '{{.ID}}'  ping_test`
 
+# 查看日志文件
+ls -al /qhdata/docker/containers/$(docker  inspect  -f '{{.ID}}'  ping_test)/local-logs/
 ls -al /var/lib/docker/containers/1e2c5f0a157d/local-logs/
+ 
+ 
  
 
 ```
@@ -3218,7 +3222,7 @@ ls -al /var/lib/docker/containers/1e2c5f0a157d/local-logs/
 
 #### json-file 驱动
 
-`json-file` 日志驱动 记录从容器的 `STOUT/STDERR` 的输出 ，用 JSON 的格式写到文件中，日志中不仅包含着 输出日志，还有时间戳和 输出格式。
+`json-file` 日志驱动 记录从容器的 `STOUT/STDERR` 的输出 ，用 JSON 的格式写到文件中，日志中不仅包含着 输出日志，还有时间戳和输出格式。
 
 下面是一行 `ping www.baidu.com` 对应的 JSON 日志：
 
@@ -3252,6 +3256,41 @@ json-file 日志的路径位于 `/var/lib/docker/containers/container_id/contain
 
 
 ### 生产环境如何存储容器中的日志
+
+
+
+`Spring Boot`默认使用logback作为日志框架，可以通过配置`logback-spring.xml`文件来定义日志输出的格式和级别。
+
+
+
+在这个配置文件中，我们定义了一个名为`CONSOLE`的appender，将日志输出到控制台，并指定了输出的格式。
+
+同时，我们将日志级别设置为INFO，这意味着只有INFO级别及以上的日志会输出到控制台。
+
+
+
+```
+FROM openjdk:17-jdk-alpine
+VOLUME /tmp
+ADD golive-user-provider-docker.jar app.jar
+ENV JAVA_OPTS="\
+-server \
+-Xmx1g \
+-Xms1g \
+-Xmn256m"
+ENTRYPOINT java ${JAVA_OPTS} \
+	-Djava.security.egd=file:/dev/./urandom \
+	--add-opens=java.base/java.lang=ALL-UNNAMED \
+	--add-opens=java.base/java.io=ALL-UNNAMED \
+	--add-opens=java.base/java.util=ALL-UNNAMED \
+	--add-opens=java.base/java.util.concurrent=ALL-UNNAMED \
+	--add-opens=java.rmi/sun.rmi.transport=ALL-UNNAMED \
+	--add-opens=java.base/java.lang.reflect=ALL-UNNAMED \
+	--add-opens=java.base/java.util=ALL-UNNAMED \
+	--add-opens=java.base/java.math=ALL-UNNAMED \
+	-jar app.jar
+
+```
 
 
 
