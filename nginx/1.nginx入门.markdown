@@ -102,6 +102,13 @@ Dounin的举措非常重要，因为它代表了开发者主导项目和维护�
 
 
 
+angie 是由原NGINX团队的核心成员创建的新型Web服务器和反向代理服务器（core 还是基于了nginx） 同时提供了以下周边扩展：
+
+- 集成了proemtheus(内置)：自己开发了可以方便监控
+- 提供了一个console：基于angie 的api 提供了console 管理
+
+
+
 针对我们日常工作学习来说，选择官方开源版的 Nginx 或者 OpenResty 就可以了。
 
 ### Nginx 版本策略
