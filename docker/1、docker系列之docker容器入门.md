@@ -2188,14 +2188,14 @@ https://man7.org/linux/man-pages/man7/namespaces.7.html
 很多人都知道 docker 底层其实就是 Linux 的容器技术：
 
 > **docker 通过 namespace 实现资源隔离，通过 cgroups 实现了资源限制。**
+>
+> **对于 Docker 等大多数 Linux 容器来说，Cgroups 技术是用来制造约束的主要手段，而Namespace 技术则是用来修改进程视图的主要方法。**
 
 
 
 实质上，Linux 内核实现 namespace 的主要目的，就是实现轻量级虚拟化（容器）服务。**namespace 是 Linux 内核用来隔离内核资源的方式。**
 
-在同一个 namespace 下的进程可以感知彼此的变化，而对外界的进程一无所知。
-
-这样就可以让容器中的进程产生错觉，仿佛自己置身于一个独立的系统环境中。以达到独立和隔离的目的。
+在同一个 namespace 下的进程可以感知彼此的变化，而对外界的进程一无所知。这样就可以让容器中的进程产生错觉，仿佛自己置身于一个独立的系统环境中。以达到独立和隔离的目的。
 
 
 
