@@ -498,6 +498,58 @@ docker inspect --format='{{range .NetworkSettings.Networks}}{{.MacAddress}}{{end
 
 
 
+
+
+## Docker内部组件
+
+
+
+
+
+```
+docker-client -> dockerd -> docker-containerd -> docker-containerd-shim -> runc（容器外） -> runc（容器内） -> containter-entrypoint
+```
+
+
+
+1. Docker 相关的组件：docker、dockerd、docker-init 和 docker-proxy
+2. containerd 相关的组件：containerd、containerd-shim 和 ctr
+3. 容器运行时相关的组件：runc
+
+
+
+**客户端**
+
+docker 是 Docker 客户端的一个完整实现，它是一个二进制文件，对用户可见的操作形式为 docker 命令，通过 docker 命令可以完成所有的 Docker 客户端与服务端的通信（还可以通过 REST API、SDK 等多种形式与 Docker 服务端通信）。
+
+
+
+Docker 客户端与服务端的交互过程是：docker 组件向服务端发送请求后，服务端根据请求执行具体的动作并将结果返回给 docker，docker 解析服务端的返回结果，并将结果通过命令行标准输出展示给用户。这样一次完整的客户端服务端请求就完成了。
+
+
+
+**服务端**
+
+dockerd 是 Docker 服务端的后台常驻进程，用来接收客户端发送的请求，执行具体的处理任务，处理完成后将结果返回给客户端。
+
+
+
+**docker-init**
+
+在容器内部，当我们自己的业务进程没有回收子进程的能力时，在执行 `docker run `启动容器时可以添加 –init 参数，此时 Docker 会使用 docker-init 作为1号进程，帮你管理容器内子进程，例如回收僵尸进程等。
+
+
+
+**docker-proxy**
+
+docker-proxy 主要是用来做端口映射的。当我们使用 docker run 命令启动容器时，如果使用了 -p 参数，docker-proxy 组件就会把容器内相应的端口映射到主机上来，底层是依赖于 iptables 实现的。
+
+
+
+https://www.cnblogs.com/daemon365/p/17764879.html
+
+
+
 ## docker-machine
 
 
