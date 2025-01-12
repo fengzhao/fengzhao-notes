@@ -1969,6 +1969,24 @@ wget -O /usr/local/nginx/geo/GeoLiteASN.mmdb https://github.com/fengzhao-study-n
 
 ```
 
+## 第三方压缩模块
+
+
+
+
+
+在web应用中，为了节省流量，降低传输数据大小，提高传输效率，常用的压缩方式一般都是gzip，今天我们来介绍另外一种更高效的压缩方式brotli。
+
+Brotli 是基于LZ77算法的一个现代变体、霍夫曼编码和二阶上下文建模。Google软件工程师在2015年9月发布了包含通用无损数据压缩的Brotli增强版本，特别侧重于HTTP压缩。
+
+Google 在其博客中提到，Brotli 在压缩 HTML、CSS 和 JavaScript 文件时，通常能够比 GZIP 提供 17% 到 25% 的额外压缩比。
+
+>  注意：使用算法的前提是启用了 https，因为 http 请求中 **request header** 里的 **Accept-Encoding: gzip, deflate** 是没有 br 的。
+>
+> 如果 Brotli 压缩生效，你应该会看到响应头中包含 `Content-Encoding: br`。
+
+
+
 
 
 
