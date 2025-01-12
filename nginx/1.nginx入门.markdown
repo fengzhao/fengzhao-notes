@@ -1310,6 +1310,20 @@ curl 'http://localhost:8080/test'
 
 
 
+
+
+### ngx_http_sub_module
+
+ngx_http_sub_module模块是一个过滤器，它修改网站响应内容中的字符串，比如你想把响应内容中的`123`全部替换成`321`，这个模块已经内置在nginx中，但是默认未安装，需要安装需要加上配置参数：**--with-http_sub_module**
+
+在reponse的时候，对http的内容进行替换。比如说在开发中有多台的主机，但是在返回的时候需要对各台主机的内容来进行替换，那么就需要用到这个。
+
+官方文档地址http://nginx.org/en/docs/http/ngx_http_sub_module.html
+
+
+
+
+
 ## 动态模块
 
 原生 Nginx 增加、修改一个第三方模块，需要重新编译源代码，所有的模块都是用静态链接的形式组织起来的。
