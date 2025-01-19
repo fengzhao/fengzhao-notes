@@ -1466,21 +1466,27 @@ spec:
 
 
 
-为了实现这个网络模型，CoreOS 团队发起了 CNI 项目（后来 CNI 进了 CNCF 孵化）。CNI (Container Network Interface) 定义了实现容器之间网络连通性和释放网络资源等相关操作的接口规范，这套接口进而由具体的 CNI 插件的去实现，CNI 插件负责为 Pod 分配 IP 地址，并处理跨节点的网络路由等具体的工作。
+为了实现这个网络模型，CoreOS 团队发起了 CNI 项目（后来 CNI 进了 CNCF 孵化）。
+
+CNI (Container Network Interface) 定义了实现容器之间网络连通性和释放网络资源等相关操作的接口规范，这套接口进而由具体的 CNI 插件的去实现，CNI 插件负责为 Pod 分配 IP 地址，并处理跨节点的网络路由等具体的工作。
 
 Kubernetes 定义了一种简单、一致的网络模型，基于扁平网络结构的设计，无需将主机端口与网络端口进行映射便可以进行高效地通讯，也无需其他组件进行转发。该模型也使应用程序很容易从虚拟机或者主机物理机迁移到 Kubernetes 管理的 pod 中。
 
 
 
-所谓网络栈：网卡（Network Interface）、回环设备（LoopbackDevice）、路由表（Routing Table）和 iptables 规则
+所谓**网络栈**：网卡（Network Interface）、回环设备（LoopbackDevice）、路由表（Routing Table）和 iptables 规则
 
 对于一个进程来说，这些要素，其实就构成了它发起和响应网络请求的基本环境。
 
-在docker场景下，被限制在 `NetworkNamespace` 里的容器进程，实际上是通过 Veth Pair 设备 + 宿主机网桥的方式，实现了跟同宿主内其他容器的数据交换。
+在docker场景下，被限制在 `NetworkNamespace` 里的容器进程，实际上是通过 `Veth Pair` 设备 + **宿主机网桥**的方式，实现了跟同宿主内其他容器的数据交换。
 
 当从宿主机上直接访问该宿主机内其他容器的 IP 地址时，这个请求的数据包，也是先根据路由规则到达 docker0 网桥，然后被转发到对应的 Veth Pair 设备，最后出现在容器里。
 
-当一个容器试图连接到另外一个宿主机时，比如：ping 10.168.0.3，它发出的请求数据包，首先经过 docker0 网桥出现在宿主机上。然后根据宿主机的路由表里的直连路由规则（10.168.0.0/24 via eth0)），对 10.168.0.3 的访问请求就会交给宿主机的 eth0 处理。
+当一个容器试图连接到另外一个宿主机时，比如：ping 10.168.0.3，它发出的请求数据包，首先经过 docker0 网桥出现在宿主机上。
+
+然后根据宿主机的路由表里的直连路由规则（10.168.0.0/24 via eth0)），对 `10.168.0.3` 的访问请求就会交给宿主机的 `eth0` 处理。
+
+
 
 
 
@@ -1494,11 +1500,11 @@ Kubernetes 定义了一种简单、一致的网络模型，基于扁平网络结
 
 
 
-从 Pod 的视角来看，Pod 是在其自身所在的 network namespace 与同一宿主节点上另外一个pod的 network namespace 进程通信。
+从 Pod 的视角来看，Pod 是在其自身所在的 `network namespace` 与同一宿主节点上另外一个pod的 `network namespace`进程通信。
 
-由于network namespace隔离了网络相关的全局资源，因此从网络角度来看，一个network namespace可以看做一个独立的虚机；
+由于`network namespace`隔离了网络相关的全局资源，因此从网络角度来看，一个`network namespace`可以看做一个独立的虚拟机；
 
-即使在同一个主机上创建的两个network namespace，相互之间缺省也是不能进行网络通信的。
+即使在同一个主机上创建的两个`network namespace`，相互之间缺省也是不能进行网络通信的。
 
 
 
@@ -1529,6 +1535,8 @@ Linux Bridge 是工作在链路层的网络交换机，由 Linux 内核模块 `b
 在 Docker 的默认配置下，一台宿主机上的 docker0 网桥，和其他宿主机上的 docker0 网桥，没有任何关联，它们互相之间也没办法连通。所以，连接在这些网桥上的容器，自然也没办法进行通信了。
 
 为了解决这个**容器跨主通信**的问题，k8s 制定了 CNI 规范，然后社区里依据该规范出现了各种各样的容器网络方案。
+
+
 
 其中 Flannel 是最早实现的，也是最简单的一个。
 

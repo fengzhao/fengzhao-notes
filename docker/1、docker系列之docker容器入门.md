@@ -1892,9 +1892,7 @@ nameserver 8.8.8.8
 
 ### host网络
 
-host 网络，其实就是去除网络隔离，让容器直接使用宿主机的网络。
-
-从网络的角度看，这个进程就像直接运行在宿主机上一样。但是其他的存储，进程和用户空间，又跟宿主机进行隔离。
+host 网络，其实就是去除网络隔离，让容器直接使用宿主机的网络。从网络的角度看，这个容器内的进程就像直接运行在宿主机上一样。但是其他的存储，进程和用户空间，又跟宿主机进行隔离。
 
 ### overlay网络
 
@@ -1933,7 +1931,9 @@ overlay网络可以让两个运行在不同宿主机上的容器直接通讯，�
 # 创建一个swarm集群，
 
 ➜  ~ docker swarm init                                                                                
-Swarm initialized: current node (slwgtq37q2d51739ln5up6f10) is now a manager.                                                                    To add a worker to this swarm, run the following command:                                                                                         docker swarm join --token SWMTKN-1-0evohu0bywvpdrmeqap5m2uwr4qpddkyilp3l60yv8u9dbobfm-bk6hc1kjjjayuequ2ugc9bvbu 192.168.2.83:2377                                                                                                                                                              To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.                                             ➜  ~  
+Swarm initialized: current node (slwgtq37q2d51739ln5up6f10) is now a manager. 
+To add a worker to this swarm, run the following command:  docker swarm join --token SWMTKN-1-0evohu0bywvpdrmeqap5m2uwr4qpddkyilp3l60yv8u9dbobfm-bk6hc1kjjjayuequ2ugc9bvbu 192.168.2.83:2377                       To add a manager to this swarm, run 'docker swarm join-token manager' and follow the instructions.                                             
+➜  ~  
 ```
 
 
@@ -1959,6 +1959,47 @@ swarm 中的服务的网络流量默认都是加密传输，使用 GCM 模式的
 macvlan 可以给容器分配 mac 地址，在网络中就像一个物理设备一样。	
 
 
+
+
+
+
+
+## TAP/TUN网络设备
+
+
+
+**对于一个网络设备来说，就像一个管道（pipe）一样，有两端，从其中任意一端收到的数据将从另一端发送出去。**
+
+比如一个物理网卡eth0，它的两端分别是**内核协议栈**（通过内核网络设备管理模块间接的通信）和**外面的物理网络**，从物理网络收到的数据，会转发给内核协议栈，而应用程序从协议栈发过来的数据将会通过物理网络发送出去。
+
+
+
+那么对于一个虚拟网络设备呢？首先它也归内核的网络设备管理子系统管理，对于Linux内核网络设备管理模块来说，虚拟设备和物理设备没有区别，都是网络设备，都能配置IP。
+
+从网络设备来的数据，都会转发给协议栈，协议栈过来的数据，也会交由网络设备发送出去，至于是怎么发送出去的，发到哪里去，那是设备驱动的事情，跟Linux内核就没关系了。
+
+所以说虚拟网络设备的一端也是协议栈，而另一端是什么取决于虚拟网络设备的驱动实现。
+
+
+
+在计算机中TUN与TAP是Linux操作系统内核中的虚拟网络设备。不同于硬件设备这些虚拟的网络设备全部用软件实现，但提供了与硬件设备完全相同的功能。
+
+所有主机物理网卡收到的数据包时，会先将其交给内核的 `网络协议栈(Network Stack)` 处理，然后通过 `Socket API` 通知给用户态的用户程序。
+
+Linux 中 `Tun/Tap` 驱动程序为应用程序提供了两种交互方式:
+
+- 虚拟网络接口和字符设备 `/dev/net/tun`。写入字符设备 `/dev/net/tun` 的数据会发送到虚拟网络接口中；
+- 发送到虚拟网络接口中的数据也会出现在该字符设备上;
+
+
+
+用户态应用往字符设备 `/dev/tunX` 写数据时，写入的数据都会出现在TUN虚拟设备上，当内核发送一个包给 TUN 虚拟设备时，通过读这个字符设备 `/dev/tunX` 同样可以拿到包的内容。
+
+
+
+
+
+`tun/tap` 的最主要应用场景就是 `vpn`。 基实现原理就是用到隧道技术，将无法直接发送的包通先封成允许通过的合法数据包，然后经过隧道的方式传递给对方，对方收到数据包再解包成原始数据包，再继续传递下去，直到接收端收到，然后响应并原路返回。
 
 
 
