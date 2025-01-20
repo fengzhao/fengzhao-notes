@@ -965,7 +965,7 @@ Debian 发行版的 `rootfs.tar.xz` 可以在 [docker-debian-artifacts](https://
 
 **ARG**
 
-Dockerfile 里面的 ARG 指令定义了一个变量，在运行 `docker build` 命令时使用 `--build-arg <varname> = <value>` 参数将其传递给构建器。
+Dockerfile 里面的 `ARG` 指令定义了一个变量，在运行 `docker build` 命令时使用 `--build-arg <varname> = <value>` 参数将其传递给构建器。
 
 ```Dockerfile
 # ARG格式，定义构建过程中的变量。后面为默认值，也可以在build构建过程中传参重写覆盖
@@ -982,30 +982,34 @@ ARG JENKINS_HOME=/var/jenkins_home
 ARG REF=/usr/share/jenkins/ref
 ```
 
-
-
 不要使用构建时变量来传递诸如 github 密钥，用户凭据等机密数据，构建时变量值可以使用 docker history 命令查看。
-
-
 
 **ARG定义的变量只能作用在镜像构建阶段，一旦镜像构建完成就失效了，在image被创建和container启动之后，无效。**
 
 **`ARG` 就是专门为构建镜像而生的。主要是用于构建镜像过程中的变量。**
 
 - 比如依赖的python版本，go版本，运行时版本。
-- 工作目录等
+- 工作目录等。
 
 
 
 **ENV**
 
-ENV 指令中定义的环境变量，在 build 过程中有效，在image被创建和container启动后作为环境变量依旧也有效，并且可以被重写覆盖。
+ENV 指令中定义的环境变量，在 build 过程中有效，在 `image` 被创建和 `container`启动后作为环境变量依旧也有效，并且可以被重写覆盖。
+
+```bash
+
+
+# docker run启动时指定一些运行时的环境变量
+docker run -e "env_var_name=another_value" alpine env
+
+```
+
+
 
 
 
 ENV 中定义的变量
-
-
 
 **Dockerfile 中的ARG和ENV区别**
 
