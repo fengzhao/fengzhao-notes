@@ -118,7 +118,7 @@ ModSecurity 最早是 Apache 的一个模块，只能运行在 Apache 上。因�
 
 所以，这两年 SpiderLabs 团队就开发了全新的 3.0 版本，移除了对 Apache 架构的依赖，使用新的“连接器”来集成进 Apache 或者 Nginx，比 2.x 版更加稳定和快速，误报率也更低。
 
-ModSecurity 有两个核心组件。
+ModSecurity 有两个核心组件:
 
 - 第一个是“规则引擎”，它实现了自定义的“SecRule”语言，有自己特定的语法。但“SecRule”主要基于正则表达式，还是不够灵活，所以后来也引入了 Lua，实现了脚本化配置。ModSecurity 的规则引擎使用 C++11 实现，可以从GitHub上下载源码，然后集成进Nginx。因为它比较庞大，编译很费时间，所以最好编译成动态模块，在配置文件里用指令“load_module”加载。
 
@@ -211,7 +211,7 @@ SecRule REQUEST_HEADERS:Content-Length "!@rx ^\d+$" \
 
 [Libmodsecurity](https://github.com/SpiderLabs/ModSecurity) 是 ModSecurity v3 项目的一个组成部分。该库代码库作为 ModSecurity 连接器的接口，接收 Web 流量并应用传统的 ModSecurity 处理。
 
-总体而言，它提供了加载/解释以 ModSecurity SecRules 格式编写的规则并将其应用于通过连接器提供的 HTTP 内容的能力。
+总体而言，它提供了加载/解释以 `ModSecurity SecRules` 格式编写的规则并将其应用于通过连接器提供的 HTTP 内容的能力。
 
 
 
@@ -219,17 +219,21 @@ ModSecurity在最初设计的时候，它只是Apache的一个扩展模块，随
 
 
 
-为了满足日益增长的对额外平台支持的需求，因此ModSecurity团队决定删除其对Apache的依赖，使其更加独立于平台，ModSecurity v3版本由此诞生，同时取了一个新名字：Libmodsecurity。ModSecurity v3版本可以不依赖WEB服务进行独立安装，但是如果需要与WEB服务进行联动工作时，则需要安装对应的Connector（连接器），如Nginx需要安装ModSecurity-nginx connector，Apache需要安装ModSecurity-apache connector。
+为了满足日益增长的对额外平台支持的需求，因此ModSecurity团队决定删除其对Apache的依赖，使其更加独立于平台，ModSecurity v3版本由此诞生，同时取了一个新名字：Libmodsecurity。ModSecurity v3版本可以不依赖WEB服务进行独立安装，但是如果需要与WEB服务进行联动工作时，则需要安装对应的Connector（连接器），如Nginx需要安装`ModSecurity-nginx connector`，Apache需要安装`ModSecurity-apache connector`。
 
 
 
 > 最新结论（20220114）：请勿在Nginx使用ModSecurity V2版本，V2版本与Nginx存在兼容问题，且目前官方团队明确表示不会进行修复。
 
-在ModSecurity v3之前的版本中，Nginx的兼容性较差，这是因为在ModSecurity在设计之初是作为Apache HTTP服务的一个模块进行设计开发的，所以导致ModSecurity严重依赖于Apache HTTP Server。随着时间的推移，由于大众需求，该项目已经扩展到其他平台，包括Nginx 和 IIS等。为了满足对额外平台的支持不断增长的需求，需要删除该项目下的 Apache 依赖项，使其更加独立于平台。在ModSecurity v3版本中进行了重构，整个项目完全进行重写，去除了Apache HTTP的依赖，可以完美兼容Nginx。新的ModSecurity v3版本中，核心功能转移到了名为 Libmodsecurity 的独立组件中，通过连接器连接到 Nginx 和 Apache。接收 Web 流量并应用传统的 ModSecurity 处理。
+
+
+在ModSecurity v3之前的版本中，Nginx的兼容性较差，这是因为在ModSecurity在设计之初是作为Apache HTTP服务的一个模块进行设计开发的，所以导致ModSecurity严重依赖于`Apache HTTP Server`。随着时间的推移，由于大众需求，该项目已经扩展到其他平台，包括Nginx 和 IIS等。为了满足对额外平台的支持不断增长的需求，需要删除该项目下的 Apache 依赖项，使其更加独立于平台。
+
+在ModSecurity v3版本中进行了重构，整个项目完全进行重写，去除了`Apache HTTP`的依赖，可以完美兼容Nginx。新的ModSecurity v3版本中，核心功能转移到了名为 Libmodsecurity 的独立组件中，通过连接器连接到 Nginx 和 Apache。接收 Web 流量并应用传统的 ModSecurity 处理。
 
 
 
-这里展示如何编译安装最新版的 Libmodsecurity 系统使用 Debian 11 。
+这里展示如何编译安装最新版的 Libmodsecurity 系统使用 Debian 11 
 
 ```shell
 # centos
