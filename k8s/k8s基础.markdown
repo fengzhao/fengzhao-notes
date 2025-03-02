@@ -416,7 +416,7 @@ Pod 是 `Kubernetes` 项目与其他单容器项目相比最大的不同，也�
 
 
 
-Pod 是 Kubernetes 里的原子调度单位。这就意味着，Kubernetes 项目的调度器，是统一按照 Pod 而非容器的资源需求进行计算的。
+Pod 是 Kubernetes 里的**原子调度单位**。这就意味着，Kubernetes 项目的调度器，是统一按照 Pod 而非容器的资源需求进行计算的。
 
 所以，像 imklog、imuxsock 和 main 函数主进程这样的三个容器，正是一个典型的由三个容器组成的 Pod。
 
@@ -430,12 +430,6 @@ Kubernetes 项目在调度时，自然就会去选择可用内存等于 3 GB 的
 - 需要共享某些 Linux Namespace（比如，一个容器要加入另一个容器的 Network Namespace）等等。
 
 这也就意味着，并不是所有有“关系”的容器都属于同一个 Pod。比如，PHP 应用容器和 MySQL虽然会发生访问关系，但并没有必要、也不应该部署在同一台机器上，它们更适合做成两个 Pod。
-
-
-
-
-
-
 
 
 
@@ -579,13 +573,9 @@ kubectl get pods
 
 #### 使用标签来组织pod
 
-
-
 在实际部署应用程序时，大多数用户最终将运行很多 pod 。随着 pod 数量的增加，将它们分类到子集的需求也就明显了。
 
-在微服务架构中，部署的微服务数量可以轻松超过20个甚至更多。这些组件可能是副本（同一组件的多个副本）或多个不同的版本（dev,stable,beta）
-
-如果没有有效的组织管理，将导致巨大的混乱。
+在微服务架构中，部署的微服务数量可以轻松超过20个甚至更多。这些组件可能是副本（同一组件的多个副本）或多个不同的版本（dev,stable,beta）。如果没有有效的组织管理，将导致巨大的混乱。
 
 **标签是一种简单却功能强大的 kubernetes 特性，不仅可以组织 pod ，也可以组织 kubernetes 所有资源。**
 
@@ -644,6 +634,21 @@ kubectl label po kubia-manual-v2 env=debug --overrite
 
 ```
 
+##### 修改现有pod 上的标签
+
+```bash
+#为 pod kubia-manual添加creation_method=manual 标签
+kubectl label po kubia-manual creation_method=manual 
+
+#修改env=test为env=debug
+kubectl label po kubia-manual-v2 env=debug --overwrite 
+
+
+# 使用标签选择器过滤出pod （或者 !=、env in 、env not in）  
+kubectl get po -l creation_method=manual 
+
+```
+
 
 
 #### 使用标签来组织工作节点
@@ -667,6 +672,8 @@ kube get nodes -l gpu=true
 
 ##### **将pod调度到特定节点**
 
+某些情况下，pod 需要被调度到符合条件的节点中。
+
 假设现在有一个需要gpu来执行其工作的pod，为了让调度器将其调度到适当GPU的节点上，可以使用如下pod定义文件。
 
 ```yaml
@@ -684,13 +691,7 @@ spec:
     name: kubia
 ```
 
-
-
-
-
-通常，我们不应该强调将 pod 直接调度到某一个节点上，虽然 kubernetes 可以这样做，因为这样会使应用程序与基础架构强耦合。
-
-违背了 kubernetes 对运行在其上的应用程序隐藏实际的基础架构的整个构想。
+**通常，我们不应该强调将 pod 直接调度到某一个节点上，虽然 kubernetes 可以这样做，因为这样会使应用程序与基础架构强耦合。违背了 kubernetes 对运行在其上的应用程序隐藏实际的基础架构的整个构想。**
 
 所以更好的做法是通过标签的方式来描述 pod 对节点的需求，从而让调度器只在提供符合需求的节点中进行选择。
 
@@ -700,15 +701,17 @@ spec:
 
 
 
-除标签外，pod 和其他对象还可以包含注解。注解也是键值对。所以它们本质上与标签非常相似。
-
-但与标签不同，注解不是为了保存标识信息而存在。它们不能像标签一样用于对对象进行分组。
+除标签外，pod 和其他对象还可以包含注解。注解也是键值对。所以它们本质上与标签非常相似。但与标签不同，注解不是为了保存标识信息而存在。它们不能像标签一样用于对对象进行分组。
 
 向 kubernetes 引入新特性时，
 
 
 
 **查找对象的注解**
+
+```bash
+kubectl get po kubia-zxzij -o yaml
+```
 
 
 
@@ -720,26 +723,21 @@ spec:
 
 ```shell
 kubectl annotate  pod kubia-manual mycompany.com/someannotation="foo bar" 
-
 ```
 
 
 
 ### 使用命名空间对资源分组
 
-kubernetes 命名空间简单地为对象名称提供了一个作用域。我们并不会将所有资源都放在同一个命名空间中。
-
-而是将它们组织到多个命名空间中。这样允许我们多次使用相同的资源名称（跨不同的命名空间）
+**kubernetes 命名空间**简单地为对象名称提供了一个作用域。我们并不会将所有资源都放在同一个命名空间中。而是将它们组织到多个命名空间中。这样允许我们多次使用相同的资源名称（跨不同的命名空间）
 
 
 
 在使用多个 namespace 的前提下，我们将包含大量组件的复杂系统拆分为更小的不同组。
 
-如果有多个用户和用户组在使用同一个集群，并且它们都管理各自独特的资源集合。那么它们就应该分别使用各自的命名空间。
+如果有多个用户和用户组在使用同一个集群，并且它们都管理各自独特的资源集合。那么它们就应该分别使用各自的命名空间。这样一来，它们就不用特别担心无意中修改或删除其他用户的资源。
 
-这样一来，它们就不用特别担心无意中修改或删除其他用户的资源。
-
-命名空间的隔离只是逻辑上的隔离，不同命名空间之间的 pod 并不存在网络隔离，它们之间可以通过IP地址进行通讯。
+命名空间的隔离只是逻辑上的隔离，不同命名空间之间的 pod 并不存在网络隔离，它们之间可以通过IP地址进行通讯。资源名称只需在命名空间内保持唯一即可。
 
 ```shell
 # 查看集群内的所有namespace
@@ -756,12 +754,6 @@ kubectl get po --namespace kube-system
 #### 创建 namespace
 
 命名空间和其他资源一样，可以通过把YAML提交给Kunernetes API Server来创建该资源。
-
-
-
-
-
-
 
 
 
@@ -818,9 +810,7 @@ kubectl delete all --all
 
 
 
-**pod 代表了 kubernetes 中的基本部署单元，我们也可以手动创建管理它们。在实际应用中，我们几乎不会去手动管理 pod 。**
-
-而是使用 ReplicationController 或 Deployment 这样的资源来管理 pod 。
+**pod 代表了 kubernetes 中的基本部署单元，虽然我们也可以手动创建管理它们。在实际应用中，我们几乎不会去手动管理 pod 。**而是使用 `ReplicationController `或 `Deployment` 这样的资源来管理 pod 。
 
 只要将 pod 调度到某个节点，该节点上的 kubelet 就会运行 pod 的容器，如果容器主进程崩溃，kubelet 会将容器重启。
 
@@ -840,8 +830,8 @@ kubernetes 可以通过 **存活探针** 检查容器是否还在运行。可以
 
 **kubernetes 容器探测机制**
 
-- 基于 HTTP GET 的存活探针，对容器的IP地址端口执行 HTTP GET 请求。通过状态码判断
-- TCP套接字探针，
+- 基于 `HTTP GET` 的存活探针，对容器的IP地址端口执行 `HTTP GET` 请求。通过状态码判断
+- TCP套接字探针，尝试建立TCP链接，不能建立则重启容器。
 - Exec 探针在容器内执行任意命令，通过返回的状态码，来确定是否探测成功。
 
 
@@ -909,9 +899,9 @@ spec:
 
 
 
-#### 配置探针的属性
+#### 配置探针属性
 
-在 kubectl describe pod kubia-liveness 中，可以看到探针的一些属性
+在 `kubectl describe pod kubia-liveness` 中，可以看到探针的一些属性
 
 - delay（延迟）       delay=0s 部分指示容器启动后立刻开始探测。
 - timeout（超时）  timeout=1s 部分指示容器必须在1s内响应
@@ -920,9 +910,7 @@ spec:
 
 
 
-定义探针时可以自定义这些参数，
-
-如果没有设置初始延时，探针将在启动时立即开始探测容器，通常会导致探测失败。
+**定义探针时可以自定义这些参数，如果没有设置初始延时，探针将在启动时立即开始探测容器，通常会导致探测失败。**
 
 
 
