@@ -922,7 +922,7 @@ rc 是 kubernetes 中的一种资源，可确保它的 pod 始终保持运行。
 
 
 
-rc 会持续监控正在运行的 pod 列表，并保证 相应 类型 的 pod 数量与期望相符。少了会创建副本，对了会删除多余的副本。
+rc 会持续监控正在运行的 pod 列表，并保证相应类型 的 pod 数量与期望相符。少了会创建副本，对了会删除多余的副本。
 
 **rc 协调流程**
 
@@ -932,17 +932,15 @@ rc 的工作是确保 pod 数量始终与其标签选择器匹配。
 
 一个 rc 主要有三个部分：
 
-- label 确定 rc 作用域的 pod 范围 
-- relica count 确定 pod 副本数量，指定应运行 pod 的数量
-- pod template 用于创建新 pod 副本的模板
+- `label selector` 确定 rc 作用域的 pod 范围 
+- `relica count` 确定 pod 副本数量，指定应运行 pod 的数量
+- `pod template` 用于创建新 pod 副本的模板
 
 **rc 中的标签选择器，副本数量都可以随时修改，但是只有副本数量的变更会影响现有 pod** 
 
 
 
-> 更改标签选择器和 pod 模板对现有 pod 没有影响。更改标签选择器会使现有的 pod 脱离 rc 的范围。
->
-> 在创建 Pod 后，ReplicationController 也不关心其 pod 的实际“内容”（容器镜像、环境变量及其他）。
+> 更改标签选择器和 pod 模板对现有 pod 没有影响。更改标签选择器会使现有的 pod 脱离 rc 的范围。在创建 Pod 后，ReplicationController 也不关心其 pod 的实际“内容”（容器镜像、环境变量及其他）。
 >
 > 因此，该模板仅影响此 ReplicationController 创建的新 pod。可以将其视为创建新 pod 的曲奇切模（cookie cutter）。
 >
@@ -975,9 +973,7 @@ spec:
 
 **模板中的 pod 标签必须和 rc 的标签选择器匹配，否则，rc 将会无休止的创建新容器。**
 
-如果你想切出不一样的饼干，更换模具即可，至于之前已经做好的饼干，你也无法改变了。
-
-就像你曾经走过的路啊，终究会是你人生的烙印。
+如果你想切出不一样的饼干，更换模具即可，至于之前已经做好的饼干，你也无法改变了。就像你曾经走过的路啊，终究会是你人生的烙印。
 
 ```shell
 kubectl create -f kuba-rc.yaml
@@ -1372,7 +1368,11 @@ Ingress
 
 
 
-Kubernetes 系统是一套分布式容器应用编排系统，当我们用它来承载业务负载时主要使用的编排对象有 Deployment、ReplicaSet、StatefulSet、DaemonSet 等。读者可能好奇的地方是 Kubernetes 管理的对象不是 Pod 吗？为什么不去讲讲如何灵活配置 Pod 参数。其实这些对象都是对 Pod 对象的扩展封装。并且这些对象作为核心工作负载 API 固化在 Kubernetes 系统中了。所以 ，我们有必要认真的回顾和理解这些编排对象，依据生产实践的场景需要，合理的配置这些编排对象，让 Kubernetes 系统能更好的支持我们的业务需要。
+Kubernetes 系统是一套分布式容器应用编排系统，当我们用它来承载业务负载时主要使用的编排对象有 Deployment、ReplicaSet、StatefulSet、DaemonSet 等。
+
+读者可能好奇的地方是 Kubernetes 管理的对象不是 Pod 吗？为什么不去讲讲如何灵活配置 Pod 参数。其实这些对象都是对 Pod 对象的扩展封装。并且这些对象作为核心工作负载 API 固化在 Kubernetes 系统中了。
+
+所以 ，我们有必要认真的回顾和理解这些编排对象，依据生产实践的场景需要，合理的配置这些编排对象，让 Kubernetes 系统能更好的支持我们的业务需要。
 
 
 
