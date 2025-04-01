@@ -816,7 +816,9 @@ https://blog.csdn.net/shawgolden/category_12281813.html?spm=1001.2014.3001.5482
 
 # 传输编码
 
-在 HTTP 中传输数据有一个 chunked 的方式, 又称“分块传输”。在响应报文里用头字段Transfer-Encoding: chunked 来表示。意思是报文里的 body 部分不是一次性发过来的，而是分成了许多的块（chunk）逐个发送。
+在 HTTP 中传输数据有一个 chunked 的方式, 又称“分块传输”。在响应报文里用头字段Transfer-Encoding: chunked 来表示。
+
+意思是报文里的 body 部分不是一次性发过来的，而是分成了许多的块（chunk）逐个发送。
 
 
 
@@ -6237,6 +6239,14 @@ https://www.rgc.com/v1/
 # 浏览器地址栏输入后回车会发生什么
 
 一道经典的面试题"浏览器打开url到页面展现，中间发生了什么？"，面试官通常用这道题来考察候选者对网络知识掌握的广度和深度。
+
+「当浏览器输入网页后，发生了什么事？」
+
+
+
+*知识的诅咒（英语：Curse of knowledge），又称专家盲点，是一种 认知偏差，指人在与他人交流的时候，下意识地假设对方拥有理解所需要的背景知识。 Robin Hogarth首先提出该名词 [1] 。 专家盲点也是 教育的重大阻碍之一。*
+
+
 
 [重新思考浏览器输入了 URL 并按下回车之后到底发生了什么——本地 DNS 部分 | Nova Kwok's Awesome Blog](https://nova.moe/rethink-type-url-dns/)
 
