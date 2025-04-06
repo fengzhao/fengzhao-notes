@@ -1467,7 +1467,9 @@ spec:
 
 # Kubernetes网络
 
-**Kubernetes 的网络模型规定**
+
+
+**Kubernetes 网络模型规定**
 
 - **K8s 的网络模型要求每个 Pod 都有一个唯一的 IP 地址，即使这些 Pod 分布在不同的节点上。**
 
@@ -1481,15 +1483,17 @@ spec:
 
 
 
-为了实现这个网络模型，CoreOS 团队发起了 CNI 项目（后来 CNI 进了 CNCF 孵化）。
+为了实现这个网络模型，CoreOS 团队发起了 CNI 项目（后来 CNI 进了 CNCF 孵化）
 
-CNI (Container Network Interface) 定义了实现容器之间网络连通性和释放网络资源等相关操作的接口规范，这套接口进而由具体的 CNI 插件的去实现，CNI 插件负责为 Pod 分配 IP 地址，并处理跨节点的网络路由等具体的工作。
+CNI (Container Network Interface) 定义了实现容器之间网络连通性和释放网络资源等相关操作的接口规范。
+
+这套接口进而由具体的 CNI 插件去实现，CNI 插件负责为 Pod 分配 IP 地址，并处理跨节点的网络路由等具体的工作。
 
 Kubernetes 定义了一种简单、一致的网络模型，基于扁平网络结构的设计，无需将主机端口与网络端口进行映射便可以进行高效地通讯，也无需其他组件进行转发。该模型也使应用程序很容易从虚拟机或者主机物理机迁移到 Kubernetes 管理的 pod 中。
 
 
 
-所谓**网络栈**：网卡（Network Interface）、回环设备（LoopbackDevice）、路由表（Routing Table）和 iptables 规则
+所谓 **网络栈**：网卡（Network Interface）、回环设备（LoopbackDevice）、路由表（Routing Table）和 iptables 规则
 
 对于一个进程来说，这些要素，其实就构成了它发起和响应网络请求的基本环境。
 
@@ -1557,7 +1561,9 @@ Linux Bridge 是工作在链路层的网络交换机，由 Linux 内核模块 `b
 
 
 
-底层网络 *Underlay Network* 顾名思义是指网络设备基础设施，如交换机，路由器, *DWDM* 使用网络介质将其链接成的物理网络拓扑，负责网络之间的数据包传输。
+底层网络 *Underlay Network* 
+
+顾名思义是指网络设备基础设施，如交换机，路由器, *DWDM* 使用网络介质将其链接成的物理网络拓扑，负责网络之间的数据包传输。
 
 
 
@@ -1567,7 +1573,9 @@ Linux Bridge 是工作在链路层的网络交换机，由 Linux 内核模块 `b
 
 
 
-在kubernetes中，*underlay network* 中比较典型的例子是通过将宿主机作为路由器设备而，Pod 的网络则通过学习成路由条目从而实现跨节点通讯。
+在kubernetes中，*underlay network* 中比较典型的例子是通过将宿主机作为路由器设备。
+
+**Pod 的网络则通过学习成路由条目从而实现跨节点通讯。**
 
 
 
@@ -1589,6 +1597,8 @@ Linux Bridge 是工作在链路层的网络交换机，由 Linux 内核模块 `b
 
 然后，网络插件真正要做的事情，则是通过某种方法，把不同宿主机上的特殊设备连通，从而达到容器跨主机通信的目的。
 
+
+
 Flannel 项目是 CoreOS 公司主推的容器网络方案。
 
 事实上，Flannel 项目本身只是一个框架，真正为我们提供容器网络功能的，是 Flannel 的后端实现：
@@ -1596,10 +1606,6 @@ Flannel 项目是 CoreOS 公司主推的容器网络方案。
 - UDP
 - host-gw
 - VXLAN
-
-​    ![0](https://note.youdao.com/yws/res/48400/WEBRESOURCE8d62e56a50f3a77b00da9ed8e21407f3)
-
-
 
 1、容器正常构造业务TCP报文，源和目的分别为各自容器的IP
 
