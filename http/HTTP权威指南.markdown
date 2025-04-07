@@ -3158,6 +3158,16 @@ https://taoshu.in/http3-port.html
 
 
 
+# HTTP3 
+
+自nginx的1.25.0版本开始，nginx首次对http3进行了正式支持，这也为我们在WEB服务器上部署http3提供了极大的便利。
+
+http3必须依赖于TLS协议，所以需要要证书。
+
+
+
+
+
 
 
 # HTTP代理
