@@ -1,7 +1,3 @@
-
-
-
-
 # CNI
 
 CNI (Container Network Interface容器网络接口)是云原生计算基金会(CNCF)的一个项目。它为容器提供了一种基于插件结构的标准化网络解决方案。
@@ -12,13 +8,17 @@ CNI (Container Network Interface容器网络接口)是云原生计算基金会(C
 
 以往，容器的网络层是和具体的底层网络环境高度相关的，不同的网络服务提供商有不同的实现。
 
-CNI抽象出了一套标准的网络服务接口，从而屏蔽了上层网络和底层网络提供商的网络实现之间的差异。并且，通过插件结构，它让容器在网络层的具体实现变得可插拔了，所以非常灵活。
+CNI抽象出了一套标准的网络服务接口，从而屏蔽了上层网络和底层网络提供商的网络实现之间的差异。
+
+并且，通过插件结构，它让容器在网络层的具体实现变得可插拔了，所以非常灵活。
 
 **CNI只关心容器创建时的网络分配，以及当容器被删除时已经分配网络资源的释放。** 
 
-CNI作为容器网络的标准，使得各个容器管理平台可以通过相同的接口调用各种各样的网络插件来为容器配置网络。Kubernetes就内置了CNI并通过CNI配置网络。
+CNI作为容器网络的标准，使得各个容器管理平台可以通过相同的接口调用各种各样的网络插件来为容器配置网络。
 
 
+
+Kubernetes就内置了CNI并通过CNI配置网络
 
 CNI隶属于[CNCF(Cloud Native Computing Foundation)](https://cncf.io/)，在GitHub上有两个项目。其中，[`cni`项目](https://github.com/containernetworking/cni)包含了它的[规范](https://github.com/containernetworking/cni/blob/master/SPEC.md)和一个用Go语言编写的库。
 
@@ -67,7 +67,11 @@ CNI库十分重要，k8s这类容器管理平台，containerd 这类容器运行
 
 # CNI项目内置插件
 
-CNI项目还内置提供了一系列受支持的插件，即作为插件开发的参考实现，也可以直接使用。内置插件项目的地址是 https://github.com/containernetworking/plugins 
+CNI项目还内置提供了一系列受支持的插件，即作为插件开发的参考实现，也可以直接使用。
+
+
+
+内置插件项目的地址是 https://github.com/containernetworking/plugins 
 
 
 
