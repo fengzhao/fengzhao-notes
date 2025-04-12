@@ -65,3 +65,15 @@ https://sb.sb/blog/linux-acme-sh-lets-encrypt-ssl/
 
 
 https://miaotony.xyz/2020/03/28/Server_IssueACertWithACME/
+
+
+
+
+
+## SSL缓存
+
+
+
+在 Nginx 中配置 SSL 会话缓存可以提高 SSL 握手性能和服务器负载能力，因为 SSL 握手需要进行密钥协商和证书验证等操作，会占用服务器的计算资源。
+
+通过使用 SSL 会话缓存，可以在客户端和服务器之间缓存 SSL 会话状态信息，从而加快 SSL 握手速度和减轻服务器负载。
