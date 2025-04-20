@@ -111,7 +111,7 @@ angie 是由原NGINX团队的核心成员创建的新型Web服务器和反向代
 
 针对我们日常工作学习来说，选择官方开源版的 Nginx 或者 OpenResty 就可以了。
 
-### Nginx 版本策略
+## Nginx 版本策略
 
 ------
 
@@ -130,7 +130,7 @@ https://www.cnblogs.com/91donkey/p/11639355.html
 
 
 
-
+F5 前雇员、Nginx 项目主要贡献者发布了 Nginx 的分支 Freenginx。这个新项目是为了解决一个安全争议，并希望成为 Nginx 的可替代方案，由开发人员而不是企业实体负责运营
 
 # 安装 Nginx 和 OpenResty
 
@@ -197,13 +197,33 @@ nginx-1.21.4
 ├── LICENSE			# 开源许可文件
 ├── Makefile        #    
 ├── README          # README说明文件
-├── auto # 自动检测系统环境以及编译相关的脚本，辅助 configure 脚本执行的时候去判定nginx支持哪些模块，当前操作系统有什么样的特性可以供给nginx使用
-├── conf # 示例文件，方便运维配置，会把 conf 示例文件拷贝到安装目录
-├── configure # 命令脚本，用来生成中间文件，执行编译前的一个必备动作
-├── contrib # 提供了两个 pl 脚本和 vim 工具
-├── html # 一个 500 错误的默认页面，另一个是默认的 index 页面
-├── man # nginx 对 Linux 的帮助文件，man ./nginx.8
-└── src # nginx 核心源代码
+├── auto 			# 自动检测系统环境以及编译相关的脚本，辅助 configure 脚本执行的时候去判定nginx支持哪些模块，当前操作系统有什么样的特性可以供给nginx使用。
+├── conf 			# 示例配置文件，方便运维配置，会把 conf 示例文件拷贝到安装目录
+├── configure 		# 命令脚本，用来生成中间文件，执行编译前的一个必备动作
+├── contrib 		# 提供了两个 pl 脚本和 vim 工具
+├── html 			# 一个 500 错误的默认页面，另一个是默认的 index 页面
+├── man 			# nginx 对 Linux 的帮助文件，man ./nginx.8
+└── src 			# nginx 核心源代码
+└── objs			# 备注：这是执行configure后产生的目录
+
+
+src
+├── core		 	# 基本的数据结构定义和核心代码	
+├── event			# 
+│   ├── modules
+├── http
+│   ├── modules
+|	├── v2
+|	├── v3
+├── mail			
+├── misc			
+├── os
+|	├── unix
+|	├── win32
+└── stream
+
+
+
 
 
 # 配置 Vim 高亮, 如果 Vim 没有开启语法高亮的话，最好开启一下。如果没有 ~/.vim 文件夹就新建一个
@@ -223,6 +243,7 @@ au BufRead,BufNewFile */usr/local/nginx/conf/* set ft=nginx
 # 有时候因为nginx升级之后使用了高版本的Openssl，本地需要添加新模块重新编译nginx时候要升级openssl至指定版本。
 
 # configure配置，configure之后，会生成Makefile文件，用于编译和构建nginx
+# 
 ./configure   --user=nginx --group=nginx  --prefix=/usr/local/nginx/  --with-http_stub_status_module  --with-http_ssl_module
 
 
@@ -238,18 +259,19 @@ au BufRead,BufNewFile */usr/local/nginx/conf/* set ft=nginx
 
 # 第一类配置参数
 
---prefix=PATH                      set installation prefix      # 一般指定这个路径就可以了，其他文件会在 prefix 目录下建立相应的文件夹
---sbin-path=PATH                   set nginx binary pathname
---modules-path=PATH                set modules path
---conf-path=PATH                   set nginx.conf pathname
---error-log-path=PATH              set error log pathname
---pid-path=PATH                    set nginx.pid pathname
---lock-path=PATH                   set nginx.lock pathname
---user=USER                        set non-privileged user for worker processes
---group=GROUP                      set non-privileged group for worker processes
---build=NAME                       set build name
---builddir=DIR                     set build directory
-
+--prefix=PATH                      set installation prefix      						# 一般指定这个路径就可以了，其他文件会在 prefix 目录下建立相应的文件夹
+--sbin-path=PATH                   set nginx binary pathname							#	
+--modules-path=PATH                set modules path										# 
+--conf-path=PATH                   set nginx.conf pathname								#
+--error-log-path=PATH              set error log pathname								# 
+--pid-path=PATH                    set nginx.pid pathname								#
+--lock-path=PATH                   set nginx.lock pathname								#
+--user=USER                        set non-privileged user for worker processes			#
+--group=GROUP                      set non-privileged group for worker processes        #
+--build=NAME                       set build name										# 在Nginx版本信息里加入自定义的字符串信息，比如公司名称，构建日期，源代码版本等。比如 --build="${USER} build at `date +%Y%m%d`"
+--builddir=DIR                     set build directory									#
+--add-module=PTAH																		# 指定第三方模块的源代码路径，可以出现N次。即表示添加多个模块。
+--add-dynamic-module=PATH																# nginx1.9.11后新增动态模块
 
 
 # 第二类配置参数
@@ -266,6 +288,23 @@ au BufRead,BufNewFile */usr/local/nginx/conf/* set ft=nginx
 --without-http_gzip_module         disable ngx_http_gzip_module
 --without-http_ssi_module          disable ngx_http_ssi_module
 ...
+
+
+# configure之后，就会生成objs目录。
+root@server:/usr/local/src/nginx-1.25.1# ll objs/
+total 92
+drwxr-xr-x 3 root    root     4096 Apr 20 16:22 ./
+drwxr-xr-x 9 tompson tompson  4096 Apr 20 16:22 ../
+-rw-r--r-- 1 root    root    40425 Apr 20 16:22 Makefile
+-rw-r--r-- 1 root    root    18290 Apr 20 16:22 autoconf.err
+-rw-r--r-- 1 root    root     7457 Apr 20 16:22 ngx_auto_config.h
+-rw-r--r-- 1 root    root      657 Apr 20 16:22 ngx_auto_headers.h
+-rw-r--r-- 1 root    root     5856 Apr 20 16:22 ngx_modules.c
+drwxr-xr-x 9 root    root     4096 Apr 20 16:22 src/
+root@server:/usr/local/src/nginx-1.25.1#
+root@server:/usr/local/src/nginx-1.25.1#
+
+
 
 
 make && make install 
@@ -502,8 +541,6 @@ events { # 指令块
 
 
 
-
-
 # Nginx 命令行
 
 在刚刚编译完成的 Nginx 目录下，有一个 sbin 目录，就是用来存放 Nginx 的二进制文件的
@@ -516,7 +553,7 @@ total 1712
 
 Nginx 启动时，有一系列的命令行参数可以指定，下面分别介绍一下。
 
-```
+```bash
 ./nginx
 -h/-? # 打开帮助
 -c # 使用指定的配置文件，而不是默认的 conf 文件夹下的配置文件
@@ -735,11 +772,28 @@ worker_processes number | auto；
 
 
 
+#### 进程管理配置
+
+```nginx
+worker_process number |auto ;
+master_process on|off;
+daemon on|off;
+worker_cpu_affinity auto [cpumask] ;
+woring_directory path;
+worker_shutdown_timeout time;
+```
+
+
+
+#### 事件机制
+
 
 
 
 
 ### http 块
+
+Nginx近 80% 的功能都是提供 HTTP 服务，所以 HTTP 的配置也是最复杂的。
 
 http 是最顶层的指令之一了，它必须直接在 main 中使用。
 
@@ -2629,4 +2683,138 @@ http {
 }
 
 ```
+
+
+
+
+
+# Nginx开发
+
+
+
+
+
+## 头文件
+
+
+
+使用C语言定制开发 Nginx 必须要包含两个头文件，它们含有绝大部分必须的宏、类型定义和函数声明等功能代码：
+
+```c
+#include <ngx_coinfig.h>  
+#include <ngx_core.h>
+```
+
+- `ngx_config.h` 是 Nginx 的配置头文件，定义了与平台相关的宏和基本类型。它的主要目的是确保 Nginx 在不同操作系统和编译器环境下的兼容性。
+
+  - **平台检测宏**：定义了操作系统的类型（如 Linux、Windows、FreeBSD 等）。定义了编译器的特性（如 GCC、MSVC 等）。
+
+  - **基本类型定义** ：定义了跨平台的基本数据类型，例如 `ngx_int_t`、`ngx_uint_t` 等。
+
+  - **编译选项** ：控制调试模式、优化级别等编译选项。
+
+     
+
+- `ngx_core.h` 是 Nginx 的核心头文件，包含了 Nginx 框架中绝大部分的基础定义和功能声明。它是开发 Nginx 模块时最重要的头文件之一。
+
+  - **核心数据结构**：定义了 Nginx 中的核心数据结构，例如 `ngx_module_t`（模块结构）、`ngx_pool_t`（内存池）、`ngx_log_t`（日志）等。
+  - **函数声明**：声明了 Nginx 核心功能的函数，例如内存分配、日志记录、字符串操作等。
+  - **宏定义**：提供了许多常用的宏，例如 `ngx_min()`、`ngx_max()`、`ngx_align()` 等。
+
+
+
+在开发 Nginx 的 HTTP 功能模块时，还需要引入与 HTTP 协议相关的头文件。这些头文件提供了处理 HTTP 请求、响应、连接等功能所需的定义和接口。
+
+- **`ngx_http.h`**是 Nginx HTTP 模块开发的核心头文件，包含了绝大部分与 HTTP 协议相关的定义和功能。
+  - 定义了 HTTP 模块的结构体（如 `ngx_http_module_t`）。
+  - 声明了处理 HTTP 请求和响应的函数。
+  - 提供了 HTTP 请求上下文（`ngx_http_request_t`）的定义。
+  - 包含了 HTTP 状态码、方法、头部字段等常量。
+
+- **`ngx_http_core_module.h`** 是定义了 Nginx HTTP 核心模块的功能和数据结构。
+  - 定义了 HTTP 请求的阶段（如 `NGX_HTTP_POST_READ_PHASE`、`NGX_HTTP_CONTENT_PHASE` 等）。
+  - 提供了核心模块的配置结构体（如 `ngx_http_core_loc_conf_t`）。
+  - 声明了与 HTTP 配置相关的函数。
+
+- **`ngx_http_request.h`** 专注于 HTTP 请求的处理，定义了请求对象（`ngx_http_request_t`）及其相关操作。
+  - 定义了请求阶段和回调函数的注册机制。
+  - 提供了对 HTTP 请求头、请求体、URI 等的访问接口。
+- **`ngx_http_variables.h`** 支持自定义 HTTP 变量。
+  - 支持动态生成变量值。
+  - 提供了定义和使用变量的接口。
+
+
+
+
+
+
+
+## 环境信息
+
+
+
+
+
+头文件 `src/core/ngx_config.h` （实际上是 `./objs/ngx_auto_config.h`）里包含了一系列运行环境信息。在 Nginx 开发时使用它们可以让程序更具可移植性。
+
+
+
+ 
+
+## 内存池
+
+内存池是大型软件里常用的一种技术，它是对象池模式的具体应用：一次性向系统申请大块的内存，内部自行切割分配使用，最后再一次归还系统。减少系统调用次数，很好的避免内存碎片。
+
+`ngx_pool_s` 是 Nginx 内存池的核心数据结构，用于为每个 TCP/HTTP 请求创建一个独立的内存池。这种设计的主要目的是优化内存管理，提升性能，并减少频繁分配和释放内存所带来的开销。
+
+每个请求都有自己的独立内存池，因此不需要手动管理内存的分配和释放。在请求结束时，只需销毁内存池即可，避免了内存泄漏的风险。
+
+- **减少内存碎片** ：通过预分配大块内存，减少了频繁分配和释放小块内存导致的内存碎片。
+- **降低系统调用开销** ：内存池减少了对操作系统内存分配函数（如 `malloc` 和 `free`）的调用次数。
+- **内存隔离：**每个请求的内存池是独立的，互不干扰。即使某个请求的内存池出现问题，也不会影响其他请求。
+
+```c
+// \nginx-1.27.4\src\core\ngx_core.h
+
+typedef struct ngx_pool_s ngx_pool_t;
+
+
+//  \nginx-1.27.4\src\core\ngx_palloc.h
+struct ngx_pool_s {
+    ngx_pool_data_t       d;         // 当前内存池的数据区，用于存储小块内存。
+    size_t                max;       // 小块内存的最大大小，超过此大小的内存会被视为“大块内存”，单独分配。
+    ngx_pool_t           *current;  // 当前内存池链表节点，指向当前内存池链表节点。如果当前内存池用尽，会创建一个新的内存池节点并链接到链表中。
+    ngx_chain_t          *chain;    // 链表，
+    ngx_pool_large_t     *large;    // 大块内存链表，用于管理大块内存（超过 max 的内存）。
+    ngx_pool_cleanup_t   *cleanup;  // 清理回调函数链表
+    ngx_log_t            *log;      // 日志对象，用于记录内存分配和释放的相关信息。
+};
+
+```
+
+
+
+在处理每个 TCP/HTTP 请求时，Nginx 会为该请求创建一个独立的内存池。
+
+```c
+ngx_pool_t *pool = ngx_create_pool(1024, log);                   // 1024 ：表示初始分配的内存大小（以字节为单位）。
+if (pool == NULL) {
+    ngx_log_error(NGX_LOG_ERR, log, 0, "Failed to create pool");
+}
+```
+
+
+
+
+
+Nginx 的代码风格非常注重一致性和可读性。为了便于维护和理解代码，Nginx 使用了一套统一的命名规则：
+
+- **`_s` 后缀** ：表示结构体的内部名称（`struct` 定义部分）。
+- **`_t` 后缀** ：表示类型别名（`typedef` 定义的部分），通常用于简化代码中的类型使用。
+- `ngx_pool_s`：是结构体的内部名称，表示这是一个具体的结构体定义。
+- `ngx_pool_t`：是类型别名，表示这是一个简化的类型名称，方便在代码中使用。
+
+
+
+### 内存操作函数
 
