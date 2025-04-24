@@ -2688,6 +2688,56 @@ http {
 
 
 
+# Nginx REUSEPORT 
+
+Linux 3.9 版本引入的 `SO_REUSEPORT` 套接字选项是一个重要的网络性能特性。**它允许多个套接字（通常由同一个进程内的不同线程或不同进程创建）绑定到完全相同的地址和端口（即 `bind()` 到相同的 IP 地址和端口号）**。
+
+
+
+当一个新连接请求到达绑定了该端口的服务器时，内核会根据 `SO_REUSEPORT` 套接字组内的规则，将这个新连接请求**均衡地**分发给其中一个监听套接字。
+
+这个分发策略通常是**轮询（Round-Robin）**或**基于 CPU 亲和性（CPU affinity）**的，这取决于内核的具体实现和配置。
+
+
+
+2013 年 Linux 内核添加了 reuseport 功能后，nginx 在 2015 年，1.9.1 版本也增加对应功能的支持，nginx 开启 reuseport 功能后，性能是原来的 2-3 倍，效果可谓立竿见影！
+
+
+
+https://blog.flipkart.tech/linux-tcp-so-reuseport-usage-and-implementation-6bfbf642885a
+
+https://lwn.net/Articles/542629/
+
+
+
+因为配置文件设置了 `worker_processes 4` 需要启动 4 个子进程， nginx 进程发现配置文件关键字 listen 后添加了 reuseport 关键字，那么主进程先创建 4 个 socket 并设置 SO_REUSEPORT 选项，然后进行 bind 和 listen。
+
+当 fork 子进程时，子进程拷贝了父进程的这 4 个 socket，所以你看到每个子进程都有相同 LISTEN 的 socket fd（6，7，8，9）。
+
+
+
+尝试在一个nginx上启用了这一配置参数，前后对比，发现以下几个方面优化效果明显：
+
+- CPU负载从30下降到8
+- context switch从60K下降到40k
+- cpu usage下降
+- nginx服务平均延迟下降（单个请求的最高延迟有可能会增加，详见文章最后说明和链接）
+- nginx慢请求数量下降
+
+
+
+```nginx
+server {
+        listen 80 reuseport;
+        listen 443 ssl http2 reuseport;
+        server_name   xxx.xxx.com;
+        charset utf-8;
+}   
+# 注意：同一个nginx实例下针对同一个IP+端口，只需要其中一个设置了reuseport即可全部生效。
+```
+
+
+
 # Nginx开发
 
 
