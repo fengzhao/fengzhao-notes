@@ -256,16 +256,16 @@ openssh 的认证方式：
 
 ## ssh命令组件
 
-| 命令                                           | 文件             | 作用                                   |
-| ---------------------------------------------- | ---------------- | -------------------------------------- |
-| [ssh](https://www.ssh.com/ssh/)                | 二进制可执行文件 | ssh客户端，用于登陆远程主机            |
-| [ssh-keygen](https://www.ssh.com/ssh/keygen/)  | 二进制可执行文件 | 生成密钥对                             |
-| [ssh-copy-id](https://www.ssh.com/ssh/copy-id) | shell脚本        | 传输公钥到远程主机                     |
-| [scp](https://www.ssh.com/ssh/scp/)            | 二进制可执行文件 | 远程传输文件                           |
-| [ssh-agent](<https://www.ssh.com/ssh/agent>)   |                  |                                        |
-| ssh-keyscan                                    |                  |                                        |
-| sshd                                           | 二进制可执行文件 | ssh服务端，用于在服务器上启动sshdj进程 |
-|                                                |                  |                                        |
+| 命令                                           | 文件             | 作用                                                         |
+| ---------------------------------------------- | ---------------- | ------------------------------------------------------------ |
+| [ssh](https://www.ssh.com/ssh/)                | 二进制可执行文件 | ssh客户端，用于登陆远程主机                                  |
+| [ssh-keygen](https://www.ssh.com/ssh/keygen/)  | 二进制可执行文件 | 生成密钥对                                                   |
+| [ssh-copy-id](https://www.ssh.com/ssh/copy-id) | shell脚本        | 传输公钥到远程主机                                           |
+| [scp](https://www.ssh.com/ssh/scp/)            | 二进制可执行文件 | 远程传输文件                                                 |
+| [ssh-agent](<https://www.ssh.com/ssh/agent>)   |                  | `ssh-agent` 后台运行。负责安全地持有你已经解密的私钥，这样你在进行多次 SSH 连接时，就不需要一遍又一遍地输入密钥的密码了 |
+| ssh-keyscan                                    |                  |                                                              |
+| sshd                                           | 二进制可执行文件 | ssh服务端，用于在服务器上启动sshdj进程                       |
+|                                                |                  |                                                              |
 
 
 
@@ -440,18 +440,18 @@ ssh-keygen 命令是用来生成一对新密钥对的。
 ```shell
 # -t 算法 -b 密钥长度 -C 标识（一般设为邮箱） -f 密钥对名称  
 # 这个命令会生成 /path/keyname.pub（传到远程主机的公钥）和 /path/keyname（登陆远程主机的私钥） 
+# 生成 SSH 密钥时，可以添加密码以进一步保护密钥。 每当使用密钥时，都必须输入密码。
 
-ssh-keygen -t rsa -b 2048  -C "comment" -f /path/keyname  
+# Ed25519 是一种用于数字签名的椭圆曲线算法，由丹尼尔·J·伯恩斯坦、Niels Duif、Tanja Lange、Peter Schwabe 和 Bo-Yin Yang 在 2011 年提出。相较于传统的 RSA 和 DSA，Ed25519 具有更高的安全性和性能，近年来越来越受到欢迎。
+
+ssh-keygen -t rsa -b 4096  -C "comment" -f /path/keyname  
+
 
 # 清除ssh私钥中的phrase，交互式弹出让输入老密码，然后新密码置空，即可清除老密码
 ssh-keygen -f ~/.ssh/kc_id_rsa -p
  
 # 语法
 ssh-keygen -p [-P old_passphrase] [-N new_passphrase] [-f keyfile]
-
-
-
-
 ```
 
 ### ssh-copy-id 用法
@@ -472,6 +472,79 @@ $ ssh-copy-id -i /path/publice_key  user@host -p port
 $ scp /path/filename user@host:/path/
 # 从远程主机下载文件到本地
 $ scp user@host:/path/filename /var/www/local_dir
+```
+
+### ssh-keyscan 用法
+
+`ssh-keyscan` 是一个用于从一个或多个主机收集 SSH 公钥的实用工具。它旨在帮助构建和验证 `ssh_known_hosts` 文件。
+
+`ssh_known_hosts` 文件位于用户的 `~/.ssh/` 目录下（或系统的 `/etc/ssh/` 目录下），用于记录已知 SSH 服务器的公钥。当您第一次通过 SSH 连接到某个服务器时，SSH 客户端会提示您是否信任该服务器的公钥，并将该公钥添加到 `known_hosts` 文件中。
+
+下次连接到同一服务器时，SSH 客户端会比对服务器发送的公钥与 `known_hosts` 文件中记录的公钥，如果匹配，则认为连接是安全的，避免了中间人攻击的风险。
+
+`ssh-keyscan` 的主要用途是**自动化获取远程服务器的 SSH 公钥，并将其添加到 `known_hosts` 文件中**，从而避免首次连接时手动确认和添加的过程。
+
+
+
+这在以下场景中非常有用：
+
+- **自动化部署和配置：** 在脚本或自动化配置管理工具中，可以使用 `ssh-keyscan` 预先获取目标服务器的公钥，避免在自动化过程中出现交互式提示。
+- **批量添加主机密钥：** 当需要管理大量 SSH 服务器时，可以使用 `ssh-keyscan` 批量获取它们的公钥，而无需逐个手动连接。
+- **验证现有 `known_hosts` 文件：** 可以使用 `ssh-keyscan` 再次扫描已知的主机，确认其公钥是否与 `known_hosts` 文件中的记录一致，从而检测潜在的密钥变更或中间人攻击。
+
+
+
+### ssh-agent 用法
+
+生成 SSH 密钥时，可以添加密码以进一步保护密钥。 每当使用密钥时，都必须输入密码。 如果密钥具有密码并且你不想每次使用密钥时都输入密码，则可以将密钥添加到 ssh agent。 ssh agent 会管理 SSH 密钥并记住你的密码。
+
+可以把 `ssh-agent` 看作是一个在后台运行的“密钥管家”。它负责安全地持有你已经解密的私钥，这样你在进行多次 SSH 连接时，就不需要一遍又一遍地输入密钥的密码了。
+
+**用途：**
+
+- **一次登录，多次畅行：** 最主要的用途就是让你只需要在将私钥添加到 `ssh-agent` 时输入一次密码，之后在同一个会话中进行多次 SSH 连接时，就无需再次输入密码。
+- **提升安全性：** 私钥在解密后只存储在 `ssh-agent` 的内存中，不会以未加密的形式保存在磁盘上，降低了密钥泄露的风险。而且密钥默认是不可导出的。
+- **代理转发（Agent Forwarding）：** 这是一个非常强大的功能。通过 `ssh-agent` 转发，你可以在本地 SSH 连接到服务器 A 后，再从服务器 A SSH 连接到服务器 B，而无需将你的私钥复制到服务器 A 上。整个过程中，身份验证仍然是通过你本地机器上的私钥进行的。
+
+
+
+### ssh-add 用法
+
+`ssh-add` 是一个命令行工具，用于将你的私有 SSH 密钥文件添加到正在运行的 `ssh-agent` 中。
+
+**用途：**
+
+- **加载私钥：** 将你的私钥加载到 `ssh-agent` 中，这样 SSH 客户端就可以使用它们进行身份验证，而无需你重复输入密码。
+- **管理密钥：** 它可以列出当前 `ssh-agent` 管理的密钥，也可以从 `ssh-agent` 中移除密钥。
+
+
+
+```bash
+# 要添加你的默认私钥（通常是 ~/.ssh/id_rsa、~/.ssh/id_dsa、~/.ssh/id_ecdsa 或 ~/.ssh/id_ed25519，直接运行：
+ssh-add
+# 如果你的密钥有密码，它会提示你输入。
+
+# 要添加特定的私钥文件，指定文件路径。同样，如果密钥有密码，你需要输入。
+ssh-add ~/.ssh/my_other_key
+
+# 列出 ssh-agent 中管理的密钥
+ssh-add -l
+
+# 从 ssh-agent 中移除指定的密钥
+ssh-add -d ~/.ssh/my_other_key
+
+# 移除 ssh-agent 中的所有密钥
+ssh-add -D
+
+
+# 为密钥设置过期时间: 你可以使用 -t 选项设置密钥在 ssh-agent 中保留的时间（以秒为单位，或者使用 m、h、d、w 等单位）
+ssh-add -t 1h ~/.ssh/temporary_key
+# 这个密钥会在一小时后自动从 ssh-agent 中移除。
+
+
+# 你只需要在一个会话中启动一次 ssh-agent（或者它可能自动启动）。
+# 使用 ssh-add 将你的私钥加载到运行中的 ssh-agent 中，每个密钥的密码只需要输入一次。
+# 一旦密钥被添加到 ssh-agent，你就可以使用 ssh、scp 等 SSH 客户端连接到信任你的公钥的远程服务器，而无需再次输入密码。
 ```
 
 
