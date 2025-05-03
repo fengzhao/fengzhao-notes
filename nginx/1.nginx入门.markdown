@@ -2826,18 +2826,22 @@ server {
 ```c
 // \nginx-1.27.4\src\core\ngx_core.h
 
+
+// Nginx 源代码中定义的一些核心数据结构的类型别名（typedefs）。通过使用 typedef 关键字，代码为这些常用的结构体类型创建了更简洁的别名。这样做提高了代码的可读性，并减少了重复输入完整结构体名称的需求。
+// ngx_pool_t: 代表 Nginx 的内存池。Nginx 使用自定义的内存池管理机制来高效地分配和释放内存，减少系统调用，提高性能。
+// 通过 typedef，我们将 ngx_pool_t 定义为 struct ngx_pool_s 的一个别名。这意味着在代码中，我们可以使用 ngx_pool_t 来声明变量，而不需要每次都写完整的 struct ngx_pool_s。
 typedef struct ngx_pool_s ngx_pool_t;
 
 
 //  \nginx-1.27.4\src\core\ngx_palloc.h
 struct ngx_pool_s {
-    ngx_pool_data_t       d;         // 当前内存池的数据区，用于存储小块内存。
-    size_t                max;       // 小块内存的最大大小，超过此大小的内存会被视为“大块内存”，单独分配。
-    ngx_pool_t           *current;  // 当前内存池链表节点，指向当前内存池链表节点。如果当前内存池用尽，会创建一个新的内存池节点并链接到链表中。
-    ngx_chain_t          *chain;    // 链表，
-    ngx_pool_large_t     *large;    // 大块内存链表，用于管理大块内存（超过 max 的内存）。
-    ngx_pool_cleanup_t   *cleanup;  // 清理回调函数链表
-    ngx_log_t            *log;      // 日志对象，用于记录内存分配和释放的相关信息。
+    ngx_pool_data_t       d;         	// 当前内存池的数据区，用于存储小块内存。 这是一个嵌套的结构体，它包含了内存池中实际的数据存储区域以及一些管理信息。
+    size_t                max;       	// 小块内存的最大大小，超过此大小的内存会被视为“大块内存”，单独分配。
+    ngx_pool_t           *current;  	// ngx_pool_t是指向自身结构体的指针。当前内存池链表节点，指向当前内存池链表节点。如果当前内存池用尽，会创建一个新的内存池节点并链接到链表中。
+    ngx_chain_t          *chain;    	// 链表，
+    ngx_pool_large_t     *large;    	// 大块内存链表，用于管理大块内存（超过 max 的内存）。
+    ngx_pool_cleanup_t   *cleanup;  	// 清理回调函数链表
+    ngx_log_t            *log;      	// 日志对象，用于记录内存分配和释放的相关信息。
 };
 
 ```
@@ -2867,4 +2871,306 @@ Nginx 的代码风格非常注重一致性和可读性。为了便于维护和�
 
 
 ### 内存操作函数
+
+
+
+
+
+
+
+## Nginx请求处理11个阶段
+
+
+
+Nginx HTTP 请求处理的 11 个阶段。Nginx 的 HTTP 请求处理流程被划分为多个阶段，每个阶段都有特定的任务，并且允许模块介入并处理请求。理解这些阶段对于开发 Nginx 模块至关重要。
+
+以下是 Nginx HTTP 请求处理的 11 个标准阶段（在 Nginx 1.x 版本之后引入了更多的细分，但通常我们讨论的是这 11 个核心阶段）：
+
+
+
+1. **`NGX_HTTP_POST_READ_PHASE` (读取请求体之后阶段):**
+   - 在这个阶段，Nginx 已经读取了客户端的请求头，并且如果配置了读取请求体（例如，对于 POST 请求），也已经读取了部分或全部请求体。
+   - 模块可以在这个阶段检查请求的完整性、进行初步的请求体处理等。
+2. **`NGX_HTTP_SERVER_REWRITE_PHASE` (服务器重写阶段):**
+   - 这个阶段主要处理基于服务器级别的重写规则。
+   - 模块（如 `ngx_http_rewrite_module`）可以在这里修改请求的 URI、进行重定向等操作。
+3. **`NGX_HTTP_FIND_CONFIG_PHASE` (查找配置阶段):**
+   - 在这个阶段，Nginx 根据请求的主机名（Host 头）和 URI 查找匹配的虚拟主机（`server` 块）和 location 块。
+   - 这个阶段的结果决定了后续哪些配置块将被用于处理该请求。
+4. **`NGX_HTTP_REWRITE_PHASE` (位置重写阶段):**
+   - 这个阶段处理在匹配的 `location` 块中定义的重写规则。
+   - 与服务器重写阶段类似，模块可以在这里修改请求的 URI、进行重定向等操作，但作用范围是当前的 `location` 块。
+5. **`NGX_HTTP_POST_REWRITE_PHASE` (重写提交后阶段):**
+   - 在重写阶段（服务器或位置）执行完毕后，如果 URI 被修改，Nginx 会跳转回查找配置阶段（`NGX_HTTP_FIND_CONFIG_PHASE`）重新查找匹配的 `location`。这个阶段允许模块在重写完成后执行一些操作。
+6. **`NGX_HTTP_PREACCESS_PHASE` (预访问阶段):**
+   - 这个阶段在访问控制之前执行。
+   - 模块可以在这里进行一些全局性的访问控制预处理，例如限制并发连接数、IP 黑名单检查等。
+7. **`NGX_HTTP_ACCESS_PHASE` (访问控制阶段):**
+   - 这个阶段执行访问控制相关的模块，例如 `ngx_http_access_module`（基于 IP 地址的访问控制）、`ngx_http_auth_basic_module`（基本认证）等。
+   - 如果访问被拒绝，Nginx 会返回相应的 HTTP 错误码（例如 403 Forbidden）。
+8. **`NGX_HTTP_POST_ACCESS_PHASE` (访问控制后阶段):**
+   - 在访问控制阶段之后执行，允许模块在访问控制决策之后执行一些操作，例如记录访问日志。
+9. **`NGX_HTTP_PRECONTENT_PHASE` (预内容处理阶段):**
+   - 这个阶段在生成实际内容之前执行。
+   - 模块可以在这里进行一些内容处理的准备工作，例如检查缓存、处理 FastCGI 或 uWSGI 的 upstream 连接等。
+10. **`NGX_HTTP_CONTENT_PHASE` (内容生成阶段):**
+    - 这是最核心的阶段，负责生成 HTTP 响应的内容。
+    - 处理静态文件的模块（如 `ngx_http_static_module`）、代理模块（如 `ngx_http_proxy_module`）、FastCGI 模块（如 `ngx_http_fastcgi_module`）以及您自定义的模块通常在这个阶段工作。
+    - 一个请求只能由一个内容处理器来处理。
+11. **`NGX_HTTP_LOG_PHASE` (日志记录阶段):**
+    - 这是请求处理的最后一个阶段。
+    - `ngx_http_log_module` 等模块在这个阶段记录请求的详细信息到日志文件中。
+
+
+
+Nginx 的请求处理流程是一个管道，请求会依次通过这些阶段。每个阶段都有机会被一个或多个模块处理。模块可以通过注册自己的处理函数到特定的阶段来介入请求处理流程，实现各种功能，例如修改请求、进行认证授权、生成动态内容、记录日志等。
+
+理解这些阶段对于 Nginx 的配置和模块开发至关重要，因为它决定了模块在何时以及如何影响请求的处理过程。
+
+
+
+**从概念上讲，Nginx 的“阶段 (Phase)” 是指在处理一个 HTTP 请求的过程中，Nginx 定义的不同处理环节或步骤。** 
+
+就像一条装配线上的不同工位，每个阶段负责执行特定的任务。这种分阶段的设计使得 Nginx 的架构非常模块化和可扩展。不同的模块可以注册到不同的阶段，以便在请求处理的不同环节介入并执行它们特定的逻辑
+
+
+
+Nginx 在其头文件（通常是 `ngx_http_core_module.h`）中定义了一系列整数常量，用来标识不同的 HTTP 请求处理阶段。这些常量通常是枚举类型或者简单的 `define` 宏，它们的值是唯一的，用于在 Nginx 核心和各个 HTTP 模块之间进行识别和引用。
+
+```c
+//在 C 语言的枚举类型（enum）中，如果您只为第一个枚举成员显式地赋值，那么后续的枚举成员将默认地按照它们在定义中的顺序，从前一个成员的值开始，依次递增 1。
+typedef enum {
+    NGX_HTTP_POST_READ_PHASE = 0,
+
+    NGX_HTTP_SERVER_REWRITE_PHASE,
+
+    NGX_HTTP_FIND_CONFIG_PHASE,
+    NGX_HTTP_REWRITE_PHASE,
+    NGX_HTTP_POST_REWRITE_PHASE,
+
+    NGX_HTTP_PREACCESS_PHASE,
+
+    NGX_HTTP_ACCESS_PHASE,
+    NGX_HTTP_POST_ACCESS_PHASE,
+
+    NGX_HTTP_PRECONTENT_PHASE,
+
+    NGX_HTTP_CONTENT_PHASE,
+
+    NGX_HTTP_LOG_PHASE
+} ngx_http_phases;
+```
+
+
+
+
+
+```c
+// ngx_http_core_module.h
+
+
+typedef struct ngx_http_phase_handler_s  ngx_http_phase_handler_t;
+
+
+// 在 C 语言中，函数指针是一种特殊的指针变量，它存储的是函数的内存地址。通过函数指针，我们可以像调用普通函数一样调用它所指向的函数。这为实现回调函数、动态调度等高级编程技巧提供了基础。
+
+
+// typedef 关键字用于为现有的数据类型创建一个新的别名。在这里，我们要为一种特定的函数指针类型创建一个别名 ngx_http_phase_handler_pt 
+
+// ngx_int_t: 这是函数指针所指向的函数的返回类型。ngx_int_t 是 Nginx 中常用的表示整型返回值的类型，通常用于指示操作的成功与否（例如 NGX_OK 表示成功，NGX_ERROR 表示失败，以及其他特定的状态码）。
+
+// (*ngx_http_phase_handler_pt): 这一部分定义了我们要创建的函数指针类型的名称。
+		// * 表明这是一个指针类型
+		// ngx_http_phase_handler_pt 是我们为这个函数指针类型取的别名。
+		// 括号 () 包裹着 *ngx_http_phase_handler_pt，这在声明函数指针类型时是必需的，以区分它和返回指针的函数。
+
+// (ngx_http_request_t *r, ngx_http_phase_handler_t *ph): 这部分定义了函数指针所指向的函数的参数列表：
+		// ngx_http_request_t *r: 这是指向 ngx_http_request_t 结构体的指针。ngx_http_request_t 是 Nginx 中最核心的数据结构之一，它包含了与当前正在处理的 HTTP 请求相关的所有信息。这包括客户端连接信息、请求行（方法、URI、协议）、请求头、请求体、以及用于存储模块数据的各种字段。通过这个指针，函数可以访问和操作当前请求的各种属性。
+		//ngx_http_phase_handler_t 是 struct ngx_http_phase_handler_s 的别名，它代表着当前 HTTP 处理阶段中的一个具体的处理步骤。通过这个指针，函数可以访问到与当前处理步骤相关的上下文信息，例如可能包含一些配置数据或者状态信息。
+typedef ngx_int_t (*ngx_http_phase_handler_pt)(ngx_http_request_t *r, ngx_http_phase_handler_t *ph);
+
+
+
+// struct ngx_http_phase_handler_s 结构体正是 Nginx HTTP 请求处理流程中，在每个处理阶段（如读取请求头后、服务器重写、查找配置、位置重写、访问控制、内容生成、日志记录等）中执行的单个处理步骤的抽象表示。
+
+// 每个 ngx_http_phase_handler_s 实例都代表着一个需要在特定阶段执行的“动作”或“处理逻辑”。
+// 1. checker: 允许 Nginx 在执行真正的 handler 之前，先调用一个检查函数（checker 字段是一个函数指针，它的类型是 ngx_http_phase_handler_pt）来判断是否需要执行当前的 handler。这提供了一种条件执行处理逻辑的机制。
+// 2. handler: 指向实际执行该处理步骤的函数。这个函数包含了该步骤的核心业务逻辑。
+// 3. next: 用于将多个 ngx_http_phase_handler_s 结构体链接在一起，形成一个处理链。在一个 HTTP 处理阶段中，可能会注册多个处理函数，它们会按照 next 指示的顺序依次执行。
+
+//因此，可以将 ngx_http_phase_handler_s 看作是构成 Nginx HTTP 请求处理管道中每个阶段的基本构建块。通过组合和链接这些处理句柄，Nginx 可以灵活地处理各种 HTTP 请求。
+
+struct ngx_http_phase_handler_s {
+    ngx_http_phase_handler_pt  checker;
+    ngx_http_handler_pt        handler;
+    ngx_uint_t                 next;
+};
+
+
+
+// 总而言之，这三个类型定义和结构体定义共同描述了 Nginx HTTP 请求处理管道中每个阶段的处理步骤：
+
+// 1. ngx_http_phase_handler_t 是对一个处理步骤结构体的统一称呼。
+// 2. ngx_http_phase_handler_pt 定义了用于条件检查处理步骤是否需要执行的函数的类型。
+// 3. ngx_http_handler_pt 定义了实际执行处理逻辑的函数的类型.
+
+// ngx_http_phase_handler_s 结构体本身包含了执行条件检查的函数指针 (checker)、执行实际处理的函数指针 (handler)，以及指向下一个处理步骤的索引 (next)，从而构成了一个可链接的处理单元。
+
+// 通过这种设计，Nginx 可以在每个 HTTP 请求处理阶段注册多个模块提供的处理函数，并灵活地控制它们的执行顺序和条件。
+```
+
+
+
+
+
+## 开发第一个模块
+
+
+
+```c
+#include <ngx_config.h>
+#include <ngx_core.h>
+#include <ngx_http.h>
+
+// 模块配置结构体:依据Nginx命名规范，结构体的名字是ngx_http_ndg_hello_loc_conf_t，其中ngx_http表示是HTTP模块，ndg_hello是模块名字，loc_conf表示存储location的配置。
+// 结构体 
+typedef struct {
+    ngx_str_t   output_string;
+} ngx_http_ndg_hello_loc_conf_t;
+
+// 模块上下文结构体
+static ngx_http_module_t  ngx_http_ndg_hello_module_ctx = {
+    NULL,                          /* preconfiguration */
+    ngx_http_ndg_hello_init,      /* postconfiguration */
+
+    NULL,                          /* create main configuration */
+    NULL,                          /* init main configuration */
+
+    NULL,                          /* create server configuration */
+    NULL,                          /* merge server configuration */
+
+    ngx_http_ndg_hello_create_loc_conf, /* create location configuration */
+    ngx_http_ndg_hello_merge_loc_conf    /* merge location configuration */
+};
+
+// 模块定义
+ngx_module_t  ngx_http_ndg_hello_module = {
+    NGX_MODULE_V1,
+    &ngx_http_ndg_hello_module_ctx, /* module context */
+    ngx_http_ndg_hello_commands,    /* module directives */
+    NGX_HTTP_MODULE,               /* module type */
+    NULL,                          /* init master */
+    NULL,                          /* init module */
+    NULL,                          /* init process */
+    NULL,                          /* init thread */
+    NULL,                          /* exit thread */
+    NULL,                          /* exit process */
+    NULL,                          /* exit master */
+    NGX_MODULE_V1_PADDING
+};
+
+// 模块指令
+static ngx_command_t  ngx_http_ndg_hello_commands[] = {
+
+    { ngx_string("ndg_hello_output"),
+      NGX_HTTP_LOC_CONF|NGX_CONF_TAKE1,
+      ngx_conf_set_str_slot,
+      NGX_HTTP_LOC_CONF_OFFSET,
+      offsetof(ngx_http_ndg_hello_loc_conf_t, output_string),
+      NULL },
+
+    ngx_null_command
+};
+
+// 创建 location 配置结构体
+static void *
+ngx_http_ndg_hello_create_loc_conf(ngx_conf_t *cf)
+{
+    ngx_http_ndg_hello_loc_conf_t  *conf;
+
+    conf = ngx_pcalloc(cf->pool, sizeof(ngx_http_ndg_hello_loc_conf_t));
+    if (conf == NULL) {
+        return NULL;
+    }
+
+    // 设置默认输出字符串
+    ngx_str_set(&conf->output_string, "Hello from NDG!");
+
+    return conf;
+}
+
+// 合并 location 配置结构体
+static char *
+ngx_http_ndg_hello_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
+{
+    ngx_http_ndg_hello_loc_conf_t *prev = parent;
+    ngx_http_ndg_hello_loc_conf_t *conf = child;
+
+    ngx_conf_merge_str_value(cf, &conf->output_string, &prev->output_string);
+
+    return NGX_CONF_OK;
+}
+
+// 处理请求的 handler 函数
+static ngx_int_t
+ngx_http_ndg_hello_handler(ngx_http_request_t *r)
+{
+    ngx_buf_t             *b;
+    ngx_chain_t           out;
+    ngx_http_ndg_hello_loc_conf_t  *conf;
+
+    // 获取当前 location 的配置
+    conf = ngx_http_get_module_loc_conf(r, ngx_http_ndg_hello_module);
+
+    // 设置响应类型为 text/plain
+    r->headers_out.content_type.len = sizeof("text/plain") - 1;
+    r->headers_out.content_type.data = (u_char *) "text/plain";
+
+    // 分配缓冲区
+    b = ngx_pcalloc(r->pool, sizeof(ngx_buf_t));
+    if (b == NULL) {
+        ngx_log_error(NGX_LOG_ERR, r->connection->log, 0, "Failed to allocate response buffer");
+        return NGX_HTTP_INTERNAL_SERVER_ERROR;
+    }
+
+    // 将输出字符串复制到缓冲区
+    b->pos = conf->output_string.data;
+    b->last = conf->output_string.data + conf->output_string.len;
+    b->memory = 1;    /* this buffer is in memory */
+    b->last_buf = (r == r->main) ? 1 : 0; /* set the "last" flag if this is the last buffer */
+
+    // 创建缓冲区链
+    out.buf = b;
+    out.next = NULL;
+
+    // 发送 HTTP 头
+    r->headers_out.status = NGX_HTTP_OK;
+    ngx_http_send_header(r);
+
+    // 发送响应体
+    return ngx_http_output_filter(r, &out);
+}
+
+// 模块初始化函数
+static ngx_int_t
+ngx_http_ndg_hello_init(ngx_conf_t *cf)
+{
+    ngx_http_handler_pt        *h;
+    ngx_http_core_main_conf_t  *cmcf;
+
+    cmcf = ngx_http_conf_get_module_main_conf(cf, ngx_http_core_module);
+
+    // 在 content 阶段注册我们的 handler
+    h = ngx_array_push(&cmcf->phases[NGX_HTTP_CONTENT_PHASE].handlers);
+    if (h == NULL) {
+        return NGX_ERROR;
+    }
+
+    *h = ngx_http_ndg_hello_handler;
+
+    return NGX_OK;
+}
+```
+
+
 
