@@ -187,8 +187,10 @@ sudo yum install gcc gcc-c++ make automake autoconf libtool pcre* zlib openssl o
 sudo apt install zlib1g zlib1g-dev curl gnupg2 ca-certificates lsb-release ubuntu-keyring dirmngr software-properties-common apt-transport-https   gcc make libpcre3 libpcre3-dev   zlib1g-dev openssl libssl-dev 
 
 # 在 http://nginx.org/en/download.html 里面下载 Nginx 源代码，永远下载最新的Stable release版本
-wget http://nginx.org/download/nginx-1.21.6.tar.gz
+wget http://nginx.org/download/nginx-1.28.0.tar.gz
 
+# wget  https://github.com/openssl/openssl/releases/download/OpenSSL_1_1_1w/openssl-1.1.1w.tar.gz
+# wget https://mirrors.ibiblio.org/openssl/source/openssl-1.1.1w.tar.gz
 
 # https://www.cnblogs.com/chrdai/p/11306728.html
 nginx-1.21.4
@@ -252,7 +254,7 @@ au BufRead,BufNewFile */usr/local/nginx/conf/* set ft=nginx
 # 等号后面的绝对路径或者相对路径就是openssl的源码包tar.gz解压出来的目录，就是里面有目录啊，config二进制文件啊，README啦那些。
 
 # https://blog.51cto.com/meiling/2165811
-./configure   --user=nginx --group=nginx  --prefix=/usr/local/nginx/  --with-http_stub_status_module  --with-http_ssl_module --with-stream  --with-openssl=/usr/local/openssl/  
+./configure   --user=nginx --group=nginx  --prefix=/usr/local/nginx/  --with-http_stub_status_module  --with-http_ssl_module --with-stream --with-http_v2_module --with-openssl=/usr/local/openssl/  
 
 
 ./configure --help # --help 命令可以查看配置脚本支持哪些参数
