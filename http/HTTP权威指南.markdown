@@ -4763,23 +4763,57 @@ TLS1.3支持的加密套件如下：
 
 
 
-HTTPS 会加密 URL 吗？HTTPS 会加密头部吗？
+**HTTPS 会加密 URL 吗？HTTPS 会加密头部吗？**
+
+```http
+<method> <request-URL> <version>\r\n
+<headers1>\r\n
+<headers2>\r\n
+\r\n
+<entity-body>
+```
+
+```http
+<version>  <status> <reason-phrase>\r\n
+<headers1>\r\n
+<headers2>\r\n
+\r\n
+<entity-body>
+```
 
 
 
+因为 URL 的信息都是保存在 `HTTP ` 中的，而 HTTPS 是会对 `HTTP Header` 和  `HTTP Body` 整个加密的，所以 URL 自然是会被加密的。
 
-
-因为 URL 的信息都是保存在 HTTP Header 中的，而 HTTPS 是会对 `HTTP Header` 和  `HTTP Body` 整个加密的，所以 URL 自然是会被加密的。
-
-浏览器显示信息是已经解密后的信息，所以不要误以为 URL 没有加密。
-
-如果你用抓包工具，抓包 HTTPS 的数据的话，你是什么都看不到的，如下图，只会显示“Application Data”，表示这是一个已经加密的 HTTP 应用数据。
+浏览器显示信息是已经解密后的信息，所以不要误以为 URL 没有加密。如果你用抓包工具，抓包 HTTPS 的数据的话，你是什么都看不到的，如下图，只会显示“Application Data”，表示这是一个已经加密的 HTTP 应用数据。
 
 
 
-但请注意 hostname 一般是会被明文传送的，因为 SNI是透明的。
+```http
+GET / HTTP/1.1
+Host: google.com
+Sec-Ch-Ua: "Not/A)Brand";v="8", "Chromium";v="126"
+Sec-Ch-Ua-Mobile: ?0
+Sec-Ch-Ua-Platform: "Windows"
+Accept-Language: zh-CN
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.6478.57 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+X-Client-Data: CPvqygE=
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br
+Priority: u=0, i
+Connection: keep-alive
+```
 
-HTTPS 没有完全加密访问请求，因为 `Server Name` 依然是明文传输的。它发生在 HTTPS 传输过程中的 `Client Hello` 握手阶段
+
+
+但请注意 hostname 一般是会被明文传送的，因为 SNI是透明的。HTTPS 没有完全加密访问请求，因为 `Server Name` 依然是明文传输的。它发生在 HTTPS 传输过程中的 `Client Hello` 握手阶段
+
+
 
 HTTPS 可以看到请求的域名吗？
 
@@ -4789,11 +4823,21 @@ HTTPS 可以看到请求的域名吗？
 
 
 
-**SNI信息**
+### SNI信息
 
-SNI，即服务器名称指示，是TLS协议的扩展。它允许在握手过程开始时通过客户端告诉服务器正在连接的主机名称，从而解决一个服务器拥有多个域名的情况。
+SNI（Server Name Indication）是对SSL/TLS协议的扩展，允许服务器在单个IP地址上承载多个SSL证书，**可解决一个HTTPS服务器拥有多个域名但是无法预知客户端到底请求的是哪一个域名的服务问题。**
 
-在TLS握手信息中并没有携带客户端要访问的目标地址，导致当一台服务器有多个虚拟主机，且每个主机的域名不一样，使用了不一样的证书时，不知道和哪台虚拟主机进行通信。而SNI允许Web服务器通过SSL或TLS握手的扩展在单个IP地址上托管多个站点，从而使得HTTPS网站具有唯一的TLS证书，即使它们位于共享IP地址上。使用SNI时，服务器的主机名包含在TLS握手中，这使得HTTPS网站具有唯一的TLS证书，即使它们位于共享IP地址上也是如此。
+客户端建立HTTPS连接TLS握手第一步就是请求服务器的证书。而服务器在发送证书时，是不知道浏览器访问的是哪个域名的，所以不能根据不同域名发送不同的证书。
+
+因此就引入一个扩展叫SNI，SNI是为了解决一个服务器使用多个域名和证书的SSL/TLS扩展，做法就是在 Client Hello 中补上请求的域名信息
+
+（SNI，即服务器名称指示，允许在握手过程开始时通过客户端告诉服务器正在连接的主机名称，从而解决一个服务器拥有多个域名的情况。）
+
+
+
+使用SNI时，服务器的主机名包含在TLS握手中，这使得HTTPS网站具有唯一的TLS证书，即使它们位于共享IP地址上也是如此。
+
+
 
 
 
@@ -5612,6 +5656,49 @@ SC-081 主要在证书有效期、域名验证数据重用有效期两个方向�
 面对愈发严苛的证书政策和愈加复杂的系统架构，我们要做的不是回避变化，而是用工具与流程将不确定性变为确定性，让安全真正“跑在业务前面”，而不是在事故发生后才追悔莫及。
 
 
+
+
+
+## 十二、域前置伪装
+
+
+
+> 核心原理：
+>
+> 域前置的核心技术是 CDN。因为 CDN 大多都是复用的，1 台 CDN 会同时负责对多个网站进行加速，如 `a.com` 和 `b.com` 都是由 `22.33.22.33` 这个 CDN 进行加速的。
+>
+> 当我浏览器访问 `a.com` 和 `b.com` 其实都是访问的 `22.33.22.33` 这个 IP，那么问题来了，CDN 如何分辨访问是哪个域名的呢？通过 HTTP 请求包中的 Host 头，而 Host 头又是极其容易伪造的，所以这就有了可乘之机。
+
+
+
+
+
+渗透测试过程中，我们会遇到这种情形，即网络中部署了很多防御方案，比如防火墙开启IDP，IPS，IDS等，这些方案可用于限制网络出站规则。
+
+例如，仅仅允许TCP 80及443通过代理离开网络，并且还会有许多设备在应用层来检查这个流量，如果检测到恶意的Payload，则进行拦截并报警。
+
+绕过这些解决方案一直是入侵者与防御者之间的博弈，防御者努力的想怎么拦，而入侵者在努力的想怎么绕。因此也有了很多很多的攻击技术，比如DNS隧道，ICMP隧道等等。
+
+最近有一篇文章[《Doodles, stickers, and censorship circumvention for Signal Android》](https://whispersystems.org/blog/doodles-stickers-censorship/)介绍了通过`Domain Fronting`来绕过信号限制的方式，在此文中指出“许多流行的服务和CDN（如Google，Amazon Cloudfront，Amazon S3，Azure，CloudFlare，Fastly和Akamai）可以以一种方式获取信号，这种方式看起来与其他未经审查的流量不可辨别。因此，我们也可以通过此技术来绕过一些过滤规则。
+
+
+
+假设我们执行以下一种命令：
+
+```bash
+curl https://www.allow.com -H "Host: www.forbidden.com" -v
+
+curl https://1.1.1.1 -H "Host: www.forbidden.com" -v  ##1.1.1.1为CDN的IP
+
+```
+
+
+
+结果是，***客户端实际通信的对象是www.forbidden.com，但在流量监控设备看来，客户端是在与www.allow.com通信，即客户端将流量成功伪装成了与www.allow.com通信的流量***
+
+
+
+- 用户用合法的域名`allow.com`向DNS请求CDN的IP，然后向CDN发起请求，这一步自然是没有任何问题的
 
 
 
