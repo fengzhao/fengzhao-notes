@@ -5702,6 +5702,10 @@ curl https://1.1.1.1 -H "Host: www.forbidden.com" -v  ##1.1.1.1为CDN的IP
 
 
 
+
+
+https://blog.kenxu.top/post/bypass-gfw-p1/
+
 # PKI体系
 
 https://arthurchiao.art/blog/everything-about-pki-zh/
