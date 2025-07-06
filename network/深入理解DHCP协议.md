@@ -48,9 +48,7 @@ DHCP协议采用客户端/服务器模型，主机地址的动态分配任务由
 
 **DHCP服务器**
 
-DHCP 服务器会维护 IP 地址池，在网络上启动时会将地址租借给启用 DHCP 的客户端。
-
-由于 IP 地址是**动态的(临时分配)**而不是**静态的(永久分配)**，因此不再使用的 IP 地址会自动返回 IP 地址池中进行重新分配。
+DHCP 服务器会维护 IP 地址池，在网络上启动时会将地址租借给启用 DHCP 的客户端。由于 IP 地址是**动态的(临时分配)**而不是**静态的(永久分配)**，因此不再使用的 IP 地址会自动返回 IP 地址池中进行重新分配。
 
 > 那么 DHCP 服务器由谁维护呢？
 
@@ -234,3 +232,33 @@ DHCP服务器可以配置当前地址池中IP地址的**租用有效期限**，�
 如果该DHCP服务器为用户分配错误的IP地址和其他网络参数，将会对网络造成非常大的危害。
 
 https://info.support.huawei.com/info-finder/encyclopedia/zh/DHCP+Snooping.html
+
+
+
+
+
+
+
+
+
+# DHCP 服务
+
+一个由 [Internet Systems Consortium](https://www.isc.org/)(ISC)开发的开源DHCPv4/DHCPv6服务器。Kea是一个高性能的，可扩展的DHCP服务器引擎。通过[hooks library](https://kea.readthedocs.io/en/latest/arm/hooks.html)可以很容易的修改和扩展。
+
+```bash
+# install the build environment
+sudo apt -y install automake libtool pkg-config build-essential ccache meson ninja-build libboost-all-dev liblog4cplus-dev
+	
+# install the dependencies
+sudo apt -y install libboost-dev libboost-system-dev liblog4cplus-dev libssl-dev
+
+
+# download package
+wget https://downloads.isc.org/isc/kea/3.0.0/kea-3.0.0.tar.xz
+
+```
+
+
+
+
+
