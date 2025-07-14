@@ -1471,9 +1471,9 @@ spec:
 
 **Kubernetes 网络模型规定**
 
-- **K8s 的网络模型要求每个 Pod 都有一个唯一的 IP 地址，即使这些 Pod 分布在不同的节点上。**
+- **K8s 的网络模型要求每个 Pod 都有一个唯一的 IP 地址，即使这些 Pod 分布在不同的 worker 节点上。**
 
-- **在跨节点的情况下 Pod 也必须可以通过 IP 地址访问。**
+- **在跨节点的情况下 Pod 也必须可以通过 IP 地址访问。任意两个 pod 之间其实是可以直接通信的，无需经过显式地使用 NAT 来接收数据和地址的转换；**
 
 
 
@@ -1483,9 +1483,7 @@ spec:
 
 
 
-为了实现这个网络模型，CoreOS 团队发起了 CNI 项目（后来 CNI 进了 CNCF 孵化）
-
-CNI (Container Network Interface) 定义了实现容器之间网络连通性和释放网络资源等相关操作的接口规范。
+为了实现这个网络模型，CoreOS 团队发起了 CNI 项目（后来 CNI 进了 CNCF 孵化），CNI (Container Network Interface) 定义了实现容器之间网络连通性和释放网络资源等相关操作的接口规范。
 
 这套接口进而由具体的 CNI 插件去实现，CNI 插件负责为 Pod 分配 IP 地址，并处理跨节点的网络路由等具体的工作。
 
@@ -1493,11 +1491,11 @@ Kubernetes 定义了一种简单、一致的网络模型，基于扁平网络结
 
 
 
-所谓 **网络栈**：网卡（Network Interface）、回环设备（LoopbackDevice）、路由表（Routing Table）和 iptables 规则
+所谓 **网络栈**：网卡（Network Interface）、回环设备（Loopback Device）、路由表（Routing Table）和 iptables 规则。对于一个进程来说，这些要素，其实就构成了它发起和响应网络请求的基本环境。
 
-对于一个进程来说，这些要素，其实就构成了它发起和响应网络请求的基本环境。
 
-在docker场景下，被限制在 `NetworkNamespace` 里的容器进程，实际上是通过 `Veth Pair` 设备 + **宿主机网桥**的方式，实现了跟同宿主内其他容器的数据交换。
+
+在docker场景下，被限制在 `Network Namespace` 里的容器进程，实际上是通过 `Veth Pair` 设备 + **宿主机网桥**的方式，实现了跟同宿主内其他容器的数据交换。
 
 当从宿主机上直接访问该宿主机内其他容器的 IP 地址时，这个请求的数据包，也是先根据路由规则到达 docker0 网桥，然后被转发到对应的 Veth Pair 设备，最后出现在容器里。
 
@@ -1529,11 +1527,15 @@ Kubernetes 定义了一种简单、一致的网络模型，基于扁平网络结
 
 容器 veth 又是一个虚拟网络接口，因此它和 TUN/TAP 或者其他物理网络接口一样，也都能配置 mac/ip 地址（但是并不是一定得配 mac/ip 地址）。
 
-其主要作用就是连接不同的网络，比如在容器网络中，用于将容器的 namespace 与 root namespace 的网桥 br0 相连。容器网络中，容器侧的 veth 自身设置了 ip/mac 地址并被重命名为 eth0，作为容 器的网络接口使用，而主机侧的 veth 则直接连接在 docker0/br0 上面。
+其主要作用就是连接不同的网络，比如在容器网络中，用于将容器的 namespace 与 root namespace 的网桥 br0 相连。
+
+容器网络中，容器侧的 veth 自身设置了 ip/mac 地址并被重命名为 eth0，作为容 器的网络接口使用，而主机侧的 veth 则直接连接在 docker0/br0 上面。
 
 
 
-veth实现了点对点的虚拟连接，可以通过veth连接两个namespace，如果我们需要将3个或者多个namespace接入同一个二层网络时，就不能只使用veth了。在物理网络中，如果需要连接多个主机，我们会使用网桥，或者又称为交换机。Linux也提供了网桥的虚拟实现。
+veth实现了点对点的虚拟连接，可以通过veth连接两个namespace，如果我们需要将3个或者多个namespace接入同一个二层网络时，就不能只使用veth了。
+
+在物理网络中，如果需要连接多个主机，我们会使用网桥，或者又称为交换机。Linux也提供了网桥的虚拟实现。
 
 
 
