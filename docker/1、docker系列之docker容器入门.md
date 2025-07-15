@@ -2841,9 +2841,9 @@ Docker 在镜像的设计中，引入了层（layer）的概念。也就是说�
 
 #### network namespace
 
-network namespace 是实现网络虚拟化的重要功能，它能创建多个隔离的网络空间，它们有独自的网络栈信息。Linux内核2.6版本引入 network namespace。
+network namespace 是实现网络虚拟化的重要功能，它能创建多个隔离的网络空间，它们有独自的网络栈信息。
 
-容器在运行时仿佛自己就在独立的网络栈中。有自己的IP地址，端口等。
+Linux内核2.6版本引入 network namespace。容器在运行时仿佛自己就在独立的网络栈中。有自己的IP地址，端口等。
 
 network namespace 主要提供了关于网络资源的隔离。能够隔离的Linux内核网络资源如下：
 
@@ -2863,9 +2863,7 @@ network namespace 主要提供了关于网络资源的隔离。能够隔离的Li
 
 
 
-如果你想要实现两台主机之间的通信，最直接的办法，就是把它们用一根网线连接起来；
-
-而如果你想要实现多台主机之间的通信，那就需要用网线，把它们连接在一台交换机上。
+如果你想要实现两台主机之间的通信，最直接的办法，就是把它们用一根网线连接起来；而如果你想要实现多台主机之间的通信，那就需要用网线，把它们连接在一台交换机上。
 
 
 
@@ -2873,31 +2871,21 @@ network namespace 主要提供了关于网络资源的隔离。能够隔离的Li
 
 **一般情况下，物理网络设备都分配在最初的 network namespace 中（表示即系统默认的 namespace）。**
 
-**Linux 系统启动即创建一个初始的网络命名空间（default），创建的任何进程默认都从属于该网络命名空间（宿主机操作系统内核中的network namespace）。**
+**Linux 系统启动即创建一个初始的网络命名空间（default），创建的任何进程默认都从属于该网络命名空间****（宿主机操作系统内核中的network namespace）。**
+
+
 
 **用户可以使用 ip netns add ... 创建新的网络命名空间，该命令即是在/var/run/netns目录下创建同名的文件。**
 
-
-
-
-
-例如，对于**/proc/sys/net/ipv6/conf/all/forwarding **文件，不同的网络命名空间中有各自不同的值。
-
-**Linux系统启动即创建一个初始的网络命名空间（default），创建的任何进程默认都从属于该网络命名空间。**
-
-用户可以使用**ip netns add ...**创建新的网络命名空间，该命令即是在**/var/run/netns**目录下创建同名的文件。
+例如，对于 **/proc/sys/net/ipv6/conf/all/forwarding**文件，不同的网络命名空间中有各自不同的值。
 
 
 
 一个 Linux 容器能看见的“网络栈”，实际上是被隔离在它自己的 Network Namespace 当中的。
 
-
-
 所谓“网络栈”，就包括了：网卡（Network Interface）、回环设备（Loopback Device）、路由表（Routing Table）和 iptables 规则。
 
 对于一个进程来说，这些要素，其实就构成了它发起和响应网络请求的基本环境。
-
-
 
 
 
@@ -2913,24 +2901,27 @@ network namespace 主要提供了关于网络资源的隔离。能够隔离的Li
 
 ##### veth pair
 
-veth 是虚拟以太网卡的缩写，veth设备总是成对出现的，因此又称之为 veth pair。veth pair 一段发送的数据会在另一端接收。非常像 Linux 中的管道通信。
+veth 是虚拟以太网卡的缩写，veth设备总是成对出现的，因此又称之为 `veth pair`。
 
-从其中一个“网卡”发出的数据包，可以直接出现在与它对应的另一张“网卡”上，哪怕这两个“网卡”在不同的 Network Namespace 里。
+`veth pair` 一端发送的数据会在另一端接收。非常像 Linux 中的管道通信。
 
-根据这一特性，veth pair 常被用于跨 network namespace 之间的通讯，就像网线一样。
+从其中一个“网卡”发出的数据包，可以直接出现在与它对应的另一张“网卡”上，哪怕这两个“网卡”在不同的 `Network Namespace` 里。
 
-在跑了 docker 容器的主机上执行 ip addr 就会看到这些 docker 创建的虚拟机网卡(veth pair在宿主机的这一端)
+根据这一特性，`veth pair` 常被用于跨 `network namespace` 之间的通讯，就像网线一样。
 
-
+在跑了 docker 容器的主机上执行 `ip addr` 就会看到这些 docker 创建的虚拟机网卡(veth pair在宿主机的这一端)
 
 ```shell
 # 管理 Linux network namespace
+
 # ip命令的netns子命令可以实现对network namespace的增删改查
 
 # 创建一个network namespace
 $ ip netns add nstest
+
 # 删除一个network namespace
 $ ip netns delete nstest
+
 # 查看所有ns
 $ ip netns list
 nstest
@@ -2959,6 +2950,7 @@ ip netns exec nstest ip link set dev lo up
 
 # 仅仅本地回环地址不太够，希望与其他的network namespace进行网络通讯，引入veth pair，可以理解成网卡对。
 # veth pair总是成对出现
+
 # 在宿主机上创建两张虚拟网卡，veth-a和veth-b，默认情况下它们都是在宿主机的根network namespace中
 ip link add veth-a type veth peer name veth-b
 
@@ -2992,11 +2984,7 @@ ip netns exec nstest ping 10.1.1.2
 
 
 
-
-
-
-
-经典的容器组网模型就是 veth pair 和 bridge 模式。docker 容器中的 eth0 实际上和外面 host 的某个 veth 是成对关系。如何查看这种成对关系：
+经典的容器组网模型就是 `veth pair` 和 bridge 模式。docker 容器中的 eth0 实际上和外面 host 的某个 veth 是成对关系。如何查看这种成对关系：
 
 ```shell
 
@@ -3018,9 +3006,11 @@ root@fengzhao-ubuntu ~#
 
 
 
-两个 network namespace 之间可以通过 veth pair 连接，但是两个以上就显得捉襟见肘了。这个就需要用到 Linux brige 了。
+**网桥**
 
-顾名思义，Linux bridge 就是 Linux 网桥，更像是一台虚拟交换机。任意真实的物理设备（eth0物理网卡），虚拟机网卡（veth pair等）都可以连接到网桥上。
+两个 `network namespace` 之间可以通过 `veth pair` 连接，但是两个以上就显得捉襟见肘了。这个就需要用到 `Linux brige` 了。
+
+顾名思义，`Linux bridge` 就是 Linux 网桥，更像是一台虚拟交换机。任意真实的物理设备（eth0物理网卡），虚拟机网卡（veth pair等）都可以连接到网桥上。
 
 需要注意的是，Linux bridge 不能跨物理机连接网络设备。
 
@@ -3035,9 +3025,9 @@ ip addr add  10.1.1.1/24   dev  veth-yyyyyyy
 
 
 
-**网桥**
 
-```
+
+```bash
 brctl addbr br1 			#创建网桥
 brctl addif br1 enp4s0 		#为网桥添加物理接口
 brctl delbr br1 			#删除网桥
