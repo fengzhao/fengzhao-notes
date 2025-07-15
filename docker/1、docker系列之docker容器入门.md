@@ -1714,11 +1714,11 @@ docker run 有容器自动启动策略，当容器退出时可以自动再启动
 
 ## 网络概述
 
-
-
 一个 Linux 容器能看见的“网络栈”，实际上是被隔离在它自己的 Network Namespace 当中的。
 
-而所谓“网络栈”，就包括了：网卡（Network Interface）、回环设备（Loopback Device）、路由表（Routing Table）和 iptables 规则。对于一个进程来说，这些要素，其实就构成了它发起和响应网络请求的基本环境。
+**所谓“网络栈”就包括了：网卡（Network Interface）、回环设备（Loopback Device）、路由表（Routing Table）和 iptables 规则。**
+
+对于一个进程来说，这些要素，其实就构成了它发起和响应网络请求的基本环境。
 
 需要指出的是，作为一个容器，它可以声明直接使用宿主机的网络栈（–net=host），即：不开启 Network Namespace
 
@@ -1746,11 +1746,10 @@ docker 网络子系统
 
 新启动的容器默认会加入到其中。
 
-
-
 有了这样一块网卡，宿主机也会在内核路由表上添加一条到达相应网络的静态路由。可以使用`ip route`命令看到这个路由。
 
 ```bash
+# 查看docker0网桥  
 [root@zabbix_server lib64]# ip addr show docker0
 4: docker0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default
     link/ether 02:42:a7:88:8b:e8 brd ff:ff:ff:ff:ff:ff
@@ -1758,10 +1757,12 @@ docker 网络子系统
        valid_lft forever preferred_lft forever
     inet6 fe80::42:a7ff:fe88:8be8/64 scope link
        valid_lft forever preferred_lft forever
-[root@zabbix_server lib64]# ip addr show docker0^C
+[root@zabbix_server lib64]# 
 [root@zabbix_server lib64]#
 [root@zabbix_server lib64]#
 [root@zabbix_server lib64]#
+
+# 查看路由表，第三条172.17的路由表
 [root@zabbix_server lib64]# ip route show
 default via 10.10.20.254 dev ens192 proto static metric 100
 10.10.20.0/24 dev ens192 proto kernel scope link src 10.10.20.36 metric 100
@@ -1772,6 +1773,22 @@ default via 10.10.20.254 dev ens192 proto static metric 100
 172.21.0.0/16 dev br-e177573bec3d proto kernel scope link src 172.21.0.1
 172.22.0.0/16 dev br-f986ac8616ff proto kernel scope link src 172.22.0.1
 [root@zabbix_server lib64]#
+
+172.17.0.0/16  表示目标网段
+dev 是 "device" 的缩写，表示这个路由条目通过哪个网络接口（设备）发送数据包。
+docker0 网桥
+proto 是 "protocol" 的缩写，表示这个路由条目的来源协议。
+kernel 表示这个路由条目是由 Linux 内核自动创建的。当 docker0 接口被创建并分配 IP 地址后，内核会自动为它所在子网创建一个直连路由。
+scope link:
+	scope 表示这个路由条目的作用范围。
+	link 表示这是一个链路范围的路由。这意味着目标网络中的主机可以直接通过物理链路（或者在虚拟环境中，通过同一个网桥）访问，不需要经过路由器。
+
+src 172.17.0.1:
+	src 是 "source" 的缩写，表示当数据包通过这个路由发送时，数据包的源 IP 地址将是 172.17.0.1。
+	172.17.0.1 通常是 docker0 网桥接口在宿主机上的 IP 地址。它是 Docker 网络的网关地址，Docker 容器会使用它作为默认网关来访问外部网络。
+
+任何发往 172.17.0.0/16 这个 IP 范围（也就是 Docker 容器的默认网络）的数据包，都应该通过 docker0 这个网络接口发送出去。
+这个路由是由内核自动生成的，并且目的地在同一链路上（不需要额外的路由跳转），数据包的源地址将是 172.17.0.1（docker0 的 IP 地址）。
 ```
 
 
