@@ -2984,7 +2984,7 @@ ip netns exec nstest ping 10.1.1.2
 
 
 
-经典的容器组网模型就是 `veth pair` 和 bridge 模式。docker 容器中的 eth0 实际上和外面 host 的某个 veth 是成对关系。如何查看这种成对关系：
+经典的容器组网模型就是 `veth pair` 和 `bridge` 模式。docker 容器中的 eth0 实际上和外面 host 的某个 veth 是成对关系。如何查看这种成对关系：
 
 ```shell
 
@@ -3002,6 +3002,9 @@ root@gitlab:/#
 root@fengzhao-ubuntu ~# ip link show | grep 19
 19: vethd017a3f@if18: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master br-3d333503a082 state UP mode DEFAULT group default
 root@fengzhao-ubuntu ~#
+
+
+
 ```
 
 
