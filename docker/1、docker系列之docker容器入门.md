@@ -2961,7 +2961,7 @@ ip link set veth-b netns nstest
 ip netns exec nstest ip link  
 
 # 为netsh中的veth-b添加IP并启动
-ip netns exec nstest ifconfig veth-b  10.1.1.1/24 up
+ip netns exec   ifconfig veth-b  10.1.1.1/24 up
 
 # 为宿主机中的veth-a添加IP并启动
 ifconfig veth-a  10.1.1.2/24 up
