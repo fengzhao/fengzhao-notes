@@ -6,25 +6,21 @@ CNI (Container Network Interface容器网络接口)是云原生计算基金会(C
 
 
 
-以往，容器的网络层是和具体的底层网络环境高度相关的，不同的网络服务提供商有不同的实现。
+以往，容器的网络层是和具体的底层网络环境高度相关的，不同的网络服务提供商有不同的实现。CNI抽象出了一套标准的网络服务接口，从而屏蔽了上层网络和底层网络提供商的网络实现之间的差异。
 
-CNI抽象出了一套标准的网络服务接口，从而屏蔽了上层网络和底层网络提供商的网络实现之间的差异。
-
-并且，通过插件结构，它让容器在网络层的具体实现变得可插拔了，所以非常灵活。
-
-**CNI只关心容器创建时的网络分配，以及当容器被删除时已经分配网络资源的释放。** 
+并且，通过插件结构，它让容器在网络层的具体实现变得可插拔了，所以非常灵活。**CNI只关心容器创建时的网络分配，以及当容器被删除时已经分配网络资源的释放。** 
 
 CNI作为容器网络的标准，使得各个容器管理平台可以通过相同的接口调用各种各样的网络插件来为容器配置网络。
 
 
 
-Kubernetes就内置了CNI并通过CNI配置网络
-
-CNI隶属于[CNCF(Cloud Native Computing Foundation)](https://cncf.io/)，在GitHub上有两个项目。其中，[`cni`项目](https://github.com/containernetworking/cni)包含了它的[规范](https://github.com/containernetworking/cni/blob/master/SPEC.md)和一个用Go语言编写的库。
+Kubernetes 就内置了CNI并通过CNI配置网络，CNI隶属于[CNCF(Cloud Native Computing Foundation)](https://cncf.io/)，在GitHub上有两个项目。其中，[`cni`项目](https://github.com/containernetworking/cni)包含了它的[规范](https://github.com/containernetworking/cni/blob/master/SPEC.md)和一个用Go语言编写的库。
 
 我们可以利用这个库编写自己的CNI插件对容器网络进行配置。另一个[`plugins`项目](https://github.com/containernetworking/plugins)，包含了一系列作为参考实现的标准插件。
 
 这些插件彼此独立，但根据需要也可以组合起来使用，比如：flannel插件底层就是调用的bridge插件来完成bridge和veth的创建的。
+
+
 
 当然，还有很多第三方开发的插件，它们不在这个项目里。
 
@@ -47,8 +43,6 @@ CNI规范文档主要用来说明容器运行时(runtimes)和插件(plugins)之�
 
 # CNI Library（CNI库)
 
-
-
 CNI库用于开发CNI插件，项目的地址是`https://github.com/containernetworking/cni`。当前项目源码的包结构如下:
 
 ```fallback
@@ -68,8 +62,6 @@ CNI库十分重要，k8s这类容器管理平台，containerd 这类容器运行
 # CNI项目内置插件
 
 CNI项目还内置提供了一系列受支持的插件，即作为插件开发的参考实现，也可以直接使用。
-
-
 
 内置插件项目的地址是 https://github.com/containernetworking/plugins 
 
@@ -220,6 +212,8 @@ CNI为系统管理员定义了网络配置格式。它包含了给容器运行�
 ```
 
 （个人标注：上面就给出了网络配置的示例，plugins配置项就是插件配置对象的示例，其中配置了多个插件，每个插件有自己的配置；比如bridge插件就配置的比较全面，包括配置了ipam和dns等，bridge、keyA就是bridge插件的定制参数）
+
+
 
 # 第二章：调用协议
 
