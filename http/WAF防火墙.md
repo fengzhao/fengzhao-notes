@@ -145,19 +145,19 @@ ModSecurity 有两个核心组件:
 
 ### CRS详解
 
-除基本的规则集之外，ModSecurity 还额外提供一个更完善的规则集，为网站提供全面可靠的保护。CRS 也是完全开源、免费的，可以从 GitHub 上下载。
+除基本的规则集之外，ModSecurity 还额外提供一个更完善的规则集，为网站提供全面可靠的保护。
+
+随着Web安全环境的不断变化，攻击手法也在不断进化，因此定期更新ModSecurity的规则集是十分必要的。
+
+ModSecurity提供了一个名为 owasp-modsecurity-crs 的官方CRS（核心规则集），它是经过广泛测试和验证的规则集合，能够覆盖大多数已知的攻击类型。
 
 这个规则集的全名叫“OWASP ModSecurity 核心规则集”（Open WebApplication Security Project ModSecurity Core Rule Set）
 
-因为名字太长了，所以有时候会简称为"核心规则集"或者**"[CRS](https://github.com/coreruleset/coreruleset.git)"**
+因为名字太长了，所以有时候会简称为"核心规则集"或者**"[CRS](https://github.com/coreruleset/coreruleset.git)"**，CRS 也是完全开源、免费的，可以从 GitHub 上下载。
 
 ```
 git clone https://github.com/coreruleset/coreruleset.git 
 ```
-
-
-
-
 
 
 
@@ -270,6 +270,24 @@ git submodule update
 ./configure --with-lmdb --with-pcre2  --prefix=/usr/local/modsecurity
 sudo make && make install
 
+# 安装后，目录结构如下
+root@qhdata-dev:/usr/local/src/ModSecurity#
+root@qhdata-dev:/usr/local/src/ModSecurity# tree -L 2  /usr/local/modsecurity/
+/usr/local/modsecurity/
+├── bin
+│   └── modsec-rules-check
+├── include
+│   └── modsecurity
+└── lib
+    ├── libmodsecurity.a
+    ├── libmodsecurity.la
+    ├── libmodsecurity.so -> libmodsecurity.so.3.0.14
+    ├── libmodsecurity.so.3 -> libmodsecurity.so.3.0.14
+    ├── libmodsecurity.so.3.0.14
+    └── pkgconfig
+
+5 directories, 6 files
+root@qhdata-dev:/usr/local/src/ModSecurity#
 
 
 # 下载编译安装nginx 
@@ -277,9 +295,11 @@ mkdir -p /usr/local/nginx
 useradd nginx -s /sbin/nologin -M
 
 # 永远去官网找最新版的nginx来编译
-wget -P /usr/local/src/  http://nginx.org/download/nginx-1.22.0.tar.gz  
-cd /usr/local/src/ &&  tar -zxvf nginx-1.22.0.tar.gz
-cd  nginx-1.22.0
+Latest_NGINX_Version=`curl https://nginx.org/en/CHANGES > .nginxupdate 2>/dev/null && sed -n 2p .nginxupdate | cut -d' ' -f4`
+
+wget -P /usr/local/src/  http://nginx.org/download/nginx-${Latest_NGINX_Version}.tar.gz  
+cd /usr/local/src/ &&  tar -xvf nginx-${Latest_NGINX_Version}.tar.gz
+cd  nginx-${Latest_NGINX_Version}
 mkdir -p ~/.vim/  && cp -r contrib/vim/* ~/.vim/
 
 
@@ -296,14 +316,76 @@ mkdir -p ~/.vim/  && cp -r contrib/vim/* ~/.vim/
 # 或者动态模块
 ./configure --add-dynamic-module=/path/to/ModSecurity-nginx --with-compat
 
-
-
 make  && make install 
 ```
 
 
 
 
+
+在 NGINX 配置中添加 `modsecurity` 和 `modsecurity_rules_file` 指令，以启用 ModSecurity。
+
+```nginx
+
+http {
+       # ... 
+       modsecurity on;
+       modsecurity_rules_file /etc/nginx/modsec/main.conf;
+}
+```
+
+
+
+```
+mkdir -p /etc/nginx/modsec/ 
+cp /usr/local/src/ModSecurity/modsecurity.conf-recommended /etc/nginx/modsec/
+```
+
+
+
+### ModSecurity 配置
+
+SecRuleEngine是接受来自ModSecurity-CRS目录下的所有规则的安全规则引擎。
+
+```
+#SecRuleEngine On：将在服务器上激活ModSecurity防火墙。它会检测并阻止该服务器上的任何恶意攻击。
+#SecRuleEngine Detection Only：如果这个规则是在whitelist.conf文件中设置的，它只会检测到所有的攻击，并根据攻击产生错误，但它不会在服务器上阻止任何东西。
+#SecRuleEngine Off:：这将在服务器上上停用ModSecurity的防火墙。
+```
+
+
+
+
+
+### ModSecurity 请求处理阶段
+
+ModSecurity 3.x  处理规则，一共有5个请求处理阶段：
+
+- Request headers (REQUEST_HEADERS)         需要验证请求头相关的规则，并根据请求头来判断如何解析request body
+- Request body (REQUEST_BODY)                     需要根据请求头正确解析body数据，并验证request body相关的规则
+- Response headers (RESPONSE_HEADERS)    在获取到响应头之后，验证response header相关的规则
+- Response body (RESPONSE_BODY)                正确解析响应体数据之后，验证response body相关的规则
+- Logging (LOGGING)                                           用于记录事务信息，包括命中规则信息，处理方式等。
+
+
+
+每个事务在modsecurity需要经历5个阶段，在每个阶段可能需要解析等操作，然后调用相应阶段的规则进行匹配，对应规则中的`phase`
+
+为了选择在某个阶段让某一规则运行，
+
+```
+SecDefaultAction "log,pass,phase:2,id:4"
+SecRule REQUEST_HEADERS:Host "!^$" "deny,phase:1,id:5"
+
+```
+
+
+
+
+
+
+
+https://www.cnblogs.com/architectforest/p/18474128
 
 # openresty安装
 
