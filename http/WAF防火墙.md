@@ -343,7 +343,7 @@ cp /usr/local/src/ModSecurity/modsecurity.conf-recommended /etc/nginx/modsec/
 
 
 
-### ModSecurity 配置
+### ModSecurity 配置指令
 
 SecRuleEngine是接受来自ModSecurity-CRS目录下的所有规则的安全规则引擎。
 
