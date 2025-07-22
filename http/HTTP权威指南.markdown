@@ -218,21 +218,23 @@ HTTP 实体首部描述了 HTTP 报文的内容。HTTP/1.1 版定义了以下 10
 
 Content-Length 首部指示出报文中实体主体的字节大小，也就是消息长度。
 
-- 用**十进制数字**表示的 Entity body 的字节数，是Headers中常见的一个字段。
+- 用**十进制数字**表示的 `Entity body` 的字节数，是Headers中常见的一个字段。
 
 
 
 **注意，这个大小是包含了所有内容编码的，比如，对文本文件进行了 gzip 压缩的话， Content-Length 首部就是压缩后的大小，而不是原始大小。**
 
-Content-Length 首部对于**持久连接**是必不可少的。如果响应通过持久连接传送，就可能有另一条 HTTP 响应紧随其后。
+`Content-Length` 首部对于**持久连接**是必不可少的。如果响应通过持久连接传送，就可能有另一条 HTTP 响应紧随其后。
+
+客户端通过 `Content-Length` 首部就可以知道报文在何处结束，下一条报文从何处开始。因为连接是持久的，客户端无法依赖连接关闭来判别报文的结束。
 
 
-
-客户端通过 Content-Length 首部就可以知道报文在何处结束，下一条报文从何处开始。因为连接是持久的，客户端无法依赖连接关闭来判别报文的结束。
 
 **HTTP/1.1 规范中建议对于带有主体但没有 Content-Length 首部的请求，服务器如果无法确定报文的长度，就应当发送 400 Bad Request 响应或 411 Length Required响应。**
 
 后一种情况表明服务器要求收到正确的 Content-Length 首部。
+
+
 
 
 
@@ -445,9 +447,17 @@ HTTP 客户端可以使用 Accept-Charset 请求首部来明确告知服务器�
 
 ### 传输编码和分块编码
 
+`Transfer-Encoding`字段是HTTP响应头部的一部分，用于指示在传输响应正文（response body）时所使用的传输编码方式
+
+在HTTP通信中，响应正文可以以多种不同的编码方式传输，其中一种方式是chunked传输编码。
 
 
 
+`HTTP`分块传输（Chunked Transfer Encoding）是一种`HTTP`协议在数据传输时的编码格式，它允许将数据分成若干个块进行传输。
+
+每个传输的块都包含大小信息和实际的数据内容。让[服务器](https://cloud.tencent.com/product/cvm?from_column=20065&from=20065)发送大型文件或流数据时不必一开始就发送全部内容，而是可以分成一块一块的数据来发送。
+
+这样可以节省带宽和内存，特别是对于需要长时间连接的情况。
 
 分块编码把报文分割为若干个大小已知的块。块之间是紧挨着发送的，这样就不需要在发送之前知道整个报文的大小了。
 
@@ -460,6 +470,8 @@ HTTP 客户端可以使用 Accept-Charset 请求首部来明确告知服务器�
 当使用持久连接时，在服务器写主体之前，必须知道它的大小并在 Content-Length 首部中发送。如果服务器动态创建内容，就可能在发送之前无法知道主体的长度。
 
 
+
+https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Reference/Headers/Transfer-Encoding
 
 ## 扩展头部
 
