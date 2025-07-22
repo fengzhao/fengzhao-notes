@@ -716,19 +716,75 @@ https://blog.csdn.net/xiao__gui/article/details/83054462
 
 
 
-在 [HTTP](https://developer.mozilla.org/zh-CN/docs/Glossary/HTTP) 协议中，***内容协商\***是一种机制，用于为同一 URI 提供资源不同的[表示](https://developer.mozilla.org/zh-CN/docs/Glossary/Representation_header)形式，以帮助用户代理指定最适合用户的表示形式（例如，哪种文档语言、哪种图片格式或者哪种内容编码）。
+在 [HTTP](https://developer.mozilla.org/zh-CN/docs/Glossary/HTTP) 协议中，**内容协商**是一种机制，用于为同一 URI 提供资源不同的[表示](https://developer.mozilla.org/zh-CN/docs/Glossary/Representation_header)形式，以帮助用户代理指定最适合用户的表示形式（例如，哪种文档语言、哪种图片格式或者哪种内容编码）。
 
-一个URL常常需要代表若干不同的资源。例如那种需要以多种语言提供其内容的网站站点。如果某个站点有说法语的和说英语的两种用户，它可能想用这两种语言提供网站站点信息。理想情况下，服务器应当向英语用户发送英文版，向法语用户发送法文版——用户只要访问网站主页就可以得到相应语言的内容
+一个 URL 常常需要代表若干不同的资源。例如那种需要以多种语言提供其内容的网站站点。如果某个站点（比如 Joe 的五金商店这样的站点）有说法语的和说英语的两种用户，它可能想用这两种语言提供网站站点信息。
 
-HTTP提供了内容协商方法，允许客户端和服务器作这样的决定。
 
-通过这些方法，单一的URL就可以代表不同的资源(比如，同一个网站页面的法语版和英语版)，这些不同的版本称为变体。
+
+但在这种情况下，当用户请求 http://www.joes-hardware.com 时，服务器应当发送哪种版本呢？法文版还是英文版？
+
+理想情况下，服务器应当向英语用户发送英文版，向法语用户发送法文版——用户只要访问网站主页就可以得到相应语言的内容
+
+HTTP提供了内容协商方法，允许客户端和服务器作这样的决定。通过这些方法，单一的URL就可以代表不同的资源(比如，同一个网站页面的法语版和英语版)
+
+
+
+
+
+**Google 建议对每种语言版本的网页使用不同的网址，而不是使用 Cookie 或浏览器设置来调整网页上的内容语言。**世界各国谷歌网址是由Google加上不同国家和地区顶级域名（ccTLD）后缀组成的。
+
+为了适应不同国家地区的搜索习惯，提供最精确的搜索结果，谷歌在全世界主要国家地区都有对应的不同网址。
+
+
+
+比如，美国谷歌：google.com（美国不使用google.us），德国谷歌：google.de等等。不同国家的谷歌，搜索同一个关键词，结果都是不一样的，这也就是地域化的区别。
+
+用户在访问谷歌时，也会优先跳转到相应国家的Google网址。因此，如果是针对某个国家地区做SEO，那么在验证结果的时候，一定要使用该国家的谷歌进行搜索，这样才能得到最准确的结果。
+
+
+
+**固定访问谷歌地址**
+
+使用google.com/ncr来访问Google，ncr是No Country Redirect的缩写，此时Google会重定向请求到主站google.com，而不会定向到访问IP所在的Google域名了。
+
+
+
+
+
+在服务端驱动型内容协商或者主动内容协商中，浏览器（或者其他任何类型的用户代理）会随同 URL 发送一系列的 HTTP 头。这些头描述了用户倾向的选择。
+
+服务器则以此为线索，通过内部算法来选择最佳方案提供给客户端。如果它不能提供一个合适的资源，它可能使用 [`406`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Status/406)（Not Acceptable）、[`415`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Status/415)（Unsupported Media Type）进行响应并为其支持的媒体类型设置标头（例如，分别对 POST 和 PATCH 请求使用 [`Accept-Post`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept-Post) 或 [`Accept-Patch`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept-Patch) 标头）。相关算法与具体的服务器相关，并没有在规范中进行规定。
+
+
+
+HTTP/1.1 规范指定了一系列的标准标头用于启动服务端驱动型内容协商（[`Accept`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept)、[`Accept-Charset`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept-Charset)、[`Accept-Encoding`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept-Encoding)、[`Accept-Language`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept-Language)）。
+
+尽管严格来说 [`User-Agent`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/User-Agent) 并不在此列，有时候它还是会被用来确定给客户端发送的所请求资源的特定表示形式，不过这种做法不提倡使用。
+
+服务器会使用 [`Vary`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Vary) 标头来说明实际上哪些标头被用作内容协商的参考依据（确切来说是与之相关的响应标头），这样可以使[缓存](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Caching)的运作更有效。
+
+除此之外，有一个向可供选择的列表中增加更多标头的实验性提案，称为*客户端提示*（Client Hint）。客户端示意机制可以告知运行用户代理的设备类型（例如，是桌面计算机还是移动设备）。
+
+即便服务端驱动型内容协商机制是最常用的对资源特定表示形式进行协商的方式，它也存在如下几个缺点：
+
+- 服务器对浏览器并非全知全能。即便是有了客户端示意扩展，也依然无法获取关于浏览器能力的全部信息。与客户端进行选择的代理驱动型内容协商机制不同，服务器端的选择总是显得有点武断。
+- 客户端提供的信息相当冗长（HTTP/2 协议的标头压缩机制缓解了这个问题），并且存在隐私风险（HTTP 指纹识别技术）。
+- 因为给定的资源需要返回不同的表示形式，共享缓存的效率会降低，而服务器端的实现会越来越复杂。
+
+
+
+
+
+**内容协商\**是一种机制，用于为同一 URI 提供资源不同的[表示](https://developer.mozilla.org/zh-CN/docs/Glossary/Representation_header)形式，以帮助用户代理指定最适合用户的表示形式（例如，哪种文档语言、哪种图片格式或者哪种内容编码）。
+
+一个URL常常需要代表若干不同的资源。例如那种需要以多种语言提供其内容的网站站点。
+
+
 
 
 
 内容协商的基本原则：
-
-
 
 - **主动式内容协商**
 
@@ -736,13 +792,150 @@ HTTP提供了内容协商方法，允许客户端和服务器作这样的决定�
 
 
 
-内容协商首部集是由客户端发送给服务器用于交换偏好信息的，以便服务器可以从文档的不同版本中选择出最符合客户端偏好的那个来提供服务。
+**内容协商首部集是由客户端发送给服务器用于交换偏好信息的，以便服务器可以从文档的不同版本中选择出最符合客户端偏好的那个来提供服务。**
 
 HTTP/1.1 规范指定了一系列的标准标头用于启动服务端驱动型内容协商（[`Accept`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept)、[`Accept-Charset`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept-Charset)、[`Accept-Encoding`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept-Encoding)、[`Accept-Language`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept-Language)）
 
-- [`Accept`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept) 标头列举了用户代理希望接收的媒体资源的 MIME 类型。其中不同的 MIME 类型之间用逗号分隔，同时每一种 MIME 类型会配有一个品质因数（quality factor），该参数明确了不同 MIME 类型之间的相对优先级。
-- [`Accept-Encoding`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept-Encoding) 标头明确说明了（接收端）可以接受的内容编码形式（所支持的压缩算法）。该标头的值是一个 Q 因子清单（例如 `br, gzip;q=0.8`），用来提示不同编码类型值的优先级顺序。默认值 `identity` 的优先级最低（除非声明为其他优先级）。
+- [`Accept`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept) 头部列举了用户代理希望接收的媒体资源的 MIME 类型。其中不同的 MIME 类型之间用逗号分隔，同时每一种 MIME 类型会配有一个品质因数（quality factor），该参数明确了不同 MIME 类型之间的相对优先级。
+- [`Accept-Encoding`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept-Encoding) 头部明确说明了（接收端）可以接受的内容编码形式（所支持的压缩算法）。该标头的值是一个 Q 因子清单（例如 `br, gzip;q=0.8`），用来提示不同编码类型值的优先级顺序。默认值 `identity` 的优先级最低（除非声明为其他优先级）。
 - 
+
+
+
+
+
+## Vary头部
+
+Vary出现在响应信息中的作用是什么呢？
+
+**首先这是由服务器端添加，添加到响应头部。大部分情况下是用在客户端缓存机制或者是缓存服务器在做缓存操作的时候，会使用到Vary头，会读取响应头中的Vary的内容，进行一些缓存的判断。**
+
+
+
+对于服务器提供的某个接口来说，有时候会出现不同种类的客户端对其进行网络请求获取数据，不同的客户端可能支持的压缩编码方式不同。
+
+可能有的客户端不支持压缩，那么服务器端返回的数据就不能压缩，有的支持gzip编码，那么服务器端就可以进行gzip编码返回给客户端，客户端获取到数据之后，做响应的gzip解码。
+
+
+
+假设你的服务器为同一个URL提供了两种版本：
+
+1. **压缩版**（给现代浏览器）：体积小，传输快
+
+2. **原始版**（给老旧设备）：无需解压，直接可读
+
+如果缓存服务器如[CDN]不加区分地将压缩后的内容返回给所有用户，会发生什么？
+
+- 支持解压的客户端：正常加载 ✅
+- 不支持解压的客户端：乱码或崩溃 ❌
+
+这就是 `Vary: Accept-Encoding` 要解决的核心问题——**智能缓存分发**。
+
+
+
+当浏览器请求资源时，会在请求头中携带支持的压缩格式，例如：
+
+```http
+GET /style.css HTTP/1.1
+Accept-Encoding: gzip, br
+```
+
+这相当于告诉服务器："我可以解压GZIP和Brotli格式的内容"。
+
+
+
+服务器根据客户端的声明，返回对应编码的响应，并标注：
+
+```http
+HTTP/1.1 200 OK
+Content-Encoding: gzip
+Vary: Accept-Encoding
+```
+
+通过 `Vary: Accept-Encoding` 告知缓存："不同 `Accept-Encoding` 的请求要区别对待"。
+
+也就是说 `Vary` 字段用于列出一个响应字段列表，告诉缓存服务器遇到同一个 URL 对应着不同版本文档的情况时，如何缓存和筛选合适的版本。
+
+
+
+在 CORS 的场景下，我们需要使用`Vary: Origin`来保证不同网站发起的请求使用各自的缓存。比如从`foo.taobao.com`发起的请求缓存下的响应头是
+
+```http
+Access-Control-Allow-Origin: https://foo.taobao.com
+Vary: Origin
+```
+
+这样`bar.taobao.com`在发起同 URL 的请求就不会使用这份缓存了，因为`Origin`请求头变了。
+
+
+
+Amazon S3，全名为亚马逊简易存储服务，可以上传任意的资源文件，然后提供 HTTP 协议方式访问。
+
+既然是个共用的第三方服务，当然就有配置 CORS 响应头的功能，然而它们就犯了规范中专门强调的这个错误：没有`Origin`请求头就不返回`Access-Control-Allow-Origin`，同时`Vary: Origin`也没有返回。
+
+
+
+和 Amazon S3 对标的服务国内也有很多，比如阿里云 OSS。是的，阿里云的 OSS 也有同样的 bug。有人也反馈过，还写了 [demo 页面](https://wscdn.huanleguang.com/assets/oss_img_cors_demo.v3.html)。
+
+这个页面里先用普通的`<img>`对一张图片发起了请求（非 CORS，不带`Origin`），然后又用带`crossorigin`属性的`<img>`对同一张图片发起请求（CORS 请求，带`Origin`），结果后者报错了，但如果禁用浏览器缓存，就不会报错
+
+
+
+
+
+**`Vary` 头如何影响缓存行为？**
+
+**缓存服务器的逻辑**
+
+当收到后续请求时，缓存会检查两个条件：
+
+1. 请求的URL是否匹配？
+
+2. 请求头中的 `Accept-Encoding` 是否与已缓存版本一致？
+
+例如：
+
+- 用户A的 `Accept-Encoding: gzip` → 缓存压缩版
+- 用户B的 `Accept-Encoding: identity`（无压缩）→ 缓存独立存储原始版
+
+
+
+**未设置 `Vary` 的风险**
+
+如果服务器省略了 `Vary: Accept-Encoding`：
+
+- CDN可能将压缩版内容返回给不支持解压的客户端 → **页面崩溃**
+- 或错误地缓存未压缩版本，导致支持压缩的客户端浪费带宽 → **性能下降**
+
+
+
+ **正确做法**
+
+- 对所有可压缩资源（CSS/JS/字体等）启用 `Vary: Accept-Encoding`
+- 配合 `Content-Encoding` 明确编码类型
+- 定期用WebPageTest或Lighthouse检查配置
+
+❌ **应避免**
+
+- 在非压缩资源上设置 `Vary: Accept-Encoding`
+
+- 忽略老旧客户端的兼容性测试
+
+
+
+
+
+还有种情况，对于不同的客户端，需要的内容不一样，比如针对特定，浏览器要求输出的内容不一样，比如在IE6浏览器上要输出不一样的内容，这就需要服务器端做不同的数据返回。
+
+所以说，服务器提供的同一个接口，客户端进行同样的网络请求，对于不同种类的客户端可能需要的数据不同，服务器端的返回方式返回数据也会不同。
+
+对于这个问题的解决，我想很多人是清楚的，我们可以在请求信息添加`Accept-Encoding`、`User-Agent`等头部。
+
+
+
+`Accept-Encoding`表示客户端支持的编码格式，常见的编码格式有gzip/compress/deflate/identity，服务器端会根据客户端提供的`Accept-Encoding`对返回的内容进行编码，并通过添加响应头`Content-Encoding`表明服务器端使用的编码格式。
+
+`User-Agent`表示客户端代理，使得服务器能够识别客户使用的操作系统及版本、CPU 类型、浏览器及版本、浏览器渲染引擎、浏览器语言、浏览器插件等。这样服务器就能区别不同种类的客户端，做出不同的数据返回操作。
 
 
 
@@ -6261,25 +6454,27 @@ DNS 预读取是一项使浏览器主动去执行域名解析工作的功能，�
 
 当浏览器的网络线程收到 HTML 文档后，会产生一个渲染任务，并将其传递给渲染主线程的消息队列。 在事件循环机制的作用下，渲染主线程取出消息队列中的渲染任务，开启渲染流程。
 
-
-
-
-
 整个渲染流程分为多个阶段，分别是： HTML 解析、样式计算、布局、分层、绘制、分块、光栅化、绘画 每个阶段都有明确的输入输出，上一个阶段的输出会成为下一个阶段的输入。 这样，整个渲染流程就形成了一套组织严密的生产流水线。
+
+
+
+
+
+https://wukaipeng.com/technique/browser/rendering
 
 
 
 # 浏览器进程模型
 
-
-
-传统的浏览器被设计为显示网页，而Chrome的设计目标是支撑“Web App”（当时的js和相关技术已经相当发达了，Gmail等服务也很成功）。
+传统的浏览器被设计为显示网页，而Chrome的设计目标是支撑"Web App"（当时的js和相关技术已经相当发达了，Gmail等服务也很成功）。
 
 这就要求Chrome提供一个类似于“[操作系统](https://www.zhihu.com/search?q=操作系统&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A999401453})”感觉的架构，支持App的运行。而App会变得相当的复杂，这就难以避免出现bug，然后crash。
 
 同时浏览器也要面临可能运行“[恶意代码](https://www.zhihu.com/search?q=恶意代码&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A999401453})”。
 
-流览器不能决定上面的js怎么写，会不会以某种形式有意无意的攻击浏览器的渲染引擎。如果将所有这些App和[浏览器](https://www.zhihu.com/search?q=浏览器&search_source=Entity&hybrid_search_source=Entity&hybrid_search_extra={"sourceType"%3A"answer"%2C"sourceId"%3A999401453})实现在一个进程里，一旦挂，就全挂。
+
+
+浏览器不能决定上面的js怎么写，会不会以某种形式有意无意的攻击浏览器的渲染引擎。如果将所有这些App和浏览器实现在一个进程里，一旦挂，就全挂。
 
 因此Chrome一开始就设计为把**隔离性**作为基本的设计原则，用进程的隔离性来实现对App的隔离。这样用户就不用担心：
 
@@ -6288,25 +6483,27 @@ DNS 预读取是一项使浏览器主动去执行域名解析工作的功能，�
 
 以及Web App之间是并发的，可以提供更好的响应，一个App的渲染卡顿不会影响其他App的渲染（性能）（当然这点线程也能做到）
 
+
+
 因此，这样看起来用进程实现非常自然。
-
-
 
 
 
 目前世界上使用率最高的浏览器是 [Chrome](https://www.google.com/chrome/)，它的核心是 [Chromium](https://www.chromium.org/chromium-projects/)（Chrome 的开发实验版），微软的 [Edge](https://www.microsoft.com/en-us/edge) 以及国内的大部分主流浏览器，都是基于 Chromium 二次开发而来，它们都有一个共同的特点：**多进程架构**。
 
-当我们用 Chrome 打开一个页面时，会同时启动多个进程
+当我们用 Chrome 打开一个页面时，会同时启动多个进程：(Chrome 使用了由 Apple 发展来的号称 “地表最快” 的 [Webkit](https://webkit.org/) 排版引擎，搭载 Google 独家开发的 [V8](https://v8.dev/) Javascript 引擎)
 
-(Chrome 使用了由 Apple 发展来的号称 “地表最快” 的 [Webkit](https://webkit.org/) 排版引擎，搭载 Google 独家开发的 [V8](https://v8.dev/) Javascript 引擎)
+注：Google 加入 WebKit 的开发是在 2008 年 Chrome 浏览器推出前后的事情。Chrome 浏览器使用 WebKit 引擎是 Android 团队的建议，2013年Google将 Chrome 的渲染引擎从WebKit 分叉出来，并将其命名为Blink
+
+https://developer.chrome.com/docs/web-platform/blink
+
+
 
 **高性能的 Web 应用的设计和优化都离不开浏览器的多进程架构**，接下来我会以 Chrome 为例，带你了解多进程架构。
 
 
 
-
-
-Chromium里有三种进程——浏览器、渲染器和插件。
+`Chromium`里有三种进程——浏览器、渲染器和插件。
 
 浏览器进程只有一个，管理窗口和tab，也处理所有的与磁盘，网络，用户输入和显示的工作。这就是我们看到的“Chrome界面”。
 
@@ -6315,8 +6512,6 @@ Chromium里有三种进程——浏览器、渲染器和插件。
 > 顺便说一句，webkit是由Apple开发的，当时有很多坑，也被长期吐槽；现在Chrome已经转成使用自家的Blink引擎了。
 
 插件会开很多。每个类型的插件在第一次使用时会启动一个相应的进程。
-
-
 
 
 
@@ -6797,62 +6992,6 @@ webhook是在特定情况下触发的一种api（回调），用于在项目发�
 
 # HTTP内容协商
 
-***内容协商\***是一种机制，用于为同一 URI 提供资源不同的[表示](https://developer.mozilla.org/zh-CN/docs/Glossary/Representation_header)形式，以帮助用户代理指定最适合用户的表示形式（例如，哪种文档语言、哪种图片格式或者哪种内容编码）。
-
-一个 URL 常常需要代表若干不同的资源。例如那种需要以多种语言提供其内容的网站站点。
-
-如果某个站点（比如 Joe 的五金商店这样的站点）有说法语的和说英语的两种用户，它可能想用这两种语言提供网站站点信息。
-
-但在这种情况下，当用户请求 http://www.joes-hardware.com 时，服务器应当发送哪种版本呢？法文版还是英文版？
-
-
-
-**Google 建议对每种语言版本的网页使用不同的网址，而不是使用 Cookie 或浏览器设置来调整网页上的内容语言。**
-
-世界各国谷歌网址是由Google加上不同国家和地区顶级域名（ccTLD）后缀组成的。
-
-为了适应不同国家地区的搜索习惯，提供最精确的搜索结果，谷歌在全世界主要国家地区都有对应的不同网址。
-
-
-
-比如，美国谷歌：google.com（美国不使用google.us），德国谷歌：google.de等等。
-
-不同国家的谷歌，搜索同一个关键词，结果都是不一样的，这也就是地域化的区别。
-
-用户在访问谷歌时，也会优先跳转到相应国家的Google网址。
-
-因此，如果是针对某个国家地区做SEO，那么在验证结果的时候，一定要使用该国家的谷歌进行搜索，这样才能得到最准确的结果。
-
-**固定访问谷歌地址**
-
-使用google.com/ncr来访问Google，ncr是No Country Redirect的缩写，此时Google会重定向请求到主站google.com，而不会定向到访问IP所在的Google域名了。
-
-
-
-
-
-
-
-在服务端驱动型内容协商或者主动内容协商中，浏览器（或者其他任何类型的用户代理）会随同 URL 发送一系列的 HTTP 头。这些头描述了用户倾向的选择。
-
-服务器则以此为线索，通过内部算法来选择最佳方案提供给客户端。如果它不能提供一个合适的资源，它可能使用 [`406`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Status/406)（Not Acceptable）、[`415`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Status/415)（Unsupported Media Type）进行响应并为其支持的媒体类型设置标头（例如，分别对 POST 和 PATCH 请求使用 [`Accept-Post`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept-Post) 或 [`Accept-Patch`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept-Patch) 标头）。相关算法与具体的服务器相关，并没有在规范中进行规定。
-
-
-
-HTTP/1.1 规范指定了一系列的标准标头用于启动服务端驱动型内容协商（[`Accept`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept)、[`Accept-Charset`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept-Charset)、[`Accept-Encoding`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept-Encoding)、[`Accept-Language`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Accept-Language)）。
-
-尽管严格来说 [`User-Agent`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/User-Agent) 并不在此列，有时候它还是会被用来确定给客户端发送的所请求资源的特定表示形式，不过这种做法不提倡使用。
-
-服务器会使用 [`Vary`](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Headers/Vary) 标头来说明实际上哪些标头被用作内容协商的参考依据（确切来说是与之相关的响应标头），这样可以使[缓存](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Caching)的运作更有效。
-
-除此之外，有一个向可供选择的列表中增加更多标头的实验性提案，称为*客户端提示*（Client Hint）。客户端示意机制可以告知运行用户代理的设备类型（例如，是桌面计算机还是移动设备）。
-
-即便服务端驱动型内容协商机制是最常用的对资源特定表示形式进行协商的方式，它也存在如下几个缺点：
-
-- 服务器对浏览器并非全知全能。即便是有了客户端示意扩展，也依然无法获取关于浏览器能力的全部信息。与客户端进行选择的代理驱动型内容协商机制不同，服务器端的选择总是显得有点武断。
-- 客户端提供的信息相当冗长（HTTP/2 协议的标头压缩机制缓解了这个问题），并且存在隐私风险（HTTP 指纹识别技术）。
-- 因为给定的资源需要返回不同的表示形式，共享缓存的效率会降低，而服务器端的实现会越来越复杂。
-
 
 
 # 跨域
@@ -6867,11 +7006,11 @@ CORS 是浏览器端还是服务器端的限制?
 
 https://www.caofanqi.cn/archives/%E5%89%8D%E5%90%8E%E7%AB%AF%E5%BC%80%E5%8F%91%E8%B7%A8%E5%9F%9F%E9%97%AE%E9%A2%98%E8%AF%A6%E8%A7%A3
 
+
+
 ## 浏览器同源策略
 
-同源策略是在客户端网络应用（比如网络浏览器）上实施的安全政策，用于防止来自不同来源的资源之间发生交互。
-
-虽然这种安全措施可用于防止恶意行为，但也可能会阻止已知来源之间开展的合法交互。
+同源策略是在客户端网络应用（比如网络浏览器）上实施的安全政策，用于防止来自不同来源的资源之间发生交互。虽然这种安全措施可用于防止恶意行为，但也可能会阻止已知来源之间开展的合法交互。
 
 
 
@@ -6966,13 +7105,51 @@ https://www.caofanqi.cn/archives/%E5%89%8D%E5%90%8E%E7%AB%AF%E5%BC%80%E5%8F%91%E
 
 
 
-## CROS
+## CORS
 
 [跨域资源共享](https://fetch.spec.whatwg.org/#http-cors-protocol) (CORS) 规范是由[万维网联盟 (W3C)](https://www.w3.org/) 制定的，该规范旨在克服上述限制。
 
+**跨源资源共享**（[CORS](https://developer.mozilla.org/zh-CN/docs/Glossary/CORS)，或通俗地译为跨域资源共享）是一种基于 [HTTP](https://developer.mozilla.org/zh-CN/docs/Glossary/HTTP) 头的机制，该机制通过允许服务器标示除了它自己以外的其他[源](https://developer.mozilla.org/zh-CN/docs/Glossary/Origin)（域、协议或端口），使得浏览器允许这些源访问加载自己的资源。
 
+
+
+CORS，全名为跨域资源共享，是为了让不同网站的页面之间互相访问数据的机制。简单来说，CORS 的工作机制是这样的：
+
+网站 A 请求网站 B 的资源，网站 A 发起的请求会在 `Origin` 请求头上带上自己的源（`origin`）信息，
+
+如果网站 B 返回的响应头里有`Access-Control-Allow-Origin`响应头，且响应头的值是网站 A 的源（或者是`*`），那么网站 A 就能成功访问到这份资源，否则就报跨域错误。
+
+
+
+浏览器在哪些情况下会发起 CORS 请求，哪些情况下发起非 CORS 请求，是有严格规定的。比如在一般的 `<img>`标签下发起的就是个非 CORS 请求，而在`XHR/fetch`下默认发起的就是 CORS 请求；
+
+还比如在一般的`<script>`标签下发起的是非 CORS 请求（所以才能有 jsonp），而在新的 `<script type="module"`下发起的是 CORS 请求。
+
+
+
+CORS 请求会带上 `Origin`请求头，用来向别人的网站表明自己是谁；非 CORS 请求不带`Origin`头。
+
+根据网站有没有根据 `Origin`请求头动态返回不同的`Access-Control-Allow-Origin`响应头，我把 CORS 请求的响应分成了两种类型：
+
+
+
+## 无条件型 CORS 响应
+
+将`Access-Control-Allow-Origin`固定写死为`*`（允许任意网站访问）、或者特定的某一个源（只允许这一个网站访问），不论请求头里的 `Origin`是什么，甚至没有 `Origin`也一样返回那个值。
+
+
+
+## **条件型 CORS 响应**
+
+
+
+
+
+https://zhuanlan.zhihu.com/p/38972475
 
 https://developer.mozilla.org/zh-CN/docs/Web/HTTP/CORS
+
+
 
 
 
