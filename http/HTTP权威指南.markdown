@@ -7326,10 +7326,6 @@ OAuth为了支持这些不同类型的第三方应用，提出了多种授权类
 
 # generate_204
 
-
-
-
-
 generate_204 是一个网络请求的特殊 URL，通常用于检测网络连接是否正常。当设备连接到一个需要认证的网络时，例如公共 Wi-Fi 或企业网络，设备会在浏览器中请求 generate_204 页面，以验证网络连接是否成功。
 
 具体来说，当设备连接到一个需要认证的网络时，设备会尝试访问一个特定的 URL（通常是 generate_204）来检测网络连接状态。
@@ -7340,7 +7336,9 @@ generate_204 是一个网络请求的特殊 URL，通常用于检测网络连接
 
 
 
-HTTP 204 No Content 是标准的 HTTP 响应状态码，其规范可以在 IETF 的 RFC 7231 中找到。RFC 7231 定义了 HTTP/1.1 协议的语义和内容。具体来说，在 RFC 7231 中，HTTP 204 No Content 的定义如下：
+HTTP 204 No Content 是标准的 HTTP 响应状态码，其规范可以在 IETF 的 RFC 7231 中找到。RFC 7231 定义了 HTTP/1.1 协议的语义和内容。
+
+具体来说，在 RFC 7231 中，HTTP 204 No Content 的定义如下：
 
 RFC 7231 - Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content
 
