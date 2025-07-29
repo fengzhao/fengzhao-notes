@@ -7386,7 +7386,7 @@ Unicode标准规定，内存表示顺序称为逻辑顺序，当文本在一行�
 
 所以规定了每个字符都有一个隐式双向类型。从左到右和从右到左的双向类型称为强类型，具有这些类型的字符被称为强方向字符。与数字相关的双向类型被称为弱类型，具有这些类型的字符被称为弱方向字符。除了方向格式码，剩下的双向类型和字符被称为中性。
 
-因为在某些场景中，有的语言是从右往左的，有的是从左往右的，然后实现了一个双向的算法Bidirectional algorithm，又叫bidi，标准bidi算法提供的显示顺序还不够，所以对于这些情况，提供了覆盖控制字符。Bidi算法覆盖是不可见的字符，从而可以切换字符组的显示顺序。
+因为在某些场景中，有的语言是从右往左的，有的是从左往右的，然后实现了一个双向的算法 `Bidirectional algorithm`，又叫bidi，标准bidi算法提供的显示顺序还不够，所以对于这些情况，提供了覆盖控制字符。Bidi算法覆盖是不可见的字符，从而可以切换字符组的显示顺序。
 
 
 
@@ -7413,3 +7413,16 @@ if [ $access_level != 'noneU+202EU+2066' ]; then # Check if admin U+2069U+2066' 
 fi
 ```
 
+```bash
+#!/bin/bash
+access_level="user"
+if [ $access_level != 'none' ]; then # Check if admin ' -a $access_level != 'user
+    echo "You are an admin"
+fi
+```
+
+https://github.com/nickboucher/trojan-source
+
+
+
+## [同形字符](https://tttang.com/archive/1339/#toc_)
