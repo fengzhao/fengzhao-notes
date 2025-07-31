@@ -498,6 +498,35 @@ docker inspect --format='{{range .NetworkSettings.Networks}}{{.MacAddress}}{{end
 
 
 
+## Docker使用GPU
+
+要让 Docker 容器能够使用宿主机的 NVIDIA GPU，不能直接运行，需要一个特殊的“运行时”（Runtime）来充当桥梁，这个桥梁就是 **NVIDIA Container Toolkit**。
+
+- `--runtime=nvidia` 标志的作用就是告诉 Docker：“不要使用默认的 `runc` 运行时，请使用 `nvidia` 运行时来启动这个容器。”
+- `nvidia` 运行时会自动将宿主机上的 NVIDIA 驱动程序文件、库和 GPU 设备本身挂载（映射）到容器内部，从而让容器内的程序（如 TensorFlow, PyTorch, CUDA 应用）能够识别并使用 GPU。
+
+
+
+在执行以下命令之前，请确保您的系统已经完成了以下三项配置：
+
+1. **安装 NVIDIA 驱动**：在宿主机上正确安装了适用于您 GPU 型号的 NVIDIA 驱动。您可以通过在宿主机终端运行 `nvidia-smi` 来验证。
+2. **安装 Docker Engine**：您的系统上已安装 Docker。
+3. **安装 NVIDIA Container Toolkit**：这是最关键的一步。它为 Docker 提供了 `nvidia` 运行时。
+
+
+
+**如何使用 `--runtime=nvidia` 指定 GPU**
+
+主要通过设置环境变量 `NVIDIA_VISIBLE_DEVICES` 来精确控制容器能“看到”并使用哪些 GPU。
+
+首先，在**宿主机**上运行 `nvidia-smi` 查看你的 GPU 列表及其索引（ID）。
+
+
+
+```
+
+```
+
 
 
 ## Docker内部组件
