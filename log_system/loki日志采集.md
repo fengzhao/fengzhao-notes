@@ -30,6 +30,78 @@ Grafana Loki 主要由 3 部分组成:
 
 
 
+## Distributor
+
+`Distributor`是Loki日志写入的最前端，当它收到日志时会验证其正确性，之后会将日志切成块（chunk）后，转给`Ingester`负责存储。
+
+- **Distributor (分发器)**:
+  - Loki 是接收日志的第一站。
+  - 它是一个**无状态**的组件，可以水平扩展来处理高流量。
+  - 主要职责：**验证、预处理、限流、分发**。
+- **Stream (流)**:
+  - 一个 **唯一的标签集** 就构成一个 stream。
+  - 例如，`{app="nginx", env="prod"}` 是一个 stream，`{app="nginx", env="staging"}` 是另一个 stream。
+  - 所有拥有相同标签集的日志行都属于同一个 stream。
+- **Limits (限制)**:
+  - 为了保护 Loki 集群的稳定性，防止被恶意或配置错误的客户端“打爆”而设置的一系列规则。
+  - **高基数 (High Cardinality)** 的 stream（即不同组合的标签集太多）是 Loki 性能的天敌，因此限制 stream 数量至关重要。
+- **Tenant (租户)**:
+  - Loki 支持多租户架构，允许不同的团队、应用或客户共享同一个 Loki 集群，但数据互相隔离。
+  - 租户信息通常通过 HTTP Header (`X-Scope-OrgID`) 传递。
+
+
+
+当 Promtail 或其他客户端将一批日志（a batch of logs）发送给 distributor 时，distributor 会执行以下一系列严格的验证检查。
+
+如果任何一项检查失败，该批日志就会被拒绝，并向客户端返回 `4xx` 错误码。
+
+
+
+主要的验证内容包括：
+
+1. **最大 Label 数量**:
+   - **做什么**: 检查一个 stream 中的标签数量是否超过了设定的上限 (e.g., `max_labels_per_stream`)。
+   - **为什么**: 防止标签滥用，过多的标签会增加索引的复杂度和存储。
+2. **Label 名称/值的长度**:
+   - **做什么**: 检查每个标签的名称 (key) 和值 (value) 的长度是否超过上限 (e.g., `max_label_name_length`, `max_label_value_length`)。
+   - **为什么**: 同样是为了防止索引膨胀和不规范的数据。
+3. **最大日志行大小**:
+   - **做什么**: 检查单条日志的字节大小是否超过上限 (e.g., `max_line_size`)。
+   - **为什么**: 防止单条过大的日志（如一个完整的 stack trace）消耗过多内存和存储。
+4. **时间戳验证**:
+   - **做什么**: 确保日志的时间戳不是太旧或太超前 (e.g., `reject_old_samples`)。
+   - **为什么**: 保证日志数据的时序性，防止乱序数据影响存储和查询效率。
+5. **摄入速率限制 (Ingestion Rate Limit)**:
+   - **做什么**: 这是**最重要**的限制之一。它通过令牌桶算法限制每个租户每秒可以发送的数据量（字节/秒）和日志行数（行/秒）。(e.g., `ingestion_rate_mb`, `ingestion_burst_size_mb`)
+   - **为什么**: 防止任何一个租户因为日志流量突增（“日志雪崩”）而耗尽整个集群的资源，影响其他租户。这是解决“**嘈杂邻居**”（Noisy Neighbor）问题的关键。
+6. **最大活跃 Stream 数量 (Max Active Streams)**:
+   - **做什么**: 限制单个租户在一段时间内可以拥有的活跃 stream 的总数 (e.g., `max_active_streams_per_user`)。
+   - **为什么**: 这是**为了对抗高基数问题**。每个活跃的 stream 都会在 ingester 中占用一定的内存。如果一个租户创建了数百万个 stream（例如，把用户ID、请求ID等动态值放进了 label），会迅速耗尽 ingester 的内存（OOM），导致集群崩溃。
+
+
+
+`distributor` 通过对每个 stream 进行一系列严格的验证，扮演了 Loki 集群守护神的角色。
+
+它利用一个分层的限制系统（优先使用租户特定限制，否则回退到全局限制），来达到以下目的：
+
+- **保障系统稳定性**: 防止因为流量或高基数问题导致服务崩溃。
+- **实现多租户公平性**: 确保没有租户能过度消耗资源，影响他人。
+- **提升性能**: 通过限制高基数，间接保证了查询性能。
+- **提供灵活性**: 允许管理员为不同级别的用户或团队分配不同的资源配额。
+
+
+
+## Ingester
+
+`Ingester`主要负责将收到的日志数据写入到后端存储，如DynamoDB，S3，Cassandra等），同时它还会将日志信息发送给`Querier`组件。
+
+- Querier
+
+`Querier`主要负责从`Ingester`和后端存储里面提取日志，并用LogQL查询语言处理后返回给客户端
+
+- Query Frontend
+
+`Query frontend`主要提供查询API，它可以将一条大的查询请求拆分成多条让`Querier`并行查询，并汇总后返回。它是一个可选的部署组件，通常我们部署它用来防止大型查询在单个查询器中引起内存不足的问题。
 
 
 
@@ -37,6 +109,31 @@ Grafana Loki 主要由 3 部分组成:
 
 
 
+## loki生态体系工具
+
+`logcli` 是 **Loki 的官方 CLI 客户端**，用于直接查询 Loki 实例中的日志数据，功能类似于 `curl` + PromQL 的组合，但专为日志设计。
+
+#### 🔧 功能：
+
+- 执行 LogQL 查询（Loki 的查询语言）
+- 查看日志流（`--tail` 模式）
+- 支持认证（API Key、Bearer Token、Basic Auth）
+- 输出格式化（JSON、logfmt 等）
+
+
+
+###  **Loki 的健康探测工具（Canary）**
+
+#### ✅ 作用：
+
+`loki-canary` 是一个“金丝雀”测试工具，用于**持续写入和读取测试日志到 Loki**，验证 Loki 的写入和查询是否正常。
+
+#### 🔧 功能：
+
+- 持续向 Loki 发送模拟日志（可指定标签）
+- 定期查询自己写入的日志，验证可读性
+- 如果写入或查询失败，可触发告警（集成 Prometheus）
+- 可用于监控 Loki 集群的可用性和延迟
 
 ## Promtail
 
@@ -246,3 +343,16 @@ scrape_configs:
       
 ```
 
+
+
+
+
+
+
+
+
+
+
+
+
+https://www.cnblogs.com/guangdelw/p/18308042
