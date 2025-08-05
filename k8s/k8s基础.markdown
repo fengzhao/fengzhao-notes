@@ -90,6 +90,14 @@ k8s集群分为两类节点
 
 
 
+### 控制平面
+
+在 Kubernetes（k8s）中，**“控制平面”（Control Plane）** 是一个官方标准术语。
+
+> **控制平面是 Kubernetes 集群的“大脑”**，负责管理集群的状态、调度工作负载、监控节点健康、处理用户请求等。 
+
+它运行在 **主节点（Master Node）** 上（或高可用架构中的多个控制节点上），由一组核心组件构成。
+
 
 
 **master 节点核心组件**
@@ -109,7 +117,7 @@ k8s集群分为两类节点
   - **配置共享**：etcd 还用于存储集群的配置信息，如网络配置、API 服务器地址等。这些信息可以被集群中的任何组件访问，以实现配置信息的共享和动态更新。
   - **领导者选举**：在分布式系统中，领导者选举是一个常见的需求。etcd 提供了领导者选举的功能，使得 Kubernetes 集群中的组件（如 Controller Manager、Scheduler 等）可以通过选举来确定哪个节点应该担任领导者的角色。
   
-  
+  https://tzfun.github.io/etcd-workbench/
   
 - kube-apiserver : 集群控制的入口，提供 HTTP REST 服务，主节点上负责提供 Kubernetes API 服务的组件；它是 Kubernetes 控制面的前端。
   
@@ -1643,3 +1651,59 @@ flanneld进程:
 
 - 创建和配置 flannel.1 设备、配置宿主机路由、配置 ARP 和 FDB 表里的信息
 - 
+
+
+
+
+
+
+
+# 开源项目
+
+
+
+### Volcano
+
+
+
+Volcano是[CNCF](https://www.cncf.io/) 下首个也是唯一的基于Kubernetes的容器批量计算平台，主要用于高性能计算场景。它提供了Kubernetes目前缺 少的一套机制，这些机制通常是机器学习大数据应用、科学计算、特效渲染等多种高性能工作负载所需的。作为一个通用批处理平台，Volcano与几乎所有的主流计算框 架无缝对接，如[Spark](https://spark.apache.org/) 、[TensorFlow](https://tensorflow.google.cn/) 、[PyTorch](https://pytorch.org/) 、 [Flink](https://flink.apache.org/) 、[Argo](https://argoproj.github.io/) 、[MindSpore](https://www.mindspore.cn/) 、 [PaddlePaddle](https://www.paddlepaddle.org.cn/)，[Ray](https://www.ray.io/)等。它还提供了包括异构设备调度，网络拓扑感知调度，多集群调度，在离线混部调度等多种调度能力。Volcano的设计 理念建立在15年来多种系统和平台大规模运行各种高性能工作负载的使用经验之上，并结合来自开源社区的最佳思想和实践。
+
+
+
+## Kuboard 
+
+Kuboard 是一款免费的 Kubernetes 管理工具，提供了丰富的功能，结合已有或新建的代码仓库、镜像仓库、CI/CD工具等，可以便捷的搭建一个生产可用的 Kubernetes 容器云平台，轻松管理和运行云原生应用。您也可以直接将 Kuboard 安装到现有的 Kubernetes 集群，通过 Kuboard 提供的 Kubernetes RBAC 管理界面，将 Kubernetes 提供的能力开放给您的开发/测试团队。
+
+
+
+
+
+https://github.com/zxh326/kite
+
+
+
+## 鲁班
+
+LuBan运维平台是一个基于Go语言+Vue开发的Kubernetes多集群管理平台，可以兼容不同云厂商Kubernetes集群，同时，平台还集成CMDB资产管理。方便用户管理集群、节点等基础资源。通过使用LuBan运维平台，可以提升运维效率，降低维护成本。
+
+https://github.com/dnsjia/luban
+
+
+
+
+
+## karmada
+
+Karmada（Kubernetes Armada）是一个 Kubernetes 管理系统，使您能够在多个 Kubernetes 集群和云中运行云原生应用程序，而无需更改应用程序。通过使用 Kubernetes 原生 API 并提供先进的调度功能，Karmada 实现了真正的开放式、多云 Kubernetes。
+
+
+
+## KubeBlocks
+
+https://cn.kubeblocks.io/docs/preview/user-docs/overview/introduction
+
+
+
+## KubeVela 
+
+https://kubevela.io/zh/docs/
