@@ -2022,6 +2022,18 @@ macvlan 可以给容器分配 mac 地址，在网络中就像一个物理设备�
 
 
 
+### 容器DNS网络
+
+容器会继承容器所在的宿主机的DNS配置(/etc/resolv.conf )， 如果使用的是桥接网络，将会基于宿主机的(/etc/resolv.conf) 创建副本。
+
+自定义网络的容器将使用 `Docker’s embedded DNS server`,  自定义的网络将不会继承 /etc/hosts 
+
+
+
+如果docker run时不含`--dns=IP_ADDRESS..., --dns-search=DOMAIN..., or --dns-opt=OPTION...`参数，`docker daemon`会将copy本主机的`/etc/resolv.conf`，然后对该copy进行处理（将那些/etc/resolv.conf中ping不通的nameserver项给抛弃），处理完成后留下的部分就作为该容器内部的/etc/resolv.conf。
+
+因此，如果你想利用宿主机中的/etc/resolv.conf配置的nameserver进行域名解析，那么你需要宿主机中该`dns service`配置一个宿主机内容器能ping通的IP。
+
 
 
 ## TAP/TUN网络设备
