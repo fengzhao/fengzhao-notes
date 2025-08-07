@@ -305,6 +305,28 @@ kubectl describe pod kubia-hczji
 
 
 
+### kubernetes各组件通讯
+
+**kubeconfig** 是一种用于配置集群访问权限的文件机制。里面包含了连接 Kubernetes 集群所需的所有信息。
+
+
+
+一个 kubeconfig 文件通常以 YAML 格式存储，其中组织了以下核心信息：
+
+1. **clusters**：集群列表。每个集群都包含其 API 服务器的地址和用于验证其身份的证书信息。
+
+2. **users**：用户列表。每个用户都包含用于向集群进行身份验证的凭证，比如客户端证书、令牌（token）或用户名/密码。
+
+3. **contexts**：上下文列表。每个上下文都是一个三元组，由 **（集群、用户、命名空间）** 组成。
+
+   一个上下文定义了当前操作的目标集群、使用的用户身份以及默认操作的命名空间。
+
+
+
+当使用 `kubectl` 等命令行工具时，它会读取 kubeconfig 文件，并根据你选择的 **“当前上下文”** 来决定连接哪个集群、使用哪个身份认证、以及默认操作哪个命名空间。
+
+
+
 ## 为什么是pod？
 
 一个 pod 是一组紧密关联的容器，它们总是一起运行在同一个工作节点上，以及同一个Linux命名空间中。
@@ -1799,3 +1821,15 @@ https://kubevela.io/zh/docs/
 ## Kube-OVN
 
 https://kube-ovn.readthedocs.io/zh-cn/latest/
+
+
+
+## kubeasz
+
+https://github.com/easzlab/
+
+
+
+## deploy-microservices-to-a-Kubernetes-cluster
+
+https://github.com/xiaojiaqi/deploy-microservices-to-a-Kubernetes-cluster
