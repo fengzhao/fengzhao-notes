@@ -239,6 +239,35 @@ Pod: Pod 是 Kubernetes 最基本的部署调度单元。每个 Pod 可以由一
 
 
 
+
+
+### kubectl
+
+
+
+```
+kubectl config set-cluster kubernetes     \
+--certificate-authority=/etc/kubernetes/pki/ca.pem     \
+--embed-certs=true     --server=https://127.0.0.1:8443     \
+--kubeconfig=/etc/kubernetes/bootstrap-kubelet.kubeconfig
+```
+
+
+
+**TLS Bootstrapping**
+
+> 在一个 Kubernetes 集群中，工作节点上的组件（kubelet 和 kube-proxy）需要与 Kubernetes 控制平面组件通信，尤其是 kube-apiserver。
+>
+>  为了确保通信本身是私密的、不被干扰，并且确保集群的每个组件都在与另一个可信的组件通信， 我们强烈建议使用节点上的客户端 TLS 证书。
+>
+> 
+>
+> **TLS Bootstrapping** 是一种机制，允许 **未认证的 kubelet** 使用一个**临时的 Bootstrap Token** 向 API Server 发起连接请求，并申请一个**正式的客户端证书（client certificate）**，用于后续的身份认证。 
+
+
+
+
+
 ### 水平伸缩应用
 
 ```shell
@@ -1362,11 +1391,24 @@ Ingress
 
 
 
-### kubeadm 简介
+## kubeadm 简介
 
 [kubeadm](https://github.com/kubernetes/kubernetes/tree/master/cmd/kubeadm)是 一位17岁的芬兰高中生Lucas Kaldstrom的作品，他用业余时间完成的一个社区项目。
 
 
+
+
+
+## **containerd** 
+
+`ctr` 是 **containerd** 的官方命令行客户端工具，类似于 `docker` CLI，但更底层、更简洁，适用于调试和直接操作 containerd（常用于 Kubernetes 节点，因为 K8s 从 v1.24+ 默认使用 containerd 作为容器运行时）。
+
+
+
+```
+ctr images ls
+ctr images pull
+```
 
 
 
@@ -1722,10 +1764,6 @@ Volcano是[CNCF](https://www.cncf.io/) 下首个也是唯一的基于Kubernetes�
 
 Kuboard 是一款免费的 Kubernetes 管理工具，提供了丰富的功能，结合已有或新建的代码仓库、镜像仓库、CI/CD工具等，可以便捷的搭建一个生产可用的 Kubernetes 容器云平台，轻松管理和运行云原生应用。您也可以直接将 Kuboard 安装到现有的 Kubernetes 集群，通过 Kuboard 提供的 Kubernetes RBAC 管理界面，将 Kubernetes 提供的能力开放给您的开发/测试团队。
 
-
-
-
-
 https://github.com/zxh326/kite
 
 
@@ -1757,3 +1795,7 @@ https://cn.kubeblocks.io/docs/preview/user-docs/overview/introduction
 ## KubeVela 
 
 https://kubevela.io/zh/docs/
+
+## Kube-OVN
+
+https://kube-ovn.readthedocs.io/zh-cn/latest/
