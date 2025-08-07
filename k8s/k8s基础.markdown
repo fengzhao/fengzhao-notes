@@ -1833,3 +1833,102 @@ https://github.com/easzlab/
 ## deploy-microservices-to-a-Kubernetes-cluster
 
 https://github.com/xiaojiaqi/deploy-microservices-to-a-Kubernetes-cluster
+
+
+
+
+
+# 镜像仓库
+
+
+
+k8s中涉及到的仓库有如下
+
+> docker.elastic.co
+> docker.io
+> gcr.io
+> ghcr.io
+> k8s.gcr.io
+> registry.k8s.io
+> mcr.microsoft.com
+> nvcr.io
+> quay.io
+
+
+
+
+
+ containerd 1.5 版本之后推荐的，比修改主配置文件 `/etc/containerd/config.toml` 更灵活。
+
+基于**主机名**（hostname）的目录结构。对于每一个你需要配置的镜像仓库，你都需要在这个目录下创建一个以该仓库域名命名的子目录。
+
+```bash
+/etc/containerd/certs.d/
+└── docker.io/
+│   └── hosts.toml
+└── my-private-registry.com/
+│   ├── hosts.toml
+│   └── ca.crt
+└── my-insecure-registry:5000/
+    └── hosts.toml
+```
+
+每个子目录内部，核心配置文件是 **`hosts.toml`**。这个文件定义了 containerd 如何与该仓库进行通信：
+
+
+
+```
+mkdir -p /etc/containerd/certs.d/docker.io
+mkdir -p /etc/containerd/certs.d/registry.k8s.io
+
+touch /etc/containerd/certs.d/docker.io/hosts.toml
+touch /etc/containerd/certs.d/registry.k8s.io/hosts.toml
+```
+
+
+
+```
+cat>/etc/containerd/certs.d/docker.io/hosts.toml<<EOF
+server = "https://docker.io"
+
+[host."https://docker.m.daocloud.io"]
+  capabilities = ["pull", "resolve"]
+[host."https://dockerproxy.com/"]
+  capabilities = ["pull", "resolve"]
+[host."https://docker.1ms.run/"]
+  capabilities = ["pull", "resolve"]
+  
+EOF
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# 问题
+
+
+
+### 为什么 Cilium Agent 会崩溃？
+
+`cilium-agent` 是 Cilium 的核心，负责在节点上管理网络、应用策略、处理流量。它启动时会进行一系列严格的自检。如果环境不满足要求，它通常会选择直接报错退出，而不是带病运行。
+
+最常见的崩溃原因包括：
+
+1. **内核版本不满足要求 (最常见!)**: Cilium 严重依赖 Linux 内核的 eBPF 功能。如果你的操作系统内核版本太低，或者缺少必要的内核模块，Cilium Agent 在初始化 eBPF 时会失败，然后直接崩溃。这是新部署 Cilium 时最常见的问题。
+2. **缺少 BPF 文件系统**: Cilium 需要 BPF 文件系统挂载在 `/sys/fs/bpf`。虽然有一个 `mount-bpf-fs` 的 Init Container 专门做这件事，但如果因为某些权限或系统设置导致挂载失败，主容器依然会失败。
+3. **无法连接到 Kubernetes API Server**: Cilium Agent 需要与 `kube-apiserver` 通信来获取 Pods、Services 等信息。如果因为网络问题或 RBAC 权限问题无法连接，它可能会退出。
+4. **配置错误**: `cilium-config` ConfigMap 中的配置有误，例如启用了某个与内核不兼容的特性。
+5. **节点上存在冲突的网络配置**: 例如，之前安装的其他 CNI 插件没有清理干净，留下了冲突的 iptables 规则或网络设备。
