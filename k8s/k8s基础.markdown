@@ -243,7 +243,7 @@ Pod: Pod 是 Kubernetes 最基本的部署调度单元。每个 Pod 可以由一
 
 ### kubectl
 
-
+`kubectl` 本质上就是一个 **Kubernetes REST API 客户端**，它其实就是跟`api server`通讯。
 
 ```
 kubectl config set-cluster kubernetes     \
@@ -263,6 +263,107 @@ kubectl config set-cluster kubernetes     \
 > 
 >
 > **TLS Bootstrapping** 是一种机制，允许 **未认证的 kubelet** 使用一个**临时的 Bootstrap Token** 向 API Server 发起连接请求，并申请一个**正式的客户端证书（client certificate）**，用于后续的身份认证。 
+
+
+
+````bash
+# 看集群节点
+kubectl get nodes
+kubectl describe node <node-name>   # 查看节点详细信息（资源、状态、污点等）
+
+# 看集群组件状态（api-server、controller-manager、scheduler 等）
+kubectl get componentstatuses       # 在新版本可能需要用 kubectl get --raw /healthz
+
+
+
+# 看 Pod 列表
+kubectl get pods -n <namespace>      # 默认 namespace 是 default
+kubectl get pods -o wide             # 带 IP、节点信息
+
+# 查看 Pod 详细状态
+kubectl describe pod <pod-name> -n <namespace>
+
+# 查看 Pod 日志
+kubectl logs <pod-name> -n <namespace>
+kubectl logs -f <pod-name> -n <namespace>   # 持续跟随日志
+kubectl logs <pod-name> -c <container-name> # 多容器 Pod 指定容器
+
+# 如果 Pod 崩溃/重启，查看上一次容器的日志
+kubectl logs --previous <pod-name> -n <namespace>
+
+
+
+# 进入容器交互终端
+kubectl exec -it <pod-name> -n <namespace> -- /bin/sh
+kubectl exec -it <pod-name> -n <namespace> -- /bin/bash
+
+
+# 查看 Service
+kubectl get svc -n <namespace>
+kubectl describe svc <svc-name> -n <namespace>
+
+# 查看 Endpoint（服务实际指向的 Pod）
+kubectl get endpoints -n <namespace>
+
+# 看 Ingress
+kubectl get ingress -n <namespace>
+kubectl describe ingress <ing-name> -n <namespace>
+
+
+# 查看命名空间事件（常用于找启动失败、调度失败原因）
+kubectl get events -n <namespace> --sort-by=.metadata.creationTimestamp
+
+
+# 查看 Deployment、ReplicaSet、StatefulSet
+kubectl get deploy -n <namespace>
+kubectl describe deploy <deploy-name> -n <namespace>
+
+# 查看资源使用情况（需 metrics-server）
+kubectl top nodes
+kubectl top pods -n <namespace>
+
+
+# 查看资源 YAML
+kubectl get pod <pod-name> -n <namespace> -o yaml
+
+````
+
+
+
+
+
+### Kubelet
+
+Kubernetes 的设计是 **每个 Kubernetes 节点上都有一个 Kubelet 进程**，它是节点上的主要代理进程，负责：
+
+- 管理该节点上的 Pod 和容器生命周期
+- 与 API Server 通信
+- 汇报节点状态和资源使用情况
+- 通过 HTTP(S) 提供一些状态/指标接口
+
+
+
+它的可执行文件是二进制文件`/usr/local/bin/kubelet`，配置文件通常是 `/etc/kubernetes/kubelet-conf.yml`
+
+Kubelet 会通过 HTTP(S) 暴露多个端点（这些端点不会直接被访问和采集，通常被api server来代理），常见的有：
+
+| 端点                | 作用                                                         |
+| ------------------- | ------------------------------------------------------------ |
+| `/metrics`          | 普通 Prometheus 格式指标（包含 Go runtime、自身性能指标）    |
+| `/metrics/cadvisor` | 容器级别指标（cAdvisor 提供的 CPU、内存、磁盘、网络等）      |
+| `/metrics/resource` | **metrics-server 专用的资源指标**（CPU/内存使用率，来源于 cAdvisor） |
+| `/stats/summary`    | 原始资源统计数据（metrics-server 早期版本也会用到）          |
+
+
+
+```bash
+# 可以直接看看 kubelet 提供的数据（通过 API Server 代理）
+
+kubectl get --raw "/api/v1/nodes/k8s-master01/proxy/metrics/resource"
+
+
+# 看到 CPU 使用纳秒数、内存字节数等即时指标，这些就是 metrics-server 聚合的原始数据。
+```
 
 
 
