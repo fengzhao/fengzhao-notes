@@ -967,7 +967,7 @@ kubectl delete all --all
 
 ### 标签
 
-通过标签来组织 pod 和其他所有kubernetes资源对象。标签是可以附加到资源的任意键值对。
+通过标签来组织 pod 和其他所有 kubernetes 资源对象。标签是可以附加到资源的任意键值对。
 
 不仅仅是pod，其实是node也可以可以打标签的，比如添加node工作节点，可以打上标签，指定硬件类型等等。比如GPU节点，超高性能SSD节点等等。
 
@@ -1121,13 +1121,15 @@ spec:
 
 ### ReplicationController
 
-rc 是 kubernetes 中的一种资源，可确保它的 pod 始终保持运行。如果 pod 因任何原因消失（node从集群中下线，或者 pod 被node逐出），则 rc 会注意到缺少pod并创建替代pod
+ReplicationController是一种Kubernetes资源对象，也是一类控制器，可确保它的pod始终保持运行状态。如果pod因任何原因消失（例如节点从集群中消失或由于该pod已从节点中逐出），则rc会注意到缺少了pod并创建替代pod。
 
 一般而言，rc旨在创建和管理一个pod的多副本，rc 会持续监控正在运行的 pod 列表，并保证相应类型 的 pod 数量与期望相符。少了会创建副本，对了会删除多余的副本。
 
+
+
 **rc 协调流程**
 
-rc 的工作是确保 pod 数量始终与其标签选择器匹配
+rc 的主要工作是确保 pod 数量始终与其标签选择器匹配
 
 
 
@@ -1153,13 +1155,13 @@ ReplicationController 的 pod 模板可以随时修改。更改 pod 就像用一
 apiVersion: v1
 kind: ReplicationController
 metadata:
-  name: nginx
+  name: kubia
 spec:
   replicas: 3
-  selector:
+  selector:								# 这个选择器决定了rc作用域中有哪些pod
     app: nginx
   # 这里定义的就是 cookie cutter
-  template:
+  template:							    # 创建新pod所用的pod模板
     metadata:
       name: nginx
       labels:
@@ -1171,6 +1173,8 @@ spec:
         ports:
         - containerPort: 80
 ```
+
+Kubernetes 会创建一个名为`kubia`的新rc，它确保符合标签选择器app=nginx的pod实例时钟是三个。
 
 **模板中的 pod 标签必须和 rc 的标签选择器匹配，否则，rc 将会无休止的创建新容器。**
 
@@ -1207,9 +1211,7 @@ kubectl describe rc kubia
 
 #### 伸缩集群的声明式方法
 
-在 kubernetes 中水平伸缩 pod 只是陈述式的：“ 我想要运行 x 个实例 ” 。
-
-你不是告诉 kubernetes 做什么或如何去做。只是指定了期望的状态。
+**在 kubernetes 中水平伸缩 pod 只是陈述式的：“ 我想要运行 x 个实例 ” 。你不是告诉 kubernetes 做什么或如何去做。只是指定了期望的状态。**
 
 这种声明式做法使得与 kubernetes 集群的交互更容易。试想，如果你必须手动确认当前运行的实例数量，再去指定 kubernetes 运行多少个实例。工作容易出错且更复杂。
 
@@ -1219,11 +1221,9 @@ kubectl describe rc kubia
 
 
 
-### 使用 replicaSet 而不是 rc
+### ReplicaSet
 
-最初，ReplicationController 是用于复制和异常时重新调度节点的唯一组件。后来引入了 RepliaSet 这种资源。它是新一代的 rc。
-
-请记住，始终使用 rs ，而不是使用 rc 。
+最初，ReplicationController 是用于复制和异常时重新调度节点的唯一组件。后来引入了 RepliaSet 这种资源。它是新一代的 rc。请记住，始终使用 rs ，而不是使用 rc 。
 
 
 
@@ -1234,29 +1234,73 @@ ReplicaSet 的行为与 rc 完全相同，但 pod 的选择器的表达能力更
 
 
 
-#### 创建和检查rs
+**ReplicationController** 只支持**基于等值**的标签选择器。这意味着它只能通过 "key=value" 的方式来匹配 Pod，例如 `app=nginx`。
+
+**ReplicaSet** 支持**基于集合**的标签选择器。这使得它的匹配规则更灵活、更强大，例如它可以匹配 `app in (nginx, httpd)` 或者 `tier notin (frontend, backend)`，甚至是 `env=*` 这种。
+
+由于 ReplicaSet 的选择器功能更强，它能够更精确地控制和管理 Pod，因此 Kubernetes 官方**更推荐使用 ReplicaSet**。
+
+```yaml
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: nginx-replicaset
+spec:
+  # 副本数量，这里设置为3
+  replicas: 3
+  # 标签选择器，用于查找和管理Pod
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      # Pod的标签，必须和上面的选择器匹配
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:1.14.2
+        ports:
+        - containerPort: 80
+```
+
+
 
 ```shell
 kubectl get rs 
 
 kubectl describe  rs 
+
+# 更加丰富的选择器，可以对key-value选择运算符
+selector:
+  matchExpresssions:
+  	- key: app
+	  operator: In
+	  values:
+	    - kubia
+
+
+# 运算符有:In,NotIn,Exists,DoesNotExist四种方式
 ```
 
-rs 的 YAML 定义
+
+
+### DaemonSet
+
+rc 和 rc 都用于在 kubernetes 集群上部署特定数量的 pod 。但是当你希望在集群中的每个节点上都要运行 pod 时（并且每个节点正好要运行一个 pod ）。
+
+例如，希望在每个节点上运行日志收集器和资源监控器。另一个典型的例子是 kubernetes 自己的 `kube-proxy` 进程。它需要运行在所有节点上才能工作。
+
+在二进制部署Kubernetes场景，`kube-proxy`是在node上运行的二进制进程，而不是被打到pod中运行。如果节点下线，DaemonSet不会再其他地方重新创建pod，但是如果有新节点加入集群，DaemonSet立即会部署一个新pod实例。
+
+DaemonSet的目的是运行系统服务，即使是再不可调度的节点上，系统服务通常也需要要运行
 
 
 
-### 使用 DaemonSet 在节点上运行 pod
+### job
 
-rc 和 rc 都用于在 kubernetes 集群上部署特定数量的 pod 。但是当你希望在集群中的每个节点上运行 pod 时（并且每个节点正好要运行一个 pod ）。
-
-例如，希望在每个节点上运行日志收集器和资源监控器。另一个典型的例子是 kubernetes 自己的 kube-proxy 进程。它需要运行在所有节点上才能工作。
-
-
-
-
-
-### 运行执行单个任务的 pod 
+Job 表示一次性任务，运行完成后就会停止。比如说爬虫这种就很适合pod，以及某些定时任务，数据同步任务等等
 
 
 
@@ -1274,19 +1318,23 @@ rc 和 rc 都用于在 kubernetes 集群上部署特定数量的 pod 。但是�
 
 - pod 是短暂的，它们随时会被启动或者关闭。
 
+- kubernetes 在pod启动前会给已经调度到node上的pod分配IP提前，客户端不能提前知道提供服务的pod地址。
+
+- 水平伸缩意味着多个pod可能会提供相同的服务——每个pod都有自己的ip，客户端无需关心pod数量以及各自对应ip
+
+  
+
+**服务是一种做为一组功能相同的 pod 提供单一不变的接入点的资源。kubernets 使用服务来暴露应用。**
+
+**当服务存在时，它的 IP 地址和端口不会变。客户端通过 IP 地址和端口号建立连接，这些连接会被路由到提供该服务的任意一个 pod 上。** 
 
 
-kubernetes 服务是一种做为一组功能相同的 pod 提供单一不变的接入点的资源。kubernets 使用服务来暴露应用。
-
-当服务存在时，它的 IP 地址和端口不会变。客户端通过 IP 地址和端口号建立连接，这些连接会被路由到提供该服务的任意一个 pod 上。 
 
 
 
 ### 创建服务
 
-创建服务一般有两种方法，有
-
-
+创建服务一般有两种方法：
 
 ```shell
 #　创建一个服务对象
@@ -1294,10 +1342,6 @@ kubectl expose rc kubia --type=LoadBalancer --name kubia-http
 
 
 ```
-
-
-
-
 
 通过YAML描述文件来创建服务，定义服务的端口，服务将连接转到的容器端口，标签选择器匹配到的 pod 都属于该服务。
 
@@ -1308,15 +1352,15 @@ metadata:
   name: kubia
 spec:
   ports:
-  - port: 80
-    targetPort: 8080
+  - port: 80					#  服务端口
+    targetPort: 8080			#  后端提供服务，服务转发要连接到pod上的端口
   selector:
     app: kubia
 ```
 
-通过 kubernetes create 命令创建服务后，可以在命名空间下列出所有服务资源 kubectl get svc 
+通过 `kubernetes create` 命令创建服务后，可以在命名空间下列出所有服务资源 `kubectl get svc `
 
-列表可以显示出分配给服务的 IP 地址，一般是集群内部的地址，只能在集群内部被访问。服务一般要被集群内部其他 pod 访问，以及外部客户端访问。
+列表可以显示出分配给服务的 IP 地址，一般是集群内部的地址，只能在集群内部被访问。但是服务一般要被集群内部其他 pod 访问，以及外部客户端访问。
 
 先看内部访问的几种方法：
 
@@ -1326,25 +1370,29 @@ spec:
 
 
 
-可以使用 kubectl exec 命令远程地在一个已经存在的 pod 容器上执行任何命令。使用 kubectl get pod 列出所有 pod 
+可以使用 `kubectl exec` 命令远程地在一个已经存在的 pod 容器上执行任何命令。使用 `kubectl get pod` 列出所有 pod 
 
 ```shell
 kubectl exec kubia-7nogl -- curl http://10.111.249.153
 
-# 双斜杠代表着 kubectl 命令的结束。
+# 双斜杠代表着 kubectl 命令的结束。表示后面的命令其实是在pod内的容器上运行
+
+# 当一个 Pod 包含多个容器时，kubectl exec 命令默认会选择 Pod 定义中列出的第一个容器来执行操作。
+# 如果你想在 Pod 的特定容器上运行命令，你需要使用 --container 或 -c 参数来明确指定容器的名称。
+
+kubectl exec kubia-7nogl -c proxy -- curl http://10.111.249.153
+
 ```
 
 
 
 ### 同一个服务暴露多个端口
 
-创建的服务可以暴露一个端口，也可以暴露多个端口。
-
-比如，pod 监听两个端口，http 监听 8080 端口，https 监听 8443 端口。
+创建的服务可以暴露一个端口，也可以暴露多个端口。比如，pod 监听两个端口，http 监听 8080 端口，https 监听 8443 端口。
 
 可以在一个服务中暴露 80 和 443 端口，并分别转发到 pod 中的对应端口。通过一个集群IP，使用一个服务将多个端口暴露出来。
 
-```shell
+```yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -1369,17 +1417,47 @@ spec:
 
 可以看到上面这种方式，在 pod 定义中直接指定端口号，然后在服务的定义中也直接硬编码写端口号，一旦 pod 修改端口号，svc 中的定义也需要修改。
 
-使用命名端口的意思，即在 pod 定义中为端口命名，在 svc 中直接将端口转发到名称中。
+使用命名端口的意思：即在 pod 定义中为端口命名，在 svc 中直接将端口转发到名称中。
+
+```yaml
+kind: pod
+spec:
+  containers:
+  - name: kubia
+  	ports:
+  	- name: http
+      ContainerPort: 80
+  	- name: https
+      ContainerPort: 80
+  
+```
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: kubia
+spec:
+  ports:
+  - name: http
+    port: 80
+    targetPort: http
+  - name: https
+    port: 443
+    targetPort: https
+  selector:
+    app: kubia
+```
+
+
 
 
 
 ### 服务发现
 
-通过创建服务，可以通过一个单一稳定的 IP 地址访问到 pod。在服务器的整个生命周期内这个IP地址保持不变。
+通过创建服务，可以通过一个单一稳定的 IP 地址访问到 pod。在服务的整个生命周期内这个IP地址保持不变（pod后面的pod可能删除重建，IP地址也会变化，数量可能也会增减）
 
-客户端 pod 如何知道服务的 IP 地址和端口？
-
-
+客户端 pod 如何知道服务的 IP 地址和端口呢？Kubenretes提供了服务发现机制
 
 
 
@@ -1387,11 +1465,7 @@ spec:
 
 在 pod 开始运行的时候，kubernetes 会初始化一系列的环境变量指向现在存在的服务。
 
-如果你创建的服务早于客户端 pod 的创建，pod 上的进程可以根据环境变量获得服务的 IP 地址和端口号。
-
-
-
-
+如果你创建的服务早于客户端 pod 的创建，pod 上的进程可以根据环境变量获得服务的 IP 地址和端口号。但是如果服务晚于pod的创建，pod诞生时自然无法设置服务的环境变量。
 
 
 
@@ -1409,11 +1483,13 @@ kubernetes 通过修改每个容器的 /etc/resolv.conf 文件实现。
 
 每个服务从内部 DNS 服务器中获得一个 DNS 条目，客户端的 pod 在知道服务名称的情况下通过**全限定域名（FQDN）**来访问。
 
+
+
+
+
 ### 连接集群外部的服务
 
 服务并不是直接和 pod 相连接的。
-
-
 
 如果创建了不包含选择器的服务，kubernetes 将不会创建 Endpoint 资源，（毕竟，缺少选择器，将不会知道服务中包含那些 pod ）
 
@@ -1424,6 +1500,29 @@ kubernetes 通过修改每个容器的 /etc/resolv.conf 文件实现。
 
 
 Endpoint 是一个单独的资源并不是服务的一个属性。由于创建的资源中并不包含选择器，相关的 Endpint 资源并没有自动创建，所以必须手动创建。
+
+```
+root@k8s-master01:~#
+root@k8s-master01:~# kubectl describe svc
+Name:                     kubernetes
+Namespace:                default
+Labels:                   component=apiserver
+                          provider=kubernetes
+Annotations:              <none>
+Selector:                 <none>
+Type:                     ClusterIP
+IP Family Policy:         SingleStack
+IP Families:              IPv4
+IP:                       10.96.0.1
+IPs:                      10.96.0.1
+Port:                     https  443/TCP
+TargetPort:               6443/TCP
+Endpoints:                10.10.20.151:6443,10.10.20.152:6443,10.10.20.153:6443
+Session Affinity:         None
+Internal Traffic Policy:  Cluster
+Events:                   <none>
+root@k8s-master01:~#
+```
 
 
 
@@ -1442,15 +1541,21 @@ Endpoint 是一个单独的资源并不是服务的一个属性。由于创建�
 
 #### NodePort 
 
-将一组 pod 公开给外部客户端的第一种方法是创建一个服务并将其类型设置为 NodePort 。
+这种服务的工作原理：它在集群的**每个节点**（Node）上都开启一个静态端口（例如 `30001`）。所有发送到任意节点的这个静态端口的流量，都会被自动转发到 Service 对应的 Pod 上。
 
-通过创建的 NodePort 服务，可以让 kubernetes 在其所有节点上保留一个端口（所有节点上都是用相同的端口号）
+- **端口范围**：这个静态端口通常在 `30000-32767` 这个范围内。
+- **简单**：无需额外的配置或云服务，只要知道任意一个节点的 IP 和 NodePort 端口，就可以访问服务。
+- **适用于开发和测试**：因为它不需要额外的基础设施，非常适合本地开发、演示和快速测试。
 
-这与常规服务类似（它们实际的类型 ClusterIP），但是不仅可以通过服务的内部集群 IP 访问 NodePort 服务。
 
-还可以通过任何节点的 IP 和预留节点端口访问 NodePort 服务。
 
-当尝试与 NodePort 服务交互式，意义更大。
+将一组 pod 公开给外部客户端的第一种方法是创建一个服务并将其类型设置为 NodePort 
+
+通过创建的 `NodePort` 服务，可以让 kubernetes 在其所有节点上打开一个端口（所有节点上都是用相同的端口号，这是也是NodePort名字原来），并将在该端口接收到的流量重定向给服务（其实是服务背后的pod）。
+
+这与常规服务类似（它们实际的类型是 ClusterIP），但是不仅可以通过服务的内部集群 IP 访问 NodePort 服务。还可以通过任何节点的 IP 和预留节点端口访问 NodePort 服务。当尝试与 NodePort 服务交互式，意义更大。
+
+
 
 
 
@@ -1494,7 +1599,25 @@ NodePort 暴露的服务，是通过将所有 pod 所在节点上对外暴露的
 
 可以在节点的 JSON 或者 YAML 描述中找到IP。
 
+
+
 #### 通过负载均衡器暴露服务
+
+`LoadBalancer` 是在云环境中暴露服务的标准方式
+
+当你创建一个 `LoadBalancer` 类型的 Service 时，Kubernetes 会请求底层的云服务商（如 AWS, GCP, Azure）创建一个外部负载均衡器。这个负载均衡器会获得一个独立的**公网 IP 地址**。
+
+所有外部流量都通过这个公网 IP 地址进入，然后由负载均衡器将流量分发到集群中的各个节点上，再由节点转发给对应的 Pod。
+
+
+
+k8s 并没有为裸机集群实现负载均衡器，因此我们只有在以下 IaaS 平台（GCP, AWS, Azure）上才能使用 LoadBalancer 类型的 service。
+
+因此裸机集群只能使用 NodePort 或者 `externalIPs service` 来对面暴露服务，然而这两种方式和 `LoadBalancer service` 相比都有很大的缺点。
+
+而 `MetalLB` 的出现就是为了解决这个问题。
+
+
 
 
 
@@ -1502,9 +1625,64 @@ NodePort 暴露的服务，是通过将所有 pod 所在节点上对外暴露的
 
 #### 通过 Ingress 暴露服务
 
+**Ingress 是 Kubernetes 中用于管理对集群内服务的外部访问的 API 对象。** 它主要提供 HTTP 和 HTTPS 路由。
+
+Ingress 本身只是一个**规则集合**，它并没有实际的流量处理能力。要让 Ingress 规则生效，你需要一个**Ingress 控制器（Ingress Controller）**。
+
+Ingress 控制器是 Kubernetes 集群中一个真正的应用程序，它负责监听 Ingress 资源的变化，并根据这些规则来配置一个反向代理或负载均衡器。常见的 Ingress 控制器有：
+
+- **Nginx Ingress Controller**：最常用和最流行的选择。
+- **Traefik**：轻量级且功能强大。
+- **HAProxy**
+- **GCE/AWS Load Balancer**：云服务商的负载均衡器。
 
 
-Ingress 
+
+想象一下，你没有 Ingress。如果你想让外部用户访问你的两个服务（比如 `blog` 和 `shop`），你可能有以下两种选择：
+
+1. **使用 `LoadBalancer` 类型的 Service**：你需要为每个服务创建一个 `LoadBalancer`，这会产生两个独立的公网 IP。如果你有 10 个服务，就需要 10 个公网 IP，成本很高。
+2. **使用 `NodePort` 类型的 Service**：你需要给每个服务分配一个 `NodePort` 端口，然后通过 `NodeIP:Port` 的方式访问。这不仅端口不友好，而且缺乏高可用性。
+
+Ingress 的出现，就是为了解决这些问题。它允许你用**一个统一的入口**（一个公网 IP 或一个负载均衡器）来管理所有服务的外部访问。
+
+
+
+可以将 `Ingress` 理解为 Service 的网关，它是所有流量的入口，通过 `Ingress` 我们就能以一个集群外部可访问的 URL 来访问集群内部的 Service。
+
+根据 Ingress NGINX Controller [官方的部署文档](https://kubernetes.github.io/ingress-nginx/deploy/)，我们大致有两种方式来部署它：
+
+- 第一种是通过 Helm 部署
+- 第二种是通过 `kubectl apply` 部署
+
+```
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/cloud/deploy.yaml
+```
+
+
+
+
+
+## kubernetes-api
+
+Kubernetes API 使你可以查询和操纵 Kubernetes 中对象的状态。 **Kubernetes 控制平面的核心是 API Server 和它暴露的 HTTP API。** 用户、集群的不同部分以及外部组件都通过 API 服务器相互通信。
+
+```bash
+# 查看所有API
+kubectl api-resources
+
+
+# 要查看Kubernetes 集群的API，可以使用 kubectl api-versions 命令来获取支持的API 版本列表，或者使用 kubectl explain 命令来获取特定资源类型的API 详细信息。
+kubectl api-versions
+
+
+# kubectl explain 命令可以用来查看Kubernetes 资源类型的API 详细信息，包括字段、类型和描述。
+kubectl explain pod
+
+
+# 此外，kubectl get --raw 命令可以直接访问Kubernetes API 服务器，用于更底层的调试和探索。
+kubectl get --raw /api/v1/namespaces/kube-system/pods
+
+```
 
 
 
@@ -2059,7 +2237,119 @@ EOF
 
 
 
+# 附录
 
+
+
+## kube-API
+
+
+
+```bash
+root@k8s-master01:~#
+root@k8s-master01:~# kubectl api-resources
+NAME                                SHORTNAMES                          APIVERSION                        NAMESPACED   KIND
+bindings                                                                v1                                true         Binding
+componentstatuses                   cs                                  v1                                false        ComponentStatus
+configmaps                          cm                                  v1                                true         ConfigMap
+endpoints                           ep                                  v1                                true         Endpoints
+events                              ev                                  v1                                true         Event
+limitranges                         limits                              v1                                true         LimitRange
+namespaces                          ns                                  v1                                false        Namespace
+nodes                               no                                  v1                                false        Node
+persistentvolumeclaims              pvc                                 v1                                true         PersistentVolumeClaim
+persistentvolumes                   pv                                  v1                                false        PersistentVolume
+pods                                po                                  v1                                true         Pod
+podtemplates                                                            v1                                true         PodTemplate
+replicationcontrollers              rc                                  v1                                true         ReplicationController
+resourcequotas                      quota                               v1                                true         ResourceQuota
+secrets                                                                 v1                                true         Secret
+serviceaccounts                     sa                                  v1                                true         ServiceAccount
+services                            svc                                 v1                                true         Service
+mutatingwebhookconfigurations                                           admissionregistration.k8s.io/v1   false        MutatingWebhookConfiguration
+validatingadmissionpolicies                                             admissionregistration.k8s.io/v1   false        ValidatingAdmissionPolicy
+validatingadmissionpolicybindings                                       admissionregistration.k8s.io/v1   false        ValidatingAdmissionPolicyBinding
+validatingwebhookconfigurations                                         admissionregistration.k8s.io/v1   false        ValidatingWebhookConfiguration
+customresourcedefinitions           crd,crds                            apiextensions.k8s.io/v1           false        CustomResourceDefinition
+apiservices                                                             apiregistration.k8s.io/v1         false        APIService
+controllerrevisions                                                     apps/v1                           true         ControllerRevision
+daemonsets                          ds                                  apps/v1                           true         DaemonSet
+deployments                         deploy                              apps/v1                           true         Deployment
+replicasets                         rs                                  apps/v1                           true         ReplicaSet
+statefulsets                        sts                                 apps/v1                           true         StatefulSet
+selfsubjectreviews                                                      authentication.k8s.io/v1          false        SelfSubjectReview
+tokenreviews                                                            authentication.k8s.io/v1          false        TokenReview
+localsubjectaccessreviews                                               authorization.k8s.io/v1           true         LocalSubjectAccessReview
+selfsubjectaccessreviews                                                authorization.k8s.io/v1           false        SelfSubjectAccessReview
+selfsubjectrulesreviews                                                 authorization.k8s.io/v1           false        SelfSubjectRulesReview
+subjectaccessreviews                                                    authorization.k8s.io/v1           false        SubjectAccessReview
+horizontalpodautoscalers            hpa                                 autoscaling/v2                    true         HorizontalPodAutoscaler
+cronjobs                            cj                                  batch/v1                          true         CronJob
+jobs                                                                    batch/v1                          true         Job
+certificatesigningrequests          csr                                 certificates.k8s.io/v1            false        CertificateSigningRequest
+ciliumcidrgroups                    ccg                                 cilium.io/v2                      false        CiliumCIDRGroup
+ciliumclusterwidenetworkpolicies    ccnp                                cilium.io/v2                      false        CiliumClusterwideNetworkPolicy
+ciliumendpoints                     cep,ciliumep                        cilium.io/v2                      true         CiliumEndpoint
+ciliumidentities                    ciliumid                            cilium.io/v2                      false        CiliumIdentity
+ciliuml2announcementpolicies        l2announcement                      cilium.io/v2alpha1                false        CiliumL2AnnouncementPolicy
+ciliumloadbalancerippools           ippools,ippool,lbippool,lbippools   cilium.io/v2                      false        CiliumLoadBalancerIPPool
+ciliumnetworkpolicies               cnp,ciliumnp                        cilium.io/v2                      true         CiliumNetworkPolicy
+ciliumnodeconfigs                                                       cilium.io/v2                      true         CiliumNodeConfig
+ciliumnodes                         cn,ciliumn                          cilium.io/v2                      false        CiliumNode
+ciliumpodippools                    cpip                                cilium.io/v2alpha1                false        CiliumPodIPPool
+leases                                                                  coordination.k8s.io/v1            true         Lease
+endpointslices                                                          discovery.k8s.io/v1               true         EndpointSlice
+events                              ev                                  events.k8s.io/v1                  true         Event
+flowschemas                                                             flowcontrol.apiserver.k8s.io/v1   false        FlowSchema
+prioritylevelconfigurations                                             flowcontrol.apiserver.k8s.io/v1   false        PriorityLevelConfiguration
+ingressclasses                                                          networking.k8s.io/v1              false        IngressClass
+ingresses                           ing                                 networking.k8s.io/v1              true         Ingress
+ipaddresses                         ip                                  networking.k8s.io/v1              false        IPAddress
+networkpolicies                     netpol                              networking.k8s.io/v1              true         NetworkPolicy
+servicecidrs                                                            networking.k8s.io/v1              false        ServiceCIDR
+runtimeclasses                                                          node.k8s.io/v1                    false        RuntimeClass
+poddisruptionbudgets                pdb                                 policy/v1                         true         PodDisruptionBudget
+clusterrolebindings                                                     rbac.authorization.k8s.io/v1      false        ClusterRoleBinding
+clusterroles                                                            rbac.authorization.k8s.io/v1      false        ClusterRole
+rolebindings                                                            rbac.authorization.k8s.io/v1      true         RoleBinding
+roles                                                                   rbac.authorization.k8s.io/v1      true         Role
+priorityclasses                     pc                                  scheduling.k8s.io/v1              false        PriorityClass
+csidrivers                                                              storage.k8s.io/v1                 false        CSIDriver
+csinodes                                                                storage.k8s.io/v1                 false        CSINode
+csistoragecapacities                                                    storage.k8s.io/v1                 true         CSIStorageCapacity
+storageclasses                      sc                                  storage.k8s.io/v1                 false        StorageClass
+volumeattachments                                                       storage.k8s.io/v1                 false        VolumeAttachment
+root@k8s-master01:~#
+
+
+oot@k8s-master01:~#
+root@k8s-master01:~#
+root@k8s-master01:~# kubectl api-versions
+admissionregistration.k8s.io/v1
+apiextensions.k8s.io/v1
+apiregistration.k8s.io/v1
+apps/v1
+authentication.k8s.io/v1
+authorization.k8s.io/v1
+autoscaling/v1
+autoscaling/v2
+batch/v1
+certificates.k8s.io/v1
+cilium.io/v2
+cilium.io/v2alpha1
+coordination.k8s.io/v1
+discovery.k8s.io/v1
+events.k8s.io/v1
+flowcontrol.apiserver.k8s.io/v1
+networking.k8s.io/v1
+node.k8s.io/v1
+policy/v1
+rbac.authorization.k8s.io/v1
+scheduling.k8s.io/v1
+storage.k8s.io/v1
+v1
+root@k8s-master01:~#
+```
 
 
 
