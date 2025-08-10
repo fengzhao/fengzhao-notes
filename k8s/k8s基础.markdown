@@ -91,25 +91,16 @@ k8s集群分为两类节点
 这些组件可以运行在单个 master 节点上，**也可以通过副本机制运行在多个 master 节点上以确保其高可用性。**
 
 - etcd 是兼具一致性和高可用性的键值数据库，可以作为保存 Kubernetes 所有集群数据的后台数据库。可以内置在 master 中，也可以放到外面。
-  
-  - **键值存储（Key-Value Store）**：etcd 最基本的功能是作为键值存储，它允许用户存储和检索键值对。每个键都是唯一的，并且与一个值相关联。
-  - **分布式（Distributed）**：etcd 是一个分布式数据库，这意味着它可以在多个节点上运行，并且每个节点都包含完整的数据副本。这种分布式的特性使得 etcd 具有高可用性和容错性，即使部分节点发生故障，整个系统仍然可以继续运行。
-  - **一致性（Consistent）**：etcd 使用 Raft 一致性算法来确保所有节点上的数据副本保持一致。Raft 是一种为管理复制日志而设计的共识算法，它能够在网络不稳定或节点故障的情况下保持数据的一致性。
-  
-  - **存储集群状态**：etcd 存储了 Kubernetes 集群中的所有对象的状态信息，包括 Pods、Nodes、Services、Replication Controllers 等。这些信息对于集群的正常运行至关重要，因为它们用于调度任务、网络路由、服务发现等。
-  - **服务发现**：etcd 可以帮助 Kubernetes 实现服务发现机制。当 Pod 被创建或更新时，其相关信息会被写入 etcd，其他 Pod 可以通过查询 etcd 来发现和使用这些服务。
-  - **配置共享**：etcd 还用于存储集群的配置信息，如网络配置、API 服务器地址等。这些信息可以被集群中的任何组件访问，以实现配置信息的共享和动态更新。
-  - **领导者选举**：在分布式系统中，领导者选举是一个常见的需求。etcd 提供了领导者选举的功能，使得 Kubernetes 集群中的组件（如 Controller Manager、Scheduler 等）可以通过选举来确定哪个节点应该担任领导者的角色。
-  
+
   https://tzfun.github.io/etcd-workbench/
-  
+
 - kube-apiserver : 集群控制的入口，提供 HTTP REST 服务，主节点上负责提供 Kubernetes API 服务的组件；它是 Kubernetes 控制面的前端。
   
   - 它提供了 Kubernetes 各类资源对象（Pod、RC、Service 等）的增删改查及 watch 等 HTTP REST 接口，是整个系统的管理入口。
   
 - kube-scheduler : 负责 Pod 的调度，该组件监视那些新创建的未指定运行节点的 Pod，并选择节点让 Pod 在上面运行。
 
-- kube-controller-manager :  Kubernetes 集群中所有资源对象的自动化控制中心
+- kube-controller-manager :  Kubernetes 集群中所有资源对象的自动化控制中心。
   - 
   - 节点控制器（Node Controller）: 负责在节点出现故障时进行通知和响应。
   - 副本控制器（Replication Controller）: 负责为系统中的每个副本控制器对象维护正确数量的 Pod。
@@ -117,6 +108,12 @@ k8s集群分为两类节点
   - 服务帐户和令牌控制器（Service Account & Token Controllers）: 为新的命名空间创建默认帐户和 API 访问令牌.
 
 启动一个 nginx 服务，客户端向 apiserver 发送
+
+
+
+组件间通信：Kubernetes系统组件间只能通过 `api server`来通信，api server是唯一的通信组件。
+
+`api server`和其他组件的通信都是由其他组件发起的。
 
 
 
@@ -2305,7 +2302,7 @@ https://github.com/GoogleCloudPlatform/kubectl-ai
 
 
 
-## kueue
+kueue
 
 https://github.com/kubernetes-sigs/kueue
 
@@ -2515,3 +2512,18 @@ root@k8s-master01:~#
 3. **无法连接到 Kubernetes API Server**: Cilium Agent 需要与 `kube-apiserver` 通信来获取 Pods、Services 等信息。如果因为网络问题或 RBAC 权限问题无法连接，它可能会退出。
 4. **配置错误**: `cilium-config` ConfigMap 中的配置有误，例如启用了某个与内核不兼容的特性。
 5. **节点上存在冲突的网络配置**: 例如，之前安装的其他 CNI 插件没有清理干净，留下了冲突的 iptables 规则或网络设备。
+
+
+
+
+
+# etcd
+
+- **键值存储（Key-Value Store）**：etcd 最基本的功能是作为键值存储，它允许用户存储和检索键值对。每个键都是唯一的，并且与一个值相关联。
+- **分布式（Distributed）**：etcd 是一个分布式数据库，这意味着它可以在多个节点上运行，并且每个节点都包含完整的数据副本。这种分布式的特性使得 etcd 具有高可用性和容错性，即使部分节点发生故障，整个系统仍然可以继续运行。
+- **一致性（Consistent）**：etcd 使用 Raft 一致性算法来确保所有节点上的数据副本保持一致。Raft 是一种为管理复制日志而设计的共识算法，它能够在网络不稳定或节点故障的情况下保持数据的一致性。
+
+- **存储集群状态**：etcd 存储了 Kubernetes 集群中的所有对象的状态信息，包括 Pods、Nodes、Services、Replication Controllers 等。这些信息对于集群的正常运行至关重要，因为它们用于调度任务、网络路由、服务发现等。
+- **服务发现**：etcd 可以帮助 Kubernetes 实现服务发现机制。当 Pod 被创建或更新时，其相关信息会被写入 etcd，其他 Pod 可以通过查询 etcd 来发现和使用这些服务。
+- **配置共享**：etcd 还用于存储集群的配置信息，如网络配置、API 服务器地址等。这些信息可以被集群中的任何组件访问，以实现配置信息的共享和动态更新。
+- **领导者选举**：在分布式系统中，领导者选举是一个常见的需求。etcd 提供了领导者选举的功能，使得 Kubernetes 集群中的组件（如 Controller Manager、Scheduler 等）可以通过选举来确定哪个节点应该担任领导者的角色。
