@@ -110,8 +110,6 @@ k8s集群分为两类节点
   - **分布式（Distributed）**：etcd 是一个分布式数据库，这意味着它可以在多个节点上运行，并且每个节点都包含完整的数据副本。这种分布式的特性使得 etcd 具有高可用性和容错性，即使部分节点发生故障，整个系统仍然可以继续运行。
   - **一致性（Consistent）**：etcd 使用 Raft 一致性算法来确保所有节点上的数据副本保持一致。Raft 是一种为管理复制日志而设计的共识算法，它能够在网络不稳定或节点故障的情况下保持数据的一致性。
   
-  
-  
   - **存储集群状态**：etcd 存储了 Kubernetes 集群中的所有对象的状态信息，包括 Pods、Nodes、Services、Replication Controllers 等。这些信息对于集群的正常运行至关重要，因为它们用于调度任务、网络路由、服务发现等。
   - **服务发现**：etcd 可以帮助 Kubernetes 实现服务发现机制。当 Pod 被创建或更新时，其相关信息会被写入 etcd，其他 Pod 可以通过查询 etcd 来发现和使用这些服务。
   - **配置共享**：etcd 还用于存储集群的配置信息，如网络配置、API 服务器地址等。这些信息可以被集群中的任何组件访问，以实现配置信息的共享和动态更新。
@@ -277,8 +275,8 @@ kubectl get componentstatuses       # 在新版本可能需要用 kubectl get --
 
 
 # 看 Pod 列表
-kubectl get pods -n <namespace>      # 默认 namespace 是 default
-kubectl get pods -o wide             # 带 IP、节点信息
+kubectl get pods -n <namespace>      # 默认namespace是 default
+kubectl get pods -o wide -A          # 带 IP、节点信息，可以看到pod运行在哪个节点上
 
 # 查看 Pod 详细状态
 kubectl describe pod <pod-name> -n <namespace>
@@ -446,11 +444,15 @@ kubectl describe pod kubia-hczji
 
 
 
-**对于正常的使用情况，子进程的创建一般需要父进程通过系统调用 [wait() 或者 waitpid()](https://man7.org/linux/man-pages/man2/waitpid.2.html) 来等待子进程结束，从而回收子进程的资源。除了这种方式外，还可以通过异步的方式来进行回收，这种方式的基础是子进程结束之后会向父进程发送 `SIGCHLD` 信号，基于此，父进程注册一个 `SIGCHLD` 信号的处理函数来进行子进程的资源回收就可以了**。记住这两种方式，后面还会涉及到。
+**对于正常的使用情况，子进程的创建一般需要父进程通过系统调用 [wait() 或者 waitpid()](https://man7.org/linux/man-pages/man2/waitpid.2.html) 来等待子进程结束，从而回收子进程的资源。**
+
+**除了这种方式外，还可以通过异步的方式来进行回收，这种方式的基础是子进程结束之后会向父进程发送 `SIGCHLD` 信号，基于此，父进程注册一个 `SIGCHLD` 信号的处理函数来进行子进程的资源回收就可以了**。记住这两种方式，后面还会涉及到。
 
 
 
-> 僵尸进程：子进程终止后，其父进程没有对其资源进行回收，于是该子进程就变成了”僵尸进程“。在内核中，维护了一个僵尸进程的信息集合（包括PID, termination status, resource usage information）。只要僵尸进程未被移除（即通过系统调用wait()），那么一个僵尸进程就会占据内核进程表中的一个条目，一旦这张表被填满了，就不能再创建新的进程了。这也就是僵尸进程的危害。
+> 僵尸进程：子进程终止后，其父进程没有对其资源进行回收，于是该子进程就变成了”僵尸进程“。在内核中，维护了一个僵尸进程的信息集合（包括PID, termination status, resource usage information）
+>
+> 只要僵尸进程未被移除（即通过系统调用wait()），那么一个僵尸进程就会占据内核进程表中的一个条目，一旦这张表被填满了，就不能再创建新的进程了。这也就是僵尸进程的危害。
 
 
 
@@ -599,13 +601,9 @@ Kubernetes 项目在调度时，自然就会去选择可用内存等于 3 GB 的
 
 ### 通过 pod 合理管理容器
 
-
-
 将 pod 视为独立的机器，其中每个机器只托管一个特定的应用。过去我们比较习惯于将各种应用程序塞进同一台主机。
 
-由于 pod 比较轻量级，我们可以在几乎不导致任何额外的开销的前提下拥有更多的 pod 。 
-
-一般做法是将应用程序组织到多个 pod 中，每个 pod 只包含紧密相关的组件或进程 。 
+由于 pod 比较轻量级，我们可以在几乎不导致任何额外的开销的前提下拥有更多的 pod 。 一般做法是将应用程序组织到多个 pod 中，每个 pod 只包含紧密相关的组件或进程 。 
 
 
 
@@ -615,8 +613,6 @@ Kubernetes 项目在调度时，自然就会去选择可用内存等于 3 GB 的
 
 同一个 pod 的所有容器总是运行在一起。如果 web 和数据库在同一个 pod 中，那么两者将始终在同一个计算机上运行。
 
-如果你有一个双
-
 
 
 **基于扩容考虑而分割到多个 pod 中**
@@ -625,17 +621,15 @@ Kubernetes 项目在调度时，自然就会去选择可用内存等于 3 GB 的
 
 对于 kubernetes ，它不能横向扩容单个容器，只能扩缩整个 pod 。
 
-通常，web 和数据库有不同的扩缩容需求，所以我们倾向于分别独立地扩缩他们。
-
-数据库这样的后端服务，通常比无状态的前端web服务更多扩展。
+通常，web 和数据库有不同的扩缩容需求，所以我们倾向于分别独立地扩缩他们。数据库这样的后端服务，通常比无状态的前端web服务更多扩展。
 
 
 
 **何时在 pod 中使用多个容器**
 
-将多个容器添加到单个 pod 的主要原因是应用可能由一个主进程和一个或多个辅助进程组成。
+将多个容器添加到单个 pod 的主要原因是应用可能由一个主进程和一个或多个辅助进程组成。pod 应该包含紧密耦合的容器组（通常是一个主容器和支持主容器的其他容器）
 
-pod 应该包含紧密耦合的容器组
+比如，pod 中的主容器可以是一个仅服务于某个目录文件中的web服务，另一个容器（所谓sidecar）定期从外部源下载资源存储到这个服务器目录中。 
 
 
 
@@ -726,6 +720,11 @@ kubectl get pods
 
 
 如果 pod 包含多个容器，在运行 kubectl logs -c 容器名称 来显式指定容器名称
+
+
+
+```
+```
 
 
 
@@ -889,17 +888,22 @@ kubectl annotate  pod kubia-manual mycompany.com/someannotation="foo bar"
 
 ### 使用命名空间对资源分组
 
-**kubernetes 命名空间**简单地为对象名称提供了一个作用域。我们并不会将所有资源都放在同一个命名空间中。而是将它们组织到多个命名空间中。这样允许我们多次使用相同的资源名称（跨不同的命名空间）
+**命名空间（Namespace）**是 Kubernetes 提供的一种将集群资源进行逻辑分组和隔离的机制。
+
+- **隔离和组织资源：** 命名空间的主要作用是为 Kubernetes 中的资源（如 Pods、Services、Deployments 等）提供一个“作用域”。在一个集群中，你可以为不同的项目、团队或环境（如开发、测试、生产）创建各自独立的命名空间。这样可以避免不同团队或项目之间的资源名称冲突，即使两个命名空间里都有一个叫 `nginx` 的 Pod，它们也是完全独立的。
+- **权限控制：** 命名空间是实现权限管理的重要工具。你可以通过配置 **RBAC (基于角色的访问控制)** 规则，限制某个用户或团队只能访问或操作特定命名空间内的资源，从而增强集群的安全性。
 
 
 
-在使用多个 namespace 的前提下，我们将包含大量组件的复杂系统拆分为更小的不同组。
+**kubernetes 命名空间**，简单地为对象提供了一个作用域。我们并不会将所有资源都放在同一个命名空间中。而是将它们组织到多个命名空间中。这样允许我们多次使用相同的资源名称（跨不同的命名空间）
+
+在使用多个 namespace 的前提下，我们将包含大量组件的复杂系统拆分为更小的不同组。**典型的多租户场景**
 
 如果有多个用户和用户组在使用同一个集群，并且它们都管理各自独特的资源集合。那么它们就应该分别使用各自的命名空间。这样一来，它们就不用特别担心无意中修改或删除其他用户的资源。
 
 命名空间的隔离只是逻辑上的隔离，不同命名空间之间的 pod 并不存在网络隔离，它们之间可以通过IP地址进行通讯。资源名称只需在命名空间内保持唯一即可。
 
-```shell
+```bash
 # 查看集群内的所有namespace
 kubectl get ns
 
@@ -907,13 +911,21 @@ kubectl get ns
 kubectl get po --namespace kube-system
 
 # 
+
+
+# 可以使用 --namespace 或其简写 -n 标志来指定要查看的命名空间。
+kubectl get pods --namespace=kube-system
+
+# 查看所有命名空间的 Pods
+kubectl get pods -A
+
+# 如果你经常在一个命名空间里工作，可以把它设置为你的默认命名空间，这样后续的 kubectl 命令就不用每次都手动指定了。
+kubectl config set-context --current --namespace=my-dev-ns
 ```
-
-
 
 #### 创建 namespace
 
-命名空间和其他资源一样，可以通过把YAML提交给Kunernetes API Server来创建该资源。
+命名空间和其他资源一样，可以通过把YAML提交给`Kunernetes API Server`来创建该资源。
 
 
 
@@ -921,7 +933,7 @@ kubectl get po --namespace kube-system
 
 如果想要在 namespace 中创建资源，可以选择在 YAML 的 metadata 字段中添加一个 namespace: custom-namespace 属性。
 
-也可以在 kubectl create 命令中创建资源时指定命名空间。-n 来指定资源所属 namespace 。
+也可以在 `kubectl create` 命令中创建资源时指定命名空间。-n 来指定资源所属 namespace 。
 
 比如，创建 pod 时使用 :
 
@@ -929,12 +941,6 @@ kubectl get po --namespace kube-system
 # 创建pod时指定pod所属的命名空间
 kubectl create -f kubia-manual.yaml -n custom-namespace
 ```
-
-
-
-
-
-
 
 ### 停止和移除 pod 
 
@@ -948,19 +954,59 @@ kubectl delete po kubia-gpu  pod1 pod2
 kubectl delete po -l creation_method=manual
 
 
-# 删除命名空间来删除其空间下的所有pod
+# 通过删除命名空间来删除其空间下的所有pod
 
 
-#　删除命名空间下的所有资源,kubectl命令有上下文，这是指删除上下文的命名空间中的所有资源
+#　删除命名空间下的所有资源,kubectl命令有上下文，这是指删除当前上下文的命名空间中的所有资源
 #　第一个 all 指删除所有资源类型
 #　--all 指定删除所有资源实例
 kubectl delete all --all
-
-
-
 ```
 
 
+
+### 标签
+
+通过标签来组织 pod 和其他所有kubernetes资源对象。标签是可以附加到资源的任意键值对。
+
+不仅仅是pod，其实是node也可以可以打标签的，比如添加node工作节点，可以打上标签，指定硬件类型等等。比如GPU节点，超高性能SSD节点等等。
+
+标签可以在资源对象创建时跟着一起打上，也可以后续修改。
+
+
+
+
+
+当谈到使用标签（Labels）来控制 Kubernetes 调度时，我们通常指的是以下三种核心机制：
+
+1. **节点亲和性（Node Affinity）**：Pod 喜欢（或必须）被调度到哪些节点上。
+2. **节点污点（Taints）**：节点排斥 Pod，除非 Pod 明确允许被调度到该节点上。
+3. **节点容忍度（Tolerations）**：Pod 允许被调度到有污点的节点上。
+
+这三个机制协同工作，共同决定了 Pod 最终会运行在哪个节点上。
+
+
+
+节点亲和性（Node Affinity）是 Pod 的一个属性，它告诉调度器这个 Pod 更倾向于（或必须）被调度到具有特定**标签**的节点上。这是一种“拉”（pull）机制，Pod 主动选择节点。
+
+
+
+
+
+### pod注解
+
+注解其实也是键值对，本质上跟标签有点类似。但是作用不同，不是用于保存标识信息或者分组而存在的。**相对而言，标签应该简单，注解应包含相对更多的数据。**
+
+注解也一样，可以跟着资源对象创建而创建，也可以后续修改
+
+### 外部跟pod通讯
+
+将本地网络端口转发到pod中
+
+```bash
+# 出于调试等目的，将宿主机的5000端口映射到pod的6000端口上
+kubectl port-forward pod/mypod 5000 6000
+```
 
 
 
@@ -968,11 +1014,11 @@ kubectl delete all --all
 
 ## 副本机制和控制器
 
-
-
-**pod 代表了 kubernetes 中的基本部署单元，虽然我们也可以手动创建管理它们。在实际应用中，我们几乎不会去手动管理 pod 。**而是使用 `ReplicationController `或 `Deployment` 这样的资源来管理 pod 。
+**pod 代表了 kubernetes 中的基本部署单元，虽然我们也可以手动创建管理它们。在实际应用中，我们几乎不会去手动管理 pod 。**而是使用 `ReplicationController `或 `Deployment` 这样的资源对象来管理 pod 。
 
 只要将 pod 调度到某个节点，该节点上的 kubelet 就会运行 pod 的容器，如果容器主进程崩溃，kubelet 会将容器重启。
+
+如果是直接创建pod，pod被调度到某个node上，但是如果整个node挂了，那么节点上的pod也都会挂掉不会被调度到其他node上。
 
 
 
@@ -980,11 +1026,11 @@ kubectl delete all --all
 
 使用 kubernetes 的一个主要好处是，可以声明一个容器列表，由 kubernetes 来保持容器在集群中的运行。由 kuberneter 自动选择调度节点。
 
-只要将 pod 调度到某个节点，该节点上的 kubelet 就会运行 pod 的容器。
+只要将 pod 调度到某个节点，该节点上的 kubelet 就会运行 pod 的容器。只要该pod存在，就会保持运行。如果容器主进程挂掉，kubelet就会自动重启容器。
+
+
 
 ### 存活探针（liveness probe）
-
-
 
 kubernetes 可以通过 **存活探针** 检查容器是否还在运行。可以为 pod 中的每个容器单独指定存活探针。
 
@@ -998,8 +1044,6 @@ kubernetes 可以通过 **存活探针** 检查容器是否还在运行。可以
 
 #### 基于 HTTP 的存活探针
 
-
-
 ```shell
 # 基于下面那段node应用来构建docker image
 FROM node:7
@@ -1007,28 +1051,8 @@ ADD app.js /app.js
 ENTRYPOINT ["node", "app.js"]
 
 
-# 这是一个简单的nodejs应用，启动后被访问超过5，就会返回http500状态码
-const http = require('http');
-const os = require('os');
-
-console.log("Kubia server starting...");
-
-var requestCount = 0;
-
-var handler = function(request, response) {
-  console.log("Received request from " + request.connection.remoteAddress);
-  requestCount++;
-  if (requestCount > 5) {
-    response.writeHead(500);
-    response.end("I'm not well. Please restart me!");
-    return;
-  }
-  response.writeHead(200);
-  response.end("You've hit " + os.hostname() + "\n");
-};
-
-var www = http.createServer(handler);
-www.listen(8080);
+# 这是一个简单的nodejs应用，启动http服务后被访问超过5次，就会返回http500状态码
+# https://github.com/luksa/kubernetes-in-action/blob/master/Chapter04/kubia-unhealthy/app.js
 
 
 
@@ -1046,22 +1070,33 @@ spec:
     livenessProbe:
       httpGet:
         path: /
-        port: 8080
+        port: 8080   
+	initialDelaySeconds: 15
+	periodSeconds: 20
+    timeoutSeconds: 5
+    failureThreshold: 5
+
+
+
+
+# livenessProbe定义了HTTP存活探针，Kunernetes会定期请求这个pod的8080端口，路径是/
+
+# initialDelaySeconds:容器启动后，在第一次执行探针之前需要等待的秒数。这给了容器足够的时间来初始化和启动，避免探针过早失败。默认是15秒
+# periodSeconds: 探针执行频率：即每隔多少秒执行一次探针。默认是10秒
+# timeoutSeconds:探测超时时间。如果探针在设定的时间内没有得到响应，则会被判定为失败。默认是1秒
+# failureThreshold:探针被认定为失败之前，需要连续失败的次数。默认是3次
+
 ```
 
-
-
-1
-
-
-
 > 当容器被强行终止时，会创建一个全新的容器——而不是重启原来的容器。
+>
+> 查看日志是
 
 
 
 #### 配置探针属性
 
-在 `kubectl describe pod kubia-liveness` 中，可以看到探针的一些属性
+在 `kubectl describe pod kubia-liveness` 中，可以看到探针的一些属性：
 
 - delay（延迟）       delay=0s 部分指示容器启动后立刻开始探测。
 - timeout（超时）  timeout=1s 部分指示容器必须在1s内响应
@@ -1070,7 +1105,15 @@ spec:
 
 
 
+
+
+在 Pod 的 YAML 配置中，`livenessProbe` 是定义在每个**容器**（`containers`）下的。这意味着你可以为 Pod 中的每个容器单独设置一个存活探针。
+
 **定义探针时可以自定义这些参数，如果没有设置初始延时，探针将在启动时立即开始探测容器，通常会导致探测失败。**
+
+
+
+**存活探针，对于生产上运行的pod，一定要定义一个存活探针**
 
 
 
@@ -1078,15 +1121,13 @@ spec:
 
 ### ReplicationController
 
-rc 是 kubernetes 中的一种资源，可确保它的 pod 始终保持运行。如果 pod 因任何原因消失（节点从集群中消失，或者 pod 被节点逐出）。
+rc 是 kubernetes 中的一种资源，可确保它的 pod 始终保持运行。如果 pod 因任何原因消失（node从集群中下线，或者 pod 被node逐出），则 rc 会注意到缺少pod并创建替代pod
 
-
-
-rc 会持续监控正在运行的 pod 列表，并保证相应类型 的 pod 数量与期望相符。少了会创建副本，对了会删除多余的副本。
+一般而言，rc旨在创建和管理一个pod的多副本，rc 会持续监控正在运行的 pod 列表，并保证相应类型 的 pod 数量与期望相符。少了会创建副本，对了会删除多余的副本。
 
 **rc 协调流程**
 
-rc 的工作是确保 pod 数量始终与其标签选择器匹配。
+rc 的工作是确保 pod 数量始终与其标签选择器匹配
 
 
 
@@ -1549,11 +1590,15 @@ Kubernetes 系统是一套分布式容器应用编排系统，当我们用它来
 
 
 
+## ReplicationController
+
+**ReplicationController副本控制器** 确保在任何时候都有特定数量的 Pod 副本处于运行状态。 换句话说，ReplicationController 确保一个 Pod 或一组同类的 Pod 总是可用的。
 
 
 
 
-### deployment
+
+## deployment
 
 
 
