@@ -1,30 +1,20 @@
-# k8s概述
+# 1. k8s概述
 
 
 
-## 什么是k8s
+## 1.1 什么是k8s
 
 Kubernetes 是 Google 团队发起的一个开源项目，它的目标是管理跨多个主机的容器，用于自动部署、扩展和管理容器化的应用程序，主要实现语言为 Go 语言。
 
 Kubernetes  是一个跨多主机的容器编排工具，它使用共享网络将多个主机（）构建成一个统一的集群。
 
-其中一个或少量几个主机运行为主节点 （master node） 作为控制中心负载管理整个集群。
+其中一个或少量几个主机运行为主节点 （master node） 作为控制中心负载管理整个集群。余下所有主机运行为工作节点（Work Node），他们本地和外部资源接收请求并以 Pod （容器组）形式运行工作负载。
 
-余下所有主机运行为工作节点（Work Node），他们本地和外部资源接收请求并以 Pod （容器组）形式运行工作负载。
-
-它抽象了数据中心的硬件基础设施，使得对外暴露的只是一个巨大的资源池。它让我们在部署和运行组件时，不用关注底层的服务器。
-
-Kubernetes 是希腊语中的 "舵手" 的意思。
+Kubernetes 是希腊语中的 "舵手" 的意思，它抽象了数据中心的硬件基础设施，使得对外暴露的只是一个巨大的资源池。它让我们在部署和运行组件时，不用关注底层的服务器。
 
 
 
-近年来，应用程序的开发部署是如何变化的。变化主要是两方面导致的：
-
-一方面是大型单体应用被拆解为更多的小型微服务。
-
-另一方面是应用所依赖的基础架构的变化。
-
-
+近年来，应用程序的开发部署是如何变化的。变化主要是两方面导致的：一方面是大型单体应用被拆解为更多的小型微服务，另一方面是应用所依赖的基础架构的变化。
 
 将复杂的大型单体应用拆分为小的可独立部署的微服务组件，每个微服务以独立的进程运行，并通过简单且定义良好的接口（API）与其他服务通信。
 
@@ -34,17 +24,13 @@ Kubernetes 是希腊语中的 "舵手" 的意思。
 
 **迈向持续交付：DevOps 和 无运维**
 
-理想情况是，开发者是部署程序本身，不需要知道硬件基础设施的任何情况，也不需要和运维团队交涉，这被叫做 NoOps。
+理想情况是，开发者是部署程序本身，不需要知道硬件基础设施的任何情况，也不需要和运维团队交涉，这被叫做 NoOps。很明显，你仍然需要有一些人来关注硬件基础设施，但这些人不需要再处理应用程序的独特性。
 
-很明显，你仍然需要有一些人来关注硬件基础设施，但这些人不需要再处理应用程序的独特性。
-
-当一个应用程序仅有较少数量的大组件构成时（即单体架构）。完全可以接收给每个组件分配专用的虚拟机。给每个组件提供操作系统来隔离环境。
-
-但是当这些组件开始变小且数量变多时，又不想浪费硬件资源。
+当一个应用程序仅有较少数量的大组件构成时（即单体架构）。完全可以接收给每个组件分配专用的虚拟机。给每个组件提供操作系统来隔离环境。但是当这些组件开始变小且数量变多时，又不想浪费硬件资源。
 
 
 
-## k8s功能
+## 1.2 k8s功能
 
 
 
@@ -60,11 +46,11 @@ Kubernetes 是希腊语中的 "舵手" 的意思。
 
 
 
-## k8s基本概念
+## 1.3 k8s基本概念
 
 
 
-### **集群**
+### **1.3.1 集群**
 
 一个 Kubernetes 集群由一组被称作节点的机器组成。这些节点上运行 Kubernetes 所管理的容器化应用。
 
@@ -90,7 +76,7 @@ k8s集群分为两类节点
 
 
 
-### 控制平面
+### 1.3.2 控制平面
 
 在 Kubernetes（k8s）中，**“控制平面”（Control Plane）** 是一个官方标准术语。
 
@@ -161,7 +147,7 @@ NAME: 即资源的名称，NAME是大小写敏感的。如果不指定某个资�
 
 
 
-### k8s 核心概念
+### 1.3.3 k8s 核心概念
 
 Pod: Pod 是 Kubernetes 最基本的部署调度单元。每个 Pod 可以由一个或多个业务容器和一个根容器(Pause 容器)组成。一个 Pod 表示某个应用的一个实例。
 
@@ -239,7 +225,7 @@ Pod: Pod 是 Kubernetes 最基本的部署调度单元。每个 Pod 可以由一
 
 
 
-### kubectl
+### 1.3.4 kubectl
 
 `kubectl` 本质上就是一个 **Kubernetes REST API 客户端**，它其实就是跟`api server`通讯。
 
@@ -330,7 +316,7 @@ kubectl get pod <pod-name> -n <namespace> -o yaml
 
 
 
-### Kubelet
+### 1.3.5  Kubelet
 
 Kubernetes 的设计是 **每个 Kubernetes 节点上都有一个 Kubelet 进程**，它是节点上的主要代理进程，负责：
 
@@ -367,7 +353,7 @@ kubectl get --raw "/api/v1/nodes/k8s-master01/proxy/metrics/resource"
 
 
 
-### 水平伸缩应用
+### 1.3.6 水平伸缩应用
 
 ```shell
 # 使用最简单的命令在k8s中运行一个node.js应用
@@ -404,7 +390,7 @@ kubectl describe pod kubia-hczji
 
 
 
-### kubernetes各组件通讯
+### 1.3.7 kubernetes各组件通讯
 
 **kubeconfig** 是一种用于配置集群访问权限的文件机制。里面包含了连接 Kubernetes 集群所需的所有信息。
 
@@ -426,7 +412,7 @@ kubectl describe pod kubia-hczji
 
 
 
-## 为什么是pod？
+## 1.4 为什么是pod？
 
 一个 pod 是一组紧密关联的容器，它们总是一起运行在同一个工作节点上，以及同一个Linux命名空间中。
 
@@ -599,7 +585,7 @@ Kubernetes 项目在调度时，自然就会去选择可用内存等于 3 GB 的
 
 
 
-### 通过 pod 合理管理容器
+### 1.5 通过 pod 合理管理容器
 
 将 pod 视为独立的机器，其中每个机器只托管一个特定的应用。过去我们比较习惯于将各种应用程序塞进同一台主机。
 
@@ -730,7 +716,7 @@ kubectl get pods
 
 
 
-#### 使用标签来组织pod
+#### 1.5.1 使用标签来组织pod
 
 在实际部署应用程序时，大多数用户最终将运行很多 pod 。随着 pod 数量的增加，将它们分类到子集的需求也就明显了。
 
@@ -744,6 +730,30 @@ kubectl get pods
 
 - app 用于指定 pod 属于哪个应用，组件或微服务。
 - rel 用于指定 pod 中运行的应用程序版本是 stable,beta,canary。
+
+
+
+通过标签来组织 pod 和其他所有 kubernetes 资源对象。标签是可以附加到资源的任意键值对。
+
+**不仅仅是pod，其实是node也可以可以打标签的，比如添加node工作节点，可以打上标签，指定硬件类型等等。比如GPU节点，超高性能SSD节点等等。**
+
+标签可以在资源对象创建时跟着一起打上，也可以后续修改。
+
+
+
+当谈到使用标签（Labels）来控制 Kubernetes 调度时，我们通常指的是以下三种核心机制：
+
+1. **节点亲和性（Node Affinity）**：Pod 喜欢（或必须）被调度到哪些节点上。
+2. **节点污点（Taints）**：节点排斥 Pod，除非 Pod 明确允许被调度到该节点上。
+3. **节点容忍度（Tolerations）**：Pod 允许被调度到有污点的节点上。
+
+这三个机制协同工作，共同决定了 Pod 最终会运行在哪个节点上。
+
+
+
+节点亲和性（Node Affinity）是 Pod 的一个属性，它告诉调度器这个 Pod 更倾向于（或必须）被调度到具有特定**标签**的节点上。这是一种“拉”（pull）机制，Pod 主动选择节点。
+
+
 
 
 
@@ -810,7 +820,7 @@ kubectl get po -l creation_method=manual
 
 
 
-#### 使用标签来组织工作节点
+#### 1.5.2 使用标签来组织工作节点
 
 如前所述，pod 并不是唯一可以附加标签的 kubernetes 资源。标签可以附加到任何 kubernetes 对象上。包括节点。
 
@@ -856,7 +866,7 @@ spec:
 
 
 
-#### 注解 pod 
+#### 1.5.3 注解 pod 
 
 
 
@@ -886,7 +896,7 @@ kubectl annotate  pod kubia-manual mycompany.com/someannotation="foo bar"
 
 
 
-### 使用命名空间对资源分组
+### 1.6 使用命名空间对资源分组
 
 **命名空间（Namespace）**是 Kubernetes 提供的一种将集群资源进行逻辑分组和隔离的机制。
 
@@ -923,13 +933,13 @@ kubectl get pods -A
 kubectl config set-context --current --namespace=my-dev-ns
 ```
 
-#### 创建 namespace
+#### 1.6.1 创建 namespace
 
 命名空间和其他资源一样，可以通过把YAML提交给`Kunernetes API Server`来创建该资源。
 
 
 
-#### 管理命名空间中的对象
+#### 1.6.2 管理命名空间中的对象
 
 如果想要在 namespace 中创建资源，可以选择在 YAML 的 metadata 字段中添加一个 namespace: custom-namespace 属性。
 
@@ -965,34 +975,6 @@ kubectl delete all --all
 
 
 
-### 标签
-
-通过标签来组织 pod 和其他所有 kubernetes 资源对象。标签是可以附加到资源的任意键值对。
-
-不仅仅是pod，其实是node也可以可以打标签的，比如添加node工作节点，可以打上标签，指定硬件类型等等。比如GPU节点，超高性能SSD节点等等。
-
-标签可以在资源对象创建时跟着一起打上，也可以后续修改。
-
-
-
-
-
-当谈到使用标签（Labels）来控制 Kubernetes 调度时，我们通常指的是以下三种核心机制：
-
-1. **节点亲和性（Node Affinity）**：Pod 喜欢（或必须）被调度到哪些节点上。
-2. **节点污点（Taints）**：节点排斥 Pod，除非 Pod 明确允许被调度到该节点上。
-3. **节点容忍度（Tolerations）**：Pod 允许被调度到有污点的节点上。
-
-这三个机制协同工作，共同决定了 Pod 最终会运行在哪个节点上。
-
-
-
-节点亲和性（Node Affinity）是 Pod 的一个属性，它告诉调度器这个 Pod 更倾向于（或必须）被调度到具有特定**标签**的节点上。这是一种“拉”（pull）机制，Pod 主动选择节点。
-
-
-
-
-
 ### pod注解
 
 注解其实也是键值对，本质上跟标签有点类似。但是作用不同，不是用于保存标识信息或者分组而存在的。**相对而言，标签应该简单，注解应包含相对更多的数据。**
@@ -1012,7 +994,7 @@ kubectl port-forward pod/mypod 5000 6000
 
 
 
-## 副本机制和控制器
+## 1.5 副本机制和控制器
 
 **pod 代表了 kubernetes 中的基本部署单元，虽然我们也可以手动创建管理它们。在实际应用中，我们几乎不会去手动管理 pod 。**而是使用 `ReplicationController `或 `Deployment` 这样的资源对象来管理 pod 。
 
@@ -1022,7 +1004,7 @@ kubectl port-forward pod/mypod 5000 6000
 
 
 
-### 保持 pod 健康
+### 1.5.1 保持 pod 健康
 
 使用 kubernetes 的一个主要好处是，可以声明一个容器列表，由 kubernetes 来保持容器在集群中的运行。由 kuberneter 自动选择调度节点。
 
@@ -1030,9 +1012,9 @@ kubectl port-forward pod/mypod 5000 6000
 
 
 
-### 存活探针（liveness probe）
+### 1.5.2 存活探针（liveness probe）
 
-kubernetes 可以通过 **存活探针** 检查容器是否还在运行。可以为 pod 中的每个容器单独指定存活探针。
+kubernetes 可以通过 **存活探针** 检查容器是否还在运行。可以为 pod 中的每个容器单独指定存活探针。**其主要目标是判断一个容器是否还活着，是否处于不可恢复的死锁状态。**
 
 **kubernetes 容器探测机制**
 
@@ -1117,9 +1099,26 @@ spec:
 
 
 
+### 1.5.3 就绪探针
+
+就绪探针（Readiness Probe），其目标是：**判断一个容器是否准备好接收流量了。**
+
+如果就绪探针失败，Kubernetes 会认为这个容器暂时“没准备好”，它会**将该 Pod 从所有 Service 的流量分发列表中移除**。探针一旦恢复成功，Pod 又会被重新加入到 Service 中。
 
 
-### ReplicationController
+
+
+
+| 特性     | 存活探针（Liveness Probe）         | 就绪探针（Readiness Probe）                        |
+| -------- | ---------------------------------- | -------------------------------------------------- |
+| 目的     | 确保容器**还活着**，没有死锁。     | 确保容器**可以接收流量**。                         |
+| 失败后果 | **重启**容器。                     | 将 Pod 从 Service **中移除**，停止接收流量。       |
+| 检查时机 | 容器整个生命周期内，定期检查。     | 容器整个生命周期内，定期检查。                     |
+| 主要用途 | 发现不可恢复的故障，**自我修复**。 | 优雅地处理启动过程和临时故障，**确保服务不中断**。 |
+
+
+
+### 1.5.4 ReplicationController
 
 ReplicationController是一种Kubernetes资源对象，也是一类控制器，可确保它的pod始终保持运行状态。如果pod因任何原因消失（例如节点从集群中消失或由于该pod已从节点中逐出），则rc会注意到缺少了pod并创建替代pod。
 
@@ -1221,7 +1220,7 @@ kubectl describe rc kubia
 
 
 
-### ReplicaSet
+### 1.5.6 ReplicaSet
 
 最初，ReplicationController 是用于复制和异常时重新调度节点的唯一组件。后来引入了 RepliaSet 这种资源。它是新一代的 rc。请记住，始终使用 rs ，而不是使用 rc 。
 
@@ -1286,7 +1285,7 @@ selector:
 
 
 
-### DaemonSet
+### 1.5.7 DaemonSet
 
 rc 和 rc 都用于在 kubernetes 集群上部署特定数量的 pod 。但是当你希望在集群中的每个节点上都要运行 pod 时（并且每个节点正好要运行一个 pod ）。
 
@@ -1298,7 +1297,7 @@ DaemonSet的目的是运行系统服务，即使是再不可调度的节点上�
 
 
 
-### job
+### 1.5.8 job
 
 Job 表示一次性任务，运行完成后就会停止。比如说爬虫这种就很适合pod，以及某些定时任务，数据同步任务等等
 
@@ -1306,7 +1305,7 @@ Job 表示一次性任务，运行完成后就会停止。比如说爬虫这种�
 
 
 
-## 服务：让客户端发现 pod 并与之通信
+## 1.6 服务：让客户端发现 pod 并与之通信
 
 现在已经学习过了 pod ，以及如何通过 rs 和类似资源部署运行。尽管特定的 pod 可以独立的应对外部刺激，现在大多数应用都需要根据外部请求做出响应。
 
@@ -1332,7 +1331,7 @@ Job 表示一次性任务，运行完成后就会停止。比如说爬虫这种�
 
 
 
-### 创建服务
+### 1.6.1 创建服务
 
 创建服务一般有两种方法：
 
@@ -1386,7 +1385,7 @@ kubectl exec kubia-7nogl -c proxy -- curl http://10.111.249.153
 
 
 
-### 同一个服务暴露多个端口
+### 1.6.2 同一个服务暴露多个端口
 
 创建的服务可以暴露一个端口，也可以暴露多个端口。比如，pod 监听两个端口，http 监听 8080 端口，https 监听 8443 端口。
 
@@ -1413,7 +1412,7 @@ spec:
 
 
 
-### 使用命名的端口
+### 1.6.3 使用命名的端口
 
 可以看到上面这种方式，在 pod 定义中直接指定端口号，然后在服务的定义中也直接硬编码写端口号，一旦 pod 修改端口号，svc 中的定义也需要修改。
 
@@ -1453,11 +1452,11 @@ spec:
 
 
 
-### 服务发现
+### 1.6.4 服务发现
 
 通过创建服务，可以通过一个单一稳定的 IP 地址访问到 pod。在服务的整个生命周期内这个IP地址保持不变（pod后面的pod可能删除重建，IP地址也会变化，数量可能也会增减）
 
-客户端 pod 如何知道服务的 IP 地址和端口呢？Kubenretes提供了服务发现机制
+但是客户端 pod 如何知道服务的 IP 地址和端口呢？Kubenretes提供了服务发现机制。
 
 
 
@@ -1471,11 +1470,9 @@ spec:
 
 #### 通过 DNS 发现服务
 
-在 kube-system 命名空间下，其中一个 pod 被称为 kube-dns 。这个 pod 运行 DNS 服务。在集群中的其他 pod 都被配置为使用其做为 DNS。
+在 `kube-system` 命名空间下，其中一个 pod 被称为 `kube-dns` 。这个 pod 运行 DNS 服务。在集群中的其他 pod 都被配置为使用其做为 DNS。（手动二进制安装的方式并没有）
 
-kubernetes 通过修改每个容器的 /etc/resolv.conf 文件实现。
-
-运行在 pod 上的进程 DNS 查询都会被 kubernetes 自身的 DNS 服务器响应。该服务器知道系统中运行的所有服务。
+`kubernetes` 通过修改每个容器的 /etc/resolv.conf 文件实现。运行在 pod 上的进程的 DNS 查询都会被 kubernetes 自身的 DNS 服务器响应。该服务器知道系统中运行的所有服务。
 
 > **pod 是否使用内部的 DNS 服务是根据 pod 中的 spec 的 dnsPolicy 属性来决定的。**
 
@@ -1487,11 +1484,9 @@ kubernetes 通过修改每个容器的 /etc/resolv.conf 文件实现。
 
 
 
-### 连接集群外部的服务
+### 1.6.5 连接集群外部的服务
 
-服务并不是直接和 pod 相连接的。
-
-如果创建了不包含选择器的服务，kubernetes 将不会创建 Endpoint 资源，（毕竟，缺少选择器，将不会知道服务中包含那些 pod ）
+服务并不是直接和 pod 相连接的。如果创建了不包含选择器的服务，kubernetes 将不会创建 Endpoint 资源，（毕竟，缺少选择器，将不会知道服务中包含那些 pod ）
 
 
 
@@ -1659,6 +1654,59 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/cont
 ```
 
 
+
+
+
+`Gateway API` 是 Kubernetes 新一代的流量管理标准，作为 [Ingress API](https://jimmysong.io/book/kubernetes-handbook/service-discovery/ingress/) 的继任者而设计。虽然它不直接包含 Ingress 资源（最接近的对应是 HTTPRoute），但提供了更强大和灵活的功能。
+
+因此，从现有的 Ingress 资源迁移到相应的 Gateway API 资源需要进行一次性转换。
+
+
+
+### Headless服务来发现独立的pod
+
+**Headless Service** 是 Kubernetes 中一种特殊的 Service 类型，它不分配一个 Cluster IP，而是直接返回它所代理的 Pod IP 地址。
+
+这种服务的核心目的就是**让客户端能够直接发现并访问独立的 Pod，而不是通过 Service 的负载均衡机制。**
+
+
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-headless-service
+spec:
+  clusterIP: None # 关键设置
+  selector:
+    app: my-app
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
+```
+
+当 Kubernetes API Server 看到 `clusterIP: None` 后，它不会为这个 Service 创建一个 Cluster IP。**客户端通过DNS查找来直接发现服务背后的pod**
+
+当你使用 Service 的域名（`my-headless-service.default.svc.cluster.local`）进行 DNS 查询时，DNS 服务器（CoreDNS）不会返回一个 Service IP，而是返回该 Service 所代理的**所有 Pod 的 IP 地址列表**。
+
+此外，如果你使用了 StatefulSet，每个 Pod 都会获得一个稳定的域名，例如 `web-0.my-headless-service.default.svc.cluster.local`，你可以通过这个域名来访问特定的 Pod。
+
+
+
+Headless Service 主要解决了以下问题：
+
+- **有状态应用**：对于数据库（如 MySQL、Redis）这类有状态应用，每个 Pod 都需要一个独立的身份和可寻址性。
+
+  你不能随机地向它们发送请求。Headless Service 配合 **StatefulSet**，可以为每个 Pod 提供一个稳定且唯一的 DNS 域名，让客户端可以直接访问特定的 Pod，这对于主从复制、数据分片等场景至关重要。
+
+- **客户端负载均衡**：如果应用本身具备负载均衡或服务发现能力（例如 gRPC 或一些自定义的分布式系统）
+
+  它们可以通过查询 Headless Service 的 DNS 来获取所有 Pod 的 IP 列表，然后自己决定如何分发流量，而不是依赖 Kubernetes 内置的负载均衡。
+
+- **自定义网络控制**：在某些复杂的网络拓扑中，你可能需要绕过 `kube-proxy` 的负载均衡，直接在 Pod 之间建立连接，Headless Service 提供了实现这种控制的基础。
+
+简而言之，**Headless Service 放弃了 Kubernetes 的自动负载均衡功能，换来了对 Pod 的直接控制和可寻址性。** 它是构建复杂有状态应用和自定义网络架构的基石。
 
 
 
@@ -2180,9 +2228,9 @@ k8s中涉及到的仓库有如下
 
 
 
+# containerd 作为容器运行时
 
-
- containerd 1.5 版本之后推荐的，比修改主配置文件 `/etc/containerd/config.toml` 更灵活。
+`containerd` 1.5 版本之后推荐的，比修改主配置文件 `/etc/containerd/config.toml` 更灵活。
 
 基于**主机名**（hostname）的目录结构。对于每一个你需要配置的镜像仓库，你都需要在这个目录下创建一个以该仓库域名命名的子目录。
 
