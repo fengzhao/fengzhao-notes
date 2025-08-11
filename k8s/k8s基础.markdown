@@ -2497,6 +2497,46 @@ root@k8s-master01:~#
 
 
 
+
+
+#  Aggregated API 
+
+
+
+在 Kubernetes 中，一些核心功能，比如 `Metrics Server`、`Custom Resource Definitions (CRD)` 或其他自定义的 API 服务，并非直接运行在 `API Server` 内部。
+
+它们作为独立的 Pod 运行，并通过一种被称为 `Aggregated API` 的机制，将自己的 API 端点注册到主 `API Server` 上。
+
+当用户或控制器向 `API Server` 发送请求时（例如 `kubectl top nodes`），如果请求的是聚合的 API（如 `metrics.k8s.io`），API Server 会将这个请求代理转发给 `Metrics Server` 这个独立的 Pod。
+
+
+
+为了保证这种代理转发过程是安全的，`API Server` 必须能够信任它所通信的 Aggregated API 服务。
+
+
+
+
+
+## Metrics Server
+
+**Metrics Server 的工作流程**：
+
+1、`Metrics Server` 通过 HTTPS 连接到每个节点的 **Kubelet** 服务（默认端口 `10250`）来收集 CPU 和内存等资源指标。
+
+2、**TLS 证书验证**：为了确保通信安全，`Metrics Server` 会验证 Kubelet 提供的 TLS 证书。
+
+3、**IP SANs**：TLS 证书中有一个名为 **`Subject Alternative Name` (SAN)** 的扩展字段，它用于列出证书所适用的所有域名或IP地址。Metrics Server 试图通过 Kubelet 的 IP 地址（如 `10.10.20.155`）来验证证书。
+
+
+
+
+
+默认情况下，`Metrics Server` 的 Pod 是通过 **`ServiceAccount`** 机制来获取所需的证书和配置的，而不是直接从宿主机的 `/etc/kubernetes/pki` 目录挂载。
+
+因此，你需要修改部署文件，将你的证书文件作为 `volume` 挂载到 Pod 内部。
+
+
+
 # 问题
 
 
