@@ -2345,7 +2345,7 @@ k8s中涉及到的仓库有如下
 
 
 
-```
+```bash
 mkdir -p /etc/containerd/certs.d/docker.io
 mkdir -p /etc/containerd/certs.d/registry.k8s.io
 
@@ -2355,7 +2355,7 @@ touch /etc/containerd/certs.d/registry.k8s.io/hosts.toml
 
 
 
-```
+```bash
 cat>/etc/containerd/certs.d/docker.io/hosts.toml<<EOF
 server = "https://docker.io"
 
