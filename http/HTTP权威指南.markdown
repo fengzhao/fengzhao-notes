@@ -162,6 +162,16 @@ https://a-wing.top/browser/2021/08/22/user-agent
 
 
 
+### 微信
+
+https://developers.weixin.qq.com/community/develop/doc/0000a21a4349506aef83ec44a65401?highLine=138
+
+多数IM客户端内置浏览器以支持网页访问，通常采用基于Chrome的自定义内核。
+
+多数IM客户端支持自定义协议（如 `weixin://`、`tg://`）以实现应用内跳转
+
+
+
 ### Sec-Fetch-*安全请求头
 
 如果你使用76+版本的chrome浏览器，通过开发者面板查看每个网络请求，会发现都有几个Sec-Fetch开头的请求头：
