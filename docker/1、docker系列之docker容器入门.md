@@ -121,13 +121,17 @@ Docker守护进程（`dockerd`）监听 Docker API 的请求，并对各种 Dock
 
 
 
-从 Docker 1.11 版本开始，Docker 容器运行就不是简单通过 Docker Daemon 来启动了，而是通过集成 containerd、runc 等多个组件来完成的。
+从 Docker 1.11 版本开始，Docker 容器运行就不是简单通过 `Docker Daemon` 来启动了，而是通过集成 containerd、runc 等多个组件来完成的。
 
-虽然 Docker Daemon 守护进程模块在不停的重构，但是基本功能和定位没有太大的变化，一直都是 CS 架构，守护进程负责和 Docker Client 端交互，并管理 Docker 镜像和容器。现在的架构中组件 containerd 就会负责集群节点上容器的生命周期管理，并向上为 Docker Daemon 提供 gRPC 接口。
+虽然 `Docker Daemon` 守护进程模块在不停的重构，但是基本功能和定位没有太大的变化，一直都是 CS 架构，守护进程负责和 Docker Client 端交互，并管理 Docker 镜像和容器。现在的架构中组件 `containerd` 就会负责集群节点上容器的生命周期管理，并向上为 `Docker Daemon` 提供 gRPC 接口。
+
+```
+Docker Daemon的可执行文件通常是这么运行的/usr/bin/dockerd -H fd:// --containerd=/run/containerd/containerd.sock 
+```
 
 
 
-当我们要创建一个容器的时候，现在 Docker Daemon 并不能直接帮我们创建了，而是请求 `containerd` 来创建一个容器，containerd 收到请求后，也并不会直接去操作容器，而是创建一个叫做 `containerd-shim` 的进程，让这个进程去操作容器，我们指定容器进程是需要一个父进程来做状态收集、维持 stdin 等 fd 打开等工作的，假如这个父进程就是 containerd，那如果 containerd 挂掉的话，整个宿主机上所有的容器都得退出了，而引入 `containerd-shim` 这个垫片就可以来规避这个问题了。
+当我们要创建一个容器的时候，现在 `Docker Daemon` 并不能直接帮我们创建了，而是请求 `containerd` 来创建一个容器，containerd 收到请求后，也并不会直接去操作容器，而是创建一个叫做 `containerd-shim` 的进程，让这个进程去操作容器，我们指定容器进程是需要一个父进程来做状态收集、维持 stdin 等 fd 打开等工作的，假如这个父进程就是 containerd，那如果 containerd 挂掉的话，整个宿主机上所有的容器都得退出了，而引入 `containerd-shim` 这个垫片就可以来规避这个问题了。
 
 
 
@@ -531,10 +535,6 @@ docker inspect --format='{{range .NetworkSettings.Networks}}{{.MacAddress}}{{end
 
 ## Docker内部组件
 
-
-
-
-
 ```
 docker-client -> dockerd -> docker-containerd -> docker-containerd-shim -> runc（容器外） -> runc（容器内） -> containter-entrypoint
 ```
@@ -559,7 +559,7 @@ Docker 客户端与服务端的交互过程是：docker 组件向服务端发送
 
 **服务端**
 
-dockerd 是 Docker 服务端的后台常驻进程，用来接收客户端发送的请求，执行具体的处理任务，处理完成后将结果返回给客户端。
+dockerd 是 Docker 服务端的后台常驻进程（即`Docker Daemon`），用来接收客户端发送的请求，执行具体的处理任务，处理完成后将结果返回给客户端。
 
 
 
