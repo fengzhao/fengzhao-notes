@@ -1,7 +1,5 @@
 # 概述
 
-
-
 Burp Suite是用于攻击web应用程序的集成平台框架。它包含了许多Web安全工具，并为这些工具设计了许多接口，满足安全人员自行扩展程序功能的需求。
 
 所有的工具都共享一个能处理并显示HTTP消息，持久性，认证，代理，日志，警报的一个强大的可扩展的框架。
@@ -10,13 +8,13 @@ Burp Suite是用于攻击web应用程序的集成平台框架。它包含了许�
 
 Burp Suite由英国的PortSwigger公司开发，它以其灵活、可定制和易于使用的特点而受到全球安全专业人士的青睐，使用 Java 语言开发。
 
-BurpSuite可执行程序是Java文件类型的jar文件，免费版的可以从免费版下载地址进行下载。
+BurpSuite的可执行程序是Java文件类型的jar文件，免费版的可以从免费版下载地址进行下载。
 
 免费版的BurpSuite会有许多限制，很多的高级工具无法使用，如果您想使用更多的高级功能，需要付费购买专业版。
 
 
 
- Burp Suite以代理方式工作，默认的代理端口为8080。
+`Burp Suite`以代理方式工作，默认的代理端口为8080。
 
 在具体应用中，可以将运行Burp Suite工具的主机设置成一个Web浏览器使用的代理服务器，以便拦截所有被扫描的Web网站的流量，供系统查看、分析和修改。
 
@@ -26,14 +24,14 @@ BurpSuite可执行程序是Java文件类型的jar文件，免费版的可以从�
 
 Burp Suite平台主要提供了以下工具：
 
-- **Proxy（代理）**：Proxy是一个拦截HTTP/HTTPS的代理服务器，通过代理服务器来拦截浏览器与目标应用程序之间的流量，为进一步查看或修改相关信息提供原始数据流。
+- **Proxy（代理）**Proxy是一个拦截HTTP/HTTPS的代理服务器，通过代理服务器来拦截浏览器与目标应用程序之间的流量，为进一步查看或修改相关信息提供原始数据流。
 - **Spider（网络爬虫）**：Spider是一个具有特殊应用功能的网络爬虫，它能完整地枚举应用程序的内容和功能。
 - **Scanner（扫描）**：Scanner是 Burp Suite具有的一个高级应用工具，使用该工具可以扫描发现Web应用程序的安全漏洞。
 - **Intruder（干扰者）**：Intruder是 Burp Suite提供的一个可配置的暴力破解攻击工具，主要实现对Web应用程序进行自动攻击，包括收集有用的数据、漏洞模糊测试等。
 - **Repeater（中继器）**：Repeater是一个帮助攻击者完成Web站点扫描的辅助工具，利用该工具可以根据攻击者的需要单独发送HTTP请求，并对请求的响应进行分析，通过分析补充判断Web站点存在的安全漏洞。
-- **Sequencer（定序器）**：Sequencer是一个用于在扫描得到的随机样本中对指定的数据项进行分析的工具。例如，利用Sequencer 工具可以测试应用程序的会话令牌(sessiontokens)。
-- **Decoder（编码器）**：Decoder是 Burp Suite提供的一款编码解码工具，利用Decoder可以将原始数据转换成各种需要的编码和哈希表。
-- **Comparer（比较器）**：Comparer是一个以可视化方式对比分析两项数据之间差异性的工具。例如，在枚举用户名的过程中，利用Comparer 工具可以对比分析登录成功和失败时服务器端反馈结果的区别。
+- **Sequencer（定序器）**：Sequencer是一个用于在扫描得到的随机样本中对指定的数据项进行分析的工具。例如，利用Sequencer工具可以测试应用程序的会话令牌(sessiontokens)。
+- **Decoder（编码器）**：Decoder是 Burp Suite 提供的一款编码解码工具，利用Decoder可以将原始数据转换成各种需要的编码和哈希表。
+- **Comparer（比较器）**：Comparer是一个以可视化方式对比分析两项数据之间差异性的工具。例如，在枚举用户名的过程中，利用Comparer工具可以对比分析登录成功和失败时服务器端反馈结果的区别。
 
 
 
@@ -43,13 +41,15 @@ Burp Suite平台主要提供了以下工具：
 
 ## 工作原理
 
+从本质上讲，Burp Suite是一个基于Java的框架，旨在作为进行Web应用程序渗透测试的综合解决方案。
 
-
-从本质上讲，Burp Suite是一个基于Java的框架，旨在作为进行Web应用程序渗透测试的综合解决方案。Burp Suite已经成为针对Web和移动(mobile )应用程序包括依赖于应用程序编程接口(APIs)的应用程序进行实际安全评估的行业标准工具。 
+Burp Suite已经成为针对Web和移动(mobile )应用程序包括依赖于应用程序编程接口(APIs)的应用程序进行实际安全评估的行业标准工具。 
 
 
 
 简而言之，Burp Suite可以捕获并操作浏览器和Web服务器之间的所有HTTP/HTTPS流量，这一基本功能构成了Burp Suite框架的主干。
+
+
 
 在拦截web请求之后，用户可以灵活地将它们发送到Burp Suite框架内的各种组件中，Burp Suite可以在Web请求到达目标服务器之前拦截、查看和修改Web请求(requests)，甚至可以在浏览器接收到响应之前对响应消息(responses)进行操作，这种能力使得Burp Suite成为手动测试Web应用程序的宝贵工具。
 
@@ -162,23 +162,23 @@ HTTP 抓包神器 Fiddler 的工作原理是在本地开启 HTTP 代理服务，
 
 ## 使用
 
-Burp Suite有三个版本：Community Edition（免费版）、Professional Edition（专业版）、Enterprise Edition（企业版）
+`Burp Suite`有三个版本：`Community Edition`（免费版）、`Professional Edition`（专业版）、`Enterprise Edition`（企业版）
 
-- Community Edition（免费版）
-- Professional Edition（专业版）
-- Enterprise Edition（企业版）
+- `Community Edition`（免费版）
+- `Professional Edition`（专业版）
+- `Enterprise Edition`（企业版）
 
 Community版是免费的，但功能较为简单；Professional版则需要付费，但功能更加强大。
 
 选择哪个版本的`Burp Suite`取决于你的需求和预算。
 
-如果是初学者或者经济条件不允许，可以选择Community版；如果需要更加完善的功能和更高的性能，可以选择Professional版。
+如果是初学者或者经济条件不允许，可以选择Community版；如果需要更加完善的功能和更高的性能，可以选择`Professional`版。
 
-Burp Suite的版本号可能会随着时间的推移而变化，因此建议从PortSwigger官方网站上获取最新的版本信息。
+`Burp Suite`的版本号可能会随着时间的推移而变化，因此建议从`PortSwigger`官方网站上获取最新的版本信息。
 
 
 
-众所周知国内我们使用的 `Burp Suite Pro`大多数是大佬们分享出来的专业破解版的 Burp Suite，每次启动的时候都得通过加载器来启动 Burp Suite。
+众所周知国内我们使用的 `Burp Suite Pro`大多数是大佬们分享出来的专业破解版的 `Burp Suite`，每次启动的时候都得通过加载器来启动 `Burp Suite`。
 
 在`cmd`里执行`java -jar /your_burpsuite_path/burpSuite_pro.jar`即可启动`BurpSuite`。
 
@@ -186,19 +186,19 @@ Burp Suite的版本号可能会随着时间的推移而变化，因此建议从P
 
 
 
-如果Java可运行环境配置正确的话，当你双击 burpSuite.jar 即可启动软件。
+如果`Java`可运行环境配置正确的话，当你双击 burpSuite.jar 即可启动软件。
 
-这时 BurpSuite 自己会自动分配最大的可用内存，具体实际分配了多少内存，默认一般为64M。
+这时 `BurpSuite` 自己会自动分配最大的可用内存，具体实际分配了多少内存，默认一般为64M。
 
-当我们在渗透测试过程，如果有成千上万个请求通过BurpSuite，这时就可能会导致BurpSuite因内存不足而崩溃，从而会丢失渗透测试过程中的相关数据
-
-
+当我们在渗透测试过程，如果有成千上万个请求通过`BurpSuite`，这时就可能会导致`BurpSuite`因内存不足而崩溃，从而会丢失渗透测试过程中的相关数据
 
 
 
-在日常工作中，最常用的web客户端就是的web浏览器，可以通过代理的设置，做到对web浏览器的流量拦截，并对经过BurpSuite代理的流量数据进行处理。
 
-当BurpSuite启动之后，默认分配的代理地址和端口是`127.0.0.1:8080`，我们可以从BurpSuite的`proxy`选项卡的`options`上查看。
+
+在日常工作中，最常用的web客户端就是的web浏览器，可以通过代理的设置，做到对web浏览器的流量拦截，并对经过`BurpSuite`代理的流量数据进行处理。
+
+当BurpSuite启动之后，默认分配的代理地址和端口是`127.0.0.1:8080`，我们可以从`BurpSuite`的`proxy`选项卡的`options`上查看。
 
 
 
@@ -421,11 +421,17 @@ Intruder(入侵者，或译为攻击器) 是`Burp Suite`的内置模糊测试工
 
 
 
-> Fuzz Testing (模糊测试)是一种测试方法，即构造一系列无规则的“坏”数据（“坏”数据：非正常数据）插入应用程序，判断程序是否出现异常，以发现潜在的bug。在信息安全领域，也有人尝试引入fuzz testing思想进行安全漏洞挖掘,而且效果不错。
+> Fuzz Testing (模糊测试)是一种测试方法，即构造一系列无规则的“坏”数据（“坏”数据：非正常数据）插入应用程序，判断程序是否出现异常，以发现潜在的bug。在信息安全领域，也有人尝试引入`fuzz testing`思想进行安全漏洞挖掘,而且效果不错。
 >
 > Fuzzing通过自动或半自动生成随机数据并输入到目标程序中，监视程序异常（如崩溃、断言失败等），从而发现bug，甚至是安全漏洞。
 >
-> 模糊测试 （fuzz testing, fuzzing）是一种软件测试技术。其核心思想是自动或半自动的生成随机数据输入到一个程序中，并监视程序异常，如崩溃，断言(assertion)失败，以发现可能的程序错误，比如内存泄漏。模糊测试常常用于检测软件或计算机系统的安全漏洞。
+> 
+>
+> 模糊测试 （fuzz testing, fuzzing）是一种软件测试技术。
+>
+> 其核心思想是自动或半自动的生成随机数据输入到一个程序中，并监视程序异常，如崩溃，断言(assertion)失败，以发现可能的程序错误，比如内存泄漏。
+>
+> 模糊测试常常用于检测软件或计算机系统的安全漏洞。
 >
 > 一般涉及生成数据列表，并让程序按数据列表内容请求测试的都可以称为fuzz。fuzz模糊测试，主要作用在于我们遇到一些可疑的页面，进行一些测试。
 
@@ -433,7 +439,7 @@ Intruder(入侵者，或译为攻击器) 是`Burp Suite`的内置模糊测试工
 
 类似地，我们也可以导入模糊测试字典，并结合Intruder对子目录、端点或虚拟主机进行模糊测试，Intruder的主要功能与Wfuzz或Ffuf命令行工具类似。
 
-简而言之，作为一种执行自动化请求的工具，Intruder非常强大，但是还有一个问题：如果想不限速率地使用Intruder，那么我们必须下载Burp Suite专业版。
+简而言之，作为一种执行自动化请求的工具，Intruder非常强大，但是还有一个问题：如果想不限速率地使用Intruder，那么我们必须下载`Burp Suite`专业版。
 
 当我们在Burp Suite社区版中使用Intruder模块时，它会受到一定的速率限制，而这种速度限制可能会让许多渗透测试人员选择使用其他工具来进行模糊测试和暴力破解攻击。尽管如此，Intruder模块仍然是一个很有价值的工具，值得我们去学习如何有效地使用它。
 
