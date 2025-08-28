@@ -972,7 +972,9 @@ Jenkins 的所有重要数据都存放在它的主目录中，即 `JENKINS_HOME`
 
 
 
-Role-based Authorization Strategy          https://www.cnblogs.com/netflix/p/12109278.html
+### Role-based Authorization Strategy         
+
+https://www.cnblogs.com/netflix/p/12109278.html
 
 
 
