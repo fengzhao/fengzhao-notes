@@ -7026,11 +7026,40 @@ webhooks是一个api概念，是微服务api的使用范式之一，也被成为
 
 
 
-简单来说，WebHook就是一个接收HTTP POST（或GET，PUT，DELETE）的URL。一个实现了WebHook的API提供商就是在当事件发生的时候会向这个配置好的URL发送一条信息。
+简单来说，WebHook就是一个接收HTTP POST（或GET，PUT，DELETE）的URL。
+
+一个实现了WebHook的API提供商就是在当事件发生的时候会向这个配置好的URL发送一条信息。
 
 与请求-响应式不同，使用WebHooks，你可以实时接受到变化。
 
 这又是一种对客户机-服务器模式的逆转，在传统方法中，客户端从服务器请求数据，然后服务器提供给客户端数据（客户端是在拉数据）。
+
+
+
+Webhook 是一种简单的 HTTP 回调机制，它允许一个应用程序在事件发生时自动通过 HTTP 请求通知另一个应用程序。
+
+这意味着 Webhook 在某个特定事件发生时，自动向指定的 URL 发送数据，通常是 JSON 或 XML 格式。
+
+与传统的 API 不同，Webhook 是一种“**推送**”机制，而不是“拉取”机制。
+
+
+
+尽管 Webhook 和传统的 API 都用于系统间的数据交换，它们的工作方式有所不同：
+
+- **Webhook**：是一种主动通知机制。当事件发生时，Webhooks 会自动发送数据到指定的 URL，而接收方无需发起请求。
+- **API**：是一种请求-响应模式。接收方必须主动发起请求来获取数据或执行操作。
+
+因此，Webhooks 更适合处理实时事件和通知，特别是在需要快速响应的场景中，如支付确认、CI/CD 构建等。
+
+
+
+举个例子，Jenkins插件`Generic Webhook Trigger`提供一个URL：`http://JENKINS_URL/generic-webhook-trigger/invoke`
+
+
+
+
+
+
 
 在Webhook范式下，服务器更新所需提供的资源，然后自动将其作为更新发送到客户端（服务器是在推数据），客户端不是请求者，而是被动接收方。
 
