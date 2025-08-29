@@ -862,13 +862,10 @@ chown -R 1000:1000  /home/jenkins_root/jenkins_data
 chown -R 1000:1000  /home/jenkins_root/jenkins_home
 
 
-docker pull ghcr.io/fengzhao-study-notes/blueocean:latest
-
-
 version: '2.4'
 services:
   jkenkins:
-    image: "ghcr.io/fengzhao-study-notes/blueocean"
+  	image: "jenkins/jenkins:lts"
     restart: always
     privileged: true
     ports:
@@ -879,7 +876,7 @@ services:
      - "/var/run/docker.sock:/var/run/docker.sock"
     network_mode: "host"
     cpus: 1
-    #mem_limit: 4g
+    mem_limit: 4g
 
 
 
@@ -892,8 +889,6 @@ mkdir /data/jenkins_home
 
 
 ### jenkins 主目录结构
-
-
 
 Jenkins 的所有重要数据都存放在它的主目录中，即 `JENKINS_HOME`。它默认位于当前用户主目录下的 `.jenkins` 隐藏目录中，即 `~/.jenkins`。可通过修改环境变量 `JENKINS_HOME` 的值，来更改 jenkins 主目录。
 
@@ -917,13 +912,7 @@ Jenkins 的所有重要数据都存放在它的主目录中，即 `JENKINS_HOME`
 
 
 
-
-
 ## 流水线
-
-
-
-
 
 
 
@@ -931,9 +920,7 @@ Jenkins 的所有重要数据都存放在它的主目录中，即 `JENKINS_HOME`
 
 
 
-现在的编程中，公司往往将一个项目拆分成多个工程，前后端分离，由多个开发团队负责一个大项目的编写。
-
-这样在我们对项目进行维护的时候就要将不同的项目区分开，方便管理。
+现在的编程中，公司往往将一个项目拆分成多个工程，前后端分离，由多个开发团队负责一个大项目的编写。这样在我们对项目进行维护的时候就要将不同的项目区分开，方便管理。
 
 在jenkins的主页面中，在所有的旁边，点击+号，就可以创建视图。
 
@@ -972,7 +959,29 @@ Jenkins 的所有重要数据都存放在它的主目录中，即 `JENKINS_HOME`
 
 
 
-### Role-based Authorization Strategy         
+### Role-based Authorization Strategy
+
+当我们需要对jenkins做访问权限控制的时候，而且公司项目比较多，角色比较多的时候，就需要对每个人可操作的权限做控制，避免配置被别人误删或者修改。
+
+而且权限的控制最好细化到每一个员工，不要每个项目/部门用公共账号，到时候出了问题都不知道谁整出来的。 而且有些特殊的情况，也是需要授权给每个项目的人员自己维护一些配置的。
+
+
+
+
+
+可以配置相关的角色并且为角色分配对应模块的权限。角色分为3种类型，
+
+- `Global roles`：拥有最高的权限，如果为它分配job的读写权限，那么用户如果绑定了这个角色，将会允许读取所有的job，不管用户是不是拥有的项目角色的权限。
+
+
+
+- `Item roles`(项目角色)
+
+Agent roles(和节点操作权限相关的角色)
+
+其中Global roles
+
+
 
 https://www.cnblogs.com/netflix/p/12109278.html
 

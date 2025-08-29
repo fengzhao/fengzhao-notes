@@ -7020,9 +7020,11 @@ add_header Strict-Transport-Security "max-age=31536000; includeSubdomains; prelo
 
 # webhook钩子详解
 
+webhooks是一个api概念，是微服务api的使用范式之一，也被成为反向api，即：前端不主动发送请求，完全由后端推送。 
+
+举个常用例子，比如你的好友发了一条朋友圈，后端将这条消息推送给所有其他好友的客户端，就是 Webhooks 的典型场景。
 
 
-webhooks是一个api概念，是微服务api的使用范式之一，也被成为反向api，即：前端不主动发送请求，完全由后端推送。 举个常用例子，比如你的好友发了一条朋友圈，后端将这条消息推送给所有其他好友的客户端，就是 Webhooks 的典型场景。
 
 简单来说，WebHook就是一个接收HTTP POST（或GET，PUT，DELETE）的URL。一个实现了WebHook的API提供商就是在当事件发生的时候会向这个配置好的URL发送一条信息。
 
@@ -7045,6 +7047,33 @@ webhook是在特定情况下触发的一种api（回调），用于在项目发�
 这些回调由第三方的用户、开发人员自己定义、维护、管理，就好像允许别人挂载一条网线到你的Web网站或者应用程序的钩子上，来实时地收到你的推送信息。
 
 比如 github  gitlab  jenkins dingding 机器人等，都支持自定义webhook
+
+
+
+在GitLab的工程项目中，使用Webhook可以使得使用者在推送代码或创建Issue的时候可以触发一个事前配置好的URL，而推送代码还是创建Issue，抑或是合并请求。
+
+使用者可以自行在GitLab中进行定制，GitLab会向设定的Webhook的URL发送一个POST请求。整体来说，Webhook指的是用户定义的HTTP回调，GitLab的Webhook在使用上通常具有如下特性：
+
+- 由某些事件所触发，比如代码push，新建tag，创建merge request等等；
+
+- 
+
+- 一般会触发用户定义的URL（比如jenkins等等），事件触发后，由GitLab发送HTTP请求
+
+- HTTP请求到达对应的处理服务器以后，对request body和header进行解析，包装通知内容；
+
+- Webhook可以从外部更新或者部署
+
+- 在GitLab CE版本中可以对每个项目进行设定，在EE版本中可以对每个项目或者每个组Group进行设定
+
+- 设定方式：项目的 Settings ➔ Webhooks
+
+  
+
+1. 
+2. 
+3. 
+4. 将通知的内容通过企业微信的消息发送接口发送到企业微信；
 
 
 
