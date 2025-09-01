@@ -1,0 +1,120 @@
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                      http://maven.apache.org/xsd/settings-1.0.0.xsd">
+	<servers>
+		<server>
+			<id>nexus-releases</id>
+			<username>deployment</username>
+			<password>deployment123</password>
+		</server>
+		<server>
+			<id>nexus-snapshots</id>
+			<username>deployment</username>
+			<password>deployment123</password>
+		</server>
+		<server>
+			<id>registry.cn-shenzhen.aliyuncs.com</id>
+			<username>docker@qhdata</username>
+			<password>sj36668182</password>
+		</server>
+                <server>
+			<id>qhdata-app-platform-maven-snapshots</id>
+                        <username>deployment</username>
+                        <password>deployment123</password>
+		</server>
+		<server>
+			<id>registry.cn-shenzhen.aliyuncs.com</id>
+                        <username>deployment</username>
+                        <password>deployment123</password>
+		</server>  
+	</servers>
+	<mirrors>
+
+		
+		<mirror>
+			<id>nexus</id><!--和下面的id保持一致-->
+			<mirrorOf>*</mirrorOf>
+			<url>https://registry.qh-1.cn/repository/qhdata-maven-group/</url>
+		</mirror>
+                
+                <mirror>
+			<id>qhdata-app-platform-maven-snapshots</id><!--和下面的id保持一致-->
+			<mirrorOf>qhdata-app-platform-maven-snapshots</mirrorOf>
+			<url>https://registry.qh-1.cn/repository/qhdata-app-platform-maven-snapshots/</url>
+		</mirror>
+		<mirror>
+			<id>qhdata-app-platform-maven-releases</id><!--和下面的id保持一致-->
+			<mirrorOf>qhdata-app-platform-maven-releases</mirrorOf>
+			<url>https://registry.qh-1.cn/repository/qhdata-app-platform-maven-releases/</url>
+		</mirror>
+	</mirrors>
+ 
+	<activeProfiles>
+		<activeProfile>nexus</activeProfile>
+
+	</activeProfiles>
+	<profiles>
+		<profile>
+			<id>nexus</id>
+			<repositories>
+                                <repository>
+					<id>qhdata-app-platform-maven-snapshots</id>
+					<name>Nexus</name>
+					<url>https://registry.qh-1.cn/repository/qhdata-app-platform-maven-snapshots/</url>
+					<layout>default</layout>
+					<snapshots>
+						<enabled>true</enabled>
+						<updatePolicy>always</updatePolicy>
+					</snapshots>
+				</repository>
+
+				<repository>
+					<id>qhdata-app-platform-maven-releases</id>
+					<name>Nexus</name>
+					<url>https://registry.qh-1.cn/repository/qhdata-app-platform-maven-releases/</url>
+					<layout>default</layout>
+					<releases>
+						<enabled>true</enabled>
+					</releases>
+				</repository>
+
+				<repository>
+					<id>nexus</id>
+					<name>Nexus</name>
+					<url>https://registry.qh-1.cn/repository/qhdata-maven-group/</url>
+					 <layout>default</layout>
+					<releases>
+						<enabled>true</enabled>
+					</releases>
+					<snapshots>
+						<enabled>true</enabled>
+						<updatePolicy>always</updatePolicy>
+					</snapshots>
+				</repository>
+			</repositories>
+			<pluginRepositories>
+				<pluginRepository>
+					<id>nexus</id>
+					<name>Nexus</name>
+					<url>https://registry.qh-1.cn/repository/qhdata-maven-group/</url>
+					 <layout>default</layout>
+					<releases>
+						<enabled>true</enabled>
+						<updatePolicy>always</updatePolicy>
+					</releases>
+					<snapshots>
+						<enabled>true</enabled>
+						<updatePolicy>always</updatePolicy>
+					</snapshots>
+				</pluginRepository>
+			</pluginRepositories>
+		
+		 	 
+		</profile>
+	</profiles>
+
+
+		
+
+</settings>

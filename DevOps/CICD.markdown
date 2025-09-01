@@ -906,13 +906,83 @@ Jenkins 的所有重要数据都存放在它的主目录中，即 `JENKINS_HOME`
 
 ## 自由风格
 
-
-
 自由风格，允许配置任何类型的构建作业：它们是高度灵活的。
 
 
 
 ## 流水线
+
+按照《持续交付》中定义，Jenkins 就是支持部署流水线的。
+
+Jenkins 1.x 只能通过界面手动配置操作来部署，Jenkins 2.x 支持 `pipeline as code` ，可以通过 ”代码“ 来描述部署流水线。
+
+
+
+Jenkinsfile 是一个文本文件，也就是部署流水线在 Jenkins 中的表现形式。该文件可以被提交到项目的源代码控制仓库中。就像 gitlab 中的 .gitlab-ci.yml 文件一样。所有部署流水线的逻辑都写在 Jenkinsfile 中。
+
+这是"流水线即代码"的基础；将CD 流水线作为应用程序的一部分，像其他代码一样进行版本化和审查。 
+
+创建 `Jenkinsfile`并提交它到源代码控制中提供了一些即时的好处：
+
+- 自动地为所有分支创建流水线构建过程并拉取请求。
+- 在流水线上代码复查/迭代 (以及剩余的源代码)。
+- 对流水线进行审计跟踪。
+- 该流水线的真正的源代码 , 可以被项目的多个成员查看和编辑。
+
+定义流水线的语法，无论是在 web UI 还是在 `Jenkinsfile` 中都是相同的，通常认为在`Jenkinsfile` 中定义并检查源代码控制是最佳实践。
+
+
+
+```groovy
+pipeline {
+	agent any 
+    stages {
+        stage('Build') {
+            steps {
+                echo "hello world"
+            }
+        }
+        
+        stage('Test'){
+            steps {
+                echo ""
+            }
+        }
+        stage('Deploy'){
+            steps {
+                echo ""
+            }
+        }
+    }
+  
+    post {
+        failure {
+            mail to: 'team@example.com' , subject: 
+        }
+    }
+}
+
+// pipeline代表整条流水线，它定义了包含执行整个流水线的所有内容和指令的 "block" 。
+
+// agent是声明式流水线的一种特定语法，它指示 Jenkins 为整个流水线分配一个执行器 (在节点上)和工作区。
+// agent必须在pipeline的顶层块定义，声明在哪个节点上执行这个构建任务。
+
+
+// stages>stage>steps
+
+// stages : 
+
+// stage : 代表着流水线各个阶段
+
+// steps : 代表着阶段里面的的步骤
+
+
+// post： post是整个流水线完成之后的附加步骤
+```
+
+
+
+
 
 
 
