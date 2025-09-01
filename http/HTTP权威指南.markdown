@@ -4866,27 +4866,34 @@ TCP Fast Open 的目的就是为了减少这种连接建立的延迟，提高 TC
 
 
 
-TLS 和 HTTP/1.x 一样，目前受到主流支持的 TLS 协议版本是 1.1 和 1.2，分别发布于 2006年和2008年，也都已经落后于时代的需求了。在2018年8月份，IETF终于宣布TLS 1.3规范正式发布了。
+TLS 和 HTTP/1.x 一样，目前受到主流支持的 TLS 协议版本是 1.1 和 1.2，分别发布于 2006年和2008年，也都已经落后于时代的需求了。
 
-TLS 握手中的确切步骤将根据所使用的密钥交换算法的种类和双方支持的密码套件而有所不同。RSA 密钥交换算法虽然现在被认为不安全，但曾在 1.3 之前的 TLS 版本中使用。
+在2018年8月份，IETF终于宣布TLS 1.3规范正式发布了。
+
+
+
+TLS 握手中的确切步骤将根据所使用的密钥交换算法的种类和双方支持的密码套件而有所不同。
+
+RSA 密钥交换算法虽然现在被认为不安全，但曾在 1.3 之前的 TLS 版本中使用。
 
 
 
 
 
 - 客户端问候：握手开始，Client 先发送 ClientHello ，在这条消息中，Client 会上报它支持的所有“能力”。
-  - client_version 中标识了 Client 能支持的最高 TLS 版本号；
-  - random 中标识了 Client 生成的随机数，用于预备主密钥和主密钥以及密钥块的生成，总长度是 32 字节，其中前 4 个字节是时间戳，后 28 个字节是随机数；
-  - cipher_suites 标识了 Client 能够支持的密码套件。
-  - extensions 中标识了 Client 能够支持的所有扩展。
+  - `client_version` 中标识了 `Client` 能支持的最高 TLS 协议版本号；
+  - `random` 中标识了 `Client` 生成的随机数，用于预备主密钥和主密钥以及密钥块的生成，总长度是 32 字节，其中前 4 个字节是时间戳，后 28 个字节是随机数；
+  - `cipher_suites` 标识了 `Client` 能够支持的密码套件。
+  - `extensions` 中标识了 `Client` 能够支持的所有扩展。
 
 
 
-- Server 在收到 ClientHello 之后，如果能够继续协商，就会发送 ServerHello，否则发送 Hello Request 重新协商。在 ServerHello 中，Server 会结合 Client 的能力，选择出双方都支持的协议版本以及密码套件进行下一步的握手流程。    
-  - server_version 中标识了经过协商以后，Server 选出了双方都支持的协议版本。
-  - random 中标识了 Server 生成的随机数，用于预备主密钥和主密钥以及密钥块的生成，总长度是 32 字节，其中前 4 个字节是时间戳，后 28 个字节是随机数；
-  - cipher_suites 标识了经过协商以后，Server 选出了双方都支持的密码套件。
-  - extensions 中标识了 Server 处理 Client 的 extensions 之后的结果。
+- `Server` 在收到 `ClientHello` 之后，如果能够继续协商，就会发送 `ServerHello`，否则发送 `Hello Request` 重新协商。在 ServerHello 中，Server 会结合 Client 的能力，选择出双方都支持的协议版本以及密码套件进行下一步的握手流程。    
+  - `server_version` 中标识了经过协商以后，`Server` 选出了双方都支持的TLS协议版本。
+  - `random` 中标识了 `Server` 生成的随机数，用于预备主密钥和主密钥以及密钥块的生成，总长度是 32 字节，其中前 4 个字节是时间戳，后 28 个字节是随机数；
+  - `cipher_suite`s 标识了经过协商以后，`Server` 选出了双方都支持的密码套件。
+  - `extensions` 中标识了 `Server` 处理 `Client` 的 `extensions` 之后的结果。
+- Certificate，
 
 
 | 序号 | 方向   | 协议                | 描述                                                         |
