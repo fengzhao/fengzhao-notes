@@ -320,9 +320,63 @@ usage: ssh [-1246AaCfgKkMNnqsTtVvXxYy] [-b bind_address] [-c cipher_spec]
 -T 禁用伪终端配置
 -t （tty）为远程系统上的ssh进程分配一个伪tty（终端）。如果没有使用这个选项，当你在远程系统上运行某条命令的时候，ssh不会为该进程分配tty（终端）。相反，ssh将会把远端进程的标准输入和标准输出附加到ssh会话上去，这通常就是你所希望的（但并非总是如此）。这个选项将强制ssh在远端系统上分配tty，这样那些需要tty的程序就能够正常运行。
 -v verbose）显示与连接和传送有关的调试信息。如果命令运行不太正常的话，这个选项就会非常有用。
+-o 在 ssh 命令里，-o 选项是用来指定配置项的（相当于写在 ~/.ssh/config 里的 Key Value）
 ```
 
 
+
+```bash
+# 查看所有可用的密钥交换算法
+ssh -Q kex
+diffie-hellman-group1-sha1
+diffie-hellman-group14-sha1
+diffie-hellman-group14-sha256
+diffie-hellman-group16-sha512
+diffie-hellman-group18-sha512
+diffie-hellman-group-exchange-sha1
+diffie-hellman-group-exchange-sha256
+ecdh-sha2-nistp256
+ecdh-sha2-nistp384
+ecdh-sha2-nistp521
+curve25519-sha256
+curve25519-sha256@libssh.org
+sntrup761x25519-sha512@openssh.com
+
+# 查看所有可用的对称加密算法（Ciphers）
+ssh -Q cipher
+3des-cbc
+aes128-cbc
+aes192-cbc
+aes256-cbc
+aes128-ctr
+aes192-ctr
+aes256-ctr
+aes128-gcm@openssh.com
+aes256-gcm@openssh.com
+chacha20-poly1305@openssh.com
+
+# 查看所有可用的主机密钥算法（HostKeyAlgorithms）
+ssh -Q key
+ssh-ed25519
+ssh-ed25519-cert-v01@openssh.com
+sk-ssh-ed25519@openssh.com
+sk-ssh-ed25519-cert-v01@openssh.com
+ecdsa-sha2-nistp256
+ecdsa-sha2-nistp256-cert-v01@openssh.com
+ecdsa-sha2-nistp384
+ecdsa-sha2-nistp384-cert-v01@openssh.com
+ecdsa-sha2-nistp521
+ecdsa-sha2-nistp521-cert-v01@openssh.com
+sk-ecdsa-sha2-nistp256@openssh.com
+sk-ecdsa-sha2-nistp256-cert-v01@openssh.com
+ssh-dss
+ssh-dss-cert-v01@openssh.com
+ssh-rsa
+ssh-rsa-cert-v01@openssh.com
+
+# 查看 MAC 算法
+ssh -Q mac
+```
 
 
 
@@ -449,17 +503,17 @@ done
 
 ### ssh-keygen 用法
 
-ssh-keygen 命令是用来生成一对新密钥对的。
+ssh-keygen 命令是用来生成一对新密钥对
 
 ```shell
-# -t 算法 -b 密钥长度 -C 标识（一般设为邮箱） -f 密钥对名称  
+# ssh-keygen -t 算法 -b 密钥长度 -C 标识（一般设为邮箱） -f 密钥对名称  
 # 这个命令会生成 /path/keyname.pub（传到远程主机的公钥）和 /path/keyname（登陆远程主机的私钥） 
 # 生成 SSH 密钥时，可以添加密码以进一步保护密钥。 每当使用密钥时，都必须输入密码。
 
-# Ed25519 是一种用于数字签名的椭圆曲线算法，由丹尼尔·J·伯恩斯坦、Niels Duif、Tanja Lange、Peter Schwabe 和 Bo-Yin Yang 在 2011 年提出。相较于传统的 RSA 和 DSA，Ed25519 具有更高的安全性和性能，近年来越来越受到欢迎。
+# Ed25519 是一种用于数字签名的椭圆曲线算法，由丹尼尔·J·伯恩斯坦、Niels Duif、Tanja Lange、Peter Schwabe 和 Bo-Yin Yang 在 2011 年提出。
+# 相较于传统的 RSA 和 DSA，Ed25519 具有更高的安全性和性能，近年来越来越受到欢迎。
 
 ssh-keygen -t rsa -b 4096  -C "comment" -f /path/keyname  
-
 
 # 清除ssh私钥中的phrase，交互式弹出让输入老密码，然后新密码置空，即可清除老密码
 ssh-keygen -f ~/.ssh/kc_id_rsa -p
@@ -716,7 +770,8 @@ AuthorizedKeysFile .ssh/authorized_keys 	# 保存公钥的认证文件
 
 UseDNS  yes       # 服务端sshd服务开启UseDNS选项状态下，当客户端试图使用SSH连接服务器时，服务器端先根据客户端的IP地址进行DNS PTR反向查询出客户端的主机名，然后根据查询出的客户端主机名进行DNS正向A记录查询，验证与其原始IP地址是否一致，这是防止客户端欺骗的一种措施，但一般我们的是动态IP不会有PTR记录，建议关闭该选项。
 
-
+KexAlgorithms 	KexAlgorithms curve25519-sha256,curve25519-sha256@libssh.org,diffie-hellman-group14-sha256
+						
 ```
 
 
