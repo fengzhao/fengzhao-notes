@@ -1139,6 +1139,8 @@ https://support.huaweicloud.com/bestpractice-swr/swr_bestpractice_0002.html)
 
 于是，过往我们使用`sudo docker build -t name:latest .`这样构建出来的镜像就不满足需求了，因为它构建出来的镜像只是你当前系统架构的特定版本。
 
+
+
 想要构建多平台的镜像,有两种方式可以考虑：
 
 - 在不同的架构系统上分别构建自己的镜像并上传 (不同名称的镜像名不能一样，否则会覆盖)
@@ -1147,11 +1149,15 @@ https://support.huaweicloud.com/bestpractice-swr/swr_bestpractice_0002.html)
 
   
 
-第一种就不说了，因为它并不方便，也不实用，而且也麻烦。今天的这篇文章主要就是介绍如何基于Docker提供的buildx工具，来构建多平台镜像，让你只做一次，满足不同平台。
+第一种就不说了，因为它并不方便，也不实用，而且也麻烦。
+
+今天的这篇文章主要就是介绍如何基于Docker提供的buildx工具，来构建多平台镜像，让你只做一次，满足不同平台。
 
 
 
-事实上，只要你稍微关注`Docker Hub`，就会发现基本上主流的镜像，都是支持多架构的。常见的各种运行时环境：jdk，python，golang，nodejs，c# ，以及各种开源软件也基本上都有了。
+事实上，只要你稍微关注`Docker Hub`，就会发现基本上主流的镜像，都是支持多架构的。
+
+常见的各种运行时环境：jdk，python，golang，nodejs，c# ，以及各种开源软件也基本上都有了。
 
 
 
@@ -1159,7 +1165,9 @@ https://support.huaweicloud.com/bestpractice-swr/swr_bestpractice_0002.html)
 
 在 `Docker v18.09` 中已经可以通过增加 `DOCKER_BUILDKIT=1` 环境变量的方式来默认启用它了。 后来 Docker Desktop 中也已经将 BuildKit 设置成了默认的构建引擎。
 
-在`Docker v19.03` 引入了一个新的实验性插件，该插件使得跨平台构建 Docker 镜像比以往更加容易了。首先要确保 Docker 版本不低于 `19.03`，同时还要通过设置环境变量 `DOCKER_CLI_EXPERIMENTAL` 来启用。
+在`Docker v19.03` 引入了一个新的实验性插件，该插件使得跨平台构建 Docker 镜像比以往更加容易了。
+
+首先要确保 Docker 版本不低于 `19.03`，同时还要通过设置环境变量 `DOCKER_CLI_EXPERIMENTAL` 来启用。
 
 在 `Docker v23.0.0` 中，`docker build` 实际已经成为了 `docker buildx build` 的别名。如果你安装的是最新Docker版本，buildx工具已经是内置的了。
 
@@ -1169,7 +1177,9 @@ https://support.huaweicloud.com/bestpractice-swr/swr_bestpractice_0002.html)
 
 
 
-但是，之所以能在特定架构系统上构建不同的架构平台的镜像，就是使用的qemu虚拟化模拟CPU技术。QEMU 支持许多常见的 CPU 架构，包括 `ARM`、`Power-PC` 和 `RISC-V` 等。
+但是，之所以能在特定架构系统上构建不同的架构平台的镜像，就是使用的qemu虚拟化模拟CPU技术。
+
+QEMU 支持许多常见的 CPU 架构，包括 `ARM`、`Power-PC` 和 `RISC-V` 等。
 
 ```bash
 
