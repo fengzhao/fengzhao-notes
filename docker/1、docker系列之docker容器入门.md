@@ -2046,6 +2046,35 @@ macvlan 可以给容器分配 mac 地址，在网络中就像一个物理设备�
 
 
 
+
+
+从 Docker 1.10 版本开始，Docker 实现了一个内嵌的 DNS server，Docker 容器可以使用内部的 DNS 解析机制，而不是直接使用宿主机的 DNS 设置。
+
+**在容器 `/etc/resolv.conf` 中看到 `nameserver 127.0.0.11` 表示 Docker 容器使用了 Docker 内部的 DNS 解析服务。**
+
+> `127.0.0.11` 是 Docker 引擎提供的内部虚拟 DNS 服务器地址，负责处理容器的 DNS 请求。
+>
+> 这个虚拟 DNS 服务会捕获容器发出的所有 DNS 查询，并根据 Docker 引擎的配置做进一步的处理。
+
+
+
+通过使用此内部 DNS 服务器，Docker 实现了其 **服务发现** （ **在容器运行的 Docker 网络中，每个容器的主机名和服务名（如 `docker compose` 中的 `service`）都会自动注册到 Docker 内部 DNS 中，这使得在同一网络中的容器可以通过服务名互相访问，而不需要知道彼此的 IP 地址** 。）
+
+
+
+- 当容器中的应用需要解析域名时，如果该请求是要 **解析服务发现相关的内部 Docker 网络中的主机名** 。
+  - Docker 的 DNS 服务器会优先解析容器网络中的主机名。例如，容器之间的互相访问可以通过服务名来解析。
+- 如果请求的域名不属于 Docker 内部网络（如外部的互联网域名 `google.com`）
+  - Docker 会将请求转发到宿主机的 DNS 服务器（通常是由宿主机的 `/etc/resolv.conf` 文件中的配置来决定）。
+
+
+
+以下为 `Docker Daemon` 内嵌 DNS 服务的大体工作流程及相关关键点：
+
+- Docker Daemon 创建容器时，会为容器生成 `/etc/resolv.conf` 并写入 `Docker Embedded DNS Server` 的 IP，默认为 `nameserver 127.0.0.11`。并生成相关的 `iptables` 转发规则用于处理 DNS 请求。
+
+
+
 ## TAP/TUN网络设备
 
 
