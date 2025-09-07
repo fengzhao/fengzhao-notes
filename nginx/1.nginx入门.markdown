@@ -1320,8 +1320,8 @@ Nginx 能保持高度曝光发展到今天，除了因为有大量三方模块�
 
 
 
-```nginx configuration 
-​```
+````nginx configuration 
+```
 upstream ddd-server { 
 	server 11.11.11.11:80; 
 	server 11.11.11.12:80; 
@@ -1348,7 +1348,7 @@ proxy_hide_header X-Drupal-Dynamic-Cache;
 proxy_hide_header X-Generator;
 proxy_hide_header X-Runtime;
 proxy_hide_header X-Rack-Cache;
-```
+````
 
 
 
@@ -2846,6 +2846,66 @@ testssl.sh是我们首选的测试工具，它涵盖了TLS和SSL评估所需的�
 以前SSL检测常用工具就是ssllabs的：https://www.ssllabs.com/ssltest/ 以及国内的https://myssl.com/。检测方法很简单，输入在线检测即可。
 
 今天在网上有发现一款好用的SSL检测脚本：testssl.sh：https://testssl.sh/
+
+
+
+
+
+# NGX_LUA 基础
+
+OpenResty通过汇聚各种设计精良的Nginx模块（主要由OpenResty团队自主开发）将Nginx变成一个强大的通用Web应用平台。
+
+这样，Web开发人员和系统工程师可以使用Lua脚本语言调动Nginx支持的各种C以及Lua模块，快速构造出足以胜任10KB乃至1000KB以上单机并发连接的高性能Web应用系统。
+
+
+
+
+
+在OpenResty中，每个Worker进程使用一个**==Lua VM（Lua虚拟机==**），当请求被分配到Worker时，将在这个Lua VM中创建一个协程，协程之间数据隔离，每个协程都具有独立的全局变量。
+
+ngx_lua是将Lua嵌入Nginx，让Nginx执行Lua脚本，并且高并发、非阻塞地处理各种请求。Lua内置协程可以很好地将异步回调转换成顺序调用的形式。
+
+ngx_lua在Lua中进行的IO操作都会委托给Nginx的事件模型，从而实现非阻塞调用。
+
+开发者可以采用串行的方式编写程序，ngx_lua会在进行阻塞的IO操作时自动中断，保存上下文，然后将IO操作委托给Nginx事件处理机制，在IO操作完成后，ngx_lua会恢复上下文，程序继续执行，这些操作对用户程序都是透明的。
+
+每个Nginx的Worker进程持有一个Lua解释器或LuaJIT实例，被这个Worker处理的所有请求共享这个实例。每个请求的context上下文会被Lua轻量级的协程分隔，从而保证各个请求是独立的。
+
+
+
+（1）每个Worker（工作进程）创建一个LuaJIT VM，Worker内所有协程共享VM。
+
+（2）将Nginx I/O原语封装后注入Lua VM，允许Lua代码直接访问。
+
+（3）每个外部请求都由一个Lua协程处理，协程之间数据隔离。
+
+（4）Lua代码调用I/O操作等异步接口时会挂起当前协程（并保护上下文数据），而不阻塞Worker进程。
+
+（5）I/O等异步操作完成时还原协程相关的上下文数据，并继续运行。
+
+
+
+每个Nginx Worker进程持有一个Lua解释器或者LuaJIT实例，被这个Worker处理的所有请求共享这个实例。每个请求的Context会被Lua轻量级的协程分割，从而保证各个请求是独立的。
+
+ngx_lua采用`onecoroutine-per-request`的处理模型，对于每个用户请求，ngx_lua会唤醒一个协程用于执行用户代码处理请求，当请求处理完成后，这个协程会被销毁。每个协程都有一个独立的全局环境（变量空间），继承于全局共享的、只读的公共数据。
+
+所以，被用户代码注入全局空间的任何变量都不会影响其他请求的处理，并且这些变量在请求处理完成后会被释放，这样就保证所有的用户代码都运行在一个sandbox（沙箱）中，这个沙箱与请求具有相同的生命周期。
+
+得益于Lua协程的支持，ngx_lua在处理10000个并发请求时只需要很少的内存。根据测试，ngx_lua处理每个请求只需要2KB的内存，如果使用LuaJIT就会更少。所以ngx_lua非常适合用于实现可扩展的、高并发的服务。
+
+
+
+# 健康检查
+
+背景：使用Openresty作为网关进行动态节点IP负载均衡时，要求网关有能力在负载均衡之前摘除掉有问题的节点。所以网关需要一定的健康检查能力。
+
+lua-resty-healthcheck是一个在OpenResty生态中大放异彩的组件，它允许开发者执行主动和被动的健康检查，监测任意目标主机的状态。
+
+借助其强大的API和lua-resty-worker-events库的支持，它可以无缝地集成到你的高性能Web服务器或API网关中，为系统的稳定性保驾护航。
+
+
+
+
 
 
 
