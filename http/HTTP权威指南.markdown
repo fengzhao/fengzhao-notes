@@ -3394,9 +3394,21 @@ https://taoshu.in/http3-port.html
 
 # HTTP3 
 
-自nginx的1.25.0版本开始，nginx首次对http3进行了正式支持，这也为我们在WEB服务器上部署http3提供了极大的便利。
+QUIC，音同 'quick'，最初由 Google 提出，是一种将 HTTP/2的多路复用与头部压缩机制封装到数据包中，通过 UDP 进行传输的协议，仅应用于 HTTP 之上。
 
-http3必须依赖于TLS协议，所以需要要证书。
+后续随着 HTTP/2 的逐步完善，QUIC 逐步演变为独立协议，并被 IETF 规范化。
+
+
+
+IETF 提出了两个概念，即 `HTTP Over QUIC` 和 QUIC 传输层协议，使得 QUIC 可以被用于其他应用层协议之上。自此，QUIC 就分为了 Google 版本和 IETF 版本，前者被称之为 GQUIC，后者被称之为 IQUIC。现在所常说的 QUIC 一般都指后者，HTTP/3 协议也是基于 IQUIC 的。
+
+在安全性方面，GQUIC与IQUIC采用了两个完全不同的方式，前者使用了自己的一套加密方式QUIC Crypto，后者还是延续使用了TLS1.3.
+
+
+
+自Nginx1.25.0版本开始，首次对HTTP/3 进行了正式支持，这也为我们在WEB服务器上部署HTTP/3 提供了极大的便利。
+
+HTTP/3 必须依赖于TLS协议，所以需要要证书。
 
 
 
