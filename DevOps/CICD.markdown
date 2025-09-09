@@ -1018,14 +1018,68 @@ pipeline {
 
 ### Generic Webhook Trigger 
 
-这个应该是必备插件了，它支持多个 Git 托管服务（各种git）的 WebHook，当仓库有提交时会发送请求到 Jenkins，插件解析请求，触发 Jenkins 任务执行。
+它支持多个 Git 托管服务（各种git）的 WebHook，当仓库有代码提交时会发送请求到 Jenkins，本插件解析请求，触发 Jenkins 任务执行。
 
 
 
-- 接受各种 HTTP 请求，对外提供的的回调地址是 `JENKINS_URL/generic-webhook-trigger/invoke`
-- 取出各种值
+- 对外提供的的回调地址是 `http://JENKINS_URL/generic-webhook-trigger/invoke?token={mytoken}`，**==接收各种 HTTP 请求==**
+  - GWT 插件用于标识`Jenkins job`的唯一性
+- 解析请求中的数据：
+  - `HTTP POST BODY`
+  - `URL PARAMETER`
+  - `HTTP HEADER`
 
 
+
+实际上，GWT并不只是根据 token 值来判断是否触发，还可以根据我们提取出的值进行判断。示例如下:
+
+- `regexpFilterText`：需要进行匹配的key。比如，我们使用从`post body`中提取出的refValue变量值。
+- `regexpFilterExpression`：正则表达式。 如果 `regexpFilterText` 参数的值符合 `regexpFilterExpression` 参数的正则表达式，则触发执行。
+
+
+
+
+
+```groovy
+pipeline {
+    agent any                                   
+    triggers {
+        GenericTrigger(
+            causeString: 'Generic Cause',                                                   
+            genericVariables: [
+                [key: 'ref', value: '$.ref']		//				
+                [
+      				key: 'before',
+      				value: '$.before',
+      				expressionType: 'JSONPath', 	//Optional, defaults to JSONPath
+      				regexpFilter: '', 				//Optional, defaults to empty string
+      				defaultValue: '' 				//Optional, defaults to empty string
+     			]
+               
+            ],
+            genericRequestVariables: [          
+            ]
+            printContributedVariables: true,
+            printPostContent: true, 
+            regexpFilterExpression: '', 
+            regexpFilterText: '', 
+            token: '123456789', 
+            tokenCredentialId: ''
+        )
+    }
+
+    stages {
+        stage('Show Webhook Data') {
+            steps {
+                script {
+                    echo "✅ Pipeline 被触发"
+                    echo "Webhook 解析的参数 name = ${params.name}"
+                }
+            }
+        }
+    }
+}
+```
 
 
 
