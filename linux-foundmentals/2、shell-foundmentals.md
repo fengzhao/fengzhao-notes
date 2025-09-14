@@ -2425,13 +2425,11 @@ Linux如何创建子进程：
 
 # ubuntu/linux修改登录欢迎信息
 
-
-
 问题描述: 使用终端登录远程服务器时会有欢迎信息，下面说说如何自定义欢迎信息。
 
-熟悉 Linux 的同学想必对 motd 全称 Message Of The Day 并不陌生。把内容放到 `/etc/motd` 里面然后每次登录显示里面的内容。在 
+熟悉 Linux 的同学想必对 motd 全称 `Message Of The Day` 并不陌生。把内容放到 `/etc/motd` 里面然后每次登录显示里面的内容。在 motd 本身是纯文本，传统的 motd 只能是纯文本。
 
-motd 本身是纯文本，传统的 motd 只能是纯文本。当然，我们可以在 shell 启动执行命令时显示一些东西，达到类似 motd 功能的效果。
+当然，我们可以在 shell 启动执行命令时显示一些东西，达到类似 motd 功能的效果。
 
 
 
@@ -2491,9 +2489,9 @@ shell脚本的后缀一般是“.sh”，但这个后缀并不是必需的，添
 
 ——注释
 
-在shell脚本中，“#”符号是个特殊字符，表示注释，类似于其它程序设计语言的注释符，脚本执行时，这个注释符及后面的内容会被忽略。
+在shell脚本中，"#"符号是个特殊字符，表示注释，类似于其它程序设计语言的注释符，脚本执行时，这个注释符及后面的内容会被忽略。
 
-在shell命令行（交互式shell）中，“#”也可以作为注释符，前提是shell支持这样的操作，是否支持我们可以使用shell内建命令shopt查看interactive_comments的状态，在shell命令行输入“shopt interactive_comments”，输出“interactive_comments on”表示支持，输出“interactive_comments off”表示不支持，如果想激活这个状态执行命令“shopt -s interactive_comments”，关闭这个状态执行命令“shopt -u interactive_comments”。
+在shell命令行（交互式shell）中，`#`也可以作为注释符，前提是shell支持这样的操作，是否支持我们可以使用shell内建命令shopt查看interactive_comments的状态，在shell命令行输入`shopt interactive_comments`，输出“interactive_comments on”表示支持，输出“interactive_comments off”表示不支持，如果想激活这个状态执行命令“shopt -s interactive_comments”，关闭这个状态执行命令“shopt -u interactive_comments”。
 
 
 
