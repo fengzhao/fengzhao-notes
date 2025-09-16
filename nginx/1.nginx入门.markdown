@@ -526,14 +526,15 @@ http {
  server {
         listen 443 ssl ;
         listen 443 quic reuseport;
+    	http2 on;
+        http3 on;
         server_name  localhost,demo.qh-1.cn;
 
         ssl_certificate         ../ssl/fullchain.cer;
         ssl_certificate_key     ../ssl/qh-1.key;
         ssl_protocols           TLSv1.2 TLSv1.3;
-        http2 on;
-        http3 on;
-        ssl_early_data on;
+        
+        ssl_early_data on;  
         ssl_stapling on;
         ssl_stapling_verify on;
         resolver 8.8.8.8 8.8.4.4 valid=300s;
@@ -2147,9 +2148,11 @@ wget -O /usr/local/nginx/geo/GeoLiteASN.mmdb https://github.com/fengzhao-study-n
 
 
 
-在web应用中，为了节省流量，降低传输数据大小，提高传输效率，常用的压缩方式一般都是gzip，今天我们来介绍另外一种更高效的压缩方式brotli。
+在Web应用中，为了节省流量，降低传输数据大小，提高传输效率，常用的压缩方式一般都是gzip，今天我们来介绍另外一种更高效的压缩方式brotli。
 
-Brotli 是基于LZ77算法的一个现代变体、霍夫曼编码和二阶上下文建模。Google软件工程师在2015年9月发布了包含通用无损数据压缩的Brotli增强版本，特别侧重于HTTP压缩。
+Brotli 是基于LZ77算法的一个现代变体、霍夫曼编码和二阶上下文建模。
+
+Google软件工程师在2015年9月发布了包含通用无损数据压缩的Brotli增强版本，特别侧重于HTTP压缩。
 
 Google 在其博客中提到，Brotli 在压缩 HTML、CSS 和 JavaScript 文件时，通常能够比 GZIP 提供 17% 到 25% 的额外压缩比。
 
@@ -2158,6 +2161,13 @@ Google 在其博客中提到，Brotli 在压缩 HTML、CSS 和 JavaScript 文件
 > 如果 Brotli 压缩生效，你应该会看到响应头中包含 `Content-Encoding: br`。
 
 
+
+| 文件类型 | Brotli 11级 | Gzip 9级 | 提升幅度 |
+| -------- | ----------- | -------- | -------- |
+| HTML     | 21%↓        | 40%↓     | +19%     |
+| CSS      | 17%↓        | 35%↓     | +18%     |
+| JS       | 14%↓        | 30%↓     | +16%     |
+|          |             |          |          |
 
 
 
