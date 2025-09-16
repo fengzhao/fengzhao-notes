@@ -130,7 +130,9 @@ https://www.cnblogs.com/91donkey/p/11639355.html
 
 
 
-F5 前雇员、Nginx 项目主要贡献者发布了 Nginx 的分支 Freenginx。这个新项目是为了解决一个安全争议，并希望成为 Nginx 的可替代方案，由开发人员而不是企业实体负责运营
+F5 前雇员、Nginx 项目主要贡献者发布了 Nginx 的分支 Freenginx。
+
+这个新项目是为了解决一个安全争议，并希望成为 Nginx 的可替代方案，由开发人员而不是企业实体负责运营
 
 # 安装 Nginx 和 OpenResty
 
@@ -267,11 +269,20 @@ au BufRead,BufNewFile */usr/local/nginx/conf/* set ft=nginx
 
 
 # 如果打算用源码的高版本openssl，那编译时候用./configure --with-http_ssl_module --with-openssl=/usr/local/openssl-1.0.2k
-
 # 等号后面的绝对路径或者相对路径就是openssl的源码包tar.gz解压出来的目录，就是里面有目录啊，config二进制文件啊，README啦那些。
 
-# https://blog.51cto.com/meiling/2165811
-./configure   --user=nginx --group=nginx  --prefix=/usr/local/nginx/  --with-http_stub_status_module  --with-http_ssl_module --with-stream --with-http_v2_module --with-openssl=/usr/local/openssl/  
+# 配置 https://blog.51cto.com/meiling/2165811
+./configure   \
+	--user=nginx \
+	--group=nginx  \
+	--prefix=/usr/local/nginx/ \
+	--with-http_stub_status_module \
+	--with-http_ssl_module \
+	--with-stream \
+	--with-http_v2_module  \
+	--with-http_v3_module  \
+	--with-openssl=/usr/local/src/openssl-3.5.2
+
 
 
 ./configure --help # --help 命令可以查看配置脚本支持哪些参数
@@ -327,7 +338,6 @@ root@server:/usr/local/src/nginx-1.25.1#
 
 
 make && make install 
-
 
 
 # nginx服务配置文件，使用systemd
