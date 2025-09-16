@@ -173,6 +173,21 @@ enabled=1
 
 ### 编译安装Nginx
 
+HTTP/3作为新一代互联网协议，基于QUIC传输层协议，解决了TCP协议固有的队头阻塞问题，并实现了0-RTT快速连接恢复，能显著提升弱网环境下的传输效率。
+
+本文将详细介绍如何在Nginx中配置HTTP/3与QUIC协议，同时提供全面的安全性优化方案，帮助您构建既高效又安全的Web服务环境。
+
+
+
+在开始配置HTTP/3之前，需要确保系统环境满足以下要求：
+
+- **操作系统**：Linux内核版本5.7+（推荐Ubuntu 22.04 LTS或CentOS 8+）
+- **Nginx版本**：1.25.0及以上（官方从1.25.0版本开始实验性支持QUIC）
+- **SSL库**：推荐使用BoringSSL或QuicTLS，OpenSSL 3.0+也可支持但功能受限
+- **客户端支持**：Chrome/Firefox/Edge最新版本
+
+
+
 在 <http://nginx.org/en/download.html> 里面可以直接下载 Nginx 源代码。包含以下目录：
 
 ```shell
@@ -184,11 +199,13 @@ useradd -r -g nginx -s /bin/false nginx
 # 安装依赖环境，确保编译正常
 sudo yum install gcc gcc-c++ make automake autoconf libtool pcre* zlib openssl openssl-devel  pcre pcre-devel
 
-sudo apt install zlib1g zlib1g-dev curl gnupg2 ca-certificates lsb-release ubuntu-keyring dirmngr software-properties-common apt-transport-https   gcc make libpcre3 libpcre3-dev   zlib1g-dev openssl libssl-dev 
+sudo apt install zlib1g zlib1g-dev curl gnupg2 ca-certificates lsb-release ubuntu-keyring dirmngr software-properties-common apt-transport-https   gcc make libpcre3 libpcre3-dev   zlib1g-dev openssl libssl-dev   
 
 # 在 http://nginx.org/en/download.html 里面下载 Nginx 源代码，永远下载最新的Stable release版本
 wget http://nginx.org/download/nginx-1.28.0.tar.gz
 
+# 在nginx 1.22版本中，可以构建使用OpenSSL 3.0 的版本。
+# 在 2023 年 9 月之前 OpenSSL ver 1.1.x 将停止生命周期支持，而 nginx 的 ver 1.22 可以构建 OpenSSL3.0
 # wget  https://github.com/openssl/openssl/releases/download/OpenSSL_1_1_1w/openssl-1.1.1w.tar.gz
 # wget https://mirrors.ibiblio.org/openssl/source/openssl-1.1.1w.tar.gz
 
@@ -438,6 +455,9 @@ OpenResty 的编译安装步骤与 Nginx 基本一致
 
 ```bash
 wget  https://openresty.org/download/openresty-1.21.4.1.tar.gz
+
+
+wget https://openresty.org/download/openresty-1.27.1.2.tar.gz
 ```
 
 
@@ -491,6 +511,33 @@ http {
 ```
 
 
+
+```nginx
+ server {
+        listen 443 ssl ;
+        listen 443 quic reuseport;
+        server_name  localhost,demo.qh-1.cn;
+
+        ssl_certificate         ../ssl/fullchain.cer;
+        ssl_certificate_key     ../ssl/qh-1.key;
+        ssl_protocols           TLSv1.2 TLSv1.3;
+        http2 on;
+        http3 on;
+        ssl_early_data on;
+        ssl_stapling on;
+        ssl_stapling_verify on;
+        resolver 8.8.8.8 8.8.4.4 valid=300s;
+        resolver_timeout 5s;
+
+        add_header Strict-Transport-Security "max-age=31536000" always;
+        add_header Alt-Svc 'h3=":443"; ma=86400';
+
+        location / {
+            root   html;
+            index  index.html index.htm;
+        }
+    }
+```
 
 
 
