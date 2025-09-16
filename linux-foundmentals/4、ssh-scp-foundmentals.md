@@ -235,6 +235,10 @@ cd  /tmp/soft/
 
 
 
+## BoringSSL
+
+[BoringSSL](https://opensource.google.com/projects/boringssl) 是由谷歌开发，从 [OpenSSL](https://www.openssl.org/) 中分离的一个分支。BoringSSL 现阶段已经在 Chrome/Chromium 、 Android 等应用上
+
 ## Windows 下的 ssh
 
 从 Win10 1809 和 Windows Server 2019 开始 Windows 开始支持 OpenSSH Server。

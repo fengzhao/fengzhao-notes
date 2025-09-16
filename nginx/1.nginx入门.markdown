@@ -1321,6 +1321,7 @@ Nginx 能保持高度曝光发展到今天，除了因为有大量三方模块�
 
 
 ````nginx configuration 
+
 ```
 upstream ddd-server { 
 	server 11.11.11.11:80; 
@@ -1368,7 +1369,7 @@ map 指令是由 `ngx_http_map_module` 模块提供的，默认情况下nginx �
 
 map 的主要作用是`创建自定义变量`，通过使用 nginx 的`内置变量`,去`匹配`某些特定规则;
 
-```nginx
+​```nginx
 # $args 是nginx内置变量，就是获取的请求 url 的参数。
 
 # map定义两个变量的映射关系：当 $args 的值等于 debug 的时候，$foo 变量的值就是 1，否则 $foo 的值就为 0.
