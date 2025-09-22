@@ -1062,7 +1062,7 @@ https://www.cnblogs.com/binarylei/p/9201975.html
 1. ssh 第一次登陆一台主机时，会弹出远程主机的公钥指纹，需要手动输入 yes 确认。
 2. ssh 协议不支持在命令中直接输入密码，一般都是弹出 prompt 来手动输入密码。
 
-第一个问题，可以在本地 ssh 客户端配置文件（~/.ssh/config）中配置 StrictHostKeyChecking=no 或在 ssh 命令中使用 -o StrictHostKeyChecking=no 来关闭公钥提示。
+第一个问题，可以在本地 ssh 客户端配置文件（~/.ssh/config）中配置 `StrictHostKeyChecking=no` 或在 ssh 命令中使用 `-o StrictHostKeyChecking=no` 来关闭公钥提示。
 
 第二个问题，考虑用第三方工具 sshpass 来解决，这个工具支持在 ssh 命令行直接使用密码，而不需要弹出 prompt 再手动输入密码。
 
@@ -1074,7 +1074,7 @@ https://www.cnblogs.com/binarylei/p/9201975.html
 ``` shell
 $ sshpass -p 'YOUR_PASSWORD' ssh-copy-id -o StrictHostKeyChecking=no root@192.168.1.102
 ```
-实现自动传公钥之后，考虑多台主机的一次性上传，如果多台主机的端口密码均相同，可以把主机 ip 或域名 存放到文件中。循环遍历主机并上传公钥。
+实现自动传公钥之后，考虑多台主机的一次性上传，如果多台主机的端口密码均相同，可以把主机 ip 或域名存放到文件中。循环遍历主机并上传公钥。
 ```shell
 for host in $(cat remote-hosts)
     do
