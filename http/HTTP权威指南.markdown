@@ -162,6 +162,18 @@ https://a-wing.top/browser/2021/08/22/user-agent
 
 
 
+### 无头浏览器
+
+无头浏览器本质上与您熟悉的网络浏览器相同，但有一个关键区别：**它们没有图形用户界面 (GUI)。**这意味着没有按钮、选项卡、地址栏或视觉显示。
+
+相反，它们在幕后运行，**通过代码和命令以编程方式与网站交互。**乍一听可能有点奇怪，但无头浏览器确实具有一些独特的优势。
+
+
+
+
+
+
+
 ### Sec-Fetch-*安全请求头
 
 如果你使用76+版本的chrome浏览器，通过开发者面板查看每个网络请求，会发现都有几个Sec-Fetch开头的请求头：
@@ -6749,6 +6761,14 @@ https://wukaipeng.com/technique/browser/rendering
 
 
 
+**深入了解现代网络浏览器**
+
+https://developer.chrome.com/blog/inside-browser-part1?hl=zh-cn
+
+
+
+
+
 浏览器不能决定上面的js怎么写，会不会以某种形式有意无意的攻击浏览器的渲染引擎。如果将所有这些App和浏览器实现在一个进程里，一旦挂，就全挂。
 
 因此Chrome一开始就设计为把**隔离性**作为基本的设计原则，用进程的隔离性来实现对App的隔离。这样用户就不用担心：
@@ -6764,13 +6784,23 @@ https://wukaipeng.com/technique/browser/rendering
 
 
 
-目前世界上使用率最高的浏览器是 [Chrome](https://www.google.com/chrome/)，它的核心是 [Chromium](https://www.chromium.org/chromium-projects/)（Chrome 的开发实验版），微软的 [Edge](https://www.microsoft.com/en-us/edge) 以及国内的大部分主流浏览器，都是基于 Chromium 二次开发而来，它们都有一个共同的特点：**多进程架构**。
+目前世界上使用率最高的浏览器是 [Chrome](https://www.google.com/chrome/)，它的核心是 [Chromium](https://www.chromium.org/chromium-projects/)（Chrome 的开发实验版）。
 
-当我们用 Chrome 打开一个页面时，会同时启动多个进程：(Chrome 使用了由 Apple 发展来的号称 “地表最快” 的 [Webkit](https://webkit.org/) 排版引擎，搭载 Google 独家开发的 [V8](https://v8.dev/) Javascript 引擎)
+微软的 [Edge](https://www.microsoft.com/en-us/edge) 以及国内的大部分主流浏览器，都是基于 Chromium 二次开发而来，它们都有一个共同的特点：**多进程架构**。
 
-注：Google 加入 WebKit 的开发是在 2008 年 Chrome 浏览器推出前后的事情。Chrome 浏览器使用 WebKit 引擎是 Android 团队的建议，2013年Google将 Chrome 的渲染引擎从WebKit 分叉出来，并将其命名为Blink
+当我们用 Chrome 打开一个页面时，会同时启动多个进程：
 
-https://developer.chrome.com/docs/web-platform/blink
+(Chrome 使用了由 Apple 发展来的号称 “地表最快” 的 [Webkit](https://webkit.org/) 排版引擎，搭载 Google 独家开发的 [V8](https://v8.dev/) Javascript 引擎)
+
+
+
+> 注：Google 加入 WebKit 的开发是在 2008 年 Chrome 浏览器推出前后的事情。
+>
+> Chrome 浏览器使用 WebKit 引擎是 Android 团队的建议，2013年Google将 Chrome 的渲染引擎从 WebKit 分叉出来，并将其命名为Blink。
+>
+> https://developer.chrome.com/docs/web-platform/blink
+
+
 
 
 
