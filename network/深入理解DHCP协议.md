@@ -180,8 +180,8 @@ DHCP客户端向DHCP服务器动态地请求网络配置信息，DHCP服务器�
 
 - 应用层：`DHCP Discover` 报文。**==客户端向网络发出请求，要求获取 IP 地址及配置信息。==**
 - 传输层：使用 **UDP 封装**。客户端源端口是 **68**，目的端口是 **67**（DHCP 服务器端口）
-- 网络层：IP头部，客户端不知道自己的 IP，所以 **源 IP** 是 **0.0.0.0**。客户端不知道服务器 IP，所以 **目的 IP** 是 **255.255.255.255**（**广播地址**）
-- 数据链路层：客户端不知道 DHCP 服务器的 MAC 地址，所以 **目的 MAC 地址** 是 **FFFF.FFFF.FFFF**（**广播 MAC 地址**）
+- 网络层：IP头部，客户端不知道自己的 IP，所以 **源 IP** 是 **0.0.0.0**。客户端不知道服务器 IP，所以 **目的 IP** 是 **255.255.255.255**（**三层广播地址**）
+- 数据链路层：客户端不知道 DHCP 服务器的 MAC 地址，所以 **目的 MAC 地址** 是 **FFFF.FFFF.FFFF**（**二层广播地址**）
 
 
 
@@ -193,8 +193,15 @@ DHCP客户端向DHCP服务器动态地请求网络配置信息，DHCP服务器�
 
 ==**响应一个 DHCP Offer 报文，`DHCP Server`会发送`DHCP Offer`信息给`DHCP Client`提供上述信息，该报文也是一个广播报文**。==
 
-- 源IP地址为DHCP Server的IP地址。
-- 目的IP地址为DHCP Server给该DHCP Client分配的IP地址，源MAC地址为DHCP Server的MAC地址，目的MAC地址为DHCP Client的MAC地址。
+> 很多 DHCP 服务器（尤其是企业级和遵循严格标准的服务器）在发送 `DHCPOFFER` 之前，会采取措施进行 IP 地址冲突检测，其中最常见的方法之一就是发送 **ARP 广播**。
+
+数据封装大致过程如下：
+
+- 应用层：`DHCP OFFER` 报文。**==有字段标识这是Offer类型==**
+
+- 传输层：使用 **UDP 封装**。数据从服务端发出，源端口是 **67**（DHCP服务器），目的端口是 **68**（客户端电脑）
+- 网络层：源为DHCP服务器IP，目的IP地址为DHCP Server给该DHCP Client分配的IP地址。
+- 数据链路层：源MAC地址为DHCP Server的MAC地址，目的MAC地址为DHCP Client的MAC地址。
 
 （注，在这里有的设备上DHCP Offer报文也是广播，其实也能够实现DHCP的功能）
 
@@ -202,15 +209,28 @@ DHCP客户端向DHCP服务器动态地请求网络配置信息，DHCP服务器�
 
 **（三）请求阶段**
 
-在`DHCP Client`收到DHCP Server发送的DHCP Offer报文后，就进入了DHCP请求阶段，在DHCP请求阶段，DHCP Client已经得到了DHCP Server分配给它的IP地址，DHCP Client在得到该IP地址后，却不会马上使用.
+在`DHCP Client`收到DHCP Server发送的DHCP Offer报文后，就进入了DHCP请求阶段。
 
-DHCP Client会向DHCP Server发送DHCP Request报文，正式向DHCP Server申请使用该IP地址。
+在DHCP请求阶段，DHCP Client已经得到了DHCP Server分配给它的IP地址，DHCP Client在得到该IP地址后，却不会马上使用。
 
-DHCP Request报文，源IP地址为0.0.0.0（因为这时还没有得到DHCP服务器的回应，因此此时这个IP地址还不能正常使用，因此在这里源IP地址还是0.0.0.0）。
+**==DHCP Client会向DHCP Server发送DHCP Request报文，来正式向DHCP Server申请使用该IP地址。==**
 
-目的地址为255.255.255.255。（注：在这里其实DHCP Client其实已经知道了DHCP Server的IP地址，因此其实这里使用DHCP Server的IP地址其实也是可以的.
 
-因此，有些设备对此做了优化，因为这样可以减少网络中的广播洪范流量）源MAC和目的MAC地址分别是DHCP Client的和DHCP Server的MAC地址。
+
+数据封装大致过程如下：
+
+- 应用层：`DHCP OFFER` 报文。**==有字段标识这是Request类型==**
+- 传输层：使用 **UDP 封装**。数据又从服务端发出，源端口是 **68**（客户端电脑），目的端口是 **67**（DHCP服务器）
+
+- 网络层：
+
+  - 源IP地址为0.0.0.0（因为这时还没有得到DHCP服务器的回应，因此此时这个IP地址还不能正常使用，因此在这里源IP地址还是0.0.0.0）。
+
+  - 目的地址为255.255.255.255。（注：在这里其实DHCP Client其实已经知道了DHCP Server的IP地址，因此其实这里使用DHCP Server的IP地址其实也是可以的.
+
+因此，有些设备对此做了优化，因为这样可以减少网络中的广播洪范流量）
+
+- 源MAC和目的MAC地址分别是DHCP Client的和DHCP Server的MAC地址。
 
 
 
@@ -230,17 +250,27 @@ DHCP Reply 报文（有时也被称为DHCP ACK报文），源IP地址为DHCP Ser
 
 因此，当PC重启后，通常不会按照上述的4个步骤按部就班的申请IP地址，而是通常会直接进入第三个阶段，直接向DHCP Server发送DHCP Request报文，请求自己上一次获得的IP地址。
 
-如果DHCP同意，则会回应DHCP Reply报文，如果该IP地址已经被占用，或者其他情况造成DHCP Server不把该IP地址分配给DHCP Client，则DCHP Server会回应DHCP NACK报文，表示拒绝。这时，PC就必须重新进行DHCP四个阶段。
+如果DHCP Server同意，则会回应DHCP Reply报文，如果该IP地址已经被占用，或者其他情况造成DHCP Server不把该IP地址分配给DHCP Client，则DCHP Server会回应DHCP NACK报文，表示拒绝。这时，PC就必须重新进行DHCP四个阶段。
 
 
 
 
 
-DHCP存在租约和续约机制，在默认情况下，当PC机申请到一个DHCP地址后，使用时间为一天，管理员也可以手动修改该时间，最短为1小时。当PC申请的DHCP IP地址到达租约时间后，该IP地址就不可以继续使用，因此PC会在租约到期之前进行续约。
+**==DHCP存在租约和续约机制==**，在默认情况下，当PC机申请到一个DHCP地址后，使用时间为一天，管理员也可以手动修改该时间，最短为1小时。
 
-通常情况下，DHCP Client会进行两次续约，一次是在租约期的50%时候，DHCP Cient会向DHCP Server发送DHCP Reqruest报文，如果收到DHCP Server的回应，则续约成功。
+当PC申请的DHCP IP地址到达租约时间后，该IP地址就不可以继续使用，因此PC会在租约到期之前进行续约。
 
-第二次续约是在租约期的87.5%的时候，DHCP会再次向DHCP Server发送DHCP Reques报文，申请租约。如果此时仍为收到DHCP响应的DCHP ACK报文，则就必须要重新进行DHCP的四个阶段，重新申请IP地址。
+
+
+通常情况下，DHCP Client会进行两次续约，
+
+第一次是在租约期的50%时候，DHCP Client会向DHCP Server发送DHCP Request报文，如果收到DHCP Server的回应，则续约成功。
+
+第二次续约是在租约期的87.5%的时候，DHCP Client会再次向DHCP Server发送DHCP Request 报文，申请租约。
+
+
+
+如果此时仍为收到DHCP响应的DCHP ACK报文，则就必须要重新进行DHCP的四个阶段，重新申请IP地址。
 
 
 
