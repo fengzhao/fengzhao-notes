@@ -5118,7 +5118,7 @@ TLS 握手的关键在于利用通信双方生成的随机字符串和服务端�
 
 客户端发送一个 `ClientHello` 消息到服务器端，消息中同时包含了它的 Transport Layer Security (TLS) 版本，可用的加密算法和压缩算法。
 
-
+https://wenfh2020.com/images/2023/2023-10-16-04-06-23.jpg
 
 
 
