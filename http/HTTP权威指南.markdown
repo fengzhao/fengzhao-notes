@@ -7341,7 +7341,7 @@ WebHook 是一种由服务端发起的 HTTP 回调请求，用于在项目发生
   - 首先要在Jenkins中创建job，并为其配置Triggers（比如选用 `Generic Webhook Trigger`）
   - 设定方式：GitLab仓库项目的 Settings ➔ Webhooks ➔ 填写上面创建的`Triggers URL`
 - HTTP请求报文到达对应的处理服务器以后，处理服务器可以对`http request body`和`http request header`进行提取解析。
-- 处理服务器进行下一步CICD操作
+- 处理服务器进行下一步CICD操作。
 
 
 
@@ -7354,13 +7354,13 @@ WebHook 是一种由服务端发起的 HTTP 回调请求，用于在项目发生
 
 
 
-
-
 举个例子，Jenkins插件`Generic Webhook Trigger`提供一个URL：`http://JENKINS_URL/generic-webhook-trigger/invoke`
 
 在Webhook范式下，服务器更新所需提供的资源，然后自动将其作为更新发送到客户端（服务器是在推数据），客户端不是请求者，而是被动接收方。
 
 这种控制关系的反转可以用来促进许多原本需要在远程服务器上进行更复杂的请求和不断的轮询的通信请求。
+
+
 
 通过简单地接收资源而不是直接发送请求，我们可以更新远程代码库，轻松地分配资源，甚至将其集成到现有系统中来根据API的需要来更新端点和相关数据，唯一的缺点是初始建立困难。
 
@@ -7368,7 +7368,7 @@ WebHook 是一种由服务端发起的 HTTP 回调请求，用于在项目发生
 
 
 
-比如 github  gitlab  jenkins dingding 机器人等，都支持自定义webhook
+比如 `github`  `gitlab`  `jenkins` ，`dingding`，`feishu` 等，都支持自定义webhook
 
 
 
