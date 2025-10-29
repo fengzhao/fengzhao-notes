@@ -22,11 +22,11 @@ Grafana Loki 主要由 3 部分组成:
 
 
 
+# loki架构
 
+Grafana Loki 采用基于微服务的架构，设计为水平可伸缩的分布式系统。该系统包含多个可以独立并行运行的组件。
 
-
-
-
+Grafana Loki 的设计将所有组件的代码编译到一个单一二进制文件或 Docker 镜像中。`-target` 命令行标志控制该二进制文件作为哪些组件运行。
 
 
 
@@ -93,7 +93,11 @@ Grafana Loki 主要由 3 部分组成:
 
 ## Ingester
 
-`Ingester`主要负责将收到的日志数据写入到后端存储，如DynamoDB，S3，Cassandra等），同时它还会将日志信息发送给`Querier`组件。
+`Ingester`主要负责将从收集器()接收到的日志数据**==写入==**到后端存储，如DynamoDB，S3，Cassandra等），同时它还会将日志信息发送给`Querier`组件。
+
+
+
+
 
 - Querier
 
@@ -101,7 +105,9 @@ Grafana Loki 主要由 3 部分组成:
 
 - Query Frontend
 
-`Query frontend`主要提供查询API，它可以将一条大的查询请求拆分成多条让`Querier`并行查询，并汇总后返回。它是一个可选的部署组件，通常我们部署它用来防止大型查询在单个查询器中引起内存不足的问题。
+`Query frontend`主要提供查询API，它可以将一条大的查询请求拆分成多条让`Querier`并行查询，并汇总后返回。
+
+它是一个可选的部署组件，通常我们部署它用来防止大型查询在单个查询器中引起内存不足的问题。
 
 
 
@@ -135,6 +141,10 @@ Grafana Loki 主要由 3 部分组成:
 - 如果写入或查询失败，可触发告警（集成 Prometheus）
 - 可用于监控 Loki 集群的可用性和延迟
 
+
+
+
+
 ## Promtail
 
 
@@ -157,11 +167,17 @@ Grafana Loki 主要由 3 部分组成:
 
 在Promtail能够将日志文件的数据发送到Loki之前，它需要获取有关其环境的信息。具体来说，这意味着发现将日志行发送到需要监控的文件的应用程序。
 
-Promtail使用了与Prometheus相同的服务发现机制，尽管目前它仅支持静态和Kubernetes服务发现。这个限制是因为Promtail作为一个守护程序部署在每台本地机器上，并且无法从其他机器上发现标签。
+Promtail使用了与Prometheus相同的服务发现机制，尽管目前它仅支持静态和Kubernetes服务发现。
+
+这个限制是因为Promtail作为一个守护程序部署在每台本地机器上，并且无法从其他机器上发现标签。
+
+
 
 Kubernetes服务发现从Kubernetes API服务器获取所需的标签，而静态服务发现通常涵盖其他所有用例。
 
-与Prometheus一样，Promtail使用`scrape_configs`配置段进行配置。通过`relabel_configs`，可以对要获取的内容、要丢弃的内容以及要附加到日志行的最终元数据进行精细控制。
+与Prometheus一样，Promtail使用`scrape_configs`配置段进行配置。
+
+通过`relabel_configs`，可以对要获取的内容、要丢弃的内容以及要附加到日志行的最终元数据进行精细控制。
 
 
 
