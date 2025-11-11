@@ -1715,6 +1715,29 @@ https://blog.csdn.net/yanggleyang/article/details/104727065
 
 
 
+# SSH前身
+
+“R-commands”（Remote commands）是一组起源于 **1980 年代初**的 Unix 网络工具，由 **加州大学伯克利分校（UC Berkeley）** 开发，作为 **BSD（Berkeley Software Distribution）Unix 4.2 BSD** 的一部分发布（4.2 BSD 发布于 **1983 年 8 月**）。
+
+- **设计目标**：在受信任的局域网（如大学/研究机构内部）中实现便捷的远程操作，无需每次输入密码。
+- 严重缺陷：
+  - 明文传输（无加密）
+  - 依赖 IP/主机名信任（易被 IP 欺骗）
+  - `.rhosts` 机制存在权限风险
+
+- **淘汰时间**：1990 年代中后期，随着 **SSH（Secure Shell）** 的出现（由 Tatu Ylönen 于 **1995 年**发布），R-commands 因安全问题被迅速取代。现代系统（如主流 Linux 发行版、macOS）默认已**禁用或移除**这些服务。
+
+
+
+在 SSH 出现之前，Unix 系统使用 `rsh`/`rlogin`/`rcp` 等工具进行远程操作，依赖如下信任机制：
+
+- `~/.rhosts`：用户级别的信任文件，格式如 `hostname username`，表示允许该主机+用户的组合无需密码登录。
+- `/etc/hosts.equiv` 和 `~/.shosts`：系统级或用户级主机等效信任列表。
+
+这些机制**完全基于主机名/IP 和用户名**，**不加密、易伪造（DNS 欺骗、IP 欺骗）**，安全性极差。
+
+SSH 协议设计之初就极力避免沿用这类机制，但为兼容性保留了相关代码路径。`IgnoreRhosts yes` 就是明确禁用这些危险的回退行为。
+
 # pdssh和pssh
 
 parallel-ssh 是为小规模自动化而设计的异步并行的  SSH 库，包括 pssh、pscp、prsync、pslurp 和 pnuke工具，其源代码使用 Python语言编写开发的。
