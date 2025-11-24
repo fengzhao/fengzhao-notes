@@ -66,6 +66,8 @@ Kubernetes 是希腊语中的 "舵手" 的意思，它抽象了数据中心的�
 
 ## 1.3 k8s基本概念
 
+https://kubernetes.io/zh-cn/docs/concepts/architecture/
+
 
 
 ### **1.3.1 集群**
@@ -273,7 +275,8 @@ kubectl describe node <node-name>   # 查看节点详细信息（资源、状态
 # 看集群组件状态（api-server、controller-manager、scheduler 等）
 kubectl get componentstatuses       # 在新版本可能需要用 kubectl get --raw /healthz
 
-
+# 查看命名空间
+kubectl get ns
 
 # 看 Pod 列表
 kubectl get pods -n <namespace>      # 默认namespace是 default
@@ -333,12 +336,24 @@ kubectl get pod <pod-name> -n <namespace> -o yaml
 
 ### 1.3.5  Kubelet
 
-Kubernetes 的设计是 **每个 Kubernetes 节点上都有一个 Kubelet 进程**，它是节点上的主要代理进程，负责：
+Kubernetes 的设计是 **每个 Kubernetes 节点上都有一个 Kubelet 进程**，它是节点上的主要**==代理进程==**，负责：
 
-- 管理该节点上的 Pod 和容器生命周期
-- 与 API Server 通信
+- 管理该节点上的 Pod 和容器生命周期：确保工作节点的容器能正常按照控制平面的期望运行
+- 与 API Server 通信：持续监听
 - 汇报节点状态和资源使用情况
 - 通过 HTTP(S) 提供一些状态/指标接口
+
+
+
+**==Kubelet 的工作流程（主动拉取）==**
+
+1. **调度器（Scheduler）** 将 Pod 调度到某个特定的工作节点（Node）上。
+2. **API Server** 接收并持久化了这个 Pod 及其所属节点的信息。
+3. **Kubelet** 在其所在的节点上**持续地、周期性地**地通过 **Watch 机制** 连接到 `kube-apiserver`。
+4. 当 `API Server` 中该节点对应的 Pod 列表发生变化时（例如，新增了一个 Pod），Kubelet 会立即通过 Watch 机制**接收到通知**。
+5. Kubelet **主动拉取** 新的 Pod 配置信息（Pod Spec）。
+6. Kubelet **执行**任务：根据拉取的 Pod Spec，调用容器运行时（CRI）来创建和运行容器。
+7. Kubelet **周期性地**向 API Server 报告该 Pod 的实际状态和健康状况，以确保实际状态与期望状态一致。
 
 
 
@@ -366,9 +381,15 @@ kubectl get --raw "/api/v1/nodes/k8s-master01/proxy/metrics/resource"
 
 
 
-虽然 kubelet 总体启动容器的工作流程，但是具体的操作它是依赖主机层面的容器引擎来管理的。对于依赖的容器引擎，我们可以选择的组件有 containerd、ori-o 等。Kubernetes 默认配置的组件是 cri-o。
+虽然 kubelet 总体启动容器的工作流程，但是具体的操作它是依赖主机层面的容器引擎来管理的。
 
-但是业界实际落地部署最多的还是 containerd，因为它的部署量巨大，很多潜在的问题都会被第一时间解决。containerd 是从 docker 引擎抽离出来的容器管理工具，用户具备长期的使用经验，这些经验对于运维和管理容器会带来很多潜在的使用信心。
+对于依赖的容器引擎，我们可以选择的组件有 containerd、ori-o 等。Kubernetes 默认配置的组件是 cri-o。
+
+
+
+但是业界实际落地部署最多的还是 containerd，因为它的部署量巨大，很多潜在的问题都会被第一时间解决。
+
+containerd 是从 docker 引擎抽离出来的容器管理工具，用户具备长期的使用经验，这些经验对于运维和管理容器会带来很多潜在的使用信心。
 
 
 
@@ -382,7 +403,7 @@ Docker 和 ctr 确实都是管理主机层面的镜像和容器的，但是他�
 
 ### 1.3.6 Kube-proxy
 
-**`kube-proxy` 是 Kubernetes 集群中一个非常重要的网络代理组件，它运行在每个节点上，主要职责是为 Service 提供稳定的网络访问和负载均衡功能。**
+==**`kube-proxy` 是 Kubernetes 集群中一个非常重要的网络代理组件，它运行在每个节点上，主要职责是为 Service 提供稳定的网络访问和负载均衡功能。**==
 
 **它持续监听着集群中的 Service 和 Pod（即 Endpoints）的变化，并根据这些变化，在节点上配置网络规则，确保发往 Service 的流量能够被正确、高效地转发到后端的 Pod。**
 
@@ -1761,9 +1782,11 @@ k8s 并没有为裸机集群实现负载均衡器，因此我们只有在以下 
 
 **Ingress 是 Kubernetes 中用于管理对集群内服务的外部访问的 API 对象。** 它主要提供 HTTP 和 HTTPS 路由。
 
-Ingress 本身只是一个**规则集合**，它并没有实际的流量处理能力。要让 Ingress 规则生效，你需要一个**Ingress 控制器（Ingress Controller）**。
+Ingress 本身只是一个 **规则集合**，它并没有实际的流量处理能力。要让 Ingress 规则生效，你需要一个**Ingress 控制器（Ingress Controller）**。
 
-Ingress 控制器是 Kubernetes 集群中一个真正的应用程序，它负责监听 Ingress 资源的变化，并根据这些规则来配置一个反向代理或负载均衡器。常见的 Ingress 控制器有：
+Ingress 控制器是 Kubernetes 集群中一个真正的应用程序，它负责监听 Ingress 资源的变化，并根据这些规则来配置一个反向代理或负载均衡器。
+
+常见的 Ingress 控制器有：
 
 - **Nginx Ingress Controller**：最常用和最流行的选择。
 - **Traefik**：轻量级且功能强大。
@@ -1792,7 +1815,7 @@ Ingress 的出现，就是为了解决这些问题。它允许你用**一个统�
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.8.2/deploy/static/provider/cloud/deploy.yaml
 ```
 
-
+![img](k8s基础.assets/2222036-20230630023137239-879001159.png)
 
 
 
@@ -2545,6 +2568,22 @@ https://github.com/kubernetes-sigs/kueue
 https://github.com/kubernetes/autoscaler
 
 Nodes 的伸缩：根据集群的负载情况，可以自动增加或减少 Nodes 的数量，以适应负载的变化。目前最流行的 Node 伸缩方案，支持绝大多数云厂商。
+
+
+
+## Karpor 
+
+https://www.kusionstack.io/zh/karpor
+
+
+
+
+
+## KubePi
+
+
+
+
 
 # 镜像仓库
 
