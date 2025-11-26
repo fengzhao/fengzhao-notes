@@ -77,7 +77,11 @@ ipvs是集成在内核中的框架，可以通过用户空间的程序`ipvsadm`�
 
 # LVS详解
 
-`LVS`的全称是 `Linux virtual serve`，即Linux虚拟服务器。之所以是虚拟服务器，是因为 `LVS` 自身是个负载均衡器(director)，不直接处理请求，而是将请求转发至位于它后端真正的服务器 `realserver` 上。
+`LVS`的全称是 `Linux virtual serve`，即Linux虚拟服务器。
+
+==之所以是虚拟服务器，是因为 `LVS` 自身是个负载均衡器(director)，不直接处理请求，而是将请求转发至位于它后端真正的服务器 `realserver` 上。==
+
+
 
 `LVS` 是四层(传输层`tcp/udp`)、七层(应用层：比如`http`)的负载均衡工具。只不过大众一般都使用它的四层负载均衡功能 `ipvs`。
 
