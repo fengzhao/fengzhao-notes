@@ -14,17 +14,6 @@ LVS 是 Linux Virtual Server 的简写，意即 Linux 虚拟服务器，是一�
 >
 > 
 >
-> 
-
-
-
-IPVS 是作为一个**Linux内核模块** 实现的，它与 **Netfilter** 框架紧密集成。
-
-- **内核目录**：在 Linux 内核的源代码中，IPVS 的代码通常位于 `net/netfilter/ipvs` 子目录下。这表明它被视为 Netfilter 框架的一个扩展，用于处理网络数据包。
-- **用户空间工具**：尽管 IPVS 本身在内核中运行，但它需要通过**用户空间工具**来配置。这个工具就是 **`ipvsadm`**。你可以通过 `ipvsadm` 命令来添加、修改或删除 IPVS 的虚拟服务器、真实服务器以及负载均衡调度算法。
-
-
-
 > 22年前国内的互联网还处在早期阶段，一台服务器加载一个网站都忙不过来，要多台服务器来解决，这就需要做负载均衡。
 >
 > 章文嵩发现，Linux内核里并没有这个功能，于是，他花了两个星期写了LVS软件放在网上，并给出使用文档。那是1998年5月，他还在国防科技大学读博。
@@ -63,9 +52,16 @@ IPVS 是作为一个**Linux内核模块** 实现的，它与 **Netfilter** 框�
 
 
 
+IPVS 是作为一个**Linux内核模块** 实现的，它与 **Netfilter** 框架紧密集成。
+
+- **内核目录**：在 Linux 内核的源代码中，IPVS 的代码通常位于 `net/netfilter/ipvs` 子目录下。这表明它被视为 Netfilter 框架的一个扩展，用于处理网络数据包。
+- **用户空间工具**：尽管 IPVS 本身在内核中运行，但它需要通过**用户空间工具**来配置。这个工具就是 **`ipvsadm`**。你可以通过 `ipvsadm` 命令来添加、修改或删除 IPVS 的虚拟服务器、真实服务器以及负载均衡调度算法。
 
 
-LVS的全称是Linux virtual server，即Linux虚拟服务器。之所以是虚拟服务器，是因为 LVS 自身是个负载均衡器(director)，不直接处理请求，而是将请求转发至位于它后端真正的服务器 `realserver` 上。
+
+LVS的全称是Linux virtual server，即Linux虚拟服务器。
+
+之所以是虚拟服务器，是因为 LVS 自身是个负载均衡器(director)，不直接处理请求，而是将请求转发至位于它后端真正的服务器 `realserver` 上。
 
 
 
@@ -209,3 +205,14 @@ DR（Direct Routing 直接路由模式）此模式时`LVS`调度器只接收客�
 
 RS收到`LVS`转发来的包时，链路层发现MAC是自己的，到上面的网络层，发现IP也是自己的，于是这个包被合法地接受，RS感知不到前面有`LVS`的存在。而当RS返回响应时，只要直接向源IP（即用户的IP）返回即可，不再经过`LVS`。
 
+
+
+
+
+
+
+https://www.cnblogs.com/rexcheny/p/10778567.html
+
+https://www.cnblogs.com/liugp/p/17294687.html
+
+https://www.keepalived.org/pdf/sery-lvs-cluster.pdf
