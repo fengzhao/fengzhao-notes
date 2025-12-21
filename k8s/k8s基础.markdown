@@ -2230,7 +2230,7 @@ https://www.cnblogs.com/sparkdev/p/8461576.html
 
 
 
-为了实现这个网络模型，CoreOS 团队发起了 CNI 项目（后来 CNI 进了 CNCF 孵化），CNI (Container Network Interface) 定义了实现容器之间网络连通性和释放网络资源等相关操作的接口规范。
+**==为了实现这个网络模型，CoreOS 团队发起了 CNI 项目（后来 CNI 进了 CNCF 孵化），CNI (Container Network Interface) 定义了实现容器之间网络连通性和释放网络资源等相关操作的接口规范。==**
 
 这套接口进而由具体的 CNI 插件去实现，CNI 插件负责为 Pod 分配 IP 地址，并处理跨节点的网络路由等具体的工作。
 
@@ -2298,6 +2298,12 @@ Linux Bridge 是工作在链路层的网络交换机，由 Linux 内核模块 `b
 
 
 
+![img](https://ask.qcloudimg.com/http-save/yehe-7452425/t7posuuh6n.png)
+
+
+
+
+
 **容器跨主通信**
 
 在 Docker 的默认配置下，一台宿主机上的 docker0 网桥，和其他宿主机上的 docker0 网桥，没有任何关联，它们互相之间也没办法连通。所以，连接在这些网桥上的容器，自然也没办法进行通信了。
@@ -2310,9 +2316,9 @@ Linux Bridge 是工作在链路层的网络交换机，由 Linux 内核模块 `b
 
 
 
-底层网络 *Underlay Network* 
+**==底层网络 *Underlay Network*==** 
 
-顾名思义是指网络设备基础设施，如交换机，路由器, *DWDM* 使用网络介质将其链接成的物理网络拓扑，负责网络之间的数据包传输。
+顾名思义是指网络设备基础设施，如交换机，路由器等使用网络介质将其链接成的物理网络拓扑，负责网络之间的数据包传输。
 
 
 
@@ -2332,11 +2338,25 @@ Linux Bridge 是工作在链路层的网络交换机，由 Linux 内核模块 `b
 
 构建这种容器网络的核心在于：我们需要在已有的宿主机网络上，再通过软件构建一个覆盖在已有宿主机网络之上的、可以把所有容器连通在一起的虚拟网络。
 
-所以，这种技术就被称为：Overlay Network（覆盖网络）。
 
-这个 Overlay Network 本身，可以由每台宿主机上的一个“特殊网桥”共同组成。
 
-比如，当Node 1 上的 Container 1 要访问 Node 2 上的 Container 3 的时候，Node 1 上的“特殊网桥”在收到数据包之后，能够通过某种方式，把数据包发送到正确的宿主机，比如 Node 2上。
+![img](https://ask.qcloudimg.com/http-save/yehe-7452425/p4ieksqa3c.png)
+
+
+
+此群集中有三个网络：
+
+1、AWS VPC网络：所有实例都在一个VPC子网中`172.20.32.0/19`。它们已经在此范围内分配了ip地址，所有主机都可以彼此连接，因为它们位于同一LAN中。
+
+2、Flannel overlay network：flannel创建了另一个网络`100.96.0.0/16`，它是一个更大的网络，可以容纳65536个地址，并且遍及所有kubernetes节点，将在此范围内为每个Pod分配一个地址，稍后我们将看到flannel如何实现此目的。
+
+3、主机内docker网络：在每个主机内部，flannel为该主机中的所有pod分配了一个网络`100.96.x.0/24`，它可以容纳256地址。docker桥接接口`docker0`将使用此网络创建新容器。
+
+
+
+所以，这种技术就被称为：**==Overlay Network（覆盖网络）==**，这个 Overlay Network 本身，可以由每台宿主机上的一个“特殊网桥”共同组成。
+
+比如，当 Node 1 上的 Container1 要访问 Node 2 上的 Container3 的时候，Node 1 上的“特殊网桥”在收到数据包之后，能够通过某种方式，把数据包发送到正确的宿主机，比如 Node 2上。
 
 而 Node 2 上的“特殊网桥”在收到数据包后，也能够通过某种方式，把数据包转发给正确的容器，比如 Container 3。
 
