@@ -2623,7 +2623,121 @@ k8s中涉及到的仓库有如下
 
 
 
+
+
+
+
 # containerd 作为容器运行时
+
+
+
+
+
+## 部署 containerd
+
+Containerd是一个行业标准的容器运行时，具有简单、健壮和可移植的特性。它可作为Linux和Windows的守护进程使用，可以管理其主机系统的完整容器生命周期：包括镜像传输和存储、容器执行和监测、低级存储和网络附件等。
+
+Containerd主要特性如下：
+
+- 管理容器生命周期（从容器创建到容器销毁）
+- Pull/Push容器镜像
+- 存储管理（管理镜像和容器数据的存储）
+- 调用runC运行容器（与runC等容器运行时交互）
+- 管理网络和容器网络接口
+- 开源协议：Containerd代码库遵循Apache 2.0许可。
+
+
+
+
+
+Kubernetes在v1.24版本中移除了Dockershim，并从此不再默认支持Docker容器运行时。现在，K8s 依赖于 **CRI（容器运行时接口）** 与各种运行时交互。
+
+主流的“默认容器运行时”选项有两个：
+
+- **containerd (最主流)**：从 Docker 中剥离出来的核心组件，功能纯粹、轻量、性能极高。它是绝大多数公有云（如阿里云 ACK、AWS EKS）和安装工具（如 kubeadm）默认安装的。
+- **CRI-O**：红帽（Red Hat）主推的开源运行时，专门为 Kubernetes 量身定制，代码库更小，安全性高。
+
+
+
+手动部署 Containerd
+
+
+
+containerd有两种安装包： 
+
+- containerd-xxx: 	这种安装包用于单机测试没问题，不包含runC，需要提前安装。 	 
+- cri-containerd-cni-xxx: 	包含runc及符合K8S的CNI接口的相关软件包。虽然包含runC，但是依赖系统中的Seccomp(用于系统资源调用的相关模块)来配合使用。因此建议大家手动安装runC即可。
+
+
+
+```bash
+#/bin/bash
+
+GITHUB_MIRROR="https://ghfast.top"
+CONTAINERD_VERSION="1.7.24"			# 
+RUNC_VERSION="1.1.12" 				# 建议使用与 containerd 匹配的版本
+ARCH="amd64"
+
+# 也可直接获取当前最新版本号：curl -sI https://github.com/opencontainers/runc/releases/latest | grep -i location | awk -F'/' '{print $NF}' | tr -d '\r'
+
+
+# 1. 检查内核是否支持 Seccomp
+if grep -q "CONFIG_SECCOMP=y" /boot/config-$(uname -r); then
+    echo -e "${GREEN}[OK] 内核支持 Seccomp${NC}"
+else
+    echo -e "${RED}[ERROR] 内核不支持 Seccomp，请升级内核后再试。${NC}"
+    exit 1
+fi
+
+
+# 2. 检查并安装 libseccomp 依赖库
+echo "正在检查 libseccomp 依赖..."
+if [ -f /etc/redhat-release ]; then
+    # CentOS/RHEL 系列
+    sudo yum install -y libseccomp libseccomp-devel
+elif [ -f /etc/lsb-release ] || [ -f /etc/debian_version ]; then
+    # Ubuntu/Debian 系列
+    sudo apt-get update && sudo apt-get install -y libseccomp2 libseccomp-dev
+fi
+
+
+# --- 1. 安装runC ---
+# runC 是单二进制文件，直接下载
+wget -P /tmp ${GITHUB_MIRROR}/opencontainers/runc/releases/download/v${RUNC_VERSION}/runc.${ARCH}
+sudo install -m 755 /tmp/runc.${ARCH} /usr/local/sbin/runc
+
+
+# --- 2. 下载并解压 containerd 二进制文件 ---
+echo "正在下载 containerd v${CONTAINERD_VERSION}..."
+wget ${GITHUB_MIRROR}/https://github.com/containerd/containerd/releases/download/v${CONTAINERD_VERSION}/containerd-${CONTAINERD_VERSION}-linux-${ARCH}.tar.gz
+
+echo "正在解压到 /usr/local/bin..."
+sudo tar Cxzvf /usr/local /usr/local/bin/containerd-${CONTAINERD_VERSION}-linux-${ARCH}.tar.gz
+
+# --- 3. 配置 Systemd 服务 ---
+echo "配置 systemd 服务..."
+sudo mkdir -p /usr/local/lib/systemd/system/
+wget ${GITHUB_MIRROR}/containerd/containerd/main/containerd.service -O /tmp/containerd.service
+sudo mv /tmp/containerd.service /usr/local/lib/systemd/system/containerd.service
+
+sudo systemctl daemon-reload
+sudo systemctl enable --now containerd
+
+# --- 4. 生成默认配置文件 ---
+echo "生成默认配置文件 /etc/containerd/config.toml..."
+sudo mkdir -p /etc/containerd
+containerd config default | sudo tee /etc/containerd/config.toml > /dev/null
+
+# 如果是 Kubernetes 环境，通常需要开启 SystemdCgroup
+sudo sed -i 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
+
+sudo systemctl restart containerd
+echo "containerd 安装完成！"
+```
+
+
+
+
 
 `containerd` 1.5 版本之后推荐的，比修改主配置文件 `/etc/containerd/config.toml` 更灵活。
 
