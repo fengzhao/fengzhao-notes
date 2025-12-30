@@ -355,11 +355,46 @@ https://info.support.huawei.com/info-finder/encyclopedia/zh/DHCP+Snooping.html
 
 **==基于接口配置DHCP==**
 
-接口地址池配置方式简单，只能用于用户与DHCP服务器在同一个网段的场景，并且只能给对应接口下的用户分配IP地址等网络参数；适用于设备数量有限、配置以及维护量可控的小型网络。
+接口地址池配置方式简单，只能用于用户与DHCP服务器在同一个网段的场景，并且只能给对应接口下的用户分配IP地址等网络参数；
+
+适用于设备数量有限、配置以及维护量可控的小型网络。
 
 在用户网关设备上配置基于接口地址池的DHCP服务器功能之后，对应接口下的固定主机、移动终端等都可以自动获取IP地址等网络参数，不需要用户手动配置修改。
 
 
+
+```shell
+# 核心交换机，启用DHCP功能
+<HUAWEI> system-view
+[HUAWEI] sysname Switch
+[Switch] dhcp enable
+
+# 创建业务VLAN
+[Switch] vlan batch 10 to 11
+
+# 1号口下联VLAN10
+[Switch] interface gigabitethernet 0/0/1
+[Switch-GigabitEthernet0/0/1] port link-type access
+[Switch-GigabitEthernet0/0/1] port default vlan 10
+[Switch-GigabitEthernet0/0/1] quit
+
+# 2号口下联VLAN20
+[Switch] interface gigabitethernet 0/0/2
+[Switch-GigabitEthernet0/0/2] port link-type access
+[Switch-GigabitEthernet0/0/2] port default vlan 20
+[Switch-GigabitEthernet0/0/2] quit
+
+# VLAN10网段
+[Switch] interface vlanif 10
+[Switch-Vlanif10] ip address 10.1.1.1 24  
+[Switch-Vlanif10] quit
+
+#  VLAN20网段
+[Switch] interface vlanif 11
+[Switch-Vlanif11] ip address 10.1.2.1 24  
+[Switch-Vlanif11] quit
+
+```
 
 
 
