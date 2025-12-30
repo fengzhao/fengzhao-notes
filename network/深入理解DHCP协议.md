@@ -353,18 +353,16 @@ https://info.support.huawei.com/info-finder/encyclopedia/zh/DHCP+Snooping.html
 
 
 
-**==基于接口配置DHCP==**
+## **==接口DHCP地址池==**
 
 接口地址池配置方式简单，只能用于用户与DHCP服务器在同一个网段的场景，并且只能给对应接口下的用户分配IP地址等网络参数；
 
 适用于设备数量有限、配置以及维护量可控的小型网络。
 
-在用户网关设备上配置基于接口地址池的DHCP服务器功能之后，对应接口下的固定主机、移动终端等都可以自动获取IP地址等网络参数，不需要用户手动配置修改。
-
-
+在用户网关设备上配置基于接口地址池的DHCP服务器功能之后，对应接口下的固定主机、移动终端等都可以自动获取IP地址等网络参数。
 
 ```shell
-# 核心交换机，启用DHCP功能
+# 核心交换机，全局启用DHCP功能
 <HUAWEI> system-view
 [HUAWEI] sysname Switch
 [Switch] dhcp enable
@@ -386,13 +384,19 @@ https://info.support.huawei.com/info-finder/encyclopedia/zh/DHCP+Snooping.html
 
 # VLAN10网段
 [Switch] interface vlanif 10
-[Switch-Vlanif10] ip address 10.1.1.1 24  
+[Switch-Vlanif10] ip address 10.10.10.254 24    # 接口地址所属的IP地址网段即为接口地址池。10.10.10.1~10.10.10.254
+[Switch-Vlanif10] dhcp select interface   		# 使能接口采用接口地址池的DHCP服务器功能，缺省未使能
+[Switch-Vlanif10] dhcp server lease day 30  	# 租期的缺省值为1天，修改租期为30天
+[Switch-Vlanif10] dhcp server excluded-ip-address 10.10.10.100 10.10.10.200 			    #  不参与自动分配的IP地址    
+[Switch-Vlanif10] dhcp server static-bind ip-address 10.1.1.100 mac-address 00e0-fc12-3456  # 为Client_1分配固定的IP地址
+dhcp server excluded-ip-address start-ip-address [ end-ip-address ]
 [Switch-Vlanif10] quit
 
 #  VLAN20网段
 [Switch] interface vlanif 11
-[Switch-Vlanif11] ip address 10.1.2.1 24  
-[Switch-Vlanif11] quit
+[Switch-Vlanif20] ip address 10.1.2.1 24  		# 接口地址所属的IP地址网段即为接口地址池。
+[Switch-Vlanif20] dhcp select interface  	    # 使能接口采用接口地址池的DHCP服务器功能，缺省未使能
+[Switch-Vlanif20] quit
 
 ```
 
@@ -400,19 +404,49 @@ https://info.support.huawei.com/info-finder/encyclopedia/zh/DHCP+Snooping.html
 
 
 
-**==全局地址池==**
+## **==全局DHCP地址池==**
 
-全局地址池可应用于大型网络，推荐在核心层设备上配置基于全局地址池的DHCP服务器功能或在服务器区域搭建一台专门的DHCP服务器统一分配IP地址等网络参数，而用户网关设备上只需要启用简单的DHCP中继功能即可。
+**==地址池指的是DHCPv4服务器可以为客户端分配的所有IPv4地址的集合。除IPv4地址外，地址池内还可以配置租期、子网掩码、默认网关等网络参数。==**
 
-**==地址池指的是DHCPv4服务器可以为客户端分配的所有IPv4地址的集合。除IPv4地址外，地址池内还可以配置租期、子网掩码、默认网关等网络参数。在DHCPv4服务器为客户端分配IPv4地址时，这些网络参数也一并分配给客户端。==**
+**==在DHCPv4服务器为客户端分配IPv4地址时，这些网络参数也一并分配给客户端。==**
 
-基于全局方式的地址池是在系统视图下创建的指定网段的地址池。全局地址池中的地址可以分配给设备所有接口下的客户端。当DHCPv4服务器与客户端不在同一个网段时，需要部署DHCPv4中继。
+
+
+**基于全局方式的地址池是在系统视图下创建的指定网段的地址池。全局地址池中的地址可以分配给==设备所有接口==下的客户端。**
+
+==**当DHCPv4服务器与客户端不在同一个网段时，需要部署DHCPv4中继。**==
+
+
+
+
+
+全局地址池可应用于大型网络，推荐
+
+- 1、在核心层设备上配置基于全局地址池的DHCP服务器功能
+- 2、在服务器区域搭建一台专门的DHCP服务器统一分配IP地址等网络参数。而用户网关设备上只需要启用简单的DHCP中继功能即可。
+
+
+
+
 
 
 
 全局地址池由一个或多个IPv4地址段组成，各个地址段内的IPv4地址不能有重叠。
 
 **section**（IP地址池视图）命令设置的地址段范围必须在**network**（IP地址池视图）命令设置的地址范围之内。
+
+
+
+```
+[Core-Switch] ip pool vlan10
+[Core-Switch-ip-pool-vlan10] network 10.10.10.0 mask 255.255.255.0  		# 定义网段
+[Core-Switch-ip-pool-vlan10] gateway-list 10.10.10.1                		# 定义网关
+[Core-Switch-ip-pool-vlan10] dns-list 114.114.114.114 8.8.8.8       		# 定义DNS
+[Core-Switch-ip-pool-vlan10] lease day 1                            		# 租期（可选）
+[Core-Switch-ip-pool-vlan10] excluded-ip-address 10.10.10.2 10.10.10.10 	# 排除预留IP（可选）
+
+
+```
 
 
 
