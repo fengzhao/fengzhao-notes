@@ -1,0 +1,44 @@
+sysname R1
+interface GigabitEthernet0/0/0
+ ip address 12.0.0.1 255.255.255.0
+ospf 1 router-id 1.1.1.1 
+ area 0.0.0.1 
+  network 12.0.0.1 0.0.0.0 
+
+
+sysname R2
+interface GigabitEthernet0/0/0
+ ip address 12.0.0.2 255.255.255.0
+ospf 1 router-id 2.2.2.2 
+ area 0.0.0.1 
+  network 12.0.0.2 0.0.0.0 
+
+
+[R1]dis ospf peer  
+
+	 OSPF Process 1 with Router ID 1.1.1.1
+		 Neighbors 
+
+ Area 0.0.0.1 interface 12.0.0.1(GigabitEthernet0/0/0)'s neighbors
+ Router ID: 2.2.2.2          Address: 12.0.0.2        
+   State: Full  Mode:Nbr is  Master  Priority: 1
+   DR: 12.0.0.1  BDR: 12.0.0.2  MTU: 0    
+   Dead timer due in 40  sec 
+   Retrans timer interval: 5 
+   Neighbor is up for 00:07:28     
+   Authentication Sequence: [ 0 ] 
+
+[R1]
+[R1]
+[R1]
+[R1]dis ospf peer br	
+[R1]dis ospf peer brief 
+
+	 OSPF Process 1 with Router ID 1.1.1.1
+		  Peer Statistic Information
+ ----------------------------------------------------------------------------
+ Area Id          Interface                        Neighbor id      State    
+ 0.0.0.1          GigabitEthernet0/0/0             2.2.2.2          Full        
+ -------------
+
+
