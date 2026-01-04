@@ -1,0 +1,229 @@
+# Bridging
+
+**==Linux Bridge==** 是 Linux kernel 2.2 版本开始提供的**==虚拟机二层转发工具==**。
+
+
+
+与物理交换机机制一致，它能够接入任何二层的网络设备（无论是真实的物理设备，例如 eth0 。或者虚拟设备，例如 veth、tap 等）
+
+不过 Bridge 与普通物理交换机有一点不同，普通交换机只会单纯地做二层转发，`Linux Bridge` 却还能把发给它的数据包再发送到主机的三层协议栈：
+
+可以认为当使用 `brctl addbr br0` 新建一个 br0 网桥时。系统自动创建了一个同名的隐藏 `br0` 网络接口（这是个三层接口，可以配置IP地址）
+
+```bash
+# 创建一个bridge时，其实内核做了两件事：
+# 1、创建了一个名为br0的虚拟交换机：它维护一张MAC地址表，负责在连接到它的各个tap设备或物理网卡之间转发以太网帧。
+# 2、创建了一个名为br0的三层接口：可以配置IP地址，
+
+ip link add br0 type bridge
+
+
+# 给br0这个接口配置IP地址
+# br0一旦设置 IP 地址，就意味着这个隐藏的 br0 接口可以作为三层接口，参与 IP 层的路由选择(可以使用 `route -n` 查看最后一列 `Iface`)。
+ip addr add 192.168.1.10/24 dev br0
+
+
+# 创建ns1，并创建veth对，两端分别插在br0上和ns1上，并为ns1配置IP地址
+ip netns add ns1														
+ip link add veth1_ns1 type veth peer name veth1_br						
+ip link set veth1_ns1 netns ns1											
+ip link set veth1_br master br0											
+ip link set veth1_br up
+ip netns exec ns1 ip link set veth1_ns1 up
+ip netns exec ns1 ip addr add 192.168.1.11/24 dev veth1_ns1
+
+# 创建ns2，并创建veth对，两端分别插在br0上和ns2上，并为ns2配置IP地址
+ip netns add ns2
+ip link add veth2_ns2 type veth peer name veth2_br
+ip link set veth2_ns2 netns ns2
+ip link set veth2_br master br0
+ip link set veth2_br up
+ip netns exec ns2 ip link set veth2_ns2 up
+ip netns exec ns2 ip addr add 192.168.1.12/24 dev veth2_ns2
+
+
+# 场景 A：Namespace 之间互 ping (ns1 -> ns2)
+ip netns exec ns1 ping -c 2 192.168.1.12
+
+
+# 场景 B：Namespace ping 网桥 (ns1 -> br0)
+ip netns exec ns1 ping -c 2 192.168.1.10			
+
+
+# 查看这个虚拟交换机的MAC地址表。这个地方跟传统交换机稍微有点不同
+root@starrocks-fe-0:~# brctl showmacs br0
+port no mac addr                is local?       ageing timer
+  1     3a:42:41:72:1b:67       no                15.32
+  1     4a:50:1d:21:71:22       yes                0.00
+  1     4a:50:1d:21:71:22       yes                0.00
+  2     aa:49:23:1c:6e:dd       no               125.91
+  2     ee:0c:dd:cf:92:5b       yes                0.00
+  2     ee:0c:dd:cf:92:5b       yes                0.00
+root@starrocks-fe-0:~#
+```
+
+
+
+# TAP/TNU
+
+在计算机网络中，TUN与TAP是操作系统内核中的虚拟网络设备。
+
+在时间上 tun/tap 出现得更早，在 `Linux Kernel 2.4` 版之后发布的内核都会默认编译 tun/tap 的驱动。
+
+**不同于普通靠硬件网路板卡实现的设备，这些虚拟的网络设备全部用软件实现，并向运行于操作系统上的软件提供与硬件的网络设备完全相同的功能。**
+
+
+
+在 Linux 中，TUN 设备是一种工作在三层（Network Layer）的虚拟网络设备。TUN 设备的功能非常简单，即：**在操作系统内核和用户应用程序之间传递 IP 包。**
+
+- **TUN等同于一个三层设备**
+  - TUN模拟了网络层设备，它操作第三层数据包比如IP数据包
+  - 它从 `/dev/net/tun` 字符设备上读取的是 IP 数据包。写入的也只能是 IP 数据包，因此不能进行二层操作，如发送 ARP 请求和以太网广播。
+  - 可以实现一个**==点对点==**隧道：
+- **TAP等同于一个二层设备**
+  - TUN模拟了链路层设备，操作第三层数据帧比如以太网数据帧
+  - 它从 `/dev/net/tun` 字符设备上读取的是链路层数据帧，
+
+
+
+从这点来看， TAP虚拟设备和真实的物理网卡的能力更接近，可以与物理网卡做 bridge
+
+
+
+
+
+
+
+## 使用Tun/Tap创建点对点隧道
+
+
+
+如下图所示：
+
+1、左边主机上应用程序发送到Tun虚拟设备上的IP数据包被VPN程序通过字符设备接收。
+
+2、然后再通过一个TCP或者UDP隧道从宿主机网卡发送到右端的VPN服务器上。
+
+3、VPN服务器将隧道负载中的原始IP数据包写入字符设备，这些IP包就会出现在右侧的Tun虚拟设备上。
+
+4、最后通过操作系统协议栈和socket接口发送到右侧的应用程序上。
+
+
+
+
+
+![img](Linux虚拟机网络.assets/linux-tun-tunnel.png)
+
+
+
+
+
+
+
+
+
+## 使用Tap隧道桥接两个远程站点
+
+
+
+
+
+
+
+操作系统通过`TUN/TAP`设备向绑定该设备的用户空间的程序发送数据，反之，用户空间的程序也可以像操作硬件网络设备那样，通过TUN/TAP设备发送数据。
+
+在后种情况下，TUN/TAP设备向操作系统的网络栈投递（或“注入”）数据包，从而模拟从外部接受数据的过程。
+
+tap 和 tun 虽然都是虚拟网络设备，但它们的工作层次还不太一样
+
+- TUN是一个点对点的三层设备（或网络层设备）
+- TUN 设备的 /dev/tunX 文件收发的是 IP 层数据包，只能工作在 IP 层，无法与物理网卡做 bridge，但是可以通过三层交换（如 ip_forward）与物理网卡连通。
+- TAP设备是一个二层设备（或者以太网设备）
+- TAP 设备的 /dev/tapX 文件收发的是 MAC 层数据包，拥有 MAC 层功能，可以与物理网卡做 bridge，支持 MAC 层广播
+
+
+
+
+
+# MACVLAN
+
+==**macvlan 本身是 `Linxu kernel` 模块，其功能是允许在同一个物理网卡上配置多个 MAC 地址。即多个 interface，每个 interface 可以配置自己的 IP。**==
+
+**macvlan 本质上是一种网卡（所谓的子接口）虚拟化技术(最大优点是性能极好)**
+
+
+
+**==macvlan跟传统数通的VLANIF子接口（一般叫802.1Q子接口）还是有点区别==**。
+
+macvlan 子接口和原来的主接口是完全独立的，可以单独配置 MAC 地址和 IP 地址。而 VLANIF 子接口和主接口共用相同的 MAC 地址。
+
+VLAN 用来划分广播域，而 macvlan 共享同一个广播域。
+
+
+
+
+
+
+
+```
+
+```
+
+
+
+
+
+
+
+MACVLAN模式
+
+
+
+
+
+## VEPA
+
+在 `VEPA` 模式下，所有从 Macvlan 接口发出的流量，不管目的地全部都发送给父接口，即使流量的目的地是共享同一个父接口的其它 Macvlan 接口
+
+
+
+## private
+
+这种模式下，同一主接口下的子接口之间彼此隔离，不能通信。即使从外部的物理交换机导流，也会被无情地丢掉。
+
+
+
+
+
+```bash
+# 基于物理接口创建两个macvlan子接口
+
+ip link add link enp0s8 dev mac1 type macvlan mode bridge
+
+
+ip netns add pod-a
+ip link set eth0 netns pod-a
+ip netns exec pod-a ip addr add 192.168.10.10/24 dev eth0
+ip netns exec pod-a ip link set eth0 up
+ip netns exec pod-a ip route add default via 192.168.10.1 dev eth0  
+
+
+ip link add link enp0s8 dev mac2 type macvlan mode bridge
+
+
+
+
+
+```
+
+
+
+
+
+# IPVLAN
+
+
+
+
+
+# 
