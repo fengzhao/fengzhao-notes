@@ -10,6 +10,22 @@
 
 可以认为当使用 `brctl addbr br0` 新建一个 br0 网桥时。系统自动创建了一个同名的隐藏 `br0` 网络接口（这是个三层接口，可以配置IP地址）
 
+
+
+
+
+# veth
+
+**veth pair在 **Linux Kernel 2.6.24 版本中正式引入
+
+==**veth pair 全称是 Virtual Ethernet Pair，好像是一根网点的两个端口一样，所有从这对端口一端进入的数据包都将从另一端出来，反之也是一样。**==
+
+引入 `veth pair` 是为了在不同的 `Network Namespace` 直接进行通信，利用它可以直接将两个 `Network Namespace` 连接起来。
+
+
+
+
+
 ```bash
 # 创建一个bridge时，其实内核做了两件事：
 # 1、创建了一个名为br0的虚拟交换机：它维护一张MAC地址表，负责在连接到它的各个tap设备或物理网卡之间转发以太网帧。
@@ -61,6 +77,37 @@ port no mac addr                is local?       ageing timer
   2     ee:0c:dd:cf:92:5b       yes                0.00
 root@starrocks-fe-0:~#
 ```
+
+
+
+
+
+![image-20260105155437043](Linux虚拟机网络.assets/image-20260105155437043.png)
+
+
+
+https://excalidraw.com/#json=aYTRJm9FAmsV7WczgFtru,AOxUu6ht8EeIU-O2dTwWyA
+
+
+
+```
+# 对于挂在docker0网桥上的容器来说，它内部路由表长这样。
+
+bash-5.0# route -n
+Kernel IP routing table
+Destination     Gateway         Genmask         Flags Metric Ref    Use Iface
+0.0.0.0         172.17.0.1      0.0.0.0         UG    0      0        0 eth0
+172.17.0.0      0.0.0.0         255.255.0.0     U     0      0        0 eth0
+bash-5.0#
+bash-5.0#
+
+# 对于第一条路由：目的地址为0.0.0.0，表示默认路由，默认路由发给网关(也就是docker0网桥上的"docker0这个特殊接口")。然后进入宿主机内核协议栈查宿主机路由表
+# 对于第二条路由：在路由表中，0.0.0.0 作为网关意味着“不需要网关”。这表示目标 IP 就在当前链路上（On-link）。同网段通讯，直接走二层转发
+```
+
+
+
+
 
 
 
@@ -142,6 +189,105 @@ tap 和 tun 虽然都是虚拟网络设备，但它们的工作层次还不太�
 - TAP 设备的 /dev/tapX 文件收发的是 MAC 层数据包，拥有 MAC 层功能，可以与物理网卡做 bridge，支持 MAC 层广播
 
 
+
+
+
+# Flannel
+
+[Flannel](https://github.com/flannel-io/flannel) 项目是 CoreOS 公司主推的容器网络方案。事实上，Flannel 项目本身只是一个框架，真正提供容器网络功能的，是 Flannel 的后端实现。
+
+Flannel 是 Kubernetes 中常用的网络插件，用于实现 Pod 之间的跨节点通信。它支持多种工作模式，每种模式都有其特点和适用场景。
+
+
+
+**==Flannel 的核心功能是为 Kubernetes 集群中的每个 Pod 分配一个唯一的 IP 地址，并确保 Pod 之间可以无缝通信==**。其底层原理主要包括以下几个方面：
+
+
+
+1、全局子网分配：在全局创建用于分配给所有pod的地址池（例如 `10.244.0.0/16`），一般会写到ETCD持久化
+
+2、节点子网分配：Flannel 为每个工作节点分配一个唯一的子网（例如 `10.244.1.0/24`），Pod 创建时会从该子网中分配一个 IP 地址。
+
+3、节点网络虚拟化：Flannel 会在每个节点创建虚拟化网桥 cni0 ,
+
+4、路由设置：Flannel 在每个节点上设置路由规则，确保跨节点的流量可以正确路由到目标 Pod。这些路由规则存储在 etcd 中，并由 Flannel 动态维护。
+
+- 如果目标地址是同节点的pod，出接口交给`cni0`网桥（同节点其实都）
+- 如果目标地址是跨节点的pod，出接口则会交给`flannel.1`设备
+
+5、创建
+
+
+
+目前，Flannel 支持三种后端实现：
+
+## vxlan
+
+**==VXLAN（Virtual Extensible LAN）模式是 Flannel 的默认模式，也是最常用的模式==**。它通过封装数据包来实现跨节点通信，具体工作原理如下：
+
+1. **Pod 发起通信**：源 `Pod` 向目标 `Pod` 发送数据包，数据包首先到达源节点的 `cni0` 网桥。
+2. **查找目标节点**：Flannel 根据目标 Pod 的 IP 地址，查询到目标节点的物理 IP 地址。
+3. **数据封装**：Flannel 使用 `VXLAN` 协议将原始数据包封装在 UDP 报文中，并通过底层网络发送到目标节点。
+4. **解封装数据包**：目标节点的 Flannel 接收到封装的数据包后，解封装并还原为原始数据包。
+5. **目标 Pod 接收数据**：解封装后的数据包通过目标节点的 `cni0` 网桥，最终传递给目标 Pod。
+
+VXLAN 模式适用于复杂的网络环境，例如节点跨子网或跨机房的场景。
+
+
+
+
+
+
+
+```bash
+
+# 首先，在ETCD创建全局子网100.64.0.0/16，这个是全局用于分配给所有pod的地址池
+etcdctl put /coreos.com/network/config '{"Network":"100.64.0.0/16", "Backend": {"Type": "udp"}}'
+
+
+# 启动flanneld进程，指定ETCD，指定ETCD键名称，指定写入子网文件，并指定当前本机物理网卡
+sudo ./flanneld  \
+	--etcd-endpoints=http://127.0.0.1:2379 \
+	--etcd-prefix=/coreos.com/network 	\
+	--subnet-file=/run/flannel/subnet.env \
+	--iface=eth0  
+
+
+
+# 1、当每台宿主机的flanneld启动时，它内部其实会向ETCD写入一个属于自己的“可分配网段”（通常是 /24 网段）
+# 比如宿主机1会这样分配：etcdctl put /coreos.com/network/subnets/100.64.10.0-24 '{"PublicIP":"192.168.1.10"}'
+# 比如宿主机1会这样分配：etcdctl put /coreos.com/network/subnets/100.64.20.0-24 '{"PublicIP":"192.168.1.10"}'
+
+
+# 2、他会在宿主机创建一个名为flannel0的tun设备
+
+
+# 3、启动flanneld时，会在宿主机内写入子网信息
+# root@qhdata-dev:~# cat /run/flannel/subnet.env
+# FLANNEL_NETWORK=10.244.0.0/16
+# FLANNEL_SUBNET=10.244.31.1/24
+# FLANNEL_MTU=1472
+# FLANNEL_IPMASQ=false
+
+
+# 3、接下来就是创建cni0网桥了。
+# 在 CNI 的世界里，流行“外包”。flannel 插件在读取了 .conflist 和 subnet.env 后，发现自己需要创建一个网桥，它会转头去调用另一个更基础的插件：bridge 插件。
+
+
+```
+
+
+
+
+
+
+
+`flanneld` 进程内部确实维护着一张逻辑上的“全网路由表”，它记录了 **Pod 网段（Subnet）与 宿主机 IP（Public IP）的映射关系**。
+
+`flanneld` 并不是孤立运行的，它依赖一个**==中央数据库==**来保持集群中所有节点信息的一致性：
+
+- **早期的 Flannel**：直接通过 `etcd` 存储。
+- **现在的 Kubernetes 环境**：通常通过 `Kubernetes API Server` 存储在 `Nodes` 对象的 `Spec` 中。
 
 
 
