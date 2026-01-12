@@ -1198,6 +1198,53 @@ pacman -Ql openssh
 
 
 
+## Subsystem
+
+SSH 不仅仅能用来通过命令行控制服务器（Shell），它还可以作为一个**传输管道**来承载其他特定的服务。
+
+
+
+SFTP（SSH File Transfer Protocol，也称 Secret File Transfer Protocol），是一种基于SSH（安全外壳）的安全的文件传输协议。
+
+使用SFTP协议可以在文件传输过程中提供一种安全的加密算法，从而保证数据的安全传输，所以SFTP是非常安全的。
+
+但是，由于这种传输方式使用了加密/解密技术，所以传输效率比普通的FTP要低。
+
+
+
+SFTP是SSH的一部分，SFTP没有单独的守护进程，它必须使用SSHD守护进程（端口号默认是22）来完成相应的连接操作，sftp服务作为ssh的一个子服务，是通过 `/etc/ssh/sshd_config` 配置文件中的 `Subsystem` 实现的，如果没有配置 `Subsystem` 参数，则系统是不能进行sftp访问的。所以，要分离ssh和sftp服务的话，基本的思路是创建两个sshd进程，分别监听在不同的端口，一个作为ssh服务的deamon，另一个作为sftp服务的deamon。
+
+
+
+`Subsystem` 指令就是告诉 `sshd` 服务：**“当客户端请求执行某个特定的功能模块时，请调用对应的程序来处理。”**
+
+```
+Subsystem sftp /usr/libexec/openssh/sftp-server
+```
+
+当客户端（如 FileZilla 或 WinSCP）告诉 SSH 它想要进行文件传输（即请求 `sftp` 子系统）时，SSH 进程不会给你启动一个 `/bin/bash`，而是启动 `/usr/libexec/openssh/sftp-server` 这个程序来专门处理文件读写。
+
+
+
+
+
+
+
+`internal-sftp` 是OpenSSH服务器提供的另一种SFTP服务器实现方式，它是一个内部的SFTP服务器，与OpenSSH服务器在同一进程中运行。它的优点是可以更好地控制对文件系统的访问，而且对系统资源的消耗更少，从而提高了服务器的性能。但是，由于它的实现方式不同于sftp-server，因此可能存在与某些SFTP客户端不兼容的情况。
+
+```bash
+#Subsystem sftp /usr/libexec/openssh/sftp-server   
+Subsystem sftp internal-sftp -l INFO -f AUTH	# 将所有SFTP连接重定向到OpenSSH的内部SFTP子系统
+Match group sftpusers     						# 限制SFTP子系统的使用仅适用于sftp用户组中的用户。
+Match User mysftp								# 也可以匹配用户
+ChrootDirectory %h        						# 将用户的根目录限制为其家目录。
+X11Forwarding no          						# 禁止X11转发，以提高安全性。
+AllowTcpForwarding no     						# 禁止TCP转发，以提高安全性。
+ForceCommand internal-sftp   					# 强制所有SFTP会话使用内部的SFTP子系统，以避免shell访问。
+```
+
+
+
 # ssh安全
 
 
