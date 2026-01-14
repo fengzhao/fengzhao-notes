@@ -203,7 +203,7 @@ DHCP客户端向DHCP服务器动态地请求网络配置信息，DHCP服务器�
 
 源MAC地址为自己的MAC地址，目的MAC地址为 `FFFF-FFFF-FFFF`
 
-该报文会在二层网络中洪泛，因此如果网络中存在DHCP服务器，则DHCP服务器会收到该报文。
+该报文会**==在二层网络中广播洪泛==**，因此如果网络中存在DHCP服务器，则DHCP服务器会收到该报文。
 
 数据封装过程大致如下：
 
@@ -211,6 +211,12 @@ DHCP客户端向DHCP服务器动态地请求网络配置信息，DHCP服务器�
 - 传输层：使用 **UDP 封装**。客户端源端口是 **68**，目的端口是 **67**（DHCP 服务器端口）
 - 网络层：IP头部，客户端不知道自己的 IP，所以 **源 IP** 是 **0.0.0.0**。客户端不知道服务器 IP，所以 **目的 IP** 是 **255.255.255.255**（**三层广播地址**）
 - 数据链路层：客户端不知道 DHCP 服务器的 MAC 地址，所以 **目的 MAC 地址** 是 **FFFF.FFFF.FFFF**（**二层广播地址**）
+
+注意：这个目的IP其实是受限的三层广播地址。路由器**绝对不会**转发目的地址为 `255.255.255.255` 的数据包。它被限制在发送者所在的同一个二层广播域内。
+
+
+
+
 
 
 
@@ -351,6 +357,16 @@ https://info.support.huawei.com/info-finder/encyclopedia/zh/DHCP+Snooping.html
 
 # DHCP服务配置
 
+在实际工作中DHCP部署的位置肯定是在用户的网关上面，这里的网关指的就是VLAN网关，也就是核心交换机，核心设备通常支持的特性多，性能也属于网络中最好的一台设备，又充当内网的网关，所以它充当DHCP服务器，这样也是比较合理的。
+
+
+
+**==地址池指的是DHCPv4服务器可以为客户端分配的所有IPv4地址的集合。除IPv4地址外，地址池内还可以配置租期、子网掩码、默认网关等网络参数。==**
+
+**==在DHCPv4服务器为客户端分配IPv4地址时，这些网络参数也一并分配给客户端。==**
+
+
+
 
 
 ## **==接口DHCP地址池==**
@@ -398,6 +414,8 @@ dhcp server excluded-ip-address start-ip-address [ end-ip-address ]
 [Switch-Vlanif20] dhcp select interface  	    # 使能接口采用接口地址池的DHCP服务器功能，缺省未使能
 [Switch-Vlanif20] quit
 
+
+# 关键就在于这个命令，当启用DHCP接口模式后，它会以这个VLANIF接口下配置的地址充当网关、掩码作为下发给客户端的掩码信息。
 ```
 
 
@@ -405,10 +423,6 @@ dhcp server excluded-ip-address start-ip-address [ end-ip-address ]
 
 
 ## **==全局DHCP地址池==**
-
-**==地址池指的是DHCPv4服务器可以为客户端分配的所有IPv4地址的集合。除IPv4地址外，地址池内还可以配置租期、子网掩码、默认网关等网络参数。==**
-
-**==在DHCPv4服务器为客户端分配IPv4地址时，这些网络参数也一并分配给客户端。==**
 
 
 
@@ -422,12 +436,8 @@ dhcp server excluded-ip-address start-ip-address [ end-ip-address ]
 
 全局地址池可应用于大型网络，推荐
 
-- 1、在核心层设备上配置基于全局地址池的DHCP服务器功能
-- 2、在服务器区域搭建一台专门的DHCP服务器统一分配IP地址等网络参数。而用户网关设备上只需要启用简单的DHCP中继功能即可。
-
-
-
-
+- 在核心层设备上配置基于全局地址池的DHCP服务器功能
+- 在服务器区域搭建一台专门的DHCP服务器统一分配IP地址等网络参数。而用户网关设备上只需要启用简单的DHCP中继功能即可。
 
 
 
@@ -437,7 +447,7 @@ dhcp server excluded-ip-address start-ip-address [ end-ip-address ]
 
 
 
-```
+```bash
 [Core-Switch] ip pool vlan10
 [Core-Switch-ip-pool-vlan10] network 10.10.10.0 mask 255.255.255.0  		# 定义网段
 [Core-Switch-ip-pool-vlan10] gateway-list 10.10.10.1                		# 定义网关
@@ -447,10 +457,6 @@ dhcp server excluded-ip-address start-ip-address [ end-ip-address ]
 
 
 ```
-
-
-
-
 
 
 
