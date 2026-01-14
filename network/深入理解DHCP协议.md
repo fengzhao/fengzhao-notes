@@ -216,17 +216,55 @@ DHCP客户端向DHCP服务器动态地请求网络配置信息，DHCP服务器�
 
 
 
+DHCP的矛盾在于先有鸡还是先有蛋？
+
+按照标准的 TCP/IP 流程，一个设备要接收目的 IP 为 `192.168.1.10` 的包，它必须**已经拥有**这个 IP。但在 DHCP 报文交互过程中，客户端**正在申请**这个 IP
+
+所以`DHCP Discover`报文有有个FLAG字段
+
+客户端在发送请求（Discover/Request）时，得先评估一下自己的能力：
+
+- **Flag = 1 (广播标志位)**：
+
+  > “各位，我现在的协议栈比较菜，在我还没正式配置好 IP 地址之前，我根本收不到任何指名道姓（单播）发给我的 IP 包。所以，请务必用**广播**的方式回我。”
+
+- **Flag = 0 (单播标志位)**：
+
+  > “我挺强的，虽然我还没正式用上 IP，但我的底层驱动可以根据 MAC 地址识别出给我的包。所以，请直接**单播**发给我，别吵到别人。”
+
+
+
+如果DHCP服务器不是部署在主机的网关上，比如说更上一层的路由器上时，那么还需要在网关上部署DHCP中继功能。
+
+DHCP中继主要作用是：在DHCP服务器和DHCP客户端之间转发DHCP报文，以保证DHCP服务器和DHCP客户端可以正常交互。
+
+
+
+DHCP中继接收到DHCP客户端广播发送的`DHCP DISCOVER`报文后，进行如下处理：
+
+1. 检查DHCP报文中的hops字段，如果大于16，则丢弃DHCP报文；否则，将hops字段加1（表明经过一次DHCP中继），并继续下面的操作。
+2. 检查DHCP报文中的giaddr字段。如果是0，将giaddr字段设置为接收`DHCP DISCOVER`报文的接口IP地址。如果不是0，则不修改该字段，继续下面的操作。
+3. 将DHCP报文的目的IP地址改为DHCP服务器或下一跳中继的IP地址，源地址改为中继连接客户端的接口地址，通过路由转发将DHCP报文单播发送到DHCP服务器或下一跳中继。
+
+如果DHCP客户端与DHCP服务器之间存在多个DHCP中继，后面的中继接收到DHCP DISCOVER报文的处理流程同前面所述。
+
+
+
+
+
+如果服务器和客户端不在同一个网段，那么第一个DHCP中继在将DHCP请求报文转发给DHCP服务器时，会把自己的IP地址填入此字段，DHCP服务器会根据此字段来判断出客户端所在的网段地址，从而选择合适的地址池，为客户端分配该网段的IP地址。
+
 
 
 
 
 **（二）提供阶段**
 
-当网络中的DHCP服务器收到了`DHCP Client`发送的DHCP报文后，DHCP就进入了提供阶段。
+当网络中的DHCP服务器收到了客户端发送的DHCP报文后，DHCP就进入了提供阶段。
 
-在这个阶段，`DHCP Server`会根据管理员的相关配置，给`DHCP Client`提供一个可用的IP地址，同时给其提供DNS、子网掩码等信息。
+在这个阶段，`DHCP Server`会根据管理员的相关配置，给客户端提供一个可用的IP地址，DNS、子网掩码等信息。
 
-==**响应一个 DHCP Offer 报文，`DHCP Server`会发送`DHCP Offer`信息给`DHCP Client`提供上述信息，该报文也是一个广播报文**。==
+响应一个 DHCP Offer 报文，提供上述信息
 
 > 很多 DHCP 服务器（尤其是企业级和遵循严格标准的服务器）在发送 `DHCPOFFER` 之前，会采取措施进行 IP 地址冲突检测，其中最常见的方法之一就是发送 **ARP 广播**。
 
@@ -235,20 +273,33 @@ DHCP客户端向DHCP服务器动态地请求网络配置信息，DHCP服务器�
 - 应用层：`DHCP OFFER` 报文。**==有字段标识这是Offer类型==**
 
 - 传输层：使用 **UDP 封装**。数据从服务端发出，源端口是 **67**（DHCP服务器），目的端口是 **68**（客户端电脑）
-- 网络层：源为DHCP服务器IP，目的IP地址为DHCP Server给该DHCP Client分配的IP地址。
-- 数据链路层：源MAC地址为DHCP Server的MAC地址，目的MAC地址为DHCP Client的MAC地址。
+- 网络层：源为DHCP服务器IP，目的IP地址为分配给客户端的IP地址
+- 数据链路层：源MAC地址为DHCP Server的MAC地址，目的MAC地址为DHCP Client的MAC地址
 
 （注，在这里有的设备上DHCP Offer报文也是广播，其实也能够实现DHCP的功能）
 
 
 
+当服务器或中继路由器准备发 Offer 或 ACK 报文时，它必须先看一眼前面的 Flag：
+
+- **如果你要求广播 (Flag=1)**：
+  - **IP 层**：目的地址填 `255.255.255.255`。
+  - **链路层**：目的 MAC 填 `FF:FF:FF:FF:FF:FF`。
+- **如果你要求单播 (Flag=0)**：
+  - **IP 层**：目的地址直接填将来要给你的那个 IP（`yiaddr`，即 Your IP Address）。
+  - **链路层**：目的 MAC 填你的硬件地址（`chaddr`，即 Client Hardware Address）。
+
+> **兜底条款**：如果服务器想发单播但发现技术上行不通（比如底层驱动不支持），标准也允许服务器“无奈”地改用广播。
+
+
+
 **（三）请求阶段**
 
-在`DHCP Client`收到DHCP Server发送的DHCP Offer报文后，就进入了DHCP请求阶段。
+客户端在收到`DHCP Server`发送的`DHCP Offer`报文后，就进入了DHCP请求阶段。
 
-在DHCP请求阶段，DHCP Client已经得到了DHCP Server分配给它的IP地址，DHCP Client在得到该IP地址后，却不会马上使用。
+在DHCP请求阶段，客户端已经得到了`DHCP Server`分配给它的IP地址，但是它在得到该IP地址后，却不会马上使用。
 
-**==DHCP Client会向DHCP Server发送DHCP Request报文，来正式向DHCP Server申请使用该IP地址。==**
+**==DHCP Client会向DHCP Server发送DHCP Request报文，来正式向DHCP Server申请使用该IP地址==**
 
 
 
@@ -259,19 +310,25 @@ DHCP客户端向DHCP服务器动态地请求网络配置信息，DHCP服务器�
 
 - 网络层：
 
-  - 源IP地址为0.0.0.0（因为这时还没有得到DHCP服务器的回应，因此此时这个IP地址还不能正常使用，因此在这里源IP地址还是0.0.0.0）。
+  - 源IP地址为0.0.0.0（因为这时还没有得到DHCP服务器的回应，因此此时这个IP地址还不能正常使用，因此在这里源IP地址还是0.0.0.0）
 
-  - 目的地址为255.255.255.255。（注：在这里其实DHCP Client其实已经知道了DHCP Server的IP地址，因此其实这里使用DHCP Server的IP地址其实也是可以的.
-
-因此，有些设备对此做了优化，因为这样可以减少网络中的广播洪范流量）
-
-- 源MAC和目的MAC地址分别是DHCP Client的和DHCP Server的MAC地址。
+  - 目的地址为255.255.255.255
+  
+    （注：在这里其实`DHCP Client`其实已经知道了DHCP Server的IP地址，因此其实这里使用`DHCP Server`的IP地址其实也是可以的.
+  
+    因此，有些设备对此做了优化，因为这样可以减少网络中的广播洪范流量）
+  
+- 链路层：源MAC和目的MAC地址分别是`DHCP Client`的和`DHCP Server`的MAC地址。
 
 
 
 **（四）确认阶段**
 
-当DHCP Server收到DHCP Client发送的DHCP Request报文后，DHCP进入确认阶段。DHCP Server会向DHCP Client发送DHCP Reply报文，表示同意DHCP Client使用该IP地址。
+当DHCP Server收到客户端发送的DHCP Request报文后，DHCP进入确认阶段。
+
+
+
+DHCP Server会向DHCP Client发送`DHCP Reply`报文，表示同意客户端使用该IP地址。
 
 DHCP Reply 报文（有时也被称为DHCP ACK报文），源IP地址为DHCP Server的IP地址，目的IP地址为DHCP Client的IP地址，源目MAC为DHCP Server和Client的MAC地址。
 
