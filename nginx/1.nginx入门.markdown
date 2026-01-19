@@ -1366,10 +1366,6 @@ Nginx 能保持高度曝光发展到今天，除了因为有大量三方模块�
 
 该模块允许将请求转发到其他服务器，实现代理服务器的功能。常见于实现反向代理服务器。
 
-
-
-
-
 当`nginx`被用来反向代理上游服务器(比如一个`PHP-fpm`实例)时， 隐藏在上游响应中发送的某些报头(比如PHP运行的版本)是有益的。
 
 可以使用`proxy_hide_header`(或Lua模块)来隐藏/删除上游服务器返回到你的`nginx`反向代理(并最终返回到客户端)的头文件。
@@ -1379,8 +1375,6 @@ Nginx 能保持高度曝光发展到今天，除了因为有大量三方模块�
 
 
 ````nginx configuration 
-
-```
 upstream ddd-server { 
 	server 11.11.11.11:80; 
 	server 11.11.11.12:80; 
@@ -1393,8 +1387,18 @@ server {
 		proxy_pass http://ddd-server; 
 		} 
 }
+```
 
-# /etc/nginx/conf/conf.d/hide-headers.rule
+
+当`nginx`被用来反向代理上游服务器(比如一个`PHP-fpm`实例)时， 隐藏在上游响应中发送的某些报头(比如PHP运行的版本)是有益的。
+
+可以使用`proxy_hide_header`(或Lua模块)来隐藏/删除上游服务器返回到你的`nginx`反向代理(并最终返回到客户端)的头文件。
+
+
+
+```nginx
+/etc/nginx/conf/conf.d/hide-headers.rule
+
 proxy_hide_header X-Application-Context;
 proxy_hide_header Access-Control-Allow-Origin;
 proxy_hide_header X-Powered-By;
@@ -1407,19 +1411,19 @@ proxy_hide_header X-Drupal-Dynamic-Cache;
 proxy_hide_header X-Generator;
 proxy_hide_header X-Runtime;
 proxy_hide_header X-Rack-Cache;
+```
+
+
+
+
+
 ````
-
-
-
-
 
 ### ngx_http_upstream_module 
 
-
-
 ### ngx_http_gzip_module
 
-
+```
 
 ### ngx_http_map_module 
 
@@ -1427,30 +1431,28 @@ map 指令是由 `ngx_http_map_module` 模块提供的，默认情况下nginx �
 
 map 的主要作用是`创建自定义变量`，通过使用 nginx 的`内置变量`,去`匹配`某些特定规则;
 
-​```nginx
+```nginx
 # $args 是nginx内置变量，就是获取的请求 url 的参数。
 
 # map定义两个变量的映射关系：当 $args 的值等于 debug 的时候，$foo 变量的值就是 1，否则 $foo 的值就为 0.
 
 map $args $foo {
-    	default     0;
+		default     0;
     	debug       1;
     }
 
 server {
-        listen 8080;
-
-        location /test {
-        	# 将变量$foo的值赋给变量$orig_foo
-            set $orig_foo $foo;
-        
-        	# 强行修改 $args 的值为 debug
-            set $args debug;
-
-            echo "original foo: $orig_foo";
-            echo "foo: $foo";
-        }
+	listen 8080;
+	location /test {
+		# 将变量$foo的值赋给变量$orig_foo
+		set $orig_foo $foo;
+        # 强行修改 $args 的值为 debug
+        set $args debug;
+        echo "original foo: $orig_foo";
+        echo "foo: $foo";
     }
+}
+
 curl 'http://localhost:8080/test'
 
 # 第一行输出"original foo: 0"
@@ -1460,12 +1462,7 @@ curl 'http://localhost:8080/test'
 # 在强行改写 $args 变量的值为字符串 debug 之后，$foo 仍然是 0，显然不符合map规则。
 
 # 原因是$foo在第一次读取时，根据映射规则计算出的值被缓存住了
-
-
-
 ```
-
-
 
 
 
@@ -1475,7 +1472,7 @@ ngx_http_sub_module模块是一个过滤器，它修改网站响应内容中的�
 
 在reponse的时候，对http的内容进行替换。比如说在开发中有多台的主机，但是在返回的时候需要对各台主机的内容来进行替换，那么就需要用到这个。
 
-官方文档地址http://nginx.org/en/docs/http/ngx_http_sub_module.html
+官方文档地址 http://nginx.org/en/docs/http/ngx_http_sub_module.html
 
 
 
