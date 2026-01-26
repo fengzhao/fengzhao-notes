@@ -138,8 +138,6 @@ root@oneplatform-dataadmin:/data/qhdata/docker#
 
 当你运行了一个端口映射容器，比如 `docker run -p 8080:80 nginx`，你会看到类似下面的一行
 
-
-
 ```
 root@oneplatform-dataadmin:/data/qhdata/docker#
 root@oneplatform-dataadmin:/data/qhdata/docker# iptables -t nat -S DOCKER
@@ -205,10 +203,6 @@ root@oneplatform-dataadmin:/data/qhdata/docker#
 
 4、最后通过操作系统协议栈和socket接口发送到右侧的应用程序上。
 
-
-
-
-
 ![img](Linux虚拟机网络.assets/linux-tun-tunnel.png)
 
 
@@ -219,13 +213,7 @@ root@oneplatform-dataadmin:/data/qhdata/docker#
 
 
 
-## 使用Tap隧道桥接两个远程站点
-
-
-
-
-
-
+## 使用TAP隧道桥接两个远程站点
 
 操作系统通过`TUN/TAP`设备向绑定该设备的用户空间的程序发送数据，反之，用户空间的程序也可以像操作硬件网络设备那样，通过TUN/TAP设备发送数据。
 
@@ -233,12 +221,15 @@ root@oneplatform-dataadmin:/data/qhdata/docker#
 
 tap 和 tun 虽然都是虚拟网络设备，但它们的工作层次还不太一样
 
-- TUN是一个点对点的三层设备（或网络层设备）
-- TUN 设备的 /dev/tunX 文件收发的是 IP 层数据包，只能工作在 IP 层，无法与物理网卡做 bridge，但是可以通过三层交换（如 ip_forward）与物理网卡连通。
-- TAP设备是一个二层设备（或者以太网设备）
-- TAP 设备的 /dev/tapX 文件收发的是 MAC 层数据包，拥有 MAC 层功能，可以与物理网卡做 bridge，支持 MAC 层广播
-
-
+| **特性**       | **TUN (Network Tunnel)**                  | **TAP (Network Tap)**                  |
+| -------------- | ----------------------------------------- | -------------------------------------- |
+| **工作层级**   | **网络层 (L3)**                           | **数据链路层 (L2)**                    |
+| **数据包单位** | **IP 数据包** (IP Packet)                 | **以太网帧** (Ethernet Frame)          |
+| **模拟对象**   | 虚拟的点对点设备 (Point-to-Point)         | 虚拟的以太网卡 (NIC)                   |
+| **头部信息**   | 只有 IP 头，不含 MAC 地址                 | 包含 MAC 地址、帧头等完整以太网结构    |
+| **处理协议**   | 仅限 IP (IPv4/IPv6)                       | 可处理 ARP、DHCP 等各种非 IP 协议      |
+| **常见场景**   | **VPN、内网穿透** (如 OpenVPN, Tailscale) | **虚拟机网桥、容器网络** (如 QEMU/KVM) |
+| **操作方式**   | 读写的是路由后的数据                      | 读写的是像接在交换机上的原始帧         |
 
 
 
@@ -256,9 +247,13 @@ Flannel 是 Kubernetes 中常用的网络插件，用于实现 Pod 之间的跨�
 
 1、全局子网分配：在全局创建用于分配给所有pod的地址池（例如 `10.244.0.0/16`），一般会写到ETCD持久化
 
-2、节点子网分配：Flannel 为每个工作节点分配一个唯一的子网（例如 `10.244.1.0/24`），Pod 创建时会从该子网中分配一个 IP 地址。
+2、节点子网分配：Flannel 为每个工作节点分配一个唯一的子网（例如节点一就分配 `10.244.1.0/24`），从节点内创建 Pod 时会从该子网中分配一个 IP 地址。
 
-3、节点网络虚拟化：Flannel 会在每个节点创建虚拟化网桥 cni0 ,
+3、节点网络虚拟化：Flannel 会在每个节点创建虚拟化网桥 cni0 
+
+​		**下方连接（容器端）：** 它连接着该节点上运行的所有 **Pod**。每个 Pod 里看到的 `eth0`，其实是通过 **veth-pair**（虚拟以太网对）插在 `cni0` 上的。
+
+​		**上方连接（主机端）：** 它连接着宿主机的**网络栈**。`cni0` 作为一个 Linux Bridge（虚拟交换机），拥有一个 IP 地址（通常是该节点 Pod 网段的网关，如 `10.244.1.1`）。
 
 4、路由设置：Flannel 在每个节点上设置路由规则，确保跨节点的流量可以正确路由到目标 Pod。这些路由规则存储在 etcd 中，并由 Flannel 动态维护。
 
