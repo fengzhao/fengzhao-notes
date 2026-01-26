@@ -105,7 +105,63 @@ bash-5.0#
 # 对于第二条路由：在路由表中，0.0.0.0 作为网关意味着“不需要网关”。这表示目标 IP 就在当前链路上（On-link）。同网段通讯，直接走二层转发
 ```
 
-# TAP/TNU
+
+
+# NAT
+
+**Docker（或类似的容器引擎）在启动时会自动注入 NAT 规则。**
+
+当你将容器连接到默认的 **Bridge** 网络（通常是 docker0）时，Docker 守护进程会利用 Linux 内核的 iptables 功能，自动为你搭建好这套“透明”的上网机制。
+
+
+
+## SNAT
+
+每当 Docker 启动时，它会向系统的 `iptables` 规则中添加 **MASQUERADE**（地址伪装）规则。
+
+```
+root@oneplatform-dataadmin:/data/qhdata/docker#
+root@oneplatform-dataadmin:/data/qhdata/docker# iptables -t nat -L POSTROUTING -n
+Chain POSTROUTING (policy ACCEPT)
+target     prot opt source               destination
+MASQUERADE  0    --  172.18.0.0/16        0.0.0.0/0
+MASQUERADE  0    --  172.17.0.0/16        0.0.0.0/0
+root@oneplatform-dataadmin:/data/qhdata/docker#
+root@oneplatform-dataadmin:/data/qhdata/docker#
+```
+
+**这条规则的意思是：** 只要是从 `172.17.0.0/16`（容器网段）出来的流量，如果目的地是外部网络，就自动把源地址换成宿主机的网卡 IP。
+
+
+
+## DNAT
+
+当你运行了一个端口映射容器，比如 `docker run -p 8080:80 nginx`，你会看到类似下面的一行
+
+
+
+```
+root@oneplatform-dataadmin:/data/qhdata/docker#
+root@oneplatform-dataadmin:/data/qhdata/docker# iptables -t nat -S DOCKER
+-N DOCKER
+-A DOCKER ! -i br-c022a16a148d -p tcp -m tcp --dport 8089 -j DNAT --to-destination 172.18.0.2:8089
+-A DOCKER ! -i br-c022a16a148d -p tcp -m tcp --dport 19270 -j DNAT --to-destination 172.18.0.7:19270
+-A DOCKER ! -i br-c022a16a148d -p tcp -m tcp --dport 19280 -j DNAT --to-destination 172.18.0.8:19280
+-A DOCKER ! -i br-c022a16a148d -p tcp -m tcp --dport 19300 -j DNAT --to-destination 172.18.0.9:19300
+-A DOCKER ! -i br-c022a16a148d -p tcp -m tcp --dport 19201 -j DNAT --to-destination 172.18.0.3:19201
+-A DOCKER ! -i br-c022a16a148d -p tcp -m tcp --dport 19223 -j DNAT --to-destination 172.18.0.4:19223
+-A DOCKER ! -i br-c022a16a148d -p tcp -m tcp --dport 19260 -j DNAT --to-destination 172.18.0.6:19260
+-A DOCKER ! -i br-c022a16a148d -p tcp -m tcp --dport 24320 -j DNAT --to-destination 172.18.0.5:24320
+-A DOCKER ! -i docker0 -p tcp -m tcp --dport 19000 -j DNAT --to-destination 172.17.0.2:19206
+-A DOCKER ! -i docker0 -p tcp -m tcp --dport 19001 -j DNAT --to-destination 172.17.0.3:19206
+-A DOCKER ! -i docker0 -p tcp -m tcp --dport 18862 -j DNAT --to-destination 172.17.0.4:80
+-A DOCKER ! -i docker0 -p tcp -m tcp --dport 18861 -j DNAT --to-destination 172.17.0.5:80
+root@oneplatform-dataadmin:/data/qhdata/docker#
+```
+
+
+
+# TAP/TUN
 
 在计算机网络中，TUN与TAP是操作系统内核中的虚拟网络设备。
 
