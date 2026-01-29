@@ -6,7 +6,7 @@
 
 eBPF（extended Berkeley Packet Filter）
 
-即扩展的伯克利包过滤器，可谓 Linux 社区的新宠，Goole、Facebook、Twitter等公司都开始投身于 eBPF 技术的研究和应用。
+即**==扩展的伯克利包过滤器==**，可谓 Linux 社区的新宠，Google、Facebook、Twitter等公司都开始投身于 eBPF 技术的研究和应用。
 
 eBPF究竟有什么魅力让大家都关注它呢？一般来说，要向内核添加新功能，需要修改内核源代码或者编写内核模块来实现。
 
