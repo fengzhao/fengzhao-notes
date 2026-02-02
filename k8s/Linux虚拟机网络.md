@@ -16,7 +16,11 @@
 
 # veth
 
-**veth pair在 **Linux Kernel 2.6.24 版本中正式引入
+**veth pair在 **Linux Kernel 2.6.24 版本中正式引入。
+
+它被创建出来后，总是以两张虚拟网卡（Veth Peer）的形式成对出现的。
+
+并且，从其中一个“网卡”发出的数据包，可以直接出现在与它对应的另一张“网卡”上，哪怕这两个“网卡”在不同的 Network Namespace 里。
 
 ==**veth pair 全称是 Virtual Ethernet Pair，好像是一根网点的两个端口一样，所有从这对端口一端进入的数据包都将从另一端出来，反之也是一样。**==
 
