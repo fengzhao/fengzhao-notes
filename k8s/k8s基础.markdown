@@ -2533,6 +2533,10 @@ https://github.com/easzlab/
 
 https://github.com/xiaojiaqi/deploy-microservices-to-a-Kubernetes-cluster
 
+
+
+
+
 ## Kind
 
 https://kind.sigs.k8s.io/docs/user/quick-start/
@@ -2543,7 +2547,11 @@ https://istio.io/latest/zh/docs/setup/platform-setup/kind/
 
 
 
-Kind是一个使用 Docker 容器“节点”运行本地 Kubernetes 集群的工具。它主要用于测试 Kubernetes 本身，但也可用于本地开发或CI。顾名思义，就是将 Kubernetes 所需要的所有组件，全部部署在一个 Docker 容器中，可以很方便的搭建 Kubernetes 集群。
+Kind是一个使用 Docker 容器“节点”运行本地 Kubernetes 集群的工具。它主要用于测试 Kubernetes 本身，但也可用于本地开发或CI。
+
+顾名思义，就是将 Kubernetes 所需要的所有组件，全部部署在一个 Docker 容器中，可以很方便的搭建 Kubernetes 集群。
+
+
 
 将 docker 容器作为一个 kubernetes 的 "node"，并在该 "node" 中安装 kubernetes 组件
 
@@ -2553,11 +2561,17 @@ Kind 使用一个 container 来模拟一个 node，在 container 里面跑了 sy
 
 
 
-Kind 内部使用了 kubeadm 这个工具来做集群的部署，包括 ha master 的高可用集群，也是借助 kubeadm 提供的aplha特性提供的。同时，在 ha master 下，额外部署了一个 nginx 用来提供负载均衡 vip。
+Kind 内部使用了 kubeadm 这个工具来做集群的部署，包括 ha master 的高可用集群，也是借助 kubeadm 提供的aplha特性提供的。
+
+同时，在 ha master 下，额外部署了一个 nginx 用来提供负载均衡 vip。
 
 
 
 在使用 kind 搭建 k8s 集群时，需要先安装好 docker 和 go
+
+
+
+
 
 ## kmesh
 
