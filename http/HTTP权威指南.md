@@ -3099,6 +3099,8 @@ High Performance Browser Networking》**，中文译名为 《Web 性能权威�
 
 **将整本书的内容完全开源，并发布在网上供所有人免费阅读。官方在线阅读地址**：https://hpbn.co/
 
+https://zq99299.github.io/note-book2/http-protocol/
+
 
 
 HTTP/2 可以让我们的应用更快、更简单、更稳定 - 这几词凑到一块是很罕见的！
