@@ -10,8 +10,6 @@
 
 
 
-
-
 ```shell
 # 查看nginx编译安装，以及安装的模块
 
@@ -30,22 +28,181 @@ configure arguments: --prefix=/usr/share/nginx --sbin-path=/usr/sbin/nginx --mod
 
 
 
+- `ngx_connection_s` 连接结构体：在64位系统中，每个结构体占用约232字节（不同NGX版本可能略有差异）。
+
+- `ngx_event_s` 事件结构体：每个 `ngx_connection` 对应着读事件和写事件，每个事件结构体占用约 96 字节，所以读、写合计占用192字节。
+
+
+
+即：每个连接消耗内存为 `232 + 96 × 2 = 424` 字节，所以在进行 `worker_connections` 参数调优时 ，还需注意每个连接及对应事件的内存消耗。
+
+| **worker_connections** | **单个 Worker 预分配内存** | **4 个 Worker 总计内存** | **备注**                  |
+| ---------------------- | -------------------------- | ------------------------ | ------------------------- |
+| **512**                | 约 **212 KB**              | 约 **0.8 MB**            | 极轻量，随便跑。          |
+| **10,240**             | 约 **4.1 MB**              | 约 **16.4 MB**           | 生产环境常见配置。        |
+| **100,000**            | 约 **40.4 MB**             | 约 **161.6 MB**          | 高并发集群配置。          |
+| **1,000,000**          | 约 **404 MB**              | 约 **1.6 GB**            | **C1000K** 级别，需慎重。 |
+
+
+
+### Nginx内存池
+
+Nginx 内存池在请求场景中，包括连接内存池与请求内存池的使用区别、默认大小及其对内存碎片和性能的影响。
+
+内存池的重要性不言而喻，此外 Nginx 第三方模块在C语言开发中无需手动释放内存，都是由内存池自动管理。
+
+
+
+内存分配策略，每个HTTP请求开始时分配内存，默认大小为4KB。因URL和Header通常占用较多空间，故需较大内存，连接内存池与请求内存池的区别如下：
+
+连接内存池用于整个TCP连接生命周期，连接关闭后释放。
+
+
+
+- 连接内存池: 其大小默认值为`256或512字节`，具体取决于操作系统。超出该大小仍可继续分配，仅影响内存分配次数。
+
+- 请求内存池：用于单次HTTP请求，请求结束后即可销毁，其大小默认值为`4KB`，比连接内存池大8倍。原因为请求需保存更多上下文信息如URL、Header等。
+
+
+
+| **特性**         | **连接内存池 (Connection Pool)**                             | **请求内存池 (Request Pool)**                                |
+| ---------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| **生命周期**     | 从 TCP 三次握手成功 **开始**，到 TCP 四次挥手断开 **结束**。 | 从接收到 HTTP Header **开始**，到最后一个字节发送完毕 **结束**。 |
+| **存放内容**     | 存放与底层 TCP 连接相关的数据，如日志对象、SSL 握手信息。    | 存放与 HTTP 业务相关的数据，如 URI、Header、配置映射、临时变量。 |
+| **HTTP/2 差异**  | 一个连接池对应一个 TCP 链接。                                | **一个连接池里可能并行存在多个请求池**（对应不同的 Stream）。 |
+| **主要配置指令** | `connection_pool_size`                                       | `request_pool_size`                                          |
+
 
 
 
 
 ```nginx
-server {
-    # 443端口，SSL协议，启用http2
-    listen       443 ssl http2;
-    server_name  www.example.com;
+user nginx;
+worker_processes auto;		# worker进程数，通常设置为 CPU 的核心数（或 auto）。
 
-    ssl_certificate /etc/letsencrypt/live/www.example.com/fullchain.pem; 
-    ssl_certificate_key /etc/letsencrypt/live/www.example.com/privkey.pem;
-	# 支持的协议
-    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
+error_log   /usr/local/openresty/nginx/logs/error.log warn;
+pid         /var/run/nginx.pid;
+# Specifies the value for maximum file descriptors that can be opened by this process.
+worker_rlimit_nofile 51200;
+
+
+# events 数组，每个连接对应一个读事件和一个写事件，分配的 read_events 和 write_events 数组大小与worker_connections 参数是一致
+events {
+    use epoll;
+    worker_connections 51200;		# 每个worker进程同时能处理的 TCP 连接上限
+    multi_accept on;
+}
+
+http {
+    charset         utf-8;
+    include         mime.types;
+    default_type    application/octet-stream;
+    log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+                      '$status $body_bytes_sent "$http_referer" '
+                      '"$http_user_agent" "$http_x_forwarded_for"';
+    sendfile        on;
+    tcp_nopush      on;
+    tcp_nodelay     on;
+    server_tokens   off;
+    connection_pool_size 512k; 
+    more_set_headers "Server: cloudflare";
+    more_set_headers "CF-RAY: 7e8b9a1234567890-SJC";
+    #more_set_headers "Content-Type: text/plain; charset=UTF-8";
+    access_log      /usr/local/openresty/nginx/logs/access.log main;
+    keepalive_timeout   65;
+    server_names_hash_bucket_size   128;
+    client_header_buffer_size       32k;
+    large_client_header_buffers     4 32k;
+    client_max_body_size            100m;
+    fastcgi_buffer_size             64k;
+    fastcgi_buffers                 4 64k;
+    fastcgi_busy_buffers_size       128k;
+    fastcgi_temp_file_write_size    256k;
+    gzip                on;
+    gzip_min_length     1k;
+    gzip_buffers        4 16k;
+    gzip_http_version   1.1;
+    gzip_comp_level     5;
+    gzip_types          text/plain application/javascript application/x-javascript text/javascript text/css application/xml application/xml+rss;
+    gzip_vary           on;
+    gzip_proxied        expired no-cache no-store private auth;
+    gzip_disable        "MSIE [1-6]\.";
+    include /usr/local/openresty/nginx/conf.d/*.conf;
+    #  include /etc/nginx/conf.d/*.conf;
+}
+```
+
+
+
+
+
+```nginx
+upstream tosilu_backend {
+    zone tosilu_zone 64k;
+    server 10.10.140.43:5100 max_fails=3 fail_timeout=30s;
+    keepalive 32;
+}
+server {
+    listen    80;
+    server_name tosilu.cn;
+    return 301 https://$host$request_uri;
+}
+server {
+    listen 443 ssl fastopen=32;		# 传输层：监听 443 端口并开启 SSL
+    # listen 443 quic reuseport;    # 传输层：开启 HTTP/3 (UDP)
+    http2 on;			    		# 应用层：开启 HTTP/2 协议	
+    # http3 on;                     # 应用层：开启 HTTP/3 协议
+    server_name  tosilu.cn www.tosilu.cn;
+    resolver 8.8.8.8 ipv6=off;
+    
+   
+    http2_max_concurrent_streams 128;		# 每个连接的最大并发流，防止资源被榨干，默认128
+    http2_body_preread_size 64k;			# 预读数据帧内存
+    http2_chunk_size 8k;					# 定义将响应体切分成二进制帧的最大大小，默认8k。如果响应体通常较大，可以调大到16k
+    http2_recv_buffer_size 256k;			# 每个 Worker 进程在处理 HTTP/2 连接时，单个接收缓冲区的大小（默认值通常是 256k）
+    http2_idle_timeout 3m;				    # 流超时时间，超过这个空闲的流被释放，默认3min
+    http2_max_requests 1000;				# 一个连接在关闭前最多可以处理的请求数
+    
+    access_log  /usr/local/openresty/nginx/logs/tosilu.cn/access.log;
+    error_log  /usr/local/openresty/nginx/logs/tosilu.cn/error.log;
+  
+    
+    # SSL 证书配置
+    ssl_certificate     /usr/local/openresty/nginx/conf/ssl/tosilu.cn.fullchain.cer;
+    ssl_certificate_key /usr/local/openresty/nginx/conf/ssl/tosilu.cn.key;
+
+
+    # 安全增强（推荐）
+    ssl_protocols       TLSv1.2 TLSv1.3;
+    ssl_ciphers         ECDHE-RSA-AES128-GCM-SHA256:ECDHE:ECDH:AES:HIGH:!NULL:!aNULL:!MD5:!ADH:!RC4;
+    ssl_prefer_server_ciphers on;
+    ssl_session_cache   shared:SSL:10m;
+    ssl_session_timeout 10m;
+    underscores_in_headers on;
+    # index  index.html;
+    
+    
+    gzip on;
+    gzip_min_length  5k;
+    gzip_buffers     4 16k;
+    gzip_http_version 1.0;
+    gzip_comp_level 4;
+    gzip_types text/plain text/css application/javascript application/json application/xml;
+    gzip_vary on;
+    add_header Cache-Control no-cache;
+    client_max_body_size 1000m;
+
     location / {
-        proxy_pass http://localhost:12345;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_buffering off;
+        proxy_request_buffering off;
+        proxy_pass http://tosilu_backend;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_read_timeout 60s;
     }
 }
 ```

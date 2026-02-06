@@ -5141,15 +5141,17 @@ https://aandds.com/blog/network-tls.html#2fa47076
 
 #### TCP Fast Open
 
+https://www.opensite.top/2021/07/19/TCP%20Fast%20Open/
+
+
+
 TCP Fast Open（TFO）是对传输控制协议（TCP）的一种扩展，用于加快两个端点之间连续 TCP 连接的打开速度。TFO由2014年12月发布的RFC 7413定义。
-
-
 
 在传统的 TCP 三次握手过程中，建立连接需要一个完整的往返时间（Round Trip Time，RTT），这对于一些对延迟敏感的应用，如网页浏览等，会造成一定的性能损失。特别是在网络延迟较高的情况下，这种延迟影响更为明显。
 
 Google研究发现TCP三次握手是页面延迟时间的重要组成部分，所以他们提出了TFO：在TCP握手期间交换数据，这样可以减少一次RTT。根据测试数据，TFO可以减少15%的HTTP传输延迟，全页面的下载时间平均节省10%，最高可达40%。
 
-TCP Fast Open 的目的就是为了减少这种连接建立的延迟，提高 TCP 连接的效率。
+`TCP Fast Open` 的目的就是为了减少这种连接建立的延迟，提高 TCP 连接的效率。
 
 
 
