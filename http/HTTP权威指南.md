@@ -3069,6 +3069,10 @@ TCP 是面向连接的、可靠的流协议，其为上层应用提供了可靠�
 
 最终，RFC 7540 在 2015 年 5 月 14 日发布了，HTTP/2 成为正式协议。
 
+
+
+
+
 # HTTP2 
 
 HTTP/2 ， 简称 h2 ，是 WWW 所使用的 HTTP 协议的一个重大修订版本。其目的是提升加载 WEB 内容时的感知性能。
@@ -3088,6 +3092,12 @@ Web 应用每次访问都需要走一遍“安装过程”——下载资源、�
 
 
 
+
+High Performance Browser Networking》**，中文译名为 《Web 性能权威指南》**
+
+它的作者是 **Ilya Grigorik**，他曾是 Google 的首席性能工程师（Principal Engineer），也是推动 HTTP/2 和移动 Web 加速的核心人物。
+
+**将整本书的内容完全开源，并发布在网上供所有人免费阅读。官方在线阅读地址**：https://hpbn.co/
 
 
 
@@ -3169,9 +3179,7 @@ HTTP 2.0 性能增强的核心，全在于新增的二进制分帧层
 
 
 
-- **帧（Frame）**：HTTP/2 数据通信的最小单位。帧用来承载特定类型的数据，如 HTTP 首部、负荷；或者用来实现特定功能，例如打开、关闭流。
-
-  ​	每个帧都包含帧首部，其中会标识出当前帧所属的流；
+- **帧（Frame）**：HTTP/2 数据通信的最小单位。帧用来承载特定类型的数据，如 HTTP 首部、负荷；或者用来实现特定功能，例如打开、关闭流。每个帧都包含帧首部，其中会标识出当前帧所属的流；
 
 - **消息（Message）**：指 HTTP/2 中逻辑上的 HTTP 消息。例如请求和响应等，消息由一个或多个帧组成；
 
@@ -3179,13 +3187,52 @@ HTTP 2.0 性能增强的核心，全在于新增的二进制分帧层
 
 - **连接（Connection）**：与 HTTP/1 相同，都是指对应的 TCP 连接；
 
+  - > HTTP/2 的 RFC 7540 文档中明确提到："*“Clients SHOULD NOT open more than one HTTP/2 connection to a given host and port pair”*
+    >
+    > 
+    >
+    > 在 Chrome 的开发者工具（Network 面板）中看到的 **Connection ID**，本质上是 **Chrome 浏览器内核为当前活动的 TCP 连接分配的一个内部索引编号**。
+    >
+    > **物理层面的标识**：一个 Connection ID 对应一个唯一的 **TCP 套接字 (Socket)**。
+    >
+    > **生命周期的体现**：只要这个 TCP 连接没断（Keep-alive），无论你在这个连接里发了多少个 HTTP/2 请求（Streams），它们的 Connection ID 都会保持一致。
+    >
+    > **区分多路复用**：如果你看到 50 个请求的 Connection ID 都是 `1024`，那就说明这 50 个请求正在 **复用同一个 TCP 连接**（多路复用）
+    >
+    > 可以看到一个H2网站使用单个域名，虽然有很多资源，但是Connection ID都一样，证明Chrome也遵循这个实践
+
+    
+
+
+**一个连接带来的隐私问题**
+
+在 HTTP/1.1 时代，如果你在网站上点击不同的按钮或加载图片，浏览器可能会开启多个连接。从服务器视角看，它看到的是几个独立的 TCP 端口在访问。**==（同一个公网ipv4不同端口不一定代表同一个用户哦）==**
+
+在HTTP/2中，通常只需要开一个TCP连接
+
+- **唯一的 ID**：因为你所有的操作（浏览、点赞、下单、上传）都在 **同一个 TCP 连接** 里完成，Nginx 或后台程序可以轻易地通过 `Connection ID` 将这些行为串联起来。
+
+- **无需 Cookie 也能追踪**：即便你禁用了 Cookie，只要你的这个 TCP 连接没断，服务器就知道：“哦，那个还在 54321 端口连着的人，刚才看了 A 页面，现在又看了 B 页面。” 这种追踪是**传输层级别**的，非常精准。
+
+多路复用让“指纹识别（Fingerprinting）”变得极其简单。
 
 
 
 
-HTTP/2 允许在单个连接上同时发送多个请求，每个 HTTP 请求或响应使用不同的流。
 
-连接上的数据流被称为数据帧，每个数据帧都包含一个固定的头部，用来描述该数据帧的类型、所属的流 ID 等。
+==**HTTP/2 允许在单个连接上同时发送多个请求，每个 HTTP 请求或响应使用不同的流。连接上的数据流被称为数据帧，每个数据帧都包含一个固定的头部，用来描述该数据帧的类型、所属的流 ID 等**==
+
+**HTTP/2 标准协议（RFC 7540）** 强制定义：**==由客户端发起的流必须使用奇数；由服务器发起的流必须使用偶数==**
+
+这个看似死板的规定，实际上是为了解决分布式系统中最头疼的问题：**冲突（Collision）**
+
+HTTP/2 支持全双工通信，客户端和服务器可以**同时**决定开启一个新流
+
+- 如果 ID 是随机的，或者大家抢着从 1 开始数，那么在网络传输的毫秒差之间，双方可能同时给两个不同的请求分配了 `ID: 5`
+- **结果**：当这两个包在光缆中相遇时，协议就乱套了，服务器不知道这个 `ID: 5` 是它想推给你的图片，还是你想要请求的网页
+- **单向自增**：一旦开启了 `ID: 7` 的流，你就再也不能开启 `ID: 5` 或更小的流。如果收到了比当前已处理 ID 更小的开启请求，会直接触发 `PROTOCOL_ERROR`
+- **0 号流的特权**：`ID: 0` 是神圣不可侵犯的。它不用于传输业务数据，仅用于**连接层面的控制信号**（如你在日志中看到的 `SETTINGS`、`PING`、`WINDOW_UPDATE`）
+- **31 位上限**：Stream ID 是一个 31 位的无符号整数。最大值是 `2^32 - 1`，**如果用完了怎么办？** 客户端必须关闭当前 TCP 连接，重新握手开启一个新连接，ID 才会从 1 重新开始。这也间接强制了长连接需要定期“转世再生”。
 
 
 
@@ -3211,18 +3258,18 @@ HTTP/2 允许在单个连接上同时发送多个请求，每个 HTTP 请求或�
 
 **数据帧类型**
 
-| **类型 (Type)** | **名称**          | **描述**                                                 | **关键用途**                                                 |
-| --------------- | ----------------- | -------------------------------------------------------- | ------------------------------------------------------------ |
-| **0x0**         | **DATA**          | 携带 HTTP 请求或响应的**正文数据**（Body）。             | 传输网页内容、图片、API 返回的 JSON 等。                     |
-| **0x1**         | **HEADERS**       | 包含 HTTP **首部字段**（Headers），可开启一个新流。      | 传输请求方法（GET/POST）、路径、Cookie 等。                  |
-| **0x2**         | **PRIORITY**      | 指定流的**优先级**（在新版本 RFC 9218 中已逐渐被弃用）。 | 告诉服务器哪些资源（如 CSS）比其他资源（如图片）更重要。     |
-| **0x3**         | **RST_STREAM**    | 立即**终止**一个流。                                     | 用于取消请求或处理协议错误（**CVE-2023-44487 攻击的关键点**）。 |
-| **0x4**         | **SETTINGS**      | 配置连接参数。                                           | 协商最大并发流数、窗口大小、最大帧大小等。                   |
-| **0x5**         | **PUSH_PROMISE**  | 服务器通知客户端，它打算**推送**资源。                   | 告知浏览器：“虽然你没请求，但我一会儿会发给你这个 JS 文件”。 |
-| **0x6**         | **PING**          | 测量最小往返时间（RTT）或检测连接可用性。                | 类似“心跳包”，确保长连接没有断开。                           |
-| **0x7**         | **GOAWAY**        | 通知对端停止在此连接上创建新流并**关闭连接**。           | 用于优雅地关闭服务器或报告严重错误。                         |
-| **0x8**         | **WINDOW_UPDATE** | 用于**流量控制**。                                       | 告诉对方：“我的缓存又空出 10KB 了，你可以继续发数据”。       |
-| **0x9**         | **CONTINUATION**  | 用于延续 HEADERS 帧中过长的首部片段。                    | 当一个 HEADERS 帧放不下所有请求头时，用来携带剩余部分。      |
+| **类型 (Type)** | **名称**          | **描述**                                               | **关键用途**                                                 |
+| --------------- | ----------------- | ------------------------------------------------------ | ------------------------------------------------------------ |
+| **0x0**         | **DATA**          | 携带 HTTP 请求或响应的**正文数据**（Body）。           | 传输网页内容、图片、API 返回的 JSON 等。                     |
+| **0x1**         | **HEADERS**       | 包含 HTTP **首部字段**（Headers），可开启一个新流。    | 传输请求方法（GET/POST）、路径、Cookie 等。                  |
+| **0x2**         | **PRIORITY**      | 指定流的**优先级**（在新版本 RFC 9218 中已逐渐被弃用） | 告诉服务器哪些资源（如 CSS）比其他资源（如图片）更重要。     |
+| **0x3**         | **RST_STREAM**    | 立即**终止**一个流。                                   | 用于取消请求或处理协议错误（**CVE-2023-44487 攻击的关键点**）。 |
+| **0x4**         | **SETTINGS**      | 配置连接参数。                                         | 协商最大并发流数、窗口大小、最大帧大小等。                   |
+| **0x5**         | **PUSH_PROMISE**  | 服务器通知客户端，它打算**推送**资源。                 | 告知浏览器：“虽然你没请求，但我一会儿会发给你这个 JS 文件”。 |
+| **0x6**         | **PING**          | 测量最小往返时间（RTT）或检测连接可用性。              | 类似“心跳包”，确保长连接没有断开。                           |
+| **0x7**         | **GOAWAY**        | 通知对端停止在此连接上创建新流并**关闭连接**。         | 用于优雅地关闭服务器或报告严重错误。                         |
+| **0x8**         | **WINDOW_UPDATE** | 用于**流量控制**。                                     | 告诉对方：“我的缓存又空出 10KB 了，你可以继续发数据”。       |
+| **0x9**         | **CONTINUATION**  | 用于延续 HEADERS 帧中过长的首部片段。                  | 当一个 HEADERS 帧放不下所有请求头时，用来携带剩余部分。      |
 
 
 
@@ -3497,6 +3544,136 @@ https://taoshu.in/http3-port.html
 以我的博客为例，我为 blog.skk.moe 的 CSS 启用了 Server Push 以后，DOMContentLoaded 触发计时平均减少了 180ms，这是一个很惊人的数字了。
 
 
+
+
+
+## *nghttp2* 
+
+nghttp2 是在C中的超文本传输协议版本2的实现。
+
+
+
+| **工具名称**     | **类别** | **核心功能**                           | **典型使用场景**                                     |
+| ---------------- | -------- | -------------------------------------- | ---------------------------------------------------- |
+| **`nghttp`**     | 客户端   | HTTP/2 版本的 "curl"。支持 h2 和 h2c。 | 调试 HTTP/2 帧、查看流 ID、测试服务器多路复用能力。  |
+| **`nghttpd`**    | 服务端   | 轻量级 HTTP/2 静态服务器。             | 快速搭建一个标准的 H2/h2c 测试后端，验证客户端行为。 |
+| **`nghttpx`**    | 代理     | 工业级反向代理 / 负载均衡器。          | TLS 卸载、h2 转 h1、h2 桥接、gRPC 代理。             |
+| **`h2load`**     | 压测     | 高性能 HTTP/2 压力测试工具。           | 测试 Nginx 的并发连接上限和请求处理速率。            |
+| **`libnghttp2`** | 库文件   | C 语言实现的 HTTP/2 协议栈核心。       | 作为底层依赖，支撑 curl、Nginx 等软件的 H2 功能。    |
+
+
+
+官方文档，安装nghttp2后有配套的`nghttp 客户端`、`nghttpd 服务器`、`nghttpx 反向代理`、`h2load 负载测试`等工具。
+
+输入命令`nghttp -nv https://nghttp2.org` （n代表不输出，v代表详细信息）：结果列出了连接过程中的HTTP2各个Stream信息，例如`SETTINGS Frame`，`HEADER Frame`等，也可以带上参数
+
+
+
+```
+❯ nghttp -nv https://nghttp2.org
+[  0.102] Connected
+The negotiated protocol: h2
+[  1.575] send SETTINGS frame <length=12, flags=0x00, stream_id=0>
+          (niv=2)
+          [SETTINGS_MAX_CONCURRENT_STREAMS(0x03):100]
+          [SETTINGS_INITIAL_WINDOW_SIZE(0x04):65535]
+[  1.575] send PRIORITY frame <length=5, flags=0x00, stream_id=3>
+          (dep_stream_id=0, weight=201, exclusive=0)
+[  1.575] send PRIORITY frame <length=5, flags=0x00, stream_id=5>
+          (dep_stream_id=0, weight=101, exclusive=0)
+[  1.575] send PRIORITY frame <length=5, flags=0x00, stream_id=7>
+          (dep_stream_id=0, weight=1, exclusive=0)
+[  1.575] send PRIORITY frame <length=5, flags=0x00, stream_id=9>
+          (dep_stream_id=7, weight=1, exclusive=0)
+[  1.575] send PRIORITY frame <length=5, flags=0x00, stream_id=11>
+          (dep_stream_id=3, weight=1, exclusive=0)
+[  1.575] send HEADERS frame <length=36, flags=0x25, stream_id=13>
+          ; END_STREAM | END_HEADERS | PRIORITY
+          (padlen=0, dep_stream_id=11, weight=16, exclusive=0)
+          ; Open new stream
+          :method: GET
+          :path: /
+          :scheme: https
+          :authority: nghttp2.org
+          accept: */*
+          accept-encoding: gzip, deflate
+          user-agent: nghttp2/1.59.0
+[  1.876] recv SETTINGS frame <length=30, flags=0x00, stream_id=0>
+          (niv=5)
+          [SETTINGS_MAX_CONCURRENT_STREAMS(0x03):100]
+          [SETTINGS_INITIAL_WINDOW_SIZE(0x04):1048576]
+          [SETTINGS_NO_RFC7540_PRIORITIES(0x09):1]
+          [SETTINGS_ENABLE_CONNECT_PROTOCOL(0x08):1]
+          [SETTINGS_HEADER_TABLE_SIZE(0x01):8192]
+[  1.876] recv SETTINGS frame <length=0, flags=0x01, stream_id=0>
+          ; ACK
+          (niv=0)
+[  1.876] recv (stream_id=13) :method: GET
+[  1.876] recv (stream_id=13) :scheme: https
+[  1.876] recv (stream_id=13) :path: /stylesheets/screen.css
+[  1.876] recv (stream_id=13) :authority: nghttp2.org
+[  1.876] recv (stream_id=13) accept-encoding: gzip, deflate
+[  1.876] recv (stream_id=13) user-agent: nghttp2/1.59.0
+[  1.876] recv PUSH_PROMISE frame <length=47, flags=0x04, stream_id=13>
+          ; END_HEADERS
+          (padlen=0, promised_stream_id=2)
+[  1.877] send SETTINGS frame <length=0, flags=0x01, stream_id=0>
+          ; ACK
+          (niv=0)
+[  2.048] recv (stream_id=13) :status: 200
+[  2.049] recv (stream_id=13) date: Fri, 06 Feb 2026 15:37:18 GMT
+[  2.049] recv (stream_id=13) content-type: text/html
+[  2.049] recv (stream_id=13) last-modified: Sat, 25 Oct 2025 08:47:14 GMT
+[  2.049] recv (stream_id=13) etag: "68fc8e92-18b4"
+[  2.049] recv (stream_id=13) accept-ranges: bytes
+[  2.049] recv (stream_id=13) content-length: 6324
+[  2.049] recv (stream_id=13) x-backend-header-rtt: 0.003962
+[  2.049] recv (stream_id=13) strict-transport-security: max-age=31536000
+[  2.049] recv (stream_id=13) server: nghttpx
+[  2.049] recv (stream_id=13) alt-svc: h3=":443"; ma=3600
+[  2.049] recv (stream_id=13) via: 2 nghttpx
+[  2.049] recv (stream_id=13) x-frame-options: SAMEORIGIN
+[  2.049] recv (stream_id=13) x-xss-protection: 1; mode=block
+[  2.049] recv (stream_id=13) x-content-type-options: nosniff
+[  2.049] recv HEADERS frame <length=235, flags=0x04, stream_id=13>
+          ; END_HEADERS
+          (padlen=0)
+          ; First response header
+[  2.049] recv (stream_id=2) :status: 200
+[  2.049] recv (stream_id=2) date: Fri, 06 Feb 2026 15:37:18 GMT
+[  2.049] recv (stream_id=2) content-type: text/css
+[  2.049] recv (stream_id=2) last-modified: Sat, 25 Oct 2025 08:47:14 GMT
+[  2.049] recv (stream_id=2) etag: "68fc8e92-98aa"
+[  2.049] recv (stream_id=2) accept-ranges: bytes
+[  2.049] recv (stream_id=2) content-length: 39082
+[  2.049] recv (stream_id=2) x-backend-header-rtt: 0.006075
+[  2.049] recv (stream_id=2) strict-transport-security: max-age=31536000
+[  2.049] recv (stream_id=2) server: nghttpx
+[  2.049] recv (stream_id=2) alt-svc: h3=":443"; ma=3600
+[  2.049] recv (stream_id=2) via: 2 nghttpx
+[  2.049] recv (stream_id=2) x-frame-options: SAMEORIGIN
+[  2.049] recv (stream_id=2) x-xss-protection: 1; mode=block
+[  2.049] recv (stream_id=2) x-content-type-options: nosniff
+[  2.049] recv (stream_id=2) x-http2-push: 1
+[  2.049] recv HEADERS frame <length=63, flags=0x04, stream_id=2>
+          ; END_HEADERS
+          (padlen=0)
+          ; First push response header
+[  2.049] recv DATA frame <length=6324, flags=0x01, stream_id=13>
+          ; END_STREAM
+[  2.049] recv DATA frame <length=9726, flags=0x00, stream_id=2>
+[  2.053] recv DATA frame <length=2843, flags=0x00, stream_id=2>
+[  2.068] recv DATA frame <length=2843, flags=0x00, stream_id=2>
+[  2.115] recv DATA frame <length=11399, flags=0x00, stream_id=2>
+[  2.115] send WINDOW_UPDATE frame <length=4, flags=0x00, stream_id=0>
+          (window_size_increment=33135)
+[  2.191] recv DATA frame <length=12271, flags=0x01, stream_id=2>
+          ; END_STREAM
+[  2.191] send GOAWAY frame <length=8, flags=0x00, stream_id=0>
+          (last_stream_id=2, error_code=NO_ERROR(0x00), opaque_data(0)=[])
+╭─ ~ ▓▒░──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────░▒▓ ✔ │ root@server │ 23:37:18 ─╮
+╰─                                 
+```
 
 
 
