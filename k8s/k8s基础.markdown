@@ -62,6 +62,40 @@ Kubernetes 是希腊语中的 "舵手" 的意思，它抽象了数据中心的�
 
 
 
+### **命名空间**
+
+Namespace(命名空间)是Kubernetes系统中另一个非常重要的概念，**==Namespace在很多情况下用于实现多租户的资源隔离==**
+
+Namespace通过将集群内部的资源对象"分配"到不同的Namespace中，形成逻辑上分组的不同项目、小组或者用户组，便于不同的分组在共享整个集群的资源的同时还能被分别管理。
+
+**==同一名字空间内的资源名称要唯一，但跨名字空间时没有这个要求。==** 
+
+**==名字空间作用域仅针对带有名字空间的[对象](https://kubernetes.io/zh-cn/docs/concepts/overview/working-with-objects/#kubernetes-objects)， （例如 Deployment、Service 等），这种作用域对集群范围的对象 （例如 StorageClass、Node、PersistentVolume 等）不适用。==**
+
+
+
+Kubernetes集群启动后，会创建一个名为四个Namespace
+
+
+
+| **命名空间名称**      | **角色定位**          | **访问权限控制**                     | **典型存放资源**                                             | **维护建议**                                   |
+| --------------------- | --------------------- | ------------------------------------ | ------------------------------------------------------------ | ---------------------------------------------- |
+| **`default`**         | 用户默认工作区        | 普通 RBAC 限制                       | 用户创建的测试 Pod、Service、Deployment                      | 仅用于临时测试，生产环境应按业务拆分 Namespace |
+| **`kube-system`**     | 集群“心脏” (系统组件) | **极高** (严禁非管理员操作)          | `CoreDNS`、`Kube-Proxy`、`Controller-Manager`、各种 CNI 网络插件 | **禁止**手动在该空间部署任何业务应用           |
+| **`kube-public`**     | 全局公共信息区        | **最低** (允许匿名/未经身份验证读取) | `cluster-info` (包含集群版本、API 地址等基本信息)            | 仅存放需要全集群（甚至集群外）可见的非敏感配置 |
+| **`kube-node-lease`** | 节点存活监测区        | 仅 `kubelet` 和控制面交互            | 节点租约对象 (`Lease`)，用于维持心跳                         | 这是一个自动管理的区域，用户无需任何手动干预   |
+
+
+
+```
+```
+
+
+
+
+
+
+
 
 
 ## 1.3 k8s基本概念
@@ -106,32 +140,167 @@ k8s集群分为两类节点
 
 
 
+
+
+
+
 **master 节点核心组件**
 
 这些组件可以运行在单个 master 节点上，**也可以通过副本机制运行在多个 master 节点上以确保其高可用性。**
 
-- etcd 是兼具一致性和高可用性的键值数据库，可以作为保存 Kubernetes 所有集群数据的后台数据库。可以内置在 master 中，也可以放到外面。
+- etcd 是兼具一致性和高可用性的键值数据库，可以作为保存 Kubernetes 所有集群数据的后台数据库。可以内置在 master 中([堆叠 etcd 拓扑](https://kubernetes.io/zh-cn/docs/setup/production-environment/tools/kubeadm/ha-topology/#stacked-etcd-topology))，也可以放到外面([外部 etcd 拓扑](https://kubernetes.io/zh-cn/docs/setup/production-environment/tools/kubeadm/ha-topology/#external-etcd-topology))
 
-  https://tzfun.github.io/etcd-workbench/
-
-- kube-apiserver : 集群控制的入口，提供 HTTP REST 服务，主节点上负责提供 Kubernetes API 服务的组件；它是 Kubernetes 控制面的前端。
-  
-  - 它提供了 Kubernetes 各类资源对象（Pod、RC、Service 等）的增删改查及 watch 等 HTTP REST 接口，是整个系统的管理入口。
-  
-- kube-scheduler : 负责 Pod 的调度，该组件监视那些新创建的未指定运行节点的 Pod，并选择节点让 Pod 在上面运行。
-
-- kube-controller-manager :  Kubernetes 集群中所有资源对象的自动化控制中心。
+- `kube-apiserver` : 集群控制的入口，提供标准 `HTTP REST` 服务，主要负责提供 `Kubernetes API` 服务的组件；它是 Kubernetes 控制面的前端
+  - 它提供了 `Kubernetes` 各类资源对象（Pod、RC、Service 等）的增删改查及 watch 等 `HTTP REST` 接口，是整个系统的管理入口。
+- `kube-scheduler` : 负责 Pod 的调度，该组件监视那些新创建的未指定运行节点的 Pod，并选择节点让 Pod 在上面运行。
+- `kube-controller-manager` :  `Kubernetes` 集群中所有资源对象的自动化控制中心。
   - 
   - 节点控制器（Node Controller）: 负责在节点出现故障时进行通知和响应。
   - 副本控制器（Replication Controller）: 负责为系统中的每个副本控制器对象维护正确数量的 Pod。
   - 端点控制器（Endpoints Controller）: 填充端点(Endpoints)对象(即加入 Service 与 Pod)。
   - 服务帐户和令牌控制器（Service Account & Token Controllers）: 为新的命名空间创建默认帐户和 API 访问令牌.
 
-启动一个 nginx 服务，客户端向 apiserver 发送
 
 
 
-组件间通信：Kubernetes系统组件间只能通过 `api server`来通信，api server是唯一的通信组件。
+
+**==请求==**
+
+当发起一个 Pod 部署请求（比如执行 `kubectl apply -f pod.yaml`）时，用户的命令行工具将命令转换为API请求，如`kubectl get pods`对应`GET /api/v1/namespaces/{namespace}/pods`
+
+**唯一直接接收并处理你这个“调度请求”的组件，是 `kube-apiserver`**，收到请求后，它大致会做这几件事
+
+- **认证与授权 (Authentication & Authorization)**： 它先查你的 `admin.conf` 证书：“你是谁？你有权在 `default` 空间创建 Pod 吗？”
+
+- **准入控制 (Admission Control)**： 它会检查请求是否合法。比如：你的镜像名规范吗？你有没有超出名字空间的配额 (ResourceQuota)？
+- **持久化 (Storage)**： 如果一切 OK，它会把这个 Pod 的 JSON 数据写入 **etcd(etcd将数据持久化，通过 Raft 协议在多个 etcd 节点间同步)**
+
+
+
+`kube-apiserver`在启动时，会与 etcd 建立一个 **gRPC 长连接**，专门用于 **Watch** 根目录下的所有变化。
+
+- **数据的产生**：当上面的 `PUT` 请求成功后，etcd 的键值对发生了变更。
+- **推送给 `kube-apiserver`**：etcd 发现有一个 Watcher（即 `kube-apiserver`）在关注这个路径，于是通过 gRPC 流把这个变更推送到 `kube-apiserver`。
+
+- **转化成 K8s 事件**：`kube-apiserver` 收到 etcd 的原始变更后，将其包装成 Kubernetes 风格的 `Event`（如 `ADDED` 类型）
+
+
+
+```bash
+# 在master节点执行这个就可以看到这种gRPC长连接
+ss -antp | grep 2379 | grep kube-apiserver
+```
+
+
+
+
+
+
+
+**==调度==**
+
+`kube-scheduler`一直在通过 **List-Watch** 机制 **监听 (Watch)** `kube-apiserver`：**==Kubernetes 采用的是一种更高级、更优雅的机制：List-Watch。它不是轮询，而是基于 HTTP 长连接 的异步事件推送==**
+
+
+
+当调度器启动（或连接断开重连）时，`kube-scheduler`会向 `kube-apiserver` 发起一个普通的 `HTTP GET` 请求：
+
+- **动作**：获取某种资源（如 Pods）的完整列表
+- **目的**：确保调度器拥有集群当前状态的“全量快照”
+- **数据流**：`kube-apiserver` 从 etcd 读取所有 Pod 数据并一次性返回。`kube-scheduler`将其存入本地缓存（`nformer Cache`）
+
+
+
+`List` 之后，调度器会接着发起一个带有 `watch=true` 参数的长连接请求：
+
+- **动作**：建立一个持久的 TCP 连接
+- **目的**：只监听变化（增量）
+- **数据流**：一旦集群中有 Pod 被创建、删除或更新，`kube-apiserver` 会立即通过这个现成的通道推送一个 **Watch Event**（如 `ADDED`, `MODIFIED`, `DELETED`）
+
+
+
+一旦 `kube-scheduler` 发起了那个 `watch=true` 的 GET 请求并得到了 HTTP 200 响应，连接就进入了**长连接模式**。在连接不中断的情况下，它不会重复发起请求，但会通过"心跳"维持这个长连接。
+
+- **如果没有 Pod 变化**：`kube-apiserver` 就静静地握着这个连接，不发任何业务数据
+- **对于调度器**：它在代码里阻塞在一个 `Read` 操作上，就像守在电话机旁等铃声响起。只要电话线（TCP 连接）没断，它就不会重新拨号（重新发起请求）
+- **分块传输 (Chunked/H2 Stream)**：数据不是一次性成型，而是随事件触发，一小块一小块 JSON 喷涌而出。
+
+```http
+
+# --- 客户端请求 (Request) ---
+GET /api/v1/namespaces/default/pods?limit=500 HTTP/1.1
+Host: 10.10.20.101:6443
+User-Agent: kubectl/v1.34.1 (linux/amd64) kubernetes/93248f9
+Accept: application/json;as=Table;v=v1;g=meta.k8s.io
+
+
+# --- 服务端响应 (Response) ---
+HTTP/1.1 200 OK
+Content-Type: application/json
+Content-Length: 3204  <-- 【标志：有确定长度，一次性发完】
+Audit-Id: 067a9e7a-71cc-4f55-818d-87a1296e3dbb
+
+{
+  "kind": "Table",
+  "metadata": {
+    "resourceVersion": "327606"  <-- 【重点：记下这个版本，它是下一步的起点】
+  },
+  "columnDefinitions": [...],
+  "rows": [...]
+}
+```
+
+
+
+```http
+# --- 客户端请求 (Request) ---
+GET /api/v1/namespaces/default/pods?resourceVersion=327606&watch=true HTTP/1.1
+
+Host: 10.10.20.101:6443
+User-Agent: kubectl/v1.34.1 (linux/amd64) kubernetes/93248f9
+Accept: application/json;as=Table;v=v1;g=meta.k8s.io
+
+# --- 服务端响应 (Response) ---
+HTTP/1.1 200 OK
+Content-Type: application/json
+Transfer-Encoding: chunked <-- 【标志：分块传输，连接不关闭，数据持续推送】
+Audit-Id: e080c1b1-8bee-4bfa-af45-55f50f522b98
+Date: Sat, 07 Feb 2026 16:04:22 GMT
+
+(此时连接处于挂起状态，等待事件发生...)
+```
+
+
+
+| **维度**       | **请求一 (List)**             | **请求二 (Watch)**                              |
+| -------------- | ----------------------------- | ----------------------------------------------- |
+| **URL 参数**   | `limit=500`                   | **`watch=true`** & **`resourceVersion=327606`** |
+| **数据长度**   | `Content-Length: 3204` (已知) | **无长度限制** (流式)                           |
+| **交互模式**   | 一问一答，办完关机            | **一问多答，保持通话**                          |
+| **调度器行为** | 将数据存入本地 Cache          | 挂起等待 API Server 的推送通知                  |
+
+
+
+如果一连几个小时都没有新 Pod，调度器怎么知道 `kube-apiserver`是真的没消息，还是网络已经偷偷断了？ 为了解决这个问题，`kube-apiserver` 会定期返回一个 **Bookmark（书签）** 事件
+
+```
+# 
+curl -iv -N -k -H "Authorization: Bearer $TOKEN" "https://10.10.20.101:6443/api/v1/namespaces/default/pods?watch=true&allowWatchBookmarks=true"
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+组件间通信：Kubernetes系统组件间只能通过 `kube-api-server`来通信，`apiserver`是唯一的通信组件。
 
 `api server`和其他组件的通信都是由其他组件发起的。
 
@@ -277,6 +446,8 @@ kubectl get componentstatuses       # 在新版本可能需要用 kubectl get --
 
 # 查看命名空间
 kubectl get ns
+
+# 
 
 # 看 Pod 列表
 kubectl get pods -n <namespace>      # 默认namespace是 default
@@ -537,6 +708,12 @@ Pod 水平自动伸缩（Horizontal Pod Autoscaler）是k8s的`kube-controller-m
 
 
 当使用 `kubectl` 等命令行工具时，它会读取 kubeconfig 文件，并根据你选择的 **“当前上下文”** 来决定连接哪个集群、使用哪个身份认证、以及默认操作哪个命名空间。
+
+
+
+### 1.3.10 高可用集群
+
+
 
 
 
@@ -1912,12 +2089,6 @@ kubectl get --raw /api/v1/namespaces/kube-system/pods
 >
 >  https://github.com/jamiehannaford/what-happens-when-k8s/blob/master/zh-cn/README.md
 >
->  
->
->  
->
->  
->
 >  才云科技 kubernetes 学习路径规划
 >
 >  https://github.com/caicloud/kube-ladder
@@ -1938,8 +2109,6 @@ kubectl get --raw /api/v1/namespaces/kube-system/pods
 
 - kubeadm
 - 二进制
-
-
 
 
 
