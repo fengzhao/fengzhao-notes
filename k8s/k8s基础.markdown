@@ -2135,7 +2135,7 @@ ctr images pull
 
 
 
-# 深入理解 Kubeenetes 编排对象
+# 深入理解 Kubernetes 编排对象
 
 
 
@@ -2238,7 +2238,139 @@ spec:
 
 
 
+## Operator
+
+Kubernetes中的**Operator**是一种用于自动化管理Kubernetes资源的模式。它利用了Kubernetes的API和控制器的机制，能够让用户创建、配置和管理复杂的应用程序或服务。
+
+这些应用程序和服务通常是运行在Kubernetes集群中的，但它们的管理和操作可能涉及许多步骤，甚至需要对应用进行定制化的逻辑控制。
+
+
+
+**Operator**本质上是一种自定义控制器，它专注于特定类型的资源。它不仅仅是一个Kubernetes资源类型（比如Pod、Service等），而是包含了业务逻辑的控制器，可以根据需求来管理和操作特定的应用程序。
+
+
+
+
+
+# Metallb
+
+负载均衡实际上包含了两个方面：健康探测以及流量分担。如果我们不能健康探测而将流量错误地分到宕机上，会导致流量黑洞。
+
+首先最豪华的解决方案就是硬件负载均衡器，但是一般我们买不起。
+
+其次是路由器 NAT Pool 地址池转换，不过这种不靠谱，因为这种就是简单地将流量分发到服务器上，万一服务器掉线了需要人工去改地址池，也就是缺少健康探测的功能版权声明
+
+我们也可以通过 ipvs 找一台服务器来进行负载均衡，这也是 K8s 集群内部的负载均衡办法，但是这样还是给转发的那台机器带来不必要的负担。
+
+最后一种办法是在路由器上配置等价路由，由路由器进行负载均衡，这样其实和 NAT Pool 缺点是一样的，不过，我们有大杀器——动态路由协议可以帮我们搞定这个问题。
+
+所以我们最后实现了这么一种迂回的办法，就是让机器发布路由信息到路由器上，然后由路由器选择机器进行转发，同时每台机器也及时监控其他机器，一旦发现宕机，则更新路由信息，避免路由器将流量转发到宕机上。
+
+
+
+
+
+- **Metallb**: 主要用于 **L2/L3 网络层**，给 Kubernetes 集群中的 **Service (LoadBalancer 类型)** 提供外部 IP 地址。
+
+- **Ingress**: 主要用于 **L7 应用层**，通过 **Ingress Controller**（如 Nginx Ingress、Traefik 等）管理 HTTP/HTTPS 入口流量。
+
+
+
+
+
+由于 Kubernets 中 Pod 的 IP 地址不固定，重启后 IP 会发生变化，无法作为通信的地址。Kubernets 提供了 Service 来解决这个问题，对外暴露。
+
+Kubernetes 为一组 Pod 提供相同的 DNS 名和虚拟 IP，同时还提供了负载均衡的能力。这里 Pod 的分组通过给 Pod 打标签（*Label* ）来完成，定义 Service 时会声明标签选择器（*selector*）将 *Service* 与 这组 Pod 关联起来。
+
+==**根据使用场景的不同，Service 又分为 4 种类型：*ClusterIP*、*NodePort*、*LoadBalancer* 和 *ExternalName*，默认是 *ClusterIP***==
+
+
+
+Kubernetes 中 Service 是 将运行在一个或一组 [Pod](https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/) 上的网络应用程序公开为网络服务的方法。其中就有 `LoadBalancer` 类型的 Service：
+
+如果我们使用 GKE、AWS 等公有云，那么一般来说我们给 `Service 的 Type` 写成 `LoadBalancer`，云服务厂商就会分配一个 `External IP` 给我们的 `Service`，我们只需要访问这个 `External IP`，其内部就能自动均衡我们的流量到各个实例上。
+
+然而作为穷鬼的我们，没有金钱享受如此高端的服务，开源版 Kubernetes 是不会给我们的 `LoadBalancer Service` 分配 `External IP` 的。难道穷鬼就不配用负载均衡了吗！！
+
+Kubernetes没有提供适用于裸金属集群的网络负载均衡器实现, 也就是`LoadBalancer`类型的Service。Kubernetes 附带的网络负载均衡器的实现都是调用各种 IaaS 平台（GCP、AWS、Azure ……）的胶水代码。 
+
+如果您没有在受支持的 IaaS 平台（GCP、AWS、Azure…）上运行，LoadBalancers 在创建时将一直保持在`pending`状态。
+
+
+
+
+
+幸好，即使没有高端的负载均衡器，我们也有开源社区的支持。[metallb](https://github.com/danderson/metallb) 就是一款开源的 K8s 负载均衡控制器，只要装上，我们的 Service 就可以拿到 IP 了。
+
+Metallb 通过标准路由协议能解决该问题。MetalLB 也是 CNCF 的沙箱项目，最早发布在 https://github.com/google/metallb 开发，后来迁移到 https://github.com/metallb/metallb 中
+
+
+
+如果你对 K8s 已经比较熟悉，那么就知道，所谓 `LoadBalancer` 类型的 `Service` 无非也是一种资源，只是我们缺少一个合适的控制器来为其分配 IP 而已。那么很显然，我们只要装一个分配器，就能得到一个 IP。
+
+但是，这个 IP 从哪来？显然只能我们手动分配一段 IP 池让他随便分了。然而其他电脑怎么知道这个 IP 池就是我们的服务所在？如果你熟悉计算机网络，可能会想到 BGP、OSPF 等路由协议。
+
+只要在分配好 IP 之后，把这个 IP 路由信息广播出去，那么其他电脑就能知道这个 IP 在哪里。
+
+
+
+
+
+MetalLB 提供了两个功能：
+
+- 地址分配：当创建 `LoadBalancer` 类型的 `Service` 时，`MetalLB` 会为其分配 IP 地址。这个 IP 地址是从**预先配置的 IP 地址库**获取的。同样，当 `Service` 删除后，已分配的 IP 地址会重新回到地址库。
+- 对外广播：分配了 IP 地址之后，需要让集群外的网络知道这个地址的存在。`MetalLB` 对外宣告IP时使用了标准路由协议实现：ARP、NDP 或者 BGP
+
+
+
+MetalLB 运行时有两种工作负载：
+
+- Controler：`Deployment`，用于监听 `Service` 的变更，分配/回收 IP 地址
+- Speaker：`DaemonSet`，对外广播 Service 的 IP 地址
+
+
+
+![img](./k8s基础.assets/metallb.png)
+
+
+
+主要有两种模式：
+
+
+
+**==L2==**
+
+当在第二层工作时，将由一台机器获得IP地址（即服务的所有权）。MetalLB使用标准的地址发现协议（对于IPv4是ARP，对于IPv6是NDP）宣告IP地址，是其在本地网路中可达。从LAN的角度来看，仅仅是某台机器多配置了一个VIP地址。
+
+服务的入口流量全部经由单个节点，然后该节点的`kube-proxy`会把流量再转发给服务的Pods。也就是说，该模式下MetalLB并没有真正提供负载均衡器。
+
+尽管如此，MetalLB提供了故障转移功能，如果持有IP的节点出现故障，则默认10秒后即发生故障转移，IP被分配给其它健康的节点。其实有点像 KeepAlived 的VIP这种形式。
+
+**==L2使用了[memberlist](https://github.com/hashicorp/memberlist)算法来实现选主，因此需要确保各个k8s节点之间的7946端口可达（包括TCP和UDP协议），当然也可以根据自己的需求配置为其他端口==**
+
+
+
+这种模式存在缺点：
+
+- 单点问题，服务的所有入口流量经由单点，其网络带宽可能成为瓶颈。流量其实并没有真正的负载均衡。
+
+- 需要ARP客户端的配合，当故障转移发生时，MetalLB会发送ARP包来宣告MAC地址和IP映射关系的变化。客户端必须能正确处理这些包，大部分现代操作系统能正确处理ARP包
+
+  
+
+Layer 2 模式中的 Speaker 工作负载是 DeamonSet 类型，在每台节点上都调度一个 Pod。首先，几个 Pod 会先进行选举，选举出 Leader。
+
+Leader 获取所有 LoadBalancer 类型的 Service，将已分配的 IP 地址绑定到当前主机到网卡上。也就是说，所有 LoadBalancer 类型的 Service 的 IP 同一时间都是绑定在同一台节点的网卡上。
+
+
+
+
+
+
+
 # 卷存储
+
+
 
 pod中的每个容器都有自己独立的文件系统，因为文件系统来自于容器镜像。即使pod中的容器重启，新容器识别不了前一个容器写入的文件系统内容。
 
