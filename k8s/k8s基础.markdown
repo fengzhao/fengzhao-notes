@@ -74,9 +74,7 @@ Namespace通过将集群内部的资源对象"分配"到不同的Namespace中，
 
 
 
-Kubernetes集群启动后，会创建一个名为四个Namespace
-
-
+Kubernetes集群启动后，默认会创建一个名为四个Namespace
 
 | **命名空间名称**      | **角色定位**          | **访问权限控制**                     | **典型存放资源**                                             | **维护建议**                                   |
 | --------------------- | --------------------- | ------------------------------------ | ------------------------------------------------------------ | ---------------------------------------------- |
@@ -86,9 +84,6 @@ Kubernetes集群启动后，会创建一个名为四个Namespace
 | **`kube-node-lease`** | 节点存活监测区        | 仅 `kubelet` 和控制面交互            | 节点租约对象 (`Lease`)，用于维持心跳                         | 这是一个自动管理的区域，用户无需任何手动干预   |
 
 
-
-```
-```
 
 
 
@@ -154,11 +149,11 @@ k8s集群分为两类节点
   - 它提供了 `Kubernetes` 各类资源对象（Pod、RC、Service 等）的增删改查及 watch 等 `HTTP REST` 接口，是整个系统的管理入口。
 - `kube-scheduler` : 负责 Pod 的调度，该组件监视那些新创建的未指定运行节点的 Pod，并选择节点让 Pod 在上面运行。
 - `kube-controller-manager` :  `Kubernetes` 集群中所有资源对象的自动化控制中心。
-  - 
-  - 节点控制器（Node Controller）: 负责在节点出现故障时进行通知和响应。
-  - 副本控制器（Replication Controller）: 负责为系统中的每个副本控制器对象维护正确数量的 Pod。
-  - 端点控制器（Endpoints Controller）: 填充端点(Endpoints)对象(即加入 Service 与 Pod)。
-  - 服务帐户和令牌控制器（Service Account & Token Controllers）: 为新的命名空间创建默认帐户和 API 访问令牌.
+  - **==部署控制器（Deployment Controller）==**：负责pod的滚动更新、回滚以及支持副本的水平扩容等。
+  - ==**节点控制器（Node Controller）**==: 负责在节点出现故障时进行通知和响应。
+  - **==副本控制器（Replication Controller）==**: 负责为系统中的每个副本控制器对象维护正确数量的 Pod。
+  - **==端点控制器（Endpoints Controller）==**: 填充端点(Endpoints)对象(即加入 Service 与 Pod)。
+  - ==**服务帐户和令牌控制器（Service Account & Token Controllers）**==: 为新的命名空间创建默认帐户和 API 访问令牌.
 
 
 
@@ -166,9 +161,9 @@ k8s集群分为两类节点
 
 **==请求==**
 
-当发起一个 Pod 部署请求（比如执行 `kubectl apply -f pod.yaml`）时，用户的命令行工具将命令转换为API请求，如`kubectl get pods`对应`GET /api/v1/namespaces/{namespace}/pods`
+当发起一个 Pod/Deployment 部署请求（比如执行 `kubectl apply -f pod.yaml`）时，用户的命令行工具将命令转换为API请求，如`kubectl get pods`对应`GET /api/v1/namespaces/{namespace}/pods`
 
-**唯一直接接收并处理你这个“调度请求”的组件，是 `kube-apiserver`**，收到请求后，它大致会做这几件事
+**唯一直接接收并处理你这个“调度请求”的组件，是 `kube-apiserver`**，收到请求后，它大致会做这几件事：
 
 - **认证与授权 (Authentication & Authorization)**： 它先查你的 `admin.conf` 证书：“你是谁？你有权在 `default` 空间创建 Pod 吗？”
 
@@ -193,13 +188,32 @@ ss -antp | grep 2379 | grep kube-apiserver
 
 
 
-
-
-
-
 **==调度==**
 
-`kube-scheduler`一直在通过 **List-Watch** 机制 **监听 (Watch)** `kube-apiserver`：**==Kubernetes 采用的是一种更高级、更优雅的机制：List-Watch。它不是轮询，而是基于 HTTP 长连接 的异步事件推送==**
+`kube-scheduler`一直在通过 **==List-Watch 机制 监听 (Watch)==** `kube-apiserver`：**==Kubernetes 采用的是一种更高级、更优雅的机制：List-Watch。它不是轮询，而是基于 HTTP 长连接 的异步事件推送==**
+
+`kube-controller-manager`会通过对 `Deployment` 资源的监控来创建一个 **ReplicaSet**，并将该 `ReplicaSet` 用来管理 Pod 的生命周期。
+
+一旦 **`kube-controller-manager`** 创建了相应的 ReplicaSet，**`kube-scheduler`** 将开始执行调度操作。`kube-scheduler` 的任务是将 **Pod** 调度到合适的节点上。
+
+- **调度策略**：`kube-scheduler` 会根据以下策略来选择节点：
+  - **资源需求**：每个 Pod 可能需要特定的 CPU、内存等资源，`kube-scheduler` 会根据节点的资源使用情况来决定在哪个节点上调度 Pod。
+  - **亲和性规则**：如果你在 Pod 中定义了 **affinity**（亲和性）规则，`kube-scheduler` 会根据这些规则来选择合适的节点。
+  - **Taints 和 Tolerations**：如果节点上存在 **taints**（污点），`kube-scheduler` 会考虑到 Pod 是否能 **tolerate**（容忍）这些 taints。
+  - **拓扑选择**：如节点的可用性、负载均衡、可用性区域等。
+
+调度成功后，`kube-scheduler` 会将调度结果写回 **`kube-apiserver`**，并告知它在哪个节点上部署 Pod。
+
+
+
+**==运行==**
+
+一旦 **`kube-apiserver`** 接收到调度结果并更新 Pod 状态，**`kubelet`** 将开始执行实际的部署工作：
+
+- **Kubelet** 是运行在每个节点上的代理，负责确保节点上的容器运行并保持健康。
+- **`kubelet`** 会从 **`kube-apiserver`** 获取到该 Pod 的配置，包括容器镜像、资源请求等。
+- **拉取镜像并启动容器**：如果容器镜像还未存在于节点上，**`kubelet`** 会通过 Docker 或其他容器运行时（如 containerd）从镜像仓库拉取镜像，并启动容器。
+- **健康检查和重启容器**：`kubelet` 会定期检查容器的健康状态，并根据 Pod 的健康检查配置（如 liveness probe、readiness probe）来决定是否重启容器。
 
 
 
@@ -283,26 +297,47 @@ Date: Sat, 07 Feb 2026 16:04:22 GMT
 
 如果一连几个小时都没有新 Pod，调度器怎么知道 `kube-apiserver`是真的没消息，还是网络已经偷偷断了？ 为了解决这个问题，`kube-apiserver` 会定期返回一个 **Bookmark（书签）** 事件
 
-```
-# 
+```bash
+# Watch 体验，通过curl命令watch pods资源
 curl -iv -N -k -H "Authorization: Bearer $TOKEN" "https://10.10.20.101:6443/api/v1/namespaces/default/pods?watch=true&allowWatchBookmarks=true"
+
+{"type":"BOOKMARK","object":{"kind":"Pod","apiVersion":"v1","metadata":{"resourceVersion":"477831","annotations":{"k8s.io/initial-events-end":"true"}},"spec":{"containers":null},"status":{}}}
+
 ```
 
 
 
+K8s的informer模块封装list-watch API，用户只需要指定资源，编写事件处理函数，AddFunc,UpdateFunc和DeleteFunc等。
+
+Informer是Client-go中的一个核心工具包。为了让Client-go更快地返回List/Get请求的结果、减少对Kubenetes API的直接调用，Informer被设计实现为一个依赖Kubernetes List/Watch API、可监听事件并触发回调函数的二级缓存工具包。
 
 
 
+`List-watch`是K8S统一的异步消息处理机制，各组件间协同都采用该机制进行通信。`List-watch`机制保证了消息的实时性，可靠性，顺序性，性能等等，为声明式风格的API奠定了良好的基础，它是优雅的通信方式，是K8S 架构的精髓。
+
+对系统的性能、数据一致性起到关键性的作用。
 
 
 
+- Watch核心数据存储是etcd，是典型的**==发布-订阅==**模式。但不直接访问etcd，通过`kube-apiserver`发起请求，在组件启动时进行订阅。
+- 可以带条件向`kube-apiserver`发起的watch请求。例如，`kube-scheduler`想要watch的是所有未被调度的Pod来进行调度操作；而kubelet只关心自己节点上的Pod列表。
+- `kube-apiserver`向etcd发起的watch是没有条件的，只能知道某个数据发生了变化或创建、删除，但不能过滤具体的值。也就是说对象数据的条件过滤必须在`kube-apiserver`端而不是etcd端完成。
 
 
 
+一个异步消息的系统时，对消息机制有至少如下四点要求 ：
 
-组件间通信：Kubernetes系统组件间只能通过 `kube-api-server`来通信，`apiserver`是唯一的通信组件。
+**消息可靠性：**首先消息必须是可靠的，list和watch一起保证了消息的可靠性，避免因消息丢失而造成状态不一致场景。具体而言，list API可以查询当前的资源及其对应的状态(即期望的状态)，客户端通过拿期望的状态和实际的状态进行对比，纠正状态不一致的资源。Watch API和apiserver保持一个长链接，接收资源的状态变更事件并做相应处理。如果仅调用watch API，若某个时间点连接中断，就有可能导致消息丢失，所以需要通过list API解决消息丢失的问题。从另一个角度出发，我们可以认为list API获取全量数据，watch API获取增量数据。虽然仅仅通过轮询list API，也能达到同步资源状态的效果，但是存在开销大，实时性不足的问题。
 
-`api server`和其他组件的通信都是由其他组件发起的。
+**消息实时性：**消息必须是实时的，list-watch机制下，每当apiserver的资源产生状态变更事件，都会将事件及时的推送给客户端，从而保证了消息的实时性。
+
+**消息顺序性：**消息的顺序性也是非常重要的，在并发的场景下，客户端在短时间内可能会收到同一个资源的多个事件，对于关注最终一致性的K8S来说，它需要知道哪个是最近发生的事件，并保证资源的最终状态如同最近事件所表述的状态一样。K8S在每个资源的事件中都带一个resourceVersion的标签，这个标签是递增的数字，所以当客户端并发处理同一个资源的事件时，它就可以对比resourceVersion来保证最终的状态和最新的事件所期望的状态保持一致。
+
+**高性能：**List-watch还具有高性能的特点，虽然仅通过周期性调用list API也能达到资源最终一致性的效果，但是周期性频繁的轮询大大的增大了开销，增加apiserver的压力。而watch作为异步消息通知机制，复用一条长链接，保证实时性的同时也保证了性能。
+
+
+
+组件间通信：Kubernetes系统组件间只能通过 `kube-apiserver`来通信，它是唯一的通信组件。
 
 
 
@@ -712,6 +747,135 @@ Pod 水平自动伸缩（Horizontal Pod Autoscaler）是k8s的`kube-controller-m
 
 
 ### 1.3.10 高可用集群
+
+
+
+https://kubernetes.io/zh-cn/docs/setup/production-environment/tools/kubeadm/high-availability/
+
+
+
+**==etcd高可用==**
+
+ETCD是CoreOS开源的一个强一致性的分布式键值存储服务，ETCD使用raft算法将一组主机组成集群，集群中的每个节点都可以根据集群运行的情况在三种状态间切换：follower, candidate 与 leader。leader 和 follower 之间保持心跳。
+
+如果follower在一段时间内没有收到来自leader的心跳，就会转为candidate，发出新的选主请求。
+
+集群初始化的时候内部的节点都是follower节点，之后会有一个节点因为没有收到leader的心跳转为candidate节点，发起选主请求。当这个节点获得了大于一半节点的投票后会转为leader节点。
+
+
+
+kube-apiserver高可用
+
+
+
+**==kube-scheduler 高可用==**
+
+在 Kubernetes 中，`kube-scheduler` 和 `kube-controller-manager` 都依赖 **Leader Election** 选主机制来保证在任何时刻只有一个实例执行关键任务。
+
+`Leader Election` 是一个通过协调集群中的多个实例来选出一个“领导者”的机制。每个实例会尝试成为 Leader，但只有选举出的 Leader 才会执行任务，其他实例会处于待命状态，等待 Leader 失效后接管。
+
+**==从 Kubernetes v1.14 开始，`kube-scheduler` 和 `kube-controller-manage` 都是使用 Lease 资源来进行选举。==**
+
+**==Leader 实例会周期性地更新 Lease 资源，来保持对其租约的持有权。`Lease` 资源是 Kubernetes 中用于协调 Leader Election 的专用资源，它记录了当前 Leader 实例的身份和租约的有效期。==**
+
+- 每个 Leader 节点都会定期更新 **Lease** 资源中的字段（如 `holderIdentity`），并设置租约的到期时间（`leaseDuration`）
+
+```bash
+root@k8s-master-01:~# kubectl get leases -n kube-system
+NAME                                   HOLDER                                                                      AGE
+apiserver-diis2xnf65zvyaf6hktjvqdqee   apiserver-diis2xnf65zvyaf6hktjvqdqee_4fbbbc53-1925-4aa6-8620-61cb2952f159   46h
+apiserver-i5s3kydaxcybcmw5e4zwn5q6qa   apiserver-i5s3kydaxcybcmw5e4zwn5q6qa_99dad8cc-6d7f-4305-9eca-7d179592ccfe   46h
+apiserver-n5rqfbqvzhlrni7fhvncysbm4q   apiserver-n5rqfbqvzhlrni7fhvncysbm4q_0533ccc0-f0ea-48b1-be1e-aedbf54c3fcb   46h
+cilium-operator-resource-lock          k8s-master-03-p6j6d4kgxv                                                    46h
+kube-controller-manager                k8s-master-03_2e3a45ad-edd2-49b4-9682-4c9ea256eced                          46h
+kube-scheduler                         k8s-master-02_30260634-b717-4eda-aa34-d8c85f5082ab                          46h
+root@k8s-master-01:~#
+
+
+# 可以看到
+root@k8s-master-01:~# kubectl get lease kube-scheduler -n kube-system -o yaml
+apiVersion: coordination.k8s.io/v1
+kind: Lease
+metadata:
+  creationTimestamp: "2026-02-06T08:40:25Z"
+  name: kube-scheduler
+  namespace: kube-system
+  resourceVersion: "482468"
+  uid: 80fa9bd0-e204-4e61-a4cc-b04f664bab79
+spec:
+  acquireTime: "2026-02-06T09:22:41.380992Z"
+  holderIdentity: k8s-master-02_30260634-b717-4eda-aa34-d8c85f5082ab
+  leaseDurationSeconds: 15
+  leaseTransitions: 1
+  renewTime: "2026-02-08T07:31:41.069524Z"
+root@k8s-master-01:~#
+
+root@k8s-master-01:~# kubectl get lease kube-controller-manager -n kube-system -o yaml
+apiVersion: coordination.k8s.io/v1
+kind: Lease
+metadata:
+  creationTimestamp: "2026-02-06T08:40:27Z"
+  name: kube-controller-manager
+  namespace: kube-system
+  resourceVersion: "482805"
+  uid: 1d939cd2-405b-465e-807a-a7e643c89d02
+spec:
+  acquireTime: "2026-02-06T09:22:39.149153Z"
+  holderIdentity: k8s-master-03_2e3a45ad-edd2-49b4-9682-4c9ea256eced
+  leaseDurationSeconds: 15
+  leaseTransitions: 1
+  renewTime: "2026-02-08T07:33:41.404873Z"
+root@k8s-master-01:~#
+```
+
+当 Leader 节点发生故障时，通常有两种情况：
+
+- **Leader 无法更新 Lease**：如果 Leader 节点失联或宕机，无法在设定的时间内更新 Lease 资源。此时，Lease 的过期时间会到达，Kubernetes 集群中的其他候选节点会开始检测到 Leader 失效。
+- **Leader 节点无法通信**：在网络分裂的情况下，Leader 节点和集群的其他节点无法通信，导致 Leader 无法定期更新 Lease，从而触发选举机制。
+
+
+
+一旦现有 Leader 节点未能按时更新 Lease，集群中的其他节点（`kube-scheduler` 或 `kube-controller-manager` 的其他实例）会发现 Lease 已过期。
+
+- Kubernetes 会启动 **Leader Election** 过程，其他节点会尝试成为新的 Leader。
+- 每个节点会通过比较自身和其他节点的 **Lease** 资源中的哈希值，选择一个新的 Leader。
+
+当一个新节点成为 Leader 时，它会通过以下方式完成接管：
+
+- **更新 Lease 资源**：新的 Leader 会更新 **Lease** 资源的 `holderIdentity` 字段，标明自己是新的 Leader，并且开始定期续租。
+- **通知组件**：Leader Election 是一个分布式机制，通过 `Lease` 的状态变化，集群中的所有节点都可以感知到当前的 Leader。新的 Leader 会接管任务，其他节点会停止进行调度或控制操作，直到下一次 Leader Election 发生。
+
+
+
+集群中的组件（如调度器、控制器等）会通过以下方式感知 Leader 切换：
+
+- **Lease 资源**：`kube-scheduler` 和 `kube-controller-manager` 会在 Kubernetes 的 API 服务器中创建 **Lease** 资源，其他组件通过定期读取和监控 **Lease** 资源的状态，来判断当前的 Leader 节点。
+
+- **API Server 的通知**：
+
+  - Kubernetes 中的 `kube-apiserver` 会监控 **Lease** 资源的变化。当 **Lease** 被更新时， `kube-apiserver` 会将其最新的状态传播到集群中所有感兴趣的组件。
+
+  - 其他组件通过 **watch** 机制实时感知到 **Lease** 的变化。如果检测到 `holderIdentity` 变化或租约过期，它们就知道 Leader 节点发生了变更。
+
+- **自我调整**：`kube-scheduler` 和 `kube-controller-manager` 会根据 **Lease** 的变化自我调整：
+
+  - 如果一个实例成为新的 Leader，它会立即开始执行调度或控制任务。
+
+  - 其他实例会停止执行任务，直到下一次 Leader Election。
+
+
+
+
+
+在分布式系统中，确保数据一致性和可用性是至关重要的任务之一。为了解决数据一致性问题，分布式系统引入了许多机制和算法，**==其中之一就是 Lease（租约）机制==**。Lease 机制是一种用于控制资源访问和避免竞态条件的重要工具。
+
+Lease 机制是一种分布式系统中常用的协作机制，用于控制对共享资源的访问。它基于一种简单的想法：将资源的控制权租借给一个实体，以允许该实体在一段时间内独占访问资源。Lease 机制通常包括以下关键元素：
+
+- **租约持有者（Lease Holder）**：一个实体，通常是一个进程或节点，持有资源的租约。只有租约持有者才能访问资源。
+- **租约超时时间（Lease Timeout）**：租约被授予的时间期限。一旦租约超时，资源将被释放，其他实体可以获得租约。
+- **租约续约（Lease Renewal）**：租约持有者可以在租约即将到期时请求续约，以延长其对资源的访问权限。
+
+Lease 机制的主要目标是确保资源的独占性和一致性。通过将资源租借给一个实体，系统可以避免多个实体同时访问资源而导致的竞态条件和数据不一致性问题
 
 
 
