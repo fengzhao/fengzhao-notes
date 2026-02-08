@@ -764,11 +764,41 @@ ETCD是CoreOS开源的一个强一致性的分布式键值存储服务，ETCD使
 
 
 
-kube-apiserver高可用
+**==kube-apiserver高可用==**
+
+`kube-apiserver` 是 Kubernetes 控制平面的核心组件之一，它提供了所有的 REST API 接口，几乎所有与 Kubernetes 集群交互的操作都依赖于它。为了确保 Kubernetes 集群的稳定运行，`kube-apiserver` 必须保证高可用性。
 
 
 
-**==kube-scheduler 高可用==**
+`kube-apiserver` 从某种角度讲它应该是一个有状态服务，但为了降低apiserver的复杂性，apiserver将数据存储到etcd中，从而使得apiserver从有状态服务变成了一个无状态服务；
+
+所以高可用apiserver我们只需要启用多个实例通过一个负载均衡器来反向代理多个apiserver，客户端和node的节点的kubelet通过负载均衡器来连接apiserver即可；
+
+ 在多master节点的集群环境中，为了解除耦合关系，node节点的kubelet和kube-proxy不会直接去连接master的API server，而是去连接负载均衡器（中间层，使用VIP通信），一般是haproxy（双机部署，keepalived做高可用）。
+
+负载均衡器会对后端master定时进行健康检测，一旦有master节点异常，负载均衡器会将其踢出，不会将请求发往故障master，这样master节点的增加或减少不会影响node节点
+
+
+
+
+
+在 Kubernetes 集群中，kube-apiserver 是整个集群的入口，任何用户或者程序对集群资源的增删改查操作都需要经过 kube-apiserver，因此它的高可用性决定了整个集群的高可用能力。
+
+kube-apiserver 本质上是一个无状态的服务器，为了实现其高可用，通常会部署多个 kube-apiserver 实例，同时引入外部[负载均衡器](https://cloud.tencent.com/product/clb?from_column=20065&from=20065)（以下简称 LB）进行流量代理。
+
+为了保证集群的安全，kube-apiserver 对请求进行认证和授权的准入控制，其中认证是为了识别出用户的身份。Kubernetes 支持多种认证策略，比如 `Bootstrap Token`、`Service Account Token`、`OpenID Connect Token`、`TLS 双向认证`等。
+
+目前 `kube-apiserver` 的客户端使用得较多的策略是 TLS 双向认证。TLS 双向认证需要 LB 将请求中的 Client X509 Cert 正确传递给 kube-apiserver，但是传统的七层 LB 无法做到这一点，在转发过程中会丢失 `Client X509 Cert`，导致 kube-apiserver 无法认证用户。
+
+
+
+
+
+
+
+
+
+**==kube-scheduler 和 kube-controller-manager 高可用==**
 
 在 Kubernetes 中，`kube-scheduler` 和 `kube-controller-manager` 都依赖 **Leader Election** 选主机制来保证在任何时刻只有一个实例执行关键任务。
 
