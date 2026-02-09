@@ -6555,6 +6555,16 @@ curl https://1.1.1.1 -H "Host: www.forbidden.com" -v  ##1.1.1.1为CDN的IP
 
 https://blog.kenxu.top/post/bypass-gfw-p1/
 
+
+
+
+
+## 十五、TLS终止
+
+TLS 终止（TLS Termination/Offloading）是指在反向代理、負載平衡器或 Ingress 閘道等網路節點上解密 HTTPS 流量，再將明文 (HTTP) 轉發至後端服務的技術。它能減輕應用伺服器解密負擔、集中管理憑證，但也需權衡節點的安全風險。
+
+
+
 # PKI体系
 
 https://arthurchiao.art/blog/everything-about-pki-zh/
