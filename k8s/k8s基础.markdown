@@ -190,7 +190,9 @@ ss -antp | grep 2379 | grep kube-apiserver
 
 **==调度==**
 
-`kube-scheduler`一直在通过 **==List-Watch 机制 监听 (Watch)==** `kube-apiserver`：**==Kubernetes 采用的是一种更高级、更优雅的机制：List-Watch。它不是轮询，而是基于 HTTP 长连接 的异步事件推送==**
+`kube-scheduler`一直在通过 **==List-Watch 机制 监听 (Watch)==** `kube-apiserver`：**==Kubernetes 采用的是一种更高级、更优雅的机制：List-Watch。==**
+
+**==它不是轮询，而是基于 HTTP 长连接 的异步事件推送==**
 
 `kube-controller-manager`会通过对 `Deployment` 资源的监控来创建一个 **ReplicaSet**，并将该 `ReplicaSet` 用来管理 Pod 的生命周期。
 
@@ -788,9 +790,37 @@ https://wiki.wbuntu.com/cncf/k8s/1-kube-apiserver-ha/
 
 kube-apiserver 本质上是一个无状态的服务器，为了实现其高可用，通常会部署多个 kube-apiserver 实例，同时引入外部[负载均衡器](https://cloud.tencent.com/product/clb?from_column=20065&from=20065)（以下简称 LB）进行流量代理。
 
-为了保证集群的安全，`kube-apiserver` 对请求进行认证和授权的准入控制，其中认证是为了识别出用户的身份。Kubernetes 支持多种认证策略，比如 `Bootstrap Token`、`Service Account Token`、`OpenID Connect Token`、`TLS 双向认证`等。
 
 
+
+
+为了保证集群的安全，`kube-apiserver` 对请求进行认证和授权的准入控制，其中认证是为了识别出用户的身份。
+
+Kubernetes 支持多种认证策略，比如 `Bootstrap Token`、`Service Account Token`、`OpenID Connect Token`、`mTLS 双向认证`等。
+
+
+
+在 Kubernetes 的设计哲学里，为了把“**人做的操作**”和“**程序做的操作**”分开管理，它定义了两类截然不同的账号
+
+这类账号是给**人**用的（比如你、你的同事、运维架构师）
+
+- **身份标识**：它是全局性的。无论你在哪个 Namespace（名称空间），你都是同一个“张三”。
+- **存储位置**：K8s 数据库里**没有** User 对象。K8s 默认信任由集群 CA 签发的证书。如果你手里有一个合法的证书，K8s 就认你是那个用户。
+- **管理方式**：通常由外部管理（如 Keystone、Google 账号，或者你本地 `~/.kube/config` 里的证书）
+
+
+
+`mTLS 双向认证`是 K8s 最底层、最核心的认证方式。在使用 `kubectl` 时，默认就在用它
+
+- **原理**：客户端和服务器各有一张证书。连接时，双方互相交换证书并校验是否由受信任的 CA 机构签发。
+- **对应场景**：集群管理员
+- **你的配置**：你 `~/.kube/config` 文件里那串密密麻麻的 `client-certificate-data` 字符，就是你的“身份证”
+
+
+
+Pod 里的程序（比如一个 Python 脚本）也需要访问 K8s API（比如查询有多少个节点）。它不能用人的账号，所以有了 `Service Account`
+
+- 
 
 
 
