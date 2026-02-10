@@ -1293,9 +1293,9 @@ server {
 
 打开[官方文档](https://nginx.org/en/docs/)中，可以看到Nginx的语法和模块被分为`Introduction`,`How-To`,`Development`,`Modules reference` 四块。
 
+Nginx 的模块系统主要分为“核心功能模块”和“动态模块”，其中动态模块又分为官方模块和三方模块。
 
-
-Nginx 的模块系统主要分为“核心功能模块”和“动态模块”，其中动态模块又分为官方模块和三方模块。某种意义上来看，Nginx 的模块算是一种 AOP 思想的应用实践。
+某种意义上来看，Nginx 的模块算是一种 AOP 思想的应用实践。
 
 
 
@@ -1303,7 +1303,9 @@ Nginx 的模块系统主要分为“核心功能模块”和“动态模块”�
 
 ## 内部模块
 
-Nginx 能保持高度曝光发展到今天，除了因为有大量三方模块外，这些拥有稳定质量的内部模块同样功不可没。时至今日，[这些模块](https://github.com/nginx/nginx/tree/master/src)还在保持着比较高的频率进行小步迭代，不断进行优化。它们实际如下：
+Nginx 能保持高度曝光发展到今天，除了因为有大量三方模块外，这些拥有稳定质量的内部模块同样功不可没。
+
+时至今日，[这些模块](https://github.com/nginx/nginx/tree/master/src)还在保持着比较高的频率进行小步迭代，不断进行优化。它们实际如下：
 
 - 负责内部通用数据类型、数据对象、内存管理、文件管理、哈希校验、网络通信、锁、网络连接、日志管理、计时器的“核心模块”；
 
@@ -1339,6 +1341,10 @@ Nginx 能保持高度曝光发展到今天，除了因为有大量三方模块�
 ### ngx_http_core_module
 
 提供http协议的支持。平常配置的http段、server虚拟主机段、location段等。都是此模块的中的一些配置语法。
+
+
+
+
 
 ### ngx_http_gzip_module
 
@@ -2091,17 +2097,47 @@ Nginx是高度模块化的，各个功能都会封装在模块中。例如core�
 
 Nginx的HTTP框架基本由1个核心模块`ngx_http_module`、两个HTTP模块(`ngx_http_core_module`、`nginx_http_upstream_module`)组成，负责调用其他HTTP模块来一起处理用户请求。
 
-
-
-Nginx 处理请求的过程一共划分为 11 个阶段，按照执行顺序依次是 post-read、server-rewrite、find-config、rewrite、post-rewrite、preaccess、access、post-access、try-files、content 以及 log。
-
-
-
 Nginx实际把http请求处理流程划分为了11个阶段，这样划分的原因是将请求的执行逻辑细分，以模块为单位进行处理，各个阶段可以包含任意多个http模块并以流水线的方式处理请求。这样做的好处是使处理过程更加灵活、降低耦合度。
 
 可以让每个HTTP模块可以仅仅专注于完成一个独立，简单的功能。而一个请求的完整处理过程可以由多个HTTP模块共同合作完成。可以极大的提高多个模块合作的协同性，可测试性，可扩展性。
 
 换言之，nginx在处理每一个http请求，和配置文件上的顺序没有关系。
+
+
+
+
+
+Nginx 处理请求的过程一共划分为 11 个阶段，按照执行顺序依次是 
+
+- post-read
+- server-rewrite
+- find-config
+- rewrite
+- post-rewrite
+- preaccess
+- access
+- post-access
+- try-files
+- content 
+- log
+
+
+
+| **阶段名称**        | **含义与作用 (What it does)**   | **常见模块/指令示例**                     |
+| ------------------- | ------------------------------- | ----------------------------------------- |
+| **1. POST_READ**    | 接收完 Header 后的第一步        | `ngx_realip` (获取真实 IP)                |
+| **2. HTTP_REWRITE** | **URL 重写阶段**（全局）        | `set`, `rewrite` (发生在 Server 级别)     |
+| **3. FIND_CONFIG**  | **寻找 Location**。不可挂载脚本 | Nginx 内部匹配 `location / {}`            |
+| **4. REWRITE**      | **Location 重写阶段**           | `rewrite_by_lua`, `set`                   |
+| **5. POST_REWRITE** | 重写后的收尾工作                | 内部跳转（Jump）检查                      |
+| **6. PREACCESS**    | **访问控制前传**                | `ngx_limit_conn` (限制连接数)             |
+| **7. ACCESS**       | **访问权限检查**                | `access_by_lua`, `allow/deny`             |
+| **8. POST_ACCESS**  | 权限检查收尾                    | 处理 `satisfy` 指令（是满足一个还是全部） |
+| **9. PRECONTENT**   | **生成内容前传**                | `ngx_try_files`                           |
+| **10. CONTENT**     | **核心阶段：产生响应**          | `content_by_lua`, `proxy_pass`            |
+| **11. LOG**         | **日志阶段**                    | `log_by_lua`, `access_log`                |
+
+
 
 
 
@@ -2119,11 +2155,45 @@ Nginx实际把http请求处理流程划分为了11个阶段，这样划分的原
 
 
 
-### REALIP模块
+## ngx_http_realip_module模块
+
+
+
+
 
 `用途`：当本机 `Nginx` 处于反向代理后端时可以获取到用户的`真实IP地址`。
 
 `使用`：`realip` 功能需要 `Nginx` 添加 `ngx_http_realip_module` 模块，默认情况下是不被编译，如果需要添加，请在编译时添加 `--with-http_realip_module` 选项开启它。
+
+
+
+反向代理的广泛应用也带来了**客户端真实 IP 获取的挑战**。当 Nginx 或 CDN 服务作为中间层时，服务器日志通常记录的是代理节点 IP 而非原始请求来源。
+
+例如，某网站接入 Cloudflare CDN 后，所有访问日志均显示为 Cloudflare 的节点 IP，导致无法直接追溯真实用户地址；
+
+
+
+当请求经过 **客户端 → 正向代理1 → CDN→ WAF → 反向→ 源站** 这样的代理链路时：
+
+
+
+一般的客户端（例如浏览器）发送HTTP请求是没有`X-Forwarded-For`头的，当请求到达第一个代理服务器时，代理服务器会加上X-Forwarded-For请求头，并将值设为客户端的IP地址（也就是最左边第一个值），后面如果还有多个代理，会依次将IP追加到X-Forwarded-For头最右边，最终请求到达Web应用服务器，应用通过获取X-Forwarded-For头取左边第一个IP即为客户端真实IP。
+
+但是如果客户端在发起请求时，请求头上带上一个伪造的X-Forwarded-For，由于后续每层代理只会追加而不会覆盖，那么最终到达应用服务器时，获取的左边第一个IP地址将会是客户端伪造的IP。也就是上面的Java代码中getClientIp()方法获取的IP地址很有可能是伪造的IP地址，如果一个投票系统用这种方式做的IP限制，那么很容易会被刷票。
+
+
+
+ 
+
+| **指令**                | **意思 (What it means)**                                     |
+| ----------------------- | ------------------------------------------------------------ |
+| **`set_real_ip_from`**  | **信任名单**。告诉 Nginx：如果请求是从这些 IP（1.0 网段、2.1 机器、IPv6 段）发过来的，它们是“自己人”（代理），它们给出的信息是可信的。 |
+| **`real_ip_header`**    | **信息来源**。告诉 Nginx 去 HTTP Header 的 `X-Forwarded-For` 字段里找真实 IP。 |
+| **`real_ip_recursive`** | **递归搜索**。如果设为 `on`，Nginx 会从右往左排除掉在“信任名单”里的 IP，直到找到第一个**不在**名单里的 IP，那才被认定为“真实客户端”。 |
+
+
+
+
 
 
 
