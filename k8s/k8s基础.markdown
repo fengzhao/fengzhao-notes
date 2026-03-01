@@ -70,7 +70,7 @@ Namespace通过将集群内部的资源对象"分配"到不同的Namespace中，
 
 **==同一名字空间内的资源名称要唯一，但跨名字空间时没有这个要求。==** 
 
-**==名字空间作用域仅针对带有名字空间的[对象](https://kubernetes.io/zh-cn/docs/concepts/overview/working-with-objects/#kubernetes-objects)， （例如 Deployment、Service 等），这种作用域对集群范围的对象 （例如 StorageClass、Node、PersistentVolume 等）不适用。==**
+**==名字空间作用域仅针对带有名字空间的 [对象](https://kubernetes.io/zh-cn/docs/concepts/overview/working-with-objects/#kubernetes-objects)， （例如 Deployment、Service 等），这种作用域对集群范围的对象 （例如 StorageClass、Node、PersistentVolume 等）不适用。==**
 
 
 
@@ -82,12 +82,6 @@ Kubernetes集群启动后，默认会创建一个名为四个Namespace
 | **`kube-system`**     | 集群“心脏” (系统组件) | **极高** (严禁非管理员操作)          | `CoreDNS`、`Kube-Proxy`、`Controller-Manager`、各种 CNI 网络插件 | **禁止**手动在该空间部署任何业务应用           |
 | **`kube-public`**     | 全局公共信息区        | **最低** (允许匿名/未经身份验证读取) | `cluster-info` (包含集群版本、API 地址等基本信息)            | 仅存放需要全集群（甚至集群外）可见的非敏感配置 |
 | **`kube-node-lease`** | 节点存活监测区        | 仅 `kubelet` 和控制面交互            | 节点租约对象 (`Lease`)，用于维持心跳                         | 这是一个自动管理的区域，用户无需任何手动干预   |
-
-
-
-
-
-
 
 
 
@@ -3201,14 +3195,13 @@ Kubernetes在v1.24版本中移除了Dockershim，并从此不再默认支持Dock
 
 
 
-手动部署 Containerd
-
-
+**==手动部署 Containerd==**
 
 containerd有两种安装包： 
 
-- containerd-xxx: 	这种安装包用于单机测试没问题，不包含runC，需要提前安装。 	 
-- cri-containerd-cni-xxx: 	包含runc及符合K8S的CNI接口的相关软件包。虽然包含runC，但是依赖系统中的Seccomp(用于系统资源调用的相关模块)来配合使用。因此建议大家手动安装runC即可。
+- containerd-xxx: 	这种安装包用于单机测试没问题，不包含runC，需要提前安装。
+- containerd-static-2.2.1-linux-amd64.tar.gz： 一般选择这种静态的，程序在编译时，已经把所有需要的依赖库全都“打包”进一个文件里了
+- cri-containerd-cni-xxx:  包含runc及符合K8S的CNI接口的相关软件包。虽然包含runC，但是依赖系统中的Seccomp(用于系统资源调用的相关模块)来配合使用。因此建议大家手动安装runC即可。
 
 
 
@@ -3323,14 +3316,6 @@ server = "https://docker.io"
   
 EOF
 ```
-
-
-
-
-
-
-
-
 
 
 
@@ -3456,17 +3441,15 @@ root@k8s-master01:~#
 
 #  Aggregated API 
 
-
-
 在 Kubernetes 中，一些核心功能，比如 `Metrics Server`、`Custom Resource Definitions (CRD)` 或其他自定义的 API 服务，并非直接运行在 `API Server` 内部。
+
+在大规模 Kubernetes 集群中，当你发现原生的资源（如 Pod, Deployment）不够用，或者你想让自己的服务（比如一个自定义的数据库控制器）像原生资源一样被 `kubectl` 操作时，你会接触到 **Aggregated API (API 聚合层)**。
 
 它们作为独立的 Pod 运行，并通过一种被称为 `Aggregated API` 的机制，将自己的 API 端点注册到主 `API Server` 上。
 
 当用户或控制器向 `API Server` 发送请求时（例如 `kubectl top nodes`），如果请求的是聚合的 API（如 `metrics.k8s.io`），API Server 会将这个请求代理转发给 `Metrics Server` 这个独立的 Pod。
 
-
-
-为了保证这种代理转发过程是安全的，`API Server` 必须能够信任它所通信的 Aggregated API 服务。
+为了保证这种代理转发过程是安全的，`API Server` 必须能够信任它所通信的 `Aggregated API` 服务。
 
 
 
