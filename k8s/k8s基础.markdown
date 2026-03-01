@@ -151,6 +151,15 @@ k8s集群分为两类节点
 
 
 
+```bash
+
+# 在现代 Kubernetes 集群（尤其是通过 kubeadm 部署的集群）中，kube-controller-manager 的运行方式非常精妙：它既是一个进程，也是一个静态 Pod。
+
+
+```
+
+
+
 
 
 **==请求==**
