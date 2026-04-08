@@ -740,3 +740,39 @@ wget https://downloads.isc.org/isc/kea/3.0.0/kea-3.0.0.tar.xz
 
 
 
+# DHCP Snooping
+
+
+
+DHCP Snooping是DHCP（Dynamic Host Configuration Protocol）的一种安全特性，用于保护DHCP客户端从合法的DHCP服务器获取IP地址，并记录DHCP客户端的IP地址与MAC地址等参数的对应关系，防止网络中针对DHCP的攻击，为用户提供更安全的网络环境，更稳定的网络服务。
+
+
+
+DHCP协议遇到许多安全方面的问题，网络中存在针对DHCP的攻击，例如**==DHCP Server仿冒者攻击==**、**==DHCP Server的拒绝服务攻击==**、**==仿冒DHCP报文攻击==**等。
+
+
+
+
+
+
+
+设备开启DHCP Snooping功能后，会将DHCP客户端的DHCP请求报文通过信任接口发送给合法的DHCP服务器，之后再根据DHCP服务器回应的DHCP ACK报文信息生成DHCP Snooping绑定表。后续设备再从开启了DHCP Snooping功能的接口接收DHCP客户端发来的DHCP报文时，会检查报文信息是否匹配DHCP Snooping绑定表，从而有效防范DHCP攻击。
+
+
+
+
+
+DHCP Snooping信任功能将接口分为**==信任接口==**和**==非信任接口==**：
+
+- 信任接口正常接收DHCP服务器响应的DHCP ACK、DHCP NAK和DHCP Offer报文。
+- 非信任接口在接收到DHCP服务器响应的DHCP ACK、DHCP NAK和DHCP Offer报文后，丢弃该报文。
+
+
+
+在二层网络接入设备使能DHCP Snooping场景中，一般将与合法DHCP服务器直接或间接连接的接口设置为信任接口，其他接口设置为非信任接口
+
+
+
+
+
+一旦你在某个 VLAN 下启用了 DHCP Snooping，该 VLAN 内的**所有物理接口和逻辑接口**都会自动进入 **Untrusted** 状态。
