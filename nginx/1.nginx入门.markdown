@@ -638,7 +638,69 @@ nginx -s reload
 
 # 升级/热升级
 
-使用 Nginx 时，经常遇到添加新模块或升级Nginx版本。如何做到不停机升级部署？**Nginx热升级指服务不中断情况下用新的Nginx二进制文件替换老的Nginx二进制文件。**
+ 热升级要升级的部分一般是要**添加新的模块**或者**升级Nginx版本**。前者如果是编译第三方模块需要先准备好模块源代码，对于后者需要先下载最近Nginx源码。
+
+热升级是指在**不停止服务（不影响客户端访问）**的情况下更换 Nginx 的binary文件。
+
+
+
+这种热升级得益于nginx的**多进程架构**设计，能够在老的nginx主进程不退出的情况下以子进程的方式启动新的master进程和新的woker进程，让新的master进程重新监听端口和接收请求。
+
+新的master进程稳定之后，通过发送信号的方式通知老master进程退出。完成整个热升级。
+
+
+
+
+
+热升级会经历以下几个步骤：
+
+**第一步**是把旧的 Nginx binary 文件替换为新的，之所以说只替换 binary 文件是因为大部分场景下，我们新编译的 nginx 文件所指定的相应的配置选项，比如说配置文件的目录在哪里？log 的所在目录在哪里？
+
+必须保持和老的 Nginx 是一致的，否则的话没有办法复用 nginx.conf 文件，如果我们仅仅替换 binary 文件，请注意要备份，另外在新版本的 Linux 中，会要求在覆盖一个正在使用的文件时需要用 cp -f 才能够替换。
+
+```bash
+# 第一步：先查看原先编译的参数。nginx -V可以查看编译时的参数（-v是查看版本）。在新编译时，要将原有的模块参数也加上，否则原有的模块不会编译进去。
+
+# 第二步：开始编译，编译过程和前面的一致，只是增加了要添加模块的参数。
+```
+
+
+
+**第二步**向现有老的 Master (Old) 进程发生 USR2 信号，之后 Master (Old) 进程会将修改 pid 文件名，添加 后缀 .oldbin。这一步是在为新的 Master 进程让路，虽然 Master、Worker 进程都可以接受信号，但是为了管理方便，通常不对 Worker 进程直接发送信号，所以我们依赖于 Master 进程，他必须把他的 pid 保存下来，为了新的 Master 使用 pid.bin 这个文件名，所以把老的 pid 文件改为 pid.oldbin。
+
+
+
+热升级大致分为两步，按照新的要求编译好Nginx的二进制文件，通过信号，完成新老进程的平滑过渡，保证升级期间服务可用。
+
+
+
+
+
+
+
+第一步：先查看原先编译的参数。-V可以查看编译时的参数。（-v是查看版本）
+
+在新编译时，要将原有的模块参数也加上，否则原有的模块不会编译进去。
+
+```
+./nginx -V
+```
+
+
+
+- 第二步：开始编译，编译过程和[上篇](https://blog.csdn.net/gexiaoyizhimei/article/details/101567219)一致，只是增加了要添加模块的参数。
+
+
+
+https://blog.csdn.net/gexiaoyizhimei/article/details/101650717
+
+https://www.cnblogs.com/wupeixuan/p/12074007.html
+
+
+
+使用 Nginx 时，经常遇到添加新模块或升级Nginx版本。如何做到不停机升级部署？
+
+**Nginx热升级指服务不中断情况下用新的Nginx二进制文件替换老的Nginx二进制文件。**
 
 热升级大致分为两步，按照新的要求编译好Nginx的二进制文件，通过信号，完成新老进程的平滑过渡，保证升级期间服务可用。
 
@@ -672,29 +734,32 @@ nginx -s reload
 
 - 第四步：热升级。至此我们只是替换了二进制文件，但是现在服务中的Nginx进程还是由原来的nginx二进制文件启动的，所以请求还是走原有的逻辑。
 
-  > 先通过ps -ef查看Nginx master进程id
-  > 给nginx的master进程发送一个信号：USR2
-  > kill -USR2 13195
+  > 1. 先通过`ps -ef | grep nginx` 查找nginx的master进程id，假设这里查出来是13195
+  > 
+  > 2. 然后给nginx的master进程发送一个SIGUSR2信号：`kill -USR2 13195`
   >
-  > 向老nginx进程发送一个信号：WINCH 让其优雅关闭所有的worker进程
-  > kill -WINCH 13195
-  >
-  > 此时所有的请求都会平滑过渡到新的worker进程。但是旧的master进程13195还在
-  > 只是没有worker进程，如果要回退，只需要拉回旧的nginx拉回worker进程。如果运行一段时间没有问题，可以通过kill -QUIT 13159彻底关闭老进程
-  >
-  > 回滚：
-  > kill -HUP 13195 #拉回原来的nginx进程 （kill -HUP 和 -SIGHUP 作用是一样的）
-  > kill -QUIT 18034#关闭新起的master进程，该master进程会通知它下面的worker进程关闭
+  > 3. 向老nginx进程发送一个信号：WINCH 让其优雅关闭所有的worker进程 `kill -WINCH 13195`
+  > 
+  >4. 此时所有的新请求都会平滑过渡到新的worker进程。但是旧的master进程13195还在，只是它还没有worker进程。
+  > 5. 如果要回退，只需要拉回旧的nginx拉回worker进程。如果运行一段时间没有问题，可以通过`kill -QUIT 13159`彻底关闭老进程
+  > 
+  >回滚：
+  > `kill -HUP 13195` #拉回原来的nginx进程 （kill -HUP 和 -SIGHUP 作用是一样的）
+  > `kill -QUIT 18034`    #关闭新起的master进程，该master进程会通知它下面的worker进程关闭
 
 至此热升级完毕，其中最关键的是Nginx通过信号来协调新老进程的过渡。
 
 
 
-Nginx是一个多进程应用，一般多进程通信可以采用共享内存、信号等通信方式。nginx的主进程和worker进程之间使用信号通信。开发者也会通过主动发送信号，控制nginx的行为，比如上面的热部署。
+Nginx是一个多进程应用，一般多进程通信可以采用共享内存、信号等通信方式。nginx的主进程和worker进程之间使用信号通信。
 
-能够发送和处理信号的有Master进程、worker进程以及nginx命令行。通常我们不直接给worker进程发送信号，而是给master进程发送信号，希望通过master进程管理worker进程（master进程和worker进程之间也会互发信号进行通信）。
+开发者也会通过主动发送信号，控制nginx的行为，比如上面的热部署。
 
-在信号名前加SIG也可以。比如 kill -HUP 和kill -SIGHUP一样。
+能够发送和处理信号的有Master进程、worker进程以及nginx命令行。
+
+通常我们不直接给worker进程发送信号，而是给master进程发送信号，希望通过master进程管理worker进程（master进程和worker进程之间也会互发信号进行通信）。
+
+在信号名前加SIG也可以。比如 `kill -HUP` 和`kill -SIGHUP`一样。
 
 
 
@@ -1709,64 +1774,6 @@ https://www.cnblogs.com/biglittleant/p/8979915.html
 
 
 
-
-# Nginx热升级
-
- 热升级要升级的部分一般是要**添加新的模块**或者**升级Nginx版本**。前者如果是编译第三方模块需要先准备好模块源代码，对于后者需要先下载最近Nginx源码。
-
-热升级是指在**不停止服务（不影响客户端访问）**的情况下更换 Nginx 的binary文件。
-
-这种热升级得益于nginx的**多进程架构**设计，能够在老的nginx主进程不退出的情况下以子进程的方式启动新的master进程和新的woker进程，让新的master进程重新监听端口和接收请求。
-
-新的master进程稳定之后，通过发送信号的方式通知老master进程退出。完成整个热升级。
-
-
-
-
-
-热升级会经历以下几个步骤：
-
-**第一步**是把旧的 Nginx binary 文件替换为新的，之所以说只替换 binary 文件是因为大部分场景下，我们新编译的 nginx 文件所指定的相应的配置选项，比如说配置文件的目录在哪里？log 的所在目录在哪里？
-
-必须保持和老的 Nginx 是一致的，否则的话没有办法复用 nginx.conf 文件，如果我们仅仅替换 binary 文件，请注意要备份，另外在新版本的 Linux 中，会要求在覆盖一个正在使用的文件时需要用 cp -f 才能够替换。
-
-```bash
-# 第一步：先查看原先编译的参数。nginx -V可以查看编译时的参数（-v是查看版本）。在新编译时，要将原有的模块参数也加上，否则原有的模块不会编译进去。
-
-# 第二步：开始编译，编译过程和前面的一致，只是增加了要添加模块的参数。
-```
-
-
-
-**第二步**向现有老的 Master (Old) 进程发生 USR2 信号，之后 Master (Old) 进程会将修改 pid 文件名，添加 后缀 .oldbin。这一步是在为新的 Master 进程让路，虽然 Master、Worker 进程都可以接受信号，但是为了管理方便，通常不对 Worker 进程直接发送信号，所以我们依赖于 Master 进程，他必须把他的 pid 保存下来，为了新的 Master 使用 pid.bin 这个文件名，所以把老的 pid 文件改为 pid.oldbin。
-
-
-
-热升级大致分为两步，按照新的要求编译好Nginx的二进制文件，通过信号，完成新老进程的平滑过渡，保证升级期间服务可用。
-
-
-
-
-
-
-
-第一步：先查看原先编译的参数。-V可以查看编译时的参数。（-v是查看版本）
-
-在新编译时，要将原有的模块参数也加上，否则原有的模块不会编译进去。
-
-```
-./nginx -V
-```
-
-
-
-- 第二步：开始编译，编译过程和[上篇](https://blog.csdn.net/gexiaoyizhimei/article/details/101567219)一致，只是增加了要添加模块的参数。
-
-
-
-https://blog.csdn.net/gexiaoyizhimei/article/details/101650717
-
-https://www.cnblogs.com/wupeixuan/p/12074007.html
 
 # Nginx 安全配置规范
 
