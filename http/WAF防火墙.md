@@ -4,8 +4,6 @@
 
 
 
-> 
->
 > Web应用防护系统（也称为：网站应用级入侵防御系统。英文：Web Application Firewall，简称： WAF）。
 >
 > 利用国际上公认的一种说法：Web应用防火墙是通过执行一系列针对HTTP/HTTPS的安全策略来专门为Web应用提供保护的一款产品。
@@ -26,6 +24,8 @@
 - 提供网站一键HTTPS和HTTP回源，降低源站负载压力。
 - 支持对HTTP和HTTPS流量进行精准的访问控制。
 - 支持超长时长的全量日志实时存储、分析和自定义报表服务，支持日志线上同步第三方平台，助力满足等保合规要求。
+
+
 
 [阿里云WAF](https://help.aliyun.com/document_detail/149485.html?spm=a2c4g.11186623.6.577.4dc842eauvprOo)
 
@@ -54,17 +54,15 @@
 
 ## WAF核心工作原理
 
-Web Application Firewall ，可以用来屏蔽常见的网站漏洞攻击，如SQL注入，XML注入、XSS等。
+`Web Application Firewall` ，可以用来屏蔽常见的网站漏洞攻击，如SQL注入，XML注入、XSS等。
 
 WAF一般针对的是应用层而非网络层的入侵，从技术角度应该称之为Web IPS。其防护重点是SQL注入。
-
-
 
 Web防火墙产品部署在Web服务器的前面，串行接入，不仅在硬件性能上要求高，而且不能影响Web服务，所以HA功能、Bypass功能都是必须的，而且还要与[负载均衡](https://link.zhihu.com/?target=https%3A//www.imperva-incapsula.cn/%E8%B4%9F%E8%BD%BD%E5%9D%87%E8%A1%A1/)、Web Cache，CDN 等Web服务器前的常见的产品协调部署。
 
  
 
-waf工作在客户端与web服务器之间，对基于HTTP协议的通信进行检测和识别。
+WAF工作在客户端与web服务器之间，对基于HTTP协议的通信进行检测和识别。
 
 通俗的说，WAF类似于地铁站的安检，对于HTTP请求进行快速安全检查，通过解析HTTP 数据，在不同的字段分别在特征、规则等维度进行判断，判断的结果作为是否拦截的依据从而决定是否放行。
 
@@ -72,11 +70,15 @@ waf工作在客户端与web服务器之间，对基于HTTP协议的通信进行�
 
 
 
-[Web应用防火墙](https://link.zhihu.com/?target=https%3A//www.imperva-incapsula.cn/%E7%BD%91%E7%AB%99%E5%AE%89%E5%85%A8/waf/)的主要技术的对入侵的检测能力，尤其是对Web服务入侵的检测，Web防火墙最大的挑战是识别率，这并不是一个容易测量的指标，因为漏网进去的入侵者，并非都大肆张扬，比如给网页挂马，你很难察觉进来的是那一个，不知道当然也无法统计。
+Web应用防火墙主要技术的对入侵的检测能力，尤其是对Web服务入侵的检测，Web防火墙最大的挑战是识别率，这并不是一个容易测量的指标。
+
+因为漏网进去的入侵者，并非都大肆张扬，比如给网页挂马，你很难察觉进来的是那一个，不知道当然也无法统计。
 
 
 
 对于已知的攻击方式，可以谈识别率；对未知的攻击方式，你也只好等他自己“跳”出来才知道。
+
+
 
 现在市场上大多数的产品是基于规则的WAF。
 
@@ -90,15 +92,21 @@ waf工作在客户端与web服务器之间，对基于HTTP协议的通信进行�
 
  
 
-异常保护的基本观念是建立一个保护层，这个保护层能够根据检测合法应用数据建立统计模型，以此模型为依据判别实际通信数据是否是攻击。理论上，一但构建成功，这个基于异常的系统应该能够探测出任何的异常情况。拥有了它，我们不再需要规则数据库而且零日攻击也不再成问题了。但基于异常保护的系统很难构建，所以并不常见。因为用户不了解它的工作原理也不相信它，所以它也就不如基于规则的WAF应用广范。
+异常保护的基本观念是建立一个保护层，这个保护层能够根据检测合法应用数据建立统计模型，以此模型为依据判别实际通信数据是否是攻击。理论上，一但构建成功，这个基于异常的系统应该能够探测出任何的异常情况。
+
+拥有了它，我们不再需要规则数据库而且零日攻击也不再成问题了。但基于异常保护的系统很难构建，所以并不常见。因为用户不了解它的工作原理也不相信它，所以它也就不如基于规则的WAF应用广范。
 
  
 
-Imperva公司的WAF产品在提供入侵防护的同时，还提供了另外一个安全防护技术，就是对Web应用网页的自动学习功能，由于不同的网站不可能一样，所以网站自身页面的特性没有办法提前定义，所以imperva采用设备自动预学习方式，从而总结出本网站的页面的特点。具体的做法是这样的：
+Imperva公司的WAF产品在提供入侵防护的同时，还提供了另外一个安全防护技术，就是对Web应用网页的自动学习功能。
+
+由于不同的网站不可能一样，所以网站自身页面的特性没有办法提前定义，所以imperva采用设备自动预学习方式，从而总结出本网站的页面的特点。具体的做法是这样的：
 
  
 
-通过一段时间的用户访问，WAF记录了常用网页的访问模式，如一个网页中有几个输入点，输入的是什么类型的内容，通常情况的长度是多少…学习完毕后，定义出一个网页的正常使用模式，当今后有用户突破了这个模式，如一般的帐号输入不应该有特殊字符，而XML注入时需要有“<”之类的语言标记，WAF就会根据你预先定义的方式预警或阻断;再如密码长度一般不超过20位，在SQL注入时加入代码会很长，同样突破了网页访问的模式。
+通过一段时间的用户访问，WAF记录了常用网页的访问模式，如一个网页中有几个输入点，输入的是什么类型的内容，通常情况的长度是多少…学习完毕后，定义出一个网页的正常使用模式。
+
+当今后有用户突破了这个模式，如一般的帐号输入不应该有特殊字符，而XML注入时需要有“<”之类的语言标记，WAF就会根据你预先定义的方式预警或阻断;再如密码长度一般不超过20位，在SQL注入时加入代码会很长，同样突破了网页访问的模式。
 
  
 
@@ -110,9 +118,11 @@ Imperva公司的WAF产品在提供入侵防护的同时，还提供了另外一�
 
 ### ModSecurity
 
-ModSecurity 是一个开源的、生产级的 WAF 工具包，历史很悠久，比 Nginx 还要大几岁。
+ModSecurity 是一个开源的、生产级的 WAF 工具包，历史很悠久，比 Nginx 还要大几岁
 
-它开始于一个私人项目，后来被商业公司 Breach Security 收购，现在则是由TrustWave 公司的 SpiderLabs 团队负责维护。
+它开始于一个私人项目，后来被商业公司 `Breach Security` 收购，后续又由TrustWave 公司的 SpiderLabs 团队负责维护。官方已于2024年7月1日正式终止商业支持，并将项目的托管权和开源代码维护责任移交给了 OWASP 基金会。
+
+
 
 ModSecurity 最早是 Apache 的一个模块，只能运行在 Apache 上。因为其品质出众，大受欢迎，后来的 2.x 版添加了 Nginx 和 IIS 支持，但因为底层架构存在差异，不够稳定。
 
@@ -120,9 +130,13 @@ ModSecurity 最早是 Apache 的一个模块，只能运行在 Apache 上。因�
 
 ModSecurity 有两个核心组件:
 
-- 第一个是“规则引擎”，它实现了自定义的“SecRule”语言，有自己特定的语法。但“SecRule”主要基于正则表达式，还是不够灵活，所以后来也引入了 Lua，实现了脚本化配置。ModSecurity 的规则引擎使用 C++11 实现，可以从GitHub上下载源码，然后集成进Nginx。因为它比较庞大，编译很费时间，所以最好编译成动态模块，在配置文件里用指令“load_module”加载。
+- 第一个是“规则引擎”，它实现了自定义的“SecRule”语言，有自己特定的语法。但“SecRule”主要基于正则表达式，还是不够灵活，所以后来也引入了 Lua，实现了脚本化配置
 
-- 只有引擎还不够，要让引擎运转起来，还需要完善的防御规则，所以 ModSecurity 的第二个核心组件就是它的“规则集”。ModSecurity 源码提供一个基本的规则配置文件“modsecurity.conf-recommended”，使用前要把它的后缀改成“conf”。有了规则集，就可以在 Nginx 配置文件里加载，然后启动规则引擎。
+  ModSecurity 的规则引擎使用 C++11 实现，可以从GitHub上下载源码，然后集成进Nginx。因为它比较庞大，编译很费时间，所以最好编译成动态模块，在配置文件里用指令“load_module”加载。
+
+- 只有引擎还不够，要让引擎运转起来，还需要完善的防御规则，所以 ModSecurity 的第二个核心组件就是它的“规则集”。
+
+  ModSecurity 源码提供一个基本的规则配置文件“modsecurity.conf-recommended”，使用前要把它的后缀改成“conf”。有了规则集，就可以在 Nginx 配置文件里加载，然后启动规则引擎。
 
 
 
@@ -130,12 +144,13 @@ ModSecurity 有两个核心组件:
 
 
 
+可以把 modsecurity 简单理解成一个 Apache/Nginx 的扩展，它可以解析所有流经 Apache/Nginx 的 http 流量，且它内置了自己的规则语法解析器。
 
+所以 WAF 规则研发人员可以写出符合其语法的规则文件，并导入modsecurity，从而对恶意 http 请求产生告警或者拦截。
 
-可以把 modsecurity 简单理解成一个 Apache/Nginx 的扩展，它可以解析所有流经 Apache/Nginx 的 http 流量，且它内置了自己的规则语法解析器，所以 WAF 规则研发人员可以写出符合其语法的规则文件，并导入modsecurity，从而对恶意 http 请求产生告警或者拦截。
+将 Modsecurity3 部署在了Nginx上作为WAF本身，然后通过Nginx反向代理到漏洞环境的方式，让每个漏洞环境发起的恶意http请求流量得以先流经modsecurity，再抵达真正的漏洞环境。
 
-
-将 Modsecurity3 部署在了Nginx上作为WAF本身，然后通过Nginx反向代理到漏洞环境的方式，让每个漏洞环境发起的恶意http请求流量得以先流经modsecurity，再抵达真正的漏洞环境。（要实现这个目的，有很多种WAF架构都可以做到：反向代理、透明代理、流模式等）
+（要实现这个目的，有很多种WAF架构都可以做到：反向代理、透明代理、流模式等）
 
 
 
@@ -145,13 +160,11 @@ ModSecurity 有两个核心组件:
 
 ### CRS详解
 
-除基本的规则集之外，ModSecurity 还额外提供一个更完善的规则集，为网站提供全面可靠的保护。
+除基本的规则集之外，ModSecurity 还额外提供一个更完善的规则集，为网站提供全面可靠的保护。随着Web安全环境的不断变化，攻击手法也在不断进化，因此定期更新ModSecurity的规则集是十分必要的。
 
-随着Web安全环境的不断变化，攻击手法也在不断进化，因此定期更新ModSecurity的规则集是十分必要的。
+ModSecurity 提供了一个名为 `owasp-modsecurity-crs` 的官方CRS（核心规则集），它是经过广泛测试和验证的规则集合，能够覆盖大多数已知的攻击类型。
 
-ModSecurity提供了一个名为 owasp-modsecurity-crs 的官方CRS（核心规则集），它是经过广泛测试和验证的规则集合，能够覆盖大多数已知的攻击类型。
-
-这个规则集的全名叫“OWASP ModSecurity 核心规则集”（Open WebApplication Security Project ModSecurity Core Rule Set）
+这个规则集的全名叫**=="OWASP ModSecurity 核心规则集"（Open WebApplication Security Project ModSecurity Core Rule Set）==**
 
 因为名字太长了，所以有时候会简称为"核心规则集"或者**"[CRS](https://github.com/coreruleset/coreruleset.git)"**，CRS 也是完全开源、免费的，可以从 GitHub 上下载。
 
@@ -163,11 +176,9 @@ git clone https://github.com/coreruleset/coreruleset.git
 
 
 
-异常打分机制，CRS由一系列一条条的规则组成，每个规则是用来检测特定攻击的。
+异常打分机制，CRS由一系列一条条的规则组成，每个规则是用来检测特定攻击的。主要将HTTP报文（请求报文/响应报文）来进行规则匹配，来进行打分，当满足一定分数后，即 deny 拦截。
 
-主要将HTTP报文（请求报文/响应报文）来进行规则匹配，来进行打分，当满足一定分数后，即 deny 拦截。
-
-**默认情况下，ModSecurity核心规则集使用评分机制。对于请求违反的每条规则，都会增加一个分数。当所有请求规则都通过时，将分数与限制进行比较。**
+==**默认情况下，ModSecurity核心规则集使用评分机制。对于请求违反的每条规则，都会增加一个分数。当所有请求规则都通过时，将分数与限制进行比较。**==
 
 **如果达到限制，则请求被阻止。同样的事情发生在响应中，我们希望避免信息泄露给客户端。**
 
@@ -197,16 +208,6 @@ SecRule REQUEST_HEADERS:Content-Length "!@rx ^\d+$" \
 
 
 
-
-
-
-
-
-
-
-
-
-
 # ModSecurity-nginx
 
 [Libmodsecurity](https://github.com/SpiderLabs/ModSecurity) 是 ModSecurity v3 项目的一个组成部分。该库代码库作为 ModSecurity 连接器的接口，接收 Web 流量并应用传统的 ModSecurity 处理。
@@ -215,21 +216,25 @@ SecRule REQUEST_HEADERS:Content-Length "!@rx ^\d+$" \
 
 
 
-ModSecurity在最初设计的时候，它只是Apache的一个扩展模块，随着时间的推移、用户量的增加，为了满足用户的需求，该项目增加了对Nginx以及IIS的支持，但由于其本身是Apache的一个模块，因此在编译以及运行时，都离不开Apache这个主体，意思就是，即便是在Nginx上使用ModSecurity，但仍需先安装Apache。以上为ModSecurity v2版本的实现机制。
+ModSecurity在最初设计的时候，它只是Apache的一个扩展模块，随着时间的推移、用户量的增加，为了满足用户的需求，该项目增加了对Nginx以及IIS的支持。
+
+但由于其本身是Apache的一个模块，因此在编译以及运行时，都离不开Apache这个主体，意思就是，即便是在Nginx上使用ModSecurity，但仍需先安装Apache。以上为ModSecurity v2版本的实现机制。
 
 
 
-为了满足日益增长的对额外平台支持的需求，因此ModSecurity团队决定删除其对Apache的依赖，使其更加独立于平台，ModSecurity v3版本由此诞生，同时取了一个新名字：Libmodsecurity。ModSecurity v3版本可以不依赖WEB服务进行独立安装，但是如果需要与WEB服务进行联动工作时，则需要安装对应的Connector（连接器），如Nginx需要安装`ModSecurity-nginx connector`，Apache需要安装`ModSecurity-apache connector`。
+为了满足日益增长的对额外平台支持的需求，因此ModSecurity团队决定删除其对Apache的依赖，使其更加独立于平台，`ModSecurity v3`版本由此诞生，同时取了一个新名字：Libmodsecurity
 
-
+ModSecurity v3版本可以不依赖WEB服务进行独立安装，但是如果需要与WEB服务进行联动工作时，则需要安装对应的Connector（连接器），如Nginx需要安装`ModSecurity-nginx connector`，Apache需要安装`ModSecurity-apache connector`
 
 > 最新结论（20220114）：请勿在Nginx使用ModSecurity V2版本，V2版本与Nginx存在兼容问题，且目前官方团队明确表示不会进行修复。
 
+在ModSecurity v3之前的版本中，Nginx的兼容性较差，这是因为在ModSecurity在设计之初是作为Apache HTTP服务的一个模块进行设计开发的，所以导致ModSecurity严重依赖于`Apache HTTP Server`
 
+随着时间的推移，由于大众需求，该项目已经扩展到其他平台，包括Nginx 和 IIS等。为了满足对额外平台的支持不断增长的需求，需要删除该项目下的 Apache 依赖项，使其更加独立于平台。
 
-在ModSecurity v3之前的版本中，Nginx的兼容性较差，这是因为在ModSecurity在设计之初是作为Apache HTTP服务的一个模块进行设计开发的，所以导致ModSecurity严重依赖于`Apache HTTP Server`。随着时间的推移，由于大众需求，该项目已经扩展到其他平台，包括Nginx 和 IIS等。为了满足对额外平台的支持不断增长的需求，需要删除该项目下的 Apache 依赖项，使其更加独立于平台。
+在ModSecurity v3版本中进行了重构，整个项目完全进行重写，去除了`Apache HTTP`的依赖，可以完美兼容Nginx。新的ModSecurity v3版本中，核心功能转移到了名为 Libmodsecurity 的独立组件中，通过连接器连接到 Nginx 和 Apache。
 
-在ModSecurity v3版本中进行了重构，整个项目完全进行重写，去除了`Apache HTTP`的依赖，可以完美兼容Nginx。新的ModSecurity v3版本中，核心功能转移到了名为 Libmodsecurity 的独立组件中，通过连接器连接到 Nginx 和 Apache。接收 Web 流量并应用传统的 ModSecurity 处理。
+接收 Web 流量并应用传统的 ModSecurity 处理。
 
 
 
@@ -243,24 +248,24 @@ yum install gcc gcc-c++ make automake autoconf libtool pcre  pcre-devel zlib ope
 apt-get install build-essential libpcre3 libpcre3-dev zlib1g zlib1g-dev libssl-dev libgd-dev libxml2 libxml2-dev uuid-dev libgeoip-dev   geoip-database geoipupdate  libmaxminddb-dev
 
 # ubuntu
-apt -y install libyajl-dev libpcre++-dev libxml2-dev libgeoip1 libmaxminddb-dev libfuzzy-dev liblua5.3-dev liblmdb-dev libpcre2-dev liblmdb-dev libcurl4-openssl-dev
+apt -y install libyajl-dev libxml2-dev libgeoip1 libmaxminddb-dev libfuzzy-dev liblua5.3-dev liblmdb-dev libpcre2-dev liblmdb-dev libcurl4-openssl-dev
+
+gh_mirror="https://ghfast.top/"
 
 # 下载ngx_http_geoip2_module模块
-git clone https://github.com/leev/ngx_http_geoip2_module.git /usr/local/src/ngx_http_geoip2_module
+git clone ${gh_mirror}https://github.com/leev/ngx_http_geoip2_module.git /usr/local/src/ngx_http_geoip2_module
 
 # 下载ModSecurity源代码
-git clone  --recursive https://github.com/owasp-modsecurity/ModSecurity.git /usr/local/src/ModSecurity
-
+git clone  --recursive ${gh_mirror}https://github.com/owasp-modsecurity/ModSecurity.git /usr/local/src/ModSecurity
 
 # 下载ModSecurity v3 Nginx Connector。目前最新的版本是V3，较此前的V2有一定的区别，使用时请注意区分版本。
 # ModSecurity项目只提供了libmodsecurity组件库，在Nginx中应用时，还需要ModSecurity v3 Nginx Connector，将libmodsecurity和Nginx连接起来。
-git clone  https://github.com/SpiderLabs/ModSecurity-nginx.git  /usr/local/src/ModSecurity-nginx
+git clone  ${gh_mirror}https://github.com/SpiderLabs/ModSecurity-nginx.git  /usr/local/src/ModSecurity-nginx
 
 
 # 下载crs规则集，最新的仓库改地址
-# git clone  https://github.com/SpiderLabs/ModSecurity.git  /usr/local/src/ModSecurity
-git clone https://github.com/coreruleset/coreruleset.git /usr/local/src/coreruleset
-
+git clone ${gh_mirror}https://github.com/coreruleset/coreruleset.git /usr/local/src/coreruleset
+mkdir -p /etc/nginx/modsecurity &&  cp -ar  /usr/local/src/coreruleset  /etc/nginx/modsecurity
 
 # cd 到ModSecurity源码目录下按顺序执行，更新git子模块，并编译安装
 cd /usr/local/src/ModSecurity
@@ -302,8 +307,7 @@ cd /usr/local/src/ &&  tar -xvf nginx-${Latest_NGINX_Version}.tar.gz
 cd  nginx-${Latest_NGINX_Version}
 mkdir -p ~/.vim/  && cp -r contrib/vim/* ~/.vim/
 
-
-
+# 配置
 ./configure  --user=nginx  --group=nginx  \
     --prefix=/usr/local/nginx/  \
     --with-http_stub_status_module \
@@ -314,43 +318,65 @@ mkdir -p ~/.vim/  && cp -r contrib/vim/* ~/.vim/
     --add-module=/usr/local/src/ModSecurity-nginx
 
 # 或者动态模块
-./configure --add-dynamic-module=/path/to/ModSecurity-nginx --with-compat
+./configure --add-dynamic-module=/usr/local/src/ModSecurity-nginx --with-compat
 
+# 编译安装
 make  && make install 
 ```
 
 
 
+在 NGINX 的 HTTP 块配置中添加 `modsecurity` 和 `modsecurity_rules_file` 指令，以启用 `ModSecurity`
+
+```
+mkdir -p /etc/nginx/modsecurity
+cp /usr/local/src/ModSecurity/modsecurity.conf-recommended /etc/nginx/modsecurity/modsecurity.conf; 
+```
 
 
-在 NGINX 配置中添加 `modsecurity` 和 `modsecurity_rules_file` 指令，以启用 ModSecurity。
 
 ```nginx
 
 http {
-       # ... 
+       # 
        modsecurity on;
-       modsecurity_rules_file /etc/nginx/modsec/main.conf;
+       modsecurity_rules_file /etc/nginx/modsecurity/modsecurity.conf;;
 }
 ```
 
 
 
 ```
-mkdir -p /etc/nginx/modsec/ 
-cp /usr/local/src/ModSecurity/modsecurity.conf-recommended /etc/nginx/modsec/
-```
-
-
-
-### ModSecurity 配置指令
-
-SecRuleEngine是接受来自ModSecurity-CRS目录下的所有规则的安全规则引擎。
 
 ```
-#SecRuleEngine On：将在服务器上激活ModSecurity防火墙。它会检测并阻止该服务器上的任何恶意攻击。
-#SecRuleEngine Detection Only：如果这个规则是在whitelist.conf文件中设置的，它只会检测到所有的攻击，并根据攻击产生错误，但它不会在服务器上阻止任何东西。
-#SecRuleEngine Off:：这将在服务器上上停用ModSecurity的防火墙。
+
+
+
+### ModSecurity 核心配置文件
+
+`modsecurity.conf` 是开源 Web 应用防火墙 ModSecurity 的核心配置文件，用于定义引擎开关、请求体解析、日志记录和核心规则加载等全局行为。
+
+
+
+```nginx
+# SecRuleEngine 是接受来自ModSecurity-CRS目录下的所有规则的安全规则引擎，将在服务器上激活ModSecurity防火墙，相当于WAF的总开关，主要有三种选项
+# 1.激活WAF防火墙功能，并开启拦截功能
+SecRuleEngine On
+# 2.如果这个规则是在whitelist.conf文件中设置的，它只会检测到所有的攻击，并根据攻击产生错误，但它不会在服务器上阻止任何东西。
+SecRuleEngine DetectionOnly
+# 3.停用ModSecurity的防火墙
+SecRuleEngine Off
+
+# Allow ModSecurity to access request bodies. If you don't, ModSecurity won't be able to see any POST parameters, which opens a large security hole for attackers to exploit.
+SecRequestBodyAccess On
+
+# Enable XML request body parser. Initiate XML Processor in case of xml content-type
+SecRule REQUEST_HEADERS:Content-Type "^(?:application(?:/soap\+|/)|text/)xml"  "id:'200000',phase:1,t:none,t:lowercase,pass,nolog,ctl:requestBodyProcessor=XML"
+
+
+
+Include /usr/local/src/coreruleset
+
 ```
 
 
@@ -361,17 +387,31 @@ SecRuleEngine是接受来自ModSecurity-CRS目录下的所有规则的安全规�
 
 ModSecurity 3.x  处理规则，一共有5个请求处理阶段：
 
-- Request headers (REQUEST_HEADERS)         需要验证请求头相关的规则，并根据请求头来判断如何解析request body
-- Request body (REQUEST_BODY)                     需要根据请求头正确解析body数据，并验证request body相关的规则
-- Response headers (RESPONSE_HEADERS)    在获取到响应头之后，验证response header相关的规则
-- Response body (RESPONSE_BODY)                正确解析响应体数据之后，验证response body相关的规则
-- Logging (LOGGING)                                           用于记录事务信息，包括命中规则信息，处理方式等。
+| **阶段编号** | **阶段名称**                        | **阶段说明与处理逻辑**                                       | **典型应用场景**                                             |
+| ------------ | ----------------------------------- | ------------------------------------------------------------ | ------------------------------------------------------------ |
+| **Phase 1**  | **Request Headers** （请求头阶段）  | 在 Nginx/Apache 解析完 HTTP 请求行和请求头后立即触发。此时**尚未读取请求体（Body）** | • 基于 IP 的黑白名单过滤 • 检查 User-Agent、Host 等请求头 • 拦截速率限制/DDoS 攻击 |
+| **Phase 2**  | **Request Body** （请求体阶段）     | 在服务器完全接收并解析完 HTTP 请求体（如 POST 表单数据、JSON、XML、上传文件等）后触发。 | • 防范 SQL 注入（SQLi） • 防范跨站脚本（XSS） • 检查 WebShell 上传及恶意 Payload |
+| **Phase 3**  | **Response Headers** （响应头阶段） | 在后端应用处理完请求并生成响应头、但**尚未发送响应体**之前触发。 | • 检查响应状态码（如 404、500） • 隐藏或注入安全响应头（如 `Server`、`X-Frame-Options`） |
+| **Phase 4**  | **Response Body** （响应体阶段）    | 在后端应用生成完响应内容、将其准备返回给客户端时触发（需启用 `SecResponseBodyAccess On`）。 | • 数据防泄漏（阻止敏感信息如身份证、信用卡号输出） • 检测后端应用输出的错误堆栈 |
+| **Phase 5**  | **Logging** （日志记录阶段）        | 在整个 HTTP 事务（Transaction）结束、请求响应已全部完成后触发。**在此阶段无法拦截或阻止请求**。 | • 自定义日志格式 • 记录事务元数据 • 统计分析与安全审计       |
 
 
 
-每个事务在modsecurity需要经历5个阶段，在每个阶段可能需要解析等操作，然后调用相应阶段的规则进行匹配，对应规则中的`phase`
 
-为了选择在某个阶段让某一规则运行，
+
+
+
+CSR配置文件
+
+
+
+每个事务在modsecurity需要经历5个阶段，在每个阶段可能需要解析等操作，然后调用相应阶段的规则进行匹配，对应规则中的`phase`，为了选择在某个阶段让某一规则运行，
+
+
+
+
+
+
 
 ```
 SecDefaultAction "log,pass,phase:2,id:4"
@@ -403,8 +443,10 @@ git clone https://github.com/unixhot/waf.git
 cp -r ./waf/waf /usr/local/openresty/nginx/conf/
 
 vim /usr/local/openresty/nginx/conf/nginx.conf
+
+
 #在http{}中增加，注意路径，同时WAF日志默认存放在/tmp/日期_waf.log
-#WAF
+WAF
 lua_shared_dict limit 50m;
 lua_package_path "/usr/local/openresty/nginx/conf/waf/?.lua";
 init_by_lua_file "/usr/local/openresty/nginx/conf/waf/init.lua";

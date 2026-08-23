@@ -2719,9 +2719,54 @@ location /test {
 
 
 
+# Nginx上游健康检查
 
 
 
+#### 一、ngx_http_proxy_module模块和ngx_http_upstream_module模块（自带）
+
+Nginx 在 upstream 模块中的默认检测机制：通过用户的真实请求去检查被代理服务器的可用性，这是一种**==被动检测机制==**，通过 `ngx_http_upstream_module` 模块中 server 指令的指令值参数 `max_fails` 及 `fail_timeout`实现对被代理服务器的检测和熔断。
+
+Nginx 被动检测机制的优点是不需要增加额外进程进行健康检测，但用该方法检测是不准确的。如当响应超时时，有可能是被代理服务器故障，也可能是业务响应慢引起的。
+
+如果是被代理服务器故障，那么 Nginx 仍会在一定时间内将客户端的请求转发给该服务器，用以判断其是否恢复。
+
+```nginx
+upstream test1 {
+    
+    # 10s内出现3次错误，该服务器将被熔断10s
+    server 192.168.134.154:80 max_fails=3 fails_timeout=10s;
+    server 192.168.134.153:80 max_fails=3 fails_timeout=10s;
+    server 192.168.134.152:80 max_fails=3 fails_timeout=10s;
+}
+
+server {
+    proxy_connect_timeout 5s;　　　　　　# 与被代理服务器建立连接的超时时间
+    proxy_read_timeout 10s;　　　　　　　# 获取被代理服务器的响应最大超时时间,当与被代理服务器通信出现指令值指定的情况时，认为被代理出错，并将请求转发给上游服务器组中的下一个可用服务器
+    proxy_next_upstream http_502 http_504 http_404 error timeout invalid_header;
+    proxy_next_upstream_teies 3;　　　　# 转发请求最大次数
+    proxy_next_upstream_timeout 10s;　 # 总尝试超时时间
+}
+
+```
+
+
+
+#### 二、nginx_upstream_check_module模块（淘宝技术团队开发）
+
+原生Nginx的upstream健康检查功能比较弱，基本上就是被动检查，后端服务挂了还要等用户请求失败才知道。但淘宝开发的Tengine提供了**主动健康检查**
+
+```nginx
+upstream backend {
+    server 192.168.1.10:8080;
+    server 192.168.1.11:8080;
+    
+    # #每隔5秒检测一次，请求2次正常则标记 realserver状态为up，如果检测5次都失败，则标记 realserver的状态为down，超时时间为1秒，使用http协议
+    check interval=5000 rise=2 fall=5 timeout=1000 type=http;
+    check_http_send "HEAD / HTTP/1.0\r\n\r\n";
+    check_http_expect_alive http_2xx http_3xx;
+}
+```
 
 
 
