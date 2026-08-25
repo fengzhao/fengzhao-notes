@@ -441,11 +441,67 @@ DHCP服务器可以配置当前地址池中IP地址的**租用有效期限**，�
 
 
 
-由于[DHCP](https://info.support.huawei.com/info-finder/encyclopedia/zh/DHCP.html) Server和DHCP Client之间没有认证机制，所以如果在网络上随意添加一台DHCP服务器，它就可以为客户端分配IP地址以及其他网络参数。
+由于`DHCP Server`和`DHCP Client`之间没有认证机制，所以如果在网络上随意添加一台DHCP服务器，它就可以为客户端分配IP地址以及其他网络参数。
 
 如果该DHCP服务器为用户分配错误的IP地址和其他网络参数，将会对网络造成非常大的危害。
 
 https://info.support.huawei.com/info-finder/encyclopedia/zh/DHCP+Snooping.html
+
+
+
+
+
+对于一个典型的园区网，SwitchA是接入交换机下挂的PC采用DHCP获取IP地址。SwitchB是核心交换机，部署了DHCP服务器功能。
+
+对于接入交换机，48号口是上联口，1-47号口是下联口：
+
+1. **48号口（上联口）**：连接核心交换机或合法的 DHCP 服务器，必须配置为 **信任端口（Trust）**。允许它发出的 DHCP 响应报文（Offer/Ack）通过。
+2. **1-47号口（下联口）**：连接终端用户，必须保持为 **非信任端口（Untrust）**。如果这些口收到了 DHCP 响应报文（说明下面私接了路由器），交换机会直接**丢弃**。
+
+```
+# 开启全局 DHCP 功能（部分老版本设备需要）
+dhcp enable
+
+
+# 首先，需要在对应的用户 VLAN 下开启该功能（假设你的用户属于 VLAN 10 和 VLAN 20）
+
+# 进入用户 VLAN 开启侦听
+vlan 10
+ dhcp snooping enable
+ quit
+
+vlan 20
+ dhcp snooping enable
+ quit
+ 
+# 华为设备接口命名通常为 0/0/48，华三通常为 1/0/48，请根据实际修改
+interface GigabitEthernet 0/0/48
+ description Uplink-to-Core
+ # 将该端口设置为信任端口
+ dhcp snooping trusted
+ quit
+ 
+# 注意：在华为/H3C设备中，接口默认就是非信任（Untrusted）状态，所以理论上你不需要额外敲命令去配置 untrust。但为了安全起见，强烈建议在下联口做防攻击/防私接的加固配置。
+
+interface range GigabitEthernet 0/0/1 to 0/0/47
+ # 启用
+ dhcp snooping enable
+ 
+ # 【强烈建议】限制每个端口最多学习的 DHCP 用户数（防止下面私接傻瓜交换机/HUB）
+ dhcp snooping max-user-number 1 
+ 
+ # 【可选】开启 DHCP 报文合法性检查
+ dhcp snooping check dhcp-chaddr enable
+ quit
+
+
+
+ 
+```
+
+
+
+
 
 
 
