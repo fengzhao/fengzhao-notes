@@ -2899,9 +2899,7 @@ Linux Bridge 是工作在链路层的网络交换机，由 Linux 内核模块 `b
 
 
 
-Flannel 项目是 CoreOS 公司主推的容器网络方案。
-
-事实上，Flannel 项目本身只是一个框架，真正为我们提供容器网络功能的，是 Flannel 的后端实现：
+Flannel 项目是 CoreOS 公司主推的容器网络方案。事实上，Flannel 项目本身只是一个框架，真正为我们提供容器网络功能的，是 Flannel 的后端实现：
 
 - UDP
 - host-gw
@@ -2912,6 +2910,8 @@ Flannel 项目是 CoreOS 公司主推的容器网络方案。
 2、宿主机1上的docker0接收到报文。报文进入宿主机内核。（flanneld进程已给宿主机注入路由规则，报文被路由至这个TUN设备，继而发给flanneld进程）
 
 3、在由 Flannel 管理的容器网络里，一台宿主机上的所有容器，都属于该宿主机被分配的一个“子网”
+
+
 
 Flannel UDP 模式提供的其实是一个三层的 Overlay 网络，即：它首先对发出端的IP包进行 UDP 封装，然后在接收端进行解封装拿到原始的 IP 包，进而把这个 IP 包转发给目标容器。
 
